@@ -21,7 +21,7 @@ class UnaryInvert(UnaryOp):
 class Collection(list):
 
     def __init__(self, args):
-        super().__init__(args)
+        super().__init__(expand_collections(args))
 
     def __neg__(self):
         return UnaryNeg(self)

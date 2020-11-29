@@ -1,5 +1,5 @@
 
-from .exceptions import PlyrdaColumnNameInvalid
+from .exceptions import PlyrdaColumnNameInvalidException
 
 def is_neg(val):
     from .common import UnaryNeg
@@ -16,7 +16,7 @@ def check_column(column):
     if not isinstance(column, (
             (int, str, list, tuple, UnaryNeg)
     )):
-        raise PlyrdaColumnNameInvalid(
+        raise PlyrdaColumnNameInvalidException(
             'Invalid column, expected int, str, list, tuple, c(), '
             f'X.column, -c() or -X.column, got {type(column)}'
         )
@@ -24,7 +24,7 @@ def check_column(column):
 def select_columns(all_columns, *columns, raise_nonexist=True):
     negs = [is_neg(column) for column in columns]
     if any(negs) and not all(negs):
-        raise PlyrdaColumnNameInvalid(
+        raise PlyrdaColumnNameInvalidException(
             'Either none or all of the columns are negative.'
         )
 
@@ -46,7 +46,7 @@ def select_columns(all_columns, *columns, raise_nonexist=True):
     if raise_nonexist:
         for sel in selected:
             if sel not in all_columns:
-                raise PlyrdaColumnNameInvalid("Column `{sel}` doesn't exist.")
+                raise PlyrdaColumnNameInvalidException("Column `{sel}` doesn't exist.")
 
     if has_negs:
         selected = [colname for colname in all_columns

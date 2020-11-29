@@ -1,5 +1,8 @@
 class PlyrdaException(Exception):
     ...
 
-class PlyrdaColumnNameInvalid(Exception):
+class PlyrdaColumnNameInvalidException(Exception):
+    ...
+
+class PlyrdaGroupByException(Exception):
     ...

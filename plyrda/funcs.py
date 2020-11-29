@@ -1,31 +1,15 @@
 from numbers import Number
 
+from pandas import DataFrame, Series
+from pandas.core.groupby import DataFrameGroupBy
+
 from pipda import register_func
 from .common import Collection, UnaryNeg
 from .utils import select_columns, filter_columns
 
-__all__ = (
-    'c', '__neg__',
-    'starts_with', 'ends_with', 'contains', 'matches', 'num_range',
-    'everything',
-    'columns_between', 'columns_from', 'columns_to',
-    'where', 'last_col',
-    'seq', 'seq_along', 'seq_len',
-)
-
 @register_func
 def c(_data, *args):
     return Collection(args)
-
-@register_func
-def __neg__(_data, operand):
-    if isinstance(operand, Number):
-        return -operand
-    return UnaryNeg(operand)
-
-@register_func
-def __invert__(_data, operand):
-    return UnaryNeg(operand)
 
 @register_func
 def starts_with(_data, match, ignore_case=True, vars=None):
@@ -79,11 +63,11 @@ def columns_between(_data, start_col, end_col, inclusive=True):
 
 @register_func
 def columns_from(_data, start_col):
-    return columns_between.__pipda__(_data, start_col, _data.shape[1])
+    return columns_between.pipda(_data, start_col, _data.shape[1])
 
 @register_func
 def columns_to(_data, end_col, inclusive=True):
-    return columns_between.__pipda__(_data, 0, end_col, inclusive)
+    return columns_between.pipda(_data, 0, end_col, inclusive)
 
 @register_func
 def where(_data, filter):
@@ -112,11 +96,11 @@ def seq_len(_data, length_out):
 @register_func
 def seq(_data, from_=None, to=None, by=None, length_out=None, along_with=None):
     if along_with is not None:
-        return seq_along.__pipda__(_data, along_with)
+        return seq_along.pipda(_data, along_with)
     if from_ is not None and not isinstance(from_, Number):
-        return seq_along.__pipda__(_data, from_)
+        return seq_along.pipda(_data, from_)
     if length_out is not None and from_ is None and to is None:
-        return seq_len.__pipda__(_data, length_out)
+        return seq_len.pipda(_data, length_out)
 
     if from_ is None:
         from_ = 0
@@ -132,3 +116,14 @@ def seq(_data, from_=None, to=None, by=None, length_out=None, along_with=None):
         length_out = (to - from_ + by - by/10.0) // by
     return [from_ + n * by for n in range(int(length_out))]
 
+@register_func
+def n(_data):
+    if isinstance(_data, DataFrame):
+        return _data.shape[0]
+    return _data.size()
+
+@register_func
+def mean(_data, series):
+    if not isinstance(_data, DataFrameGroupBy):
+        return series.mean()
+    return _data.mean()[series.name]

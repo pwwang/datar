@@ -50,27 +50,27 @@ class TestFuncs(unittest.TestCase):
 
     def test_seq(self):
         # see: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/seq
-        self.assertEqual([round(x, 1) for x in seq.__pipda__(None, 0, 1.1, length_out=11)],
+        self.assertEqual([round(x, 1) for x in seq.pipda(None, 0, 1.1, length_out=11)],
                          [round(0.0 + n * 0.1, 1) for n in range(11)])
 
-        self.assertEqual(seq.__pipda__(None, range(10)),
+        self.assertEqual(seq.pipda(None, range(10)),
                          list(range(10)))
 
-        self.assertEqual(seq.__pipda__(None, 1, 10, by=2),
+        self.assertEqual(seq.pipda(None, 1, 10, by=2),
                          [1, 3, 5, 7, 9])
 
-        self.assertEqual([round(x, 2) for x in seq.__pipda__(None, 1, 10, by=3.14)],
+        self.assertEqual([round(x, 2) for x in seq.pipda(None, 1, 10, by=3.14)],
                          [1.00, 4.14, 7.28])
 
-        self.assertEqual(seq.__pipda__(None, 1, 7, by=3),
+        self.assertEqual(seq.pipda(None, 1, 7, by=3),
                          [1, 4])
 
-        self.assertEqual([round(x, 3) for x in seq.__pipda__(None, 1.575, 5.175, by=0.05)],
+        self.assertEqual([round(x, 3) for x in seq.pipda(None, 1.575, 5.175, by=0.05)],
                          [round(1.575 + n * 0.05, 3) for n in range(72)])
 
-        self.assertEqual(seq.__pipda__(None, 18),
+        self.assertEqual(seq.pipda(None, 18),
                          list(range(18)))
-        self.assertEqual(seq_len.__pipda__(None, 18),
+        self.assertEqual(seq_len.pipda(None, 18),
                          list(range(18)))
 
     def test_name_range(self):

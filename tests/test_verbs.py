@@ -5,7 +5,7 @@ from pandas.api.types import is_string_dtype, is_numeric_dtype
 from plyrda.funcs import *
 from plyrda.verbs import *
 from plyrda.common import *
-from plyrda.data import diamonds, relig_income, billboard, who, anscombe
+from plyrda.data import diamonds, relig_income, billboard, who, anscombe, mtcars
 
 class TestVerbs(unittest.TestCase):
 
@@ -30,7 +30,7 @@ class TestVerbs(unittest.TestCase):
         x = diamonds >> select(-c(X.cut, X.price)) >> head(2)
         self.assertNotIn('cut', x.columns.to_list())
         self.assertNotIn('price', x.columns.to_list())
-
+        print(X.OPERATORS)
         x = diamonds >> select(-X.price) >> head(2)
         self.assertNotIn('price', x.columns.to_list())
 
@@ -43,7 +43,7 @@ class TestVerbs(unittest.TestCase):
         x = diamonds >> select(columns_to(1, inclusive=True), 'depth', columns_from(-2)) >> head(2)
         self.assertEqual(x.columns.to_list(), ['carat', 'cut', 'depth', 'y', 'z'])
 
-        with self.assertRaises(PlyrdaColumnNameInvalid):
+        with self.assertRaises(PlyrdaColumnNameInvalidException):
             diamonds >> select(X.cut, -X.price)
 
     def test_drop(self):
@@ -109,6 +109,12 @@ class TestVerbs(unittest.TestCase):
         self.assertEqual(x.x.to_list(), [10.0, 8.0, 13.0, 9.0, 11.0])
         self.assertEqual(x.y.to_list(), [8.04, 6.95, 7.58, 8.81, 8.33])
         self.assertEqual(x['set'].to_list(), [1] * 5)
+
+    def test_summarise(self):
+        x = mtcars >> summarise(mean = mean(X.disp), n = n())
+        self.assertEqual(x.shape, (1, 2))
+        self.assertAlmostEqual(x.loc[0, 'mean'], 230.721875)
+        self.assertEqual(x.loc[0, 'n'], 32)
 
 if __name__ == "__main__":
     unittest.main()

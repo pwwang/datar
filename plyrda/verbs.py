@@ -1,42 +1,43 @@
 from pandas import DataFrame, Series
-from pipda import single_dispatch
-from .exceptions import PlyrdaColumnNameInvalid
+from pandas.core.groupby import DataFrameGroupBy
+from pipda import register_verb
+from .exceptions import PlyrdaColumnNameInvalidException, PlyrdaGroupByException
 from .common import UnaryNeg, Collection
 from .utils import is_neg, check_column, select_columns
 
 from varname import debug
 
-@single_dispatch(DataFrame)
+@register_verb(DataFrame)
 def head(_data, n=5):
     return _data.head(n)
 
-@single_dispatch(DataFrame)
+@register_verb(DataFrame)
 def tail(_data, n=5):
     return _data.tail(n)
 
-@single_dispatch(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_attrs=False)
 def select(_data, column, *columns):
     selected = select_columns(_data.columns, column, *columns)
     return _data[selected]
 
-@single_dispatch(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_attrs=False)
 def drop(_data, column, *columns):
     columns = (column, ) + columns
     if any(is_neg(column) for column in columns):
-        raise PlyrdaColumnNameInvalid(
+        raise PlyrdaColumnNameInvalidException(
             'No negative columns allow for drop, use select instead.'
         )
     selected = select_columns(_data.columns, *columns)
     selected = [column for column in _data.columns if column not in selected]
     return _data[selected]
 
-@single_dispatch(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_attrs=False)
 def relocate(_data, column, *columns, _before=None, _after=None):
     all_columns = _data.columns.to_list()
     columns = select_columns(all_columns, column, *columns)
     rest_columns = [column for column in all_columns if column not in columns]
     if _before and _after:
-        raise PlyrdaColumnNameInvalid(
+        raise PlyrdaColumnNameInvalidException(
             'Only one of _before and _after can be specified.'
         )
     if not _before and not _after:
@@ -51,7 +52,7 @@ def relocate(_data, column, *columns, _before=None, _after=None):
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     return _data[rearranged]
 
-@single_dispatch(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_attrs=False)
 def pivot_longer(_data,
                  cols,
                  names_to="name",
@@ -158,9 +159,15 @@ def pivot_longer(_data,
 
 # Subset columns using their names and types
 
-# summarise() summarize()
+@register_verb((DataFrame, DataFrameGroupBy))
+def summarise(_data, **kwargs):
+    for key, val in kwargs.items():
+        if not isinstance(val, (tuple, list)):
+            kwargs[key] = [val]
+    return DataFrame(kwargs)
 
-# Summarise each group to fewer rows
+
+summarize =summarise
 
 # slice() slice_head() slice_tail() slice_min() slice_max() slice_sample()
 
@@ -188,7 +195,37 @@ def pivot_longer(_data,
 # Filtering joins
 
 # Grouping
-# group_by() ungroup()
+
+@register_verb((DataFrame, DataFrameGroupBy), compile_attrs=False)
+def group_by(_data, column, *columns, _add=False):
+    columns = select_columns(_data.columns, column, *columns)
+    # I don't find a way to revert groupby in pandas, so just remember the
+    # original data
+    if isinstance(_data, DataFrame):
+        ret = _data.groupby(columns)
+        ret.__plyrda_groupby_origin__ = _data
+        ret.__plyrda_groupby_columns__ = columns
+        return ret
+
+    # DataFrameGroupBy
+    if not hasattr(_data, '__plyrda_groupby_origin__'):
+        raise PlyrdaGroupByException(
+            'Cannot group_by on a direct DataFrameGroupBy object.',
+            'Expected a DataFrame object or a DataFrameGroupBy generated '
+            'by plyrda.'
+        )
+
+    if _add:
+        columns = _data.__plyrda_groupby_columns__ + [
+            column for column in columns
+            if column not in _data.__plyrda_groupby_columns__
+        ]
+    ret = _data.__plyrda_groupby_origin__.groupby(columns)
+    ret.__plyrda_groupby_origin__ = _data
+    ret.__plyrda_groupby_columns__ = columns
+    return ret
+
+# ungroup()
 
 # Group by one or more variables
 
@@ -237,7 +274,7 @@ def pivot_longer(_data,
 
 # A helper function for ordering window function output
 
-# n() cur_data() cur_data_all() cur_group() cur_group_id() cur_group_rows() cur_column()
+# cur_data() cur_data_all() cur_group() cur_group_id() cur_group_rows() cur_column()
 
 # Context dependent expressions
 
