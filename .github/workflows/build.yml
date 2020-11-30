@@ -22,8 +22,8 @@ jobs:
           python -m pip install pylint
           python -m pip install poetry
           poetry install -v
-      - name: Run pylint
-        run: pylint plyrda
+      # - name: Run pylint
+      #   run: pylint plyrda
       - name: Test with pytest
         run: poetry run pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
