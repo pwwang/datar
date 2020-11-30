@@ -30,7 +30,6 @@ class TestVerbs(unittest.TestCase):
         x = diamonds >> select(-c(X.cut, X.price)) >> head(2)
         self.assertNotIn('cut', x.columns.to_list())
         self.assertNotIn('price', x.columns.to_list())
-        print(X.OPERATORS)
         x = diamonds >> select(-X.price) >> head(2)
         self.assertNotIn('price', x.columns.to_list())
 
@@ -45,10 +44,6 @@ class TestVerbs(unittest.TestCase):
 
         with self.assertRaises(PlyrdaColumnNameInvalidException):
             diamonds >> select(X.cut, -X.price)
-
-    def test_drop(self):
-        x = diamonds >> drop(columns_from(X.price)) >> head(2)
-        self.assertEqual(x.columns.to_list(), ['carat', 'cut', 'color', 'clarity', 'depth', 'table'])
 
     def test_relocate(self):
         # https://dplyr.tidyverse.org/reference/relocate.html
@@ -111,10 +106,33 @@ class TestVerbs(unittest.TestCase):
         self.assertEqual(x['set'].to_list(), [1] * 5)
 
     def test_summarise(self):
+        # https://dplyr.tidyverse.org/reference/summarise.html
         x = mtcars >> summarise(mean = mean(X.disp), n = n())
         self.assertEqual(x.shape, (1, 2))
         self.assertAlmostEqual(x.loc[0, 'mean'], 230.721875)
         self.assertEqual(x.loc[0, 'n'], 32)
+
+        x = mtcars >> group_by(X.cyl) >> summarise(mean = mean(X.disp), n = n())
+        self.assertEqual(x.columns.to_list(), ['cyl', 'mean', 'n'])
+        self.assertEqual(x.n.to_list(), [11, 7, 14])
+
+        x = mtcars >> group_by(X.cyl) >> summarise(
+            qs = quantile(X.disp, c(0.25, 0.75)), prob = c(0.25, 0.75)
+        )
+        self.assertEqual(x.columns.to_list(), ['qs', 'prob'])
+        self.assertEqual(x.prob.to_list(), [.25, .75] * 3)
+
+    def test_arrange(self):
+        # https://dplyr.tidyverse.org/reference/arrange.html
+        x = mtcars >> arrange(X.cyl, X.disp) >> head(2)
+        self.assertEqual(x.cyl.to_list(), [4, 4])
+        self.assertEqual(x.disp.to_list(), [71.1, 75.7])
+
+        x = mtcars >> arrange(desc(X.disp)) >> head(2)
+        self.assertEqual(x.disp.to_list(), [472.0, 460.0])
+
+        # x = mtcars >> group_by(X.cyl) >> arrange(desc(X.wt)) >> head(2)
+        # self.assertEqual(x.disp.to_list(), [460, 440])
 
 if __name__ == "__main__":
     unittest.main()

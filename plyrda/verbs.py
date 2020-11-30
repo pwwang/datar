@@ -1,9 +1,12 @@
+from typing import Iterable
+from numpy.lib.arraysetops import isin
 from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
+from pandas.core.indexes.range import RangeIndex
 from pipda import register_verb
 from .exceptions import PlyrdaColumnNameInvalidException, PlyrdaGroupByException
 from .common import UnaryNeg, Collection
-from .utils import is_neg, check_column, select_columns
+from .utils import is_neg, check_column, select_columns, nrows_or_nelems
 
 from varname import debug
 
@@ -18,17 +21,6 @@ def tail(_data, n=5):
 @register_verb(DataFrame, compile_attrs=False)
 def select(_data, column, *columns):
     selected = select_columns(_data.columns, column, *columns)
-    return _data[selected]
-
-@register_verb(DataFrame, compile_attrs=False)
-def drop(_data, column, *columns):
-    columns = (column, ) + columns
-    if any(is_neg(column) for column in columns):
-        raise PlyrdaColumnNameInvalidException(
-            'No negative columns allow for drop, use select instead.'
-        )
-    selected = select_columns(_data.columns, *columns)
-    selected = [column for column in _data.columns if column not in selected]
     return _data[selected]
 
 @register_verb(DataFrame, compile_attrs=False)
@@ -122,10 +114,24 @@ def pivot_longer(_data,
 # TODO:
 
 # see: https://dplyr.tidyverse.org/reference/index.html
-# One table verbs
-# arrange()
+@register_verb((DataFrame, DataFrameGroupBy), compile_attrs=False)
+def arrange(_data, column, *columns, _by_group=False):
+    columns = (column, ) + columns
+    by = []
+    ascending = []
+    for column in columns:
+        if isinstance(column, UnaryNeg):
+            by.append(column.operand)
+            ascending.append(False)
+        else:
+            by.append(column)
+            ascending.append(True)
+    by = select_columns(_data.columns, *by)
+    if _by_group and hasattr(_data, '__plyrda_groupby_columns__'):
+        by = _data.__plyrda_groupby_columns__ + by
+        ascending = [True] * len(_data.__plyrda_groupby_columns__) + ascending
+    return _data.sort_values(by, ascending=ascending, ignore_index=True)
 
-# Arrange rows by column values
 
 # count() tally() add_count() add_tally()
 
@@ -162,9 +168,25 @@ def pivot_longer(_data,
 @register_verb((DataFrame, DataFrameGroupBy))
 def summarise(_data, **kwargs):
     for key, val in kwargs.items():
-        if not isinstance(val, (tuple, list)):
+        if isinstance(val, (str, bytes)) or not isinstance(val, Iterable):
             kwargs[key] = [val]
-    return DataFrame(kwargs)
+    max_nrows = max(nrows_or_nelems(val) for val in kwargs.values())
+    for key, val in kwargs.items():
+        nrows = nrows_or_nelems(val)
+        if nrows < max_nrows and max_nrows % nrows == 0 and nrows != 1:
+            if isinstance(val, (list, tuple)):
+                kwargs[key] = val * (max_nrows // nrows)
+            else:
+                kwargs[key] = val.append([val] * (max_nrows // nrows - 1))
+
+    ret = DataFrame(kwargs)
+    if not isinstance(ret.index, RangeIndex):
+        ret = ret.reset_index(level=0)
+    if hasattr(_data, '__plyrda_groupby_columns__'):
+        setattr(ret,
+                '__plyrda_groupby_columns__',
+                _data.__plyrda_groupby_columns__)
+    return ret
 
 
 summarize =summarise

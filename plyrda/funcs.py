@@ -2,6 +2,7 @@ from numbers import Number
 
 from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
+from pandas.core.groupby.generic import SeriesGroupBy
 
 from pipda import register_func
 from .common import Collection, UnaryNeg
@@ -123,7 +124,23 @@ def n(_data):
     return _data.size()
 
 @register_func
-def mean(_data, series):
+def mean(_data, series=None):
+    if series is None:
+        return _data.mean()
     if not isinstance(_data, DataFrameGroupBy):
         return series.mean()
-    return _data.mean()[series.name]
+    return _data.mean().loc[:, series.var().name]
+
+@register_func
+def quantile(_data, series=None, prob=0.5):
+    if series is None:
+        return _data.quantile(q=prob).reset_index(drop=True)
+    if not isinstance(_data, DataFrameGroupBy):
+        return series.quantile(q=prob).reset_index(drop=True)
+    return _data.quantile(q=prob).reset_index(drop=True).loc[
+        :, series.var().name
+    ]
+
+@register_func
+def desc(_data, col):
+    return UnaryNeg(col)

@@ -80,3 +80,9 @@ def expand_collections(collections):
     for collection in collections:
         ret.extend(expand_collections(collection))
     return ret
+
+def nrows_or_nelems(obj):
+    try:
+        return obj.shape[0]
+    except AttributeError:
+        return len(obj)

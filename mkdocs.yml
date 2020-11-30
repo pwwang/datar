@@ -1,0 +1,25 @@
+site_name: varname
+theme:
+    favicon: favicon.png
+    logo: favicon.png
+    palette:
+      primary: blue
+    name: 'material'
+    # font:
+    #   text: 'Ubuntu'
+    #   code: 'Ubuntu Mono'
+markdown_extensions:
+    - markdown.extensions.admonition
+    - pymdownx.superfences:
+        preserve_tabs: true
+    - toc:
+        baselevel: 2
+plugins:
+    - search # necessary for search to work
+    - mkapi
+extra_css:
+    - style.css
+nav:
+    - 'Home': 'index.md'
+    - 'API': 'api/mkapi/dplyrda'
+    - 'Change Log': CHANGELOG.md
