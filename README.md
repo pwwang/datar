@@ -158,15 +158,15 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 
 ### tidyr - Data
 
-- [x] [`billboard`](https://pwwang.github.io/dplyrda/tidyr/$1): Song rankings for billboard top 100 in the year 2000
-- [x] [`construction`](https://pwwang.github.io/dplyrda/tidyr/$1): Completed construction in the US in 2018
-- [x] [`fish_encounters`](https://pwwang.github.io/dplyrda/tidyr/$1): Fish encounters
-- [x] [`relig_income`](https://pwwang.github.io/dplyrda/tidyr/$1): Pew religion and income survey
-- [x] [`smiths`](https://pwwang.github.io/dplyrda/tidyr/$1): Some data about the Smith family
-- [x] [`table1`](https://pwwang.github.io/dplyrda/tidyr/$1) [`table2`](https://pwwang.github.io/dplyrda/tidyr/$1) [`table3`](https://pwwang.github.io/dplyrda/tidyr/$1) [`table4a`](https://pwwang.github.io/dplyrda/tidyr/$1) [`table4b`](https://pwwang.github.io/dplyrda/tidyr/$1) [`table5`](https://pwwang.github.io/dplyrda/tidyr/$1): Example tabular representations
-- [x] [`us_rent_income`](https://pwwang.github.io/dplyrda/tidyr/$1): US rent and income data
-- [x] [`who`](https://pwwang.github.io/dplyrda/tidyr/$1) [`population`](https://pwwang.github.io/dplyrda/tidyr/$1): World Health Organization TB data
-- [x] [`world_bank_pop`](https://pwwang.github.io/dplyrda/tidyr/$1): Population data from the world bank
+- [x] [`billboard`](htts://pwwang.github.io/plyrda/reference/billboard): Song rankings for billboard top 100 in the year 2000
+- [x] [`construction`](htts://pwwang.github.io/plyrda/reference/construction): Completed construction in the US in 2018
+- [x] [`fish_encounters`](htts://pwwang.github.io/plyrda/reference/fish_encounters): Fish encounters
+- [x] [`relig_income`](htts://pwwang.github.io/plyrda/reference/relig_income): Pew religion and income survey
+- [x] [`smiths`](htts://pwwang.github.io/plyrda/reference/smiths): Some data about the Smith family
+- [x] [`table1`](htts://pwwang.github.io/plyrda/reference/table1) [`table2`](htts://pwwang.github.io/plyrda/reference/table2) [`table3`](htts://pwwang.github.io/plyrda/reference/table3) [`table4a`](htts://pwwang.github.io/plyrda/reference/table4a) [`table4b`](htts://pwwang.github.io/plyrda/reference/table4b) [`table5`](htts://pwwang.github.io/plyrda/reference/table5): Example tabular representations
+- [x] [`us_rent_income`](htts://pwwang.github.io/plyrda/reference/us_rent_income): US rent and income data
+- [x] [`who`](htts://pwwang.github.io/plyrda/reference/who) [`population`](htts://pwwang.github.io/plyrda/reference/population): World Health Organization TB data
+- [x] [`world_bank_pop`](htts://pwwang.github.io/plyrda/reference/world_bank_pop): Population data from the world bank
 
 [1]: https://tidyr.tidyverse.org/index.html
 [2]: https://dplyr.tidyverse.org/index.html
