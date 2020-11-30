@@ -21,5 +21,5 @@ extra_css:
     - style.css
 nav:
     - 'Home': 'index.md'
-    - 'API': 'mkapi/api/dplyrda'
+    - 'API': 'mkapi/api/plyrda'
     - 'Change Log': CHANGELOG.md
