@@ -1,6 +1,6 @@
 # plyrda
 
-Probably the closest port of [tidyr][1] + dplyr[2] in python, using [pipda][3].
+Probably the closest port of [tidyr][1] + [dplyr][2] in python, using [pipda][3].
 
 ## Installtion
 
