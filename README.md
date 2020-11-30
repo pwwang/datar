@@ -10,7 +10,7 @@ pip install -U plyrda
 
 ## Progress & docs
 
-See: https://dplyr.tidyverse.org/reference/index.html and See: https://tidyr.tidyverse.org/reference/index.html
+See: https://dplyr.tidyverse.org/reference/index.html and https://tidyr.tidyverse.org/reference/index.html
 
 ### dplyr - One table verbs
 - [x] [`arrange()`](https://pwwang.github.io/dplyrda/dplyr/arrange): Arrange rows by column values
