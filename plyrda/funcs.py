@@ -124,22 +124,22 @@ def n(_data):
     return _data.size()
 
 @register_func
-def mean(_data, series=None):
-    if series is None:
-        return _data.mean()
-    if not isinstance(_data, DataFrameGroupBy):
-        return series.mean()
-    return _data.mean().loc[:, series.var().name]
+def mean(_data, series):
+    raise NotImplementedError
+
+@mean.register(DataFrame)
+@mean.register(DataFrameGroupBy)
+def _(_data, series):
+    return series.mean()
 
 @register_func
-def quantile(_data, series=None, prob=0.5):
-    if series is None:
-        return _data.quantile(q=prob).reset_index(drop=True)
-    if not isinstance(_data, DataFrameGroupBy):
-        return series.quantile(q=prob).reset_index(drop=True)
-    return _data.quantile(q=prob).reset_index(drop=True).loc[
-        :, series.var().name
-    ]
+def quantile(_data, series, prob=0.5):
+    raise NotImplementedError
+
+@quantile.register(DataFrame)
+@quantile.register(DataFrameGroupBy)
+def _(_data, series, prob=0.5):
+    return series.quantile(q=prob)
 
 @register_func
 def desc(_data, col):

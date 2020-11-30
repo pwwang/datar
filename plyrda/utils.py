@@ -1,4 +1,5 @@
 
+from typing import Iterable
 from .exceptions import PlyrdaColumnNameInvalidException
 
 def is_neg(val):
@@ -86,3 +87,22 @@ def nrows_or_nelems(obj):
         return obj.shape[0]
     except AttributeError:
         return len(obj)
+
+def normalize_kw_series(kwargs, max_nrows=None):
+
+    for key, val in kwargs.items():
+        if isinstance(val, (str, bytes)) or not isinstance(val, Iterable):
+            kwargs[key] = [val]
+    max_nrows = max_nrows or max(nrows_or_nelems(val)
+                                 for val in kwargs.values())
+    for key, val in kwargs.items():
+        nrows = nrows_or_nelems(val)
+        if nrows < max_nrows and max_nrows % nrows == 0 and nrows != 1:
+            if isinstance(val, (list, tuple)):
+                kwargs[key] = val * (max_nrows // nrows)
+            else:
+                kwargs[key] = val.append([val] * (max_nrows // nrows - 1))
+    return kwargs
+
+def is_grouped(df):
+    return hasattr(df, '__plyrda_groups__') and df.__plyrda_groups__

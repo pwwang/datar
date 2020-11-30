@@ -3,10 +3,14 @@ from numpy.lib.arraysetops import isin
 from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.indexes.range import RangeIndex
+from pandas.core.indexes.multi import MultiIndex
 from pipda import register_verb
 from .exceptions import PlyrdaColumnNameInvalidException, PlyrdaGroupByException
 from .common import UnaryNeg, Collection
-from .utils import is_neg, check_column, select_columns, nrows_or_nelems
+from .utils import (
+    is_neg, check_column, select_columns, nrows_or_nelems, normalize_kw_series,
+    is_grouped
+)
 
 from varname import debug
 
@@ -18,12 +22,12 @@ def head(_data, n=5):
 def tail(_data, n=5):
     return _data.tail(n)
 
-@register_verb(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_proxy='name')
 def select(_data, column, *columns):
     selected = select_columns(_data.columns, column, *columns)
     return _data[selected]
 
-@register_verb(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_proxy='name')
 def relocate(_data, column, *columns, _before=None, _after=None):
     all_columns = _data.columns.to_list()
     columns = select_columns(all_columns, column, *columns)
@@ -44,7 +48,7 @@ def relocate(_data, column, *columns, _before=None, _after=None):
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     return _data[rearranged]
 
-@register_verb(DataFrame, compile_attrs=False)
+@register_verb(DataFrame, compile_proxy='name')
 def pivot_longer(_data,
                  cols,
                  names_to="name",
@@ -114,7 +118,7 @@ def pivot_longer(_data,
 # TODO:
 
 # see: https://dplyr.tidyverse.org/reference/index.html
-@register_verb((DataFrame, DataFrameGroupBy), compile_attrs=False)
+@register_verb(DataFrame, compile_proxy='name')
 def arrange(_data, column, *columns, _by_group=False):
     columns = (column, ) + columns
     by = []
@@ -165,27 +169,37 @@ def arrange(_data, column, *columns, _by_group=False):
 
 # Subset columns using their names and types
 
-@register_verb((DataFrame, DataFrameGroupBy))
-def summarise(_data, **kwargs):
-    for key, val in kwargs.items():
-        if isinstance(val, (str, bytes)) or not isinstance(val, Iterable):
-            kwargs[key] = [val]
-    max_nrows = max(nrows_or_nelems(val) for val in kwargs.values())
-    for key, val in kwargs.items():
-        nrows = nrows_or_nelems(val)
-        if nrows < max_nrows and max_nrows % nrows == 0 and nrows != 1:
-            if isinstance(val, (list, tuple)):
-                kwargs[key] = val * (max_nrows // nrows)
-            else:
-                kwargs[key] = val.append([val] * (max_nrows // nrows - 1))
+@register_verb(DataFrame, compile_proxy=None)
+def summarise(_data, *, _groups=None, **kwargs):
+    """Summarise each group to fewer rows
 
-    ret = DataFrame(kwargs)
-    if not isinstance(ret.index, RangeIndex):
-        ret = ret.reset_index(level=0)
-    if hasattr(_data, '__plyrda_groupby_columns__'):
-        setattr(ret,
-                '__plyrda_groupby_columns__',
-                _data.__plyrda_groupby_columns__)
+    See: https://dplyr.tidyverse.org/reference/summarise.html
+    """
+
+    if not is_grouped(_data):
+        kwargs = {key: val.compile_to('data') for key, val in kwargs.items()}
+        kwargs = normalize_kw_series(kwargs)
+        return DataFrame(kwargs)
+
+    grouped = _data.groupby(by=_data.__plyrda_groups__)
+    kwargs = {key: val.set_data(grouped).compile_to('data')
+              for key, val in kwargs.items()}
+
+    ret = DataFrame(normalize_kw_series(kwargs)).reset_index(
+        level=_data.__plyrda_groups__
+    ).reset_index(drop=True)
+    if _groups is None:
+        if ret.shape[0] == 1:
+            _groups = 'drop_last'
+        elif isinstance(ret.index, MultiIndex):
+            _groups = 'drop_last'
+    if _groups == 'drop_last':
+        ret.__plyrda_groups__ = _data.__plyrda_groups__[:-1]
+    elif _groups == 'keep':
+        ret.__plyrda_groups__ = _data.__plyrda_groups__[:]
+    elif _groups == 'rowwise':
+        ret.__plyrda_groups__ = ['__rowwise__']
+
     return ret
 
 
@@ -218,34 +232,19 @@ summarize =summarise
 
 # Grouping
 
-@register_verb((DataFrame, DataFrameGroupBy), compile_attrs=False)
+@register_verb(DataFrame, compile_proxy='name')
 def group_by(_data, column, *columns, _add=False):
     columns = select_columns(_data.columns, column, *columns)
-    # I don't find a way to revert groupby in pandas, so just remember the
-    # original data
-    if isinstance(_data, DataFrame):
-        ret = _data.groupby(columns)
-        ret.__plyrda_groupby_origin__ = _data
-        ret.__plyrda_groupby_columns__ = columns
-        return ret
-
-    # DataFrameGroupBy
-    if not hasattr(_data, '__plyrda_groupby_origin__'):
-        raise PlyrdaGroupByException(
-            'Cannot group_by on a direct DataFrameGroupBy object.',
-            'Expected a DataFrame object or a DataFrameGroupBy generated '
-            'by plyrda.'
+    if _add and hasattr(_data, '__plyrda_groups__'):
+        setattr(
+            _data,
+            '__plyrda_groups__',
+            _data.__plyrda_groups__ +
+            [col for col in columns if col not in _data.__plyrda_groups__]
         )
-
-    if _add:
-        columns = _data.__plyrda_groupby_columns__ + [
-            column for column in columns
-            if column not in _data.__plyrda_groupby_columns__
-        ]
-    ret = _data.__plyrda_groupby_origin__.groupby(columns)
-    ret.__plyrda_groupby_origin__ = _data
-    ret.__plyrda_groupby_columns__ = columns
-    return ret
+    else:
+        setattr(_data, '__plyrda_groups__', columns)
+    return _data
 
 # ungroup()
 

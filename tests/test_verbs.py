@@ -119,7 +119,8 @@ class TestVerbs(unittest.TestCase):
         x = mtcars >> group_by(X.cyl) >> summarise(
             qs = quantile(X.disp, c(0.25, 0.75)), prob = c(0.25, 0.75)
         )
-        self.assertEqual(x.columns.to_list(), ['qs', 'prob'])
+
+        self.assertEqual(x.columns.to_list(), ['cyl', 'qs', 'prob'])
         self.assertEqual(x.prob.to_list(), [.25, .75] * 3)
 
     def test_arrange(self):
