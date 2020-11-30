@@ -7,8 +7,8 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-pipda = "^0.0.0"
-modkit = "^0.2.3"
+pipda = "*"
+modkit = "*"
 pandas = "^1.1.4"
 
 [tool.poetry.dev-dependencies]
