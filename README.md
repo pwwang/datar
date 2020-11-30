@@ -10,7 +10,8 @@ pip install -U plyrda
 
 ## Progress & docs
 
-See: https://dplyr.tidyverse.org/reference/index.html
+See: https://dplyr.tidyverse.org/reference/index.html and See: https://tidyr.tidyverse.org/reference/index.html
+
 ### dplyr - One table verbs
 - [x] [`arrange()`](https://pwwang.github.io/dplyrda/dplyr/arrange): Arrange rows by column values
 - [ ] [`count()`](https://pwwang.github.io/dplyrda/dplyr/count) [`tally()`](https://pwwang.github.io/dplyrda/dplyr/count) [`add_count()`](https://pwwang.github.io/dplyrda/dplyr/count) [`add_tally()`](https://pwwang.github.io/dplyrda/dplyr/count): Count observations by group
@@ -99,7 +100,6 @@ Superseded functions have been replaced by new approaches that we believe to be 
 
 
 ### tidyr - Pivoting
-See: https://tidyr.tidyverse.org/reference/index.html
 
 
 **Pivoting** changes the representation of a rectangular dataset, without changing the data inside of it.
@@ -159,3 +159,7 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 - [x] [`us_rent_income`](https://pwwang.github.io/dplyrda/tidyr/$1): US rent and income data
 - [x] [`who`](https://pwwang.github.io/dplyrda/tidyr/$1) [`population`](https://pwwang.github.io/dplyrda/tidyr/$1): World Health Organization TB data
 - [x] [`world_bank_pop`](https://pwwang.github.io/dplyrda/tidyr/$1): Population data from the world bank
+
+[1]: https://tidyr.tidyverse.org/index.html
+[2]: https://dplyr.tidyverse.org/index.html
+[3]: https://github.com/pwwang/pipda
