@@ -19,4 +19,7 @@ __all__ = all_datasets()
 
 @modkit.delegate
 def delegate(module, name):
+    # for mkapi to work
+    if name == '__wrapped__':
+        raise AttributeError
     return load_data(name)
