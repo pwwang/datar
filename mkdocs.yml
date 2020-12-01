@@ -1,9 +1,9 @@
 site_name: plyrda
 theme:
-    favicon: favicon.png
-    logo: favicon.png
-    palette:
-      primary: blue
+    # favicon: favicon.png
+    # logo: favicon.png
+    # palette:
+    #   primary: blue
     name: 'material'
     # font:
     #   text: 'Ubuntu'
