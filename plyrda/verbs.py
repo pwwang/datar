@@ -234,6 +234,7 @@ def mutate(_data, *acrosses, **kwargs):
 
     across.update(kwargs)
     kwargs = across
+
     for key, val in kwargs.items():
         if val is None:
             data.drop(columns=[key], inplace=True)

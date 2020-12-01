@@ -124,11 +124,12 @@ def normalize_series(series, data):
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
     if isinstance(series, (str, bytes)) or not isinstance(series, Iterable):
-        return [series]
+        series = [series]
     if series_expandable(series, data):
         return series_expand(series, data)
     len_series = nrows_or_nelems(series)
-    if len_series == 1 or len_series == data.shape[0]:
+
+    if len_series == data.shape[0]:
         return series
     if data.shape[0] % len_series == 0:
         nrepeat = data.shape[0] // len_series
