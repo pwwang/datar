@@ -1,4 +1,3 @@
-import warnings
 from typing import Iterable
 from collections import OrderedDict
 
@@ -14,7 +13,8 @@ from .exceptions import PlyrdaColumnNameInvalidException, PlyrdaGroupByException
 from .common import UnaryNeg, Collection
 from .utils import (
     expand_collections, is_neg, check_column, select_columns, nrows_or_nelems,
-    normalize_kw_series, is_grouped
+    normalize_series, is_grouped,
+    df_setattr, list_diff
 )
 
 from varname import debug
@@ -33,27 +33,6 @@ def select(_data, column, *columns):
     return _data[selected]
 
 @register_verb(DataFrame, context='name')
-def relocate(_data, column, *columns, _before=None, _after=None):
-    all_columns = _data.columns.to_list()
-    columns = select_columns(all_columns, column, *columns)
-    rest_columns = [column for column in all_columns if column not in columns]
-    if _before and _after:
-        raise PlyrdaColumnNameInvalidException(
-            'Only one of _before and _after can be specified.'
-        )
-    if not _before and not _after:
-        rearranged = columns + rest_columns
-    elif _before:
-        before_columns = select_columns(all_columns, *_before)
-        cutpoint = min(rest_columns.index(bcol) for bcol in before_columns)
-        rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
-    else: #_after
-        after_columns = select_columns(all_columns, *_after)
-        cutpoint = max(rest_columns.index(bcol) for bcol in after_columns) + 1
-        rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
-    return _data[rearranged]
-
-@register_verb(DataFrame, context='name')
 def pivot_longer(_data,
                  cols,
                  names_to="name",
@@ -68,7 +47,7 @@ def pivot_longer(_data,
                  values_ptypes=None,
                  values_transform=None):
     columns = select_columns(_data.columns, cols)
-    id_columns = [column for column in _data.columns if column not in columns]
+    id_columns = list_diff(_data.columns, columns)
     var_name = '__tmp_names_to__' if names_pattern or names_sep else names_to
     ret = _data.melt(
         id_vars=id_columns,
@@ -86,8 +65,7 @@ def pivot_longer(_data,
 
     if '.value' in names_to:
         ret2 = ret.pivot(columns='.value', values=values_to)
-        rest_columns = [column for column in ret.columns
-                        if column not in ('.value', values_to)]
+        rest_columns = list_diff(ret.columns, ['.value', values_to])
         ret2.loc[:, rest_columns] = ret.loc[:, rest_columns]
 
         ret2_1 = ret2.iloc[:(ret2.shape[0] // 2), ]
@@ -139,9 +117,7 @@ def arrange(_data, column, *columns, _by_group=False):
             ascending.extend([True] * len(cols))
 
     if _by_group and is_grouped(_data):
-        by = _data.__plyrda_groups__ + [
-            col for col in by if col not in _data.__plyrda_groups__
-        ]
+        by = _data.__plyrda_groups__ + list_diff(by, _data.__plyrda_groups__)
         ascending = [True] * len(_data.__plyrda_groups__) + ascending
     return _data.sort_values(by, ascending=ascending)
 
@@ -159,9 +135,7 @@ def count(_data, *columns, **mutates):
     wt = wt.compile_to('name') if isinstance(wt, VerbArg) else wt
     sort_n = mutates.pop('sort', False)
     name = mutates.pop('name', 'n')
-    mutates = {key: (val.compile_to('data') if isinstance(val, VerbArg)
-                     else val) for key, val in mutates.items()}
-    data = mutate.pipda(_data, **normalize_kw_series(mutates, _data))
+    data = mutate.pipda(_data, **mutates)
     columns = columns + list(mutates)
     grouped = data.groupby(columns, dropna=False)
     if not wt:
@@ -211,23 +185,18 @@ def distinct(_data, *columns, **mutates):
                else column
                for column in columns]
     columns = select_columns(_data.columns, *columns)
-    mutates = {key: (val.compile_to('data') if isinstance(val, VerbArg)
-                     else val) for key, val in mutates.items()}
-    data = mutate.pipda(_data, **normalize_kw_series(mutates, _data))
+    data = mutate.pipda(_data, **mutates)
     columns = columns + list(mutates)
 
     if not columns:
         columns = data.columns
 
     if is_grouped(_data):
-        columns = _data.__plyrda_groups__ + [
-            col for col in columns if col not in _data.__plyrda_groups__
-        ]
+        columns = _data.__plyrda_groups__ + list_diff(columns,
+                                                      _data.__plyrda_groups__)
     uniq_frame = data.drop_duplicates(columns, ignore_index=True)
     if is_grouped(_data):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            uniq_frame.__plyrda_groups__ = _data.__plyrda_groups__
+        df_setattr(uniq_frame, '__plyrda_groups__', _data.__plyrda_groups__)
     return uniq_frame if keep_all else uniq_frame[columns]
 
 @register_verb(DataFrame)
@@ -237,18 +206,68 @@ def filter(_data, condition, *conditions, _preserve=False):
         condition = condition & cond
     return _data[condition]
 
-@register_verb(DataFrame)
-def mutate(_data, **kwargs):
+@register_verb(DataFrame, context=None)
+def mutate(_data, *acrosses, **kwargs):
     keep = kwargs.pop('_keep', 'all')
     before = kwargs.pop('_before', None)
     after = kwargs.pop('_after', None)
-    kwargs = normalize_kw_series(kwargs, _data)
+    if isinstance(before, VerbArg):
+        before = before.compile_to('name')
+    if isinstance(after, VerbArg):
+        after = after.compile_to('name')
+
     data = _data.copy()
+    if is_grouped(_data): # need it to calculate the values
+        df_setattr(data, '__plyrda_groups__', _data.__plyrda_groups__)
+    across = OrderedDict()
+
+    used_cols = []
+    def compile_to(df, name):
+        used_cols.append(name)
+        return df[name]
+
+    for acrs in acrosses:
+        acrs = (acrs.set_data(data).compile_to(compile_to)
+               if isinstance(acrs, VerbArg)
+               else acrs)
+        across.update(acrs)
+
+    across.update(kwargs)
+    kwargs = across
     for key, val in kwargs.items():
+        if val is None:
+            data.drop(columns=[key], inplace=True)
+            continue
+        val = (val.set_data(data).compile_to(compile_to)
+               if isinstance(val, VerbArg)
+               else val)
+        val = normalize_series(val, data)
         data[key] = val
+
+    outcols = list(kwargs)
+    # do the relocate first
+    if before is not None or after is not None:
+        data = relocate.pipda(data, *outcols, _before=before, _after=after)
+
+    # do the keep
+    if keep == 'used':
+        data = data[used_cols + list_diff(outcols, used_cols)]
+    elif keep == 'unused':
+        unused_cols = list_diff(data.columns, used_cols)
+        data = data[list_diff(unused_cols, outcols) + outcols]
+    elif keep == 'none':
+        groups = getattr(_data, '__plyrda_groups__', [])
+        data = data[list_diff(groups, outcols) + outcols]
+
+    if is_grouped(_data):
+        df_setattr(data, '__plyrda_groups__', _data.__plyrda_groups__)
+
     return data
 
-# transmute()
+@register_verb(DataFrame, context=None)
+def transmutate(_data, *acrosses, **kwargs):
+    kwargs['_keep'] = 'none'
+    return mutate.pipda(_data, *acrosses, **kwargs)
 
 # Create, modify, and delete columns
 
@@ -256,9 +275,26 @@ def mutate(_data, **kwargs):
 
 # Extract a single column
 
-# relocate()
-
-# Change column order
+@register_verb(DataFrame, context='name')
+def relocate(_data, column, *columns, _before=None, _after=None):
+    all_columns = _data.columns.to_list()
+    columns = select_columns(all_columns, column, *columns)
+    rest_columns = list_diff(all_columns, columns)
+    if _before is not None and _after is not None:
+        raise PlyrdaColumnNameInvalidException(
+            'Only one of _before and _after can be specified.'
+        )
+    if _before is None and _after is None:
+        rearranged = columns + rest_columns
+    elif _before is not None:
+        before_columns = select_columns(all_columns, _before)
+        cutpoint = min(rest_columns.index(bcol) for bcol in before_columns)
+        rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
+    else: #_after
+        after_columns = select_columns(all_columns, _after)
+        cutpoint = max(rest_columns.index(bcol) for bcol in after_columns) + 1
+        rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
+    return _data[rearranged]
 
 # rename() rename_with()
 
@@ -269,34 +305,40 @@ def mutate(_data, **kwargs):
 # Subset columns using their names and types
 
 @register_verb(DataFrame, context=None)
-def summarise(_data, *crosses, _groups=None, **kwargs):
+def summarise(_data, *acrosses, _groups=None, **kwargs):
     """Summarise each group to fewer rows
 
     See: https://dplyr.tidyverse.org/reference/summarise.html
     """
-    cross = OrderedDict()
-    for crs in crosses:
-        cross.update(crs)
+    across = OrderedDict()
+    for acrs in acrosses:
+        across.update(acrs)
 
-    cross.update(kwargs)
-    kwargs = cross
+    across.update(kwargs)
+    kwargs = across
 
     if not is_grouped(_data):
-        kwargs = {key: (val.compile_to('data')
-                        if isinstance(val, VerbArg)
-                        else val)
-                  for key, val in kwargs.items()}
-        kwargs = normalize_kw_series(kwargs, _data)
-        return DataFrame(kwargs)
+        ret = DataFrame({'__plyrda__': [0]})
+        for key, val in kwargs.items():
+            ret[key] = normalize_series(val.compile_to('data')
+                                        if isinstance(val, VerbArg)
+                                        else val, ret)
+
+        return ret.drop(columns=['__plyrda__'])
 
     grouped = _data.groupby(by=_data.__plyrda_groups__)
-    kwargs = {key: (val.set_data(grouped).compile_to('data')
-                    if isinstance(val, VerbArg)
-                    else val)
-              for key, val in kwargs.items()}
+    ret = grouped.size().to_frame('__plyrda__')
+    for key, val in kwargs.items():
+        val = val.compile_to('data') if isinstance(val, VerbArg) else val
+        if isinstance(val, Series) and val.index.name == ret.index.name:
+            # in case val has more rows than ret, ie. quantile
+            # we expand ret
+            ret =  ret.loc[val.index, :]
+            ret[key] = val
+        else:
+            ret[key] = normalize_series(val, ret)
 
-    ret = DataFrame(normalize_kw_series(kwargs))
-    ret = ret.reset_index(
+    ret = ret.drop(columns=['__plyrda__']).reset_index(
         level=_data.__plyrda_groups__
     ).reset_index(drop=True)
     if _groups is None:
@@ -304,12 +346,13 @@ def summarise(_data, *crosses, _groups=None, **kwargs):
             _groups = 'drop_last'
         elif isinstance(ret.index, MultiIndex):
             _groups = 'drop_last'
+
     if _groups == 'drop_last':
-        ret.__plyrda_groups__ = _data.__plyrda_groups__[:-1]
+        df_setattr(ret, '__plyrda_groups__', _data.__plyrda_groups__[:-1])
     elif _groups == 'keep':
-        ret.__plyrda_groups__ = _data.__plyrda_groups__[:]
-    elif _groups == 'rowwise':
-        ret.__plyrda_groups__ = ['__rowwise__']
+        df_setattr(ret, '__plyrda_groups__', _data.__plyrda_groups__[:])
+    elif _groups == 'rowwise': # todo: check
+        df_setattr(ret, '__plyrda_rowwise__', True)
 
     return ret
 
@@ -351,14 +394,11 @@ def group_by(_data, column, *columns, _add=False):
             _data,
             '__plyrda_groups__',
             _data.__plyrda_groups__ +
-            [col for col in columns if col not in _data.__plyrda_groups__]
+            list_diff(columns, _data.__plyrda_groups__)
         )
     else:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            # This is intended
-            setattr(_data, '__plyrda_groups__', columns)
-
+        df_setattr(_data, '__plyrda_groups__', columns)
+    # consider to carry the groupby object?
     return _data
 
 # ungroup()

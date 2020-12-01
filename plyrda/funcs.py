@@ -7,8 +7,10 @@ from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.groupby.generic import SeriesGroupBy
 
 from pipda import register_func
-from .common import Collection, UnaryNeg
-from .utils import is_grouped, select_columns, filter_columns
+from .common import Collection, UnaryNeg, UnaryInvert
+from .utils import (
+    is_grouped, select_columns, filter_columns, func_name, get_series
+)
 
 @register_func
 def c(_data, _context, *args):
@@ -121,26 +123,42 @@ def seq(_data, _context, from_=None, to=None, by=None, length_out=None, along_wi
 
 @register_func
 def n(_data, _context):
+    if is_grouped(_data):
+        return _data.groupby(_data.__plyrda_groups__).size()
     if isinstance(_data, DataFrame):
         return _data.shape[0]
     return _data.size()
 
 @register_func
 def mean(_data, _context, series, na_rm=True):
-    print(_data)
     raise NotImplementedError
 
 @mean.register(DataFrame)
 @mean.register(DataFrameGroupBy)
 def _(_data, _context, series, na_rm=True):
-    if is_grouped(_data):
-        _data = _data.groupby(_data.__plyrda_groups__)
-    if _context == 'name':
-        series = _data[series]
-    elif isinstance(series, SeriesGroupBy):
-        series = _data[series.var().name]
+    series = get_series(_data, _context, series)
     # SeriesGroupBy.mean doesn't have skipna argument
-    return series.mean() #(skipna=na_rm)
+    # Involve dropna() in getting series?
+    return series.mean()
+
+@register_func
+def min_rank(_data, _context, series, na_last=True):
+    raise NotImplementedError
+
+@min_rank.register(DataFrame)
+@min_rank.register(DataFrameGroupBy)
+def _(_data, _context, series, na_last=True):
+    if isinstance(series, UnaryNeg):
+        ascending = False
+        series = series.operand
+    else:
+        ascending = True
+    series = get_series(_data, _context, series)
+    return series.rank(method='min',
+                       ascending=ascending,
+                       na_option=('keep' if na_last == 'keep'
+                                  else 'top' if not na_last
+                                  else 'bottom'))
 
 @register_func
 def quantile(_data, series, prob=0.5):
@@ -149,13 +167,10 @@ def quantile(_data, series, prob=0.5):
 @quantile.register(DataFrame)
 @quantile.register(DataFrameGroupBy)
 def _(_data, _context, series, prob=0.5):
-    if is_grouped(_data):
-        _data = _data.groupby(_data.__plyrda_groups__)
-    if _context == 'name':
-        series = _data[series]
-    elif isinstance(series, SeriesGroupBy):
-        series = _data[series.var().name]
-    return series.quantile(q=prob)
+    series = get_series(_data, _context, series)
+    # drop the quantile index
+    ret = series.quantile(q=prob).reset_index(level=1, drop=True)
+    return ret
 
 @register_func
 def desc(_data, _context, col):
@@ -169,12 +184,15 @@ def group_vars(_data, _context):
 def across(_data, _context, _cols=None, _fns=None, *args, **kwargs):
     names = kwargs.pop('_names', None)
     cols = _cols or everything.pipda(_data, _context)
+    if not isinstance(cols, (list, tuple)):
+        cols = [cols]
+    cols = select_columns(_data.columns, *cols)
     fns = OrderedDict()
     if callable(_fns):
-        fns[_fns.__name__] = {'fn': _fns, 'index': 1}
+        fns[func_name(_fns)] = {'fn': _fns, 'index': 1}
     elif isinstance(_fns, (list, tuple)):
         for i, fn in enumerate(_fns):
-            fns[fn.__name__] = {'fn': fn, 'index': i+1}
+            fns[func_name(fn)] = {'fn': fn, 'index': i+1}
     elif isinstance(_fns, dict):
         i = 0
         for key, value in _fns.items():
@@ -193,14 +211,16 @@ def across(_data, _context, _cols=None, _fns=None, *args, **kwargs):
         for fn_name, fn_index in fns.items():
             fn = fn_index['fn']
             index = fn_index['index']
-            name = names.format(**{
-                '.col': column,
-                '_col': column,
-                '.fn': index,
-                '_fn': index,
-                '.fn0': index - 1,
-                '_fn0': index - 1
-            }) if names else f'column_{fn_name}'
+            name = (names.format(**{
+                        '.col': column,
+                        '_col': column,
+                        '.fn': index,
+                        '_fn': index,
+                        '.fn0': index - 1,
+                        '_fn0': index - 1
+                    }) if names
+                    else column if not fn_name.endswith('_plyrda_ignore')
+                    else f'{column}_{fn_name}' )
             ret[name] = fn.pipda(_data, _context, column, *args, **kwargs)
 
     return ret
@@ -217,3 +237,10 @@ def abs(_data, _context, column):
         return _data[column].abs()
     return column.abs()
 
+@register_func
+def as_factor(_data, _context, column):
+    if _context == 'name' or isinstance(column, str):
+        return _data[column].astype('category')
+    return column.astype('category')
+
+as_factor.pipda.name = 'as_factor_plyrda_ignore'

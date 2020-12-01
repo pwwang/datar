@@ -1,7 +1,9 @@
 
 from typing import Iterable
+import warnings
 from numpy.core.numeric import NaN
 from pandas.core.frame import DataFrame
+from pandas.core.groupby.generic import SeriesGroupBy
 
 from pandas.core.series import Series
 from .exceptions import PlyrdaColumnNameInvalidException
@@ -43,8 +45,12 @@ def select_columns(all_columns, *columns, raise_nonexist=True):
             selected.append(column)
         elif isinstance(column, (list, tuple)): # ['x', 'y']
             selected.extend(column)
+        elif isinstance(column, Series):
+            selected.append(column.name)
         elif isinstance(column.operand, (list, tuple)): # -starts_with('c')
             selected.extend(column.operand)
+        elif isinstance(column.operand, Series):
+            selected.append(column.operand.name)
         else: # -X.cut
             selected.append(column.operand)
 
@@ -56,8 +62,7 @@ def select_columns(all_columns, *columns, raise_nonexist=True):
                 )
 
     if has_negs:
-        selected = [colname for colname in all_columns
-                    if colname not in selected]
+        selected = list_diff(all_columns, selected)
     return selected
 
 def filter_columns(all_columns, match, ignore_case, func):
@@ -115,28 +120,49 @@ def series_expand(series, df):
     holder.index = df[series.index.name]
     return holder['x']
 
-def normalize_kw_series(kwargs, data=None):
-    if not kwargs:
-        return {}
-    for key, val in kwargs.items():
-        if isinstance(val, (str, bytes)) or not isinstance(val, Iterable):
-            kwargs[key] = [val]
-    max_nrows = data.shape[0] if data is not None else max(
-        nrows_or_nelems(val) for val in kwargs.values()
-    )
-    for key, val in kwargs.items():
-        # expand aggregated values to original dimensions
-        if series_expandable(data, val):
-            kwargs[key] = series_expand(val, data)
-            continue
-
-        nrows = nrows_or_nelems(val)
-        if nrows < max_nrows and max_nrows % nrows == 0 and nrows != 1:
-            if isinstance(val, (list, tuple)):
-                kwargs[key] = val * (max_nrows // nrows)
-            else:
-                kwargs[key] = val.append([val] * (max_nrows // nrows - 1))
-    return kwargs
+def normalize_series(series, data):
+    """Normalize possible series data to add to the data or compare with
+    other series of the data"""
+    if isinstance(series, (str, bytes)) or not isinstance(series, Iterable):
+        return [series]
+    if series_expandable(series, data):
+        return series_expand(series, data)
+    len_series = nrows_or_nelems(series)
+    if len_series == 1 or len_series == data.shape[0]:
+        return series
+    if data.shape[0] % len_series == 0:
+        nrepeat = data.shape[0] // len_series
+        if isinstance(series, (list, tuple)):
+            return series * nrepeat
+        return series.append([series] * (nrepeat - 1))
+    return series
 
 def is_grouped(df):
     return hasattr(df, '__plyrda_groups__') and df.__plyrda_groups__
+
+def df_setattr(df, name, value):
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        setattr(df, name, value)
+
+def func_name(func):
+    try:
+        return func.name
+    except AttributeError:
+        return func.__name__
+
+def get_series(df, context, column):
+    grouped = is_grouped(df)
+    if grouped:
+        df = df.groupby(df.__plyrda_groups__)
+    if context == 'name' or isinstance(column, str):
+        return df[column]
+    if isinstance(column, SeriesGroupBy):
+        # df could be changed, so have to retrieve again
+        return df[column.var().name]
+    if isinstance(column, Series) and grouped:
+        return df[column.name]
+    return column
+
+def list_diff(list1, list2):
+    return [elem for elem in list1 if elem not in list2]

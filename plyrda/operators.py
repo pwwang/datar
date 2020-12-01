@@ -8,21 +8,108 @@ class PlyrdaOperators(Operators):
     def neg(self):
         return UnaryNeg(self.operand)
 
-    def _expand_series(self, other):
+    def _expand_series(self, other, drop_index='other'):
         if (not series_expandable(self.data, other) and
                 not series_expandable(self.data, self.operand)):
-            return self.operand, other
-
-        operand = self.operand
-        if isinstance(operand, Series):
-            operand = series_expand(operand, self.data)
+            operand =  self.operand
         else:
-            other = series_expand(other, self.data)
+            operand = self.operand
+            if isinstance(operand, Series) and isinstance(other, Series):
+                # X.mass / mean(X.mass)
+                operand = (series_expand(operand, self.data)
+                        if operand.shape[0] < other.shape[0]
+                        else operand)
+                other = (series_expand(other, self.data)
+                        if operand.shape[0] > other.shape[0]
+                        else other)
+            elif isinstance(operand, Series):
+                operand = series_expand(operand, self.data)
+            else:
+                other = series_expand(other, self.data)
+        if drop_index == 'other':
+            try:
+                other = other.reset_index(drop=True)
+            except AttributeError:
+                pass
+        if drop_index == 'both':
+            try:
+                other = other.reset_index(drop=True)
+            except AttributeError:
+                pass
+            try:
+                operand = operand.reset_index(drop=True)
+            except AttributeError:
+                pass
         return operand, other
+
+    def add_default(self, other):
+        """Default behavior for X + Y"""
+        operand, other = self._expand_series(other)
+        return operand + other
+
+    def sub_default(self, other):
+        """Default behavior for X - Y"""
+        operand, other = self._expand_series(other)
+        return operand - other
+
+    def mul_default(self, other):
+        """Default behavior for X * Y"""
+        operand, other = self._expand_series(other)
+        return operand * other
+
+    def matmul_default(self, other):
+        """Default behavior for X @ Y"""
+        operand, other = self._expand_series(other)
+        return operand @ other
+
+    def truediv_default(self, other):
+        """Default behavior for X / Y"""
+        operand, other = self._expand_series(other)
+        return operand / other
+
+    def floordiv_default(self, other):
+        """Default behavior for X // Y"""
+        operand, other = self._expand_series(other)
+        return operand // other
+
+    def mod_default(self, other):
+        """Default behavior for X % Y"""
+        operand, other = self._expand_series(other)
+        return operand % other
+
+    def lshift_default(self, other):
+        """Default behavior for X << Y"""
+        operand, other = self._expand_series(other)
+        return operand << other
+
+    def rshift_default(self, other):
+        """Default behavior for X >> Y"""
+        operand, other = self._expand_series(other)
+        return operand >> other
+
+    def and_default(self, other):
+        """Default behavior for X & Y"""
+        operand, other = self._expand_series(other)
+        return operand & other
+
+    def xor_default(self, other):
+        """Default behavior for X ^ Y"""
+        operand, other = self._expand_series(other)
+        return operand ^ other
+
+    def or_default(self, other):
+        """Default behavior for X | Y"""
+        operand, other = self._expand_series(other)
+        return operand | other
+
+    def pow_default(self, other):
+        """Default behavior for X ** Y"""
+        operand, other = self._expand_series(other)
+        return operand ** other
 
     def lt_default(self, other):
         """Default behavior for X < Y"""
-        operand, other = self._expand_series(other)
+        operand, other = self._expand_series(other, 'both')
         return operand < other
 
     def le_default(self, other):
