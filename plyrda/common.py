@@ -9,6 +9,9 @@ class UnaryOp(ABC):
     def __init__(self, operand):
         self.operand = operand
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__}: {self.operand}>'
+
 class UnaryNeg(UnaryOp):
     ...
 

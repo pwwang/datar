@@ -1,5 +1,9 @@
 
 from typing import Iterable
+from numpy.core.numeric import NaN
+from pandas.core.frame import DataFrame
+
+from pandas.core.series import Series
 from .exceptions import PlyrdaColumnNameInvalidException
 
 def is_neg(val):
@@ -47,7 +51,9 @@ def select_columns(all_columns, *columns, raise_nonexist=True):
     if raise_nonexist:
         for sel in selected:
             if sel not in all_columns:
-                raise PlyrdaColumnNameInvalidException("Column `{sel}` doesn't exist.")
+                raise PlyrdaColumnNameInvalidException(
+                    f"Column `{sel}` doesn't exist."
+                )
 
     if has_negs:
         selected = [colname for colname in all_columns
@@ -88,14 +94,42 @@ def nrows_or_nelems(obj):
     except AttributeError:
         return len(obj)
 
-def normalize_kw_series(kwargs, max_nrows=None):
+def series_expandable(df_or_series, series_or_df):
+    if (not isinstance(df_or_series, (Series, DataFrame)) or
+            not isinstance(series_or_df, (Series, DataFrame))):
+        return False
+    if type(df_or_series) is type(series_or_df):
+        return False
 
+    series = df_or_series if isinstance(df_or_series, Series) else series_or_df
+    df = df_or_series if isinstance(df_or_series, DataFrame) else series_or_df
+    if series.index.name not in df.columns:
+        return False
+    return True
+
+def series_expand(series, df):
+    holder = DataFrame({'x': [NaN] * df.shape[0]})
+    holder.loc[df[series.index.name].notna().values, 'x'] = series[
+        df[series.index.name].dropna()
+    ].values
+    holder.index = df[series.index.name]
+    return holder['x']
+
+def normalize_kw_series(kwargs, data=None):
+    if not kwargs:
+        return {}
     for key, val in kwargs.items():
         if isinstance(val, (str, bytes)) or not isinstance(val, Iterable):
             kwargs[key] = [val]
-    max_nrows = max_nrows or max(nrows_or_nelems(val)
-                                 for val in kwargs.values())
+    max_nrows = data.shape[0] if data is not None else max(
+        nrows_or_nelems(val) for val in kwargs.values()
+    )
     for key, val in kwargs.items():
+        # expand aggregated values to original dimensions
+        if series_expandable(data, val):
+            kwargs[key] = series_expand(val, data)
+            continue
+
         nrows = nrows_or_nelems(val)
         if nrows < max_nrows and max_nrows % nrows == 0 and nrows != 1:
             if isinstance(val, (list, tuple)):

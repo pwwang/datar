@@ -14,9 +14,9 @@ See: https://dplyr.tidyverse.org/reference/index.html and https://tidyr.tidyvers
 
 ### dplyr - One table verbs
 - [x] [`arrange()`](https://pwwang.github.io/plyrda/reference/arrange): Arrange rows by column values
-- [ ] [`count()`](https://pwwang.github.io/plyrda/reference/count) [`tally()`](https://pwwang.github.io/plyrda/reference/count) [`add_count()`](https://pwwang.github.io/plyrda/reference/count) [`add_tally()`](https://pwwang.github.io/plyrda/reference/count): Count observations by group
-- [ ] [`distinct()`](https://pwwang.github.io/plyrda/reference/distinct): Subset distinct/unique rows
-- [ ] [`filter()`](https://pwwang.github.io/plyrda/reference/filter): Subset rows using column values
+- [x] [`count()`](https://pwwang.github.io/plyrda/reference/count) [`tally()`](https://pwwang.github.io/plyrda/reference/count) [`add_count()`](https://pwwang.github.io/plyrda/reference/count) [`add_tally()`](https://pwwang.github.io/plyrda/reference/count): Count observations by group
+- [x] [`distinct()`](https://pwwang.github.io/plyrda/reference/distinct): Subset distinct/unique rows
+- [x] [`filter()`](https://pwwang.github.io/plyrda/reference/filter): Subset rows using column values
 - [x] [`mutate()`](https://pwwang.github.io/plyrda/reference/mutate) [`transmute()`](https://pwwang.github.io/plyrda/reference/mutate): Create, modify, and delete columns
 - [ ] [`pull()`](https://pwwang.github.io/plyrda/reference/pull): Extract a single column
 - [x] [`relocate()`](https://pwwang.github.io/plyrda/reference/relocate): Change column order

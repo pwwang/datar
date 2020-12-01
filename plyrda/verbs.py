@@ -1,15 +1,20 @@
+import warnings
 from typing import Iterable
+from collections import OrderedDict
+
+import pandas
 from numpy.lib.arraysetops import isin
 from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.indexes.range import RangeIndex
 from pandas.core.indexes.multi import MultiIndex
 from pipda import register_verb
+from pipda.verb import VerbArg
 from .exceptions import PlyrdaColumnNameInvalidException, PlyrdaGroupByException
 from .common import UnaryNeg, Collection
 from .utils import (
-    is_neg, check_column, select_columns, nrows_or_nelems, normalize_kw_series,
-    is_grouped
+    expand_collections, is_neg, check_column, select_columns, nrows_or_nelems,
+    normalize_kw_series, is_grouped
 )
 
 from varname import debug
@@ -22,12 +27,12 @@ def head(_data, n=5):
 def tail(_data, n=5):
     return _data.tail(n)
 
-@register_verb(DataFrame, compile_proxy='name')
+@register_verb(DataFrame, context='name')
 def select(_data, column, *columns):
     selected = select_columns(_data.columns, column, *columns)
     return _data[selected]
 
-@register_verb(DataFrame, compile_proxy='name')
+@register_verb(DataFrame, context='name')
 def relocate(_data, column, *columns, _before=None, _after=None):
     all_columns = _data.columns.to_list()
     columns = select_columns(all_columns, column, *columns)
@@ -48,7 +53,7 @@ def relocate(_data, column, *columns, _before=None, _after=None):
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     return _data[rearranged]
 
-@register_verb(DataFrame, compile_proxy='name')
+@register_verb(DataFrame, context='name')
 def pivot_longer(_data,
                  cols,
                  names_to="name",
@@ -118,38 +123,132 @@ def pivot_longer(_data,
 # TODO:
 
 # see: https://dplyr.tidyverse.org/reference/index.html
-@register_verb(DataFrame, compile_proxy='name')
+@register_verb(DataFrame, context='name')
 def arrange(_data, column, *columns, _by_group=False):
     columns = (column, ) + columns
     by = []
     ascending = []
-    for column in columns:
+    for column in expand_collections(columns):
         if isinstance(column, UnaryNeg):
-            by.append(column.operand)
-            ascending.append(False)
+            cols = select_columns(_data.columns, column.operand)
+            by.extend(cols)
+            ascending.extend([False] * len(cols))
         else:
-            by.append(column)
-            ascending.append(True)
-    by = select_columns(_data.columns, *by)
-    if _by_group and hasattr(_data, '__plyrda_groupby_columns__'):
-        by = _data.__plyrda_groupby_columns__ + by
-        ascending = [True] * len(_data.__plyrda_groupby_columns__) + ascending
-    return _data.sort_values(by, ascending=ascending, ignore_index=True)
+            cols = select_columns(_data.columns, column)
+            by.extend(cols)
+            ascending.extend([True] * len(cols))
 
+    if _by_group and is_grouped(_data):
+        by = _data.__plyrda_groups__ + [
+            col for col in by if col not in _data.__plyrda_groups__
+        ]
+        ascending = [True] * len(_data.__plyrda_groups__) + ascending
+    return _data.sort_values(by, ascending=ascending)
 
-# count() tally() add_count() add_tally()
+@register_verb(DataFrame, context=None)
+def count(_data, *columns, **mutates):
+    """Count observations by group
 
-# Count observations by group
+    See: https://dplyr.tidyverse.org/reference/count.html
+    """
+    columns = [column.compile_to('name') if isinstance(column, VerbArg)
+               else column
+               for column in columns]
+    columns = select_columns(_data.columns, *columns)
+    wt = mutates.pop('wt', None)
+    wt = wt.compile_to('name') if isinstance(wt, VerbArg) else wt
+    sort_n = mutates.pop('sort', False)
+    name = mutates.pop('name', 'n')
+    mutates = {key: (val.compile_to('data') if isinstance(val, VerbArg)
+                     else val) for key, val in mutates.items()}
+    data = mutate.pipda(_data, **normalize_kw_series(mutates, _data))
+    columns = columns + list(mutates)
+    grouped = data.groupby(columns, dropna=False)
+    if not wt:
+        count_frame = grouped[columns].size().to_frame()
+    else:
+        count_frame = grouped[wt].sum().to_frame()
+    count_frame.columns = [name]
+    ret = count_frame.reset_index(level=columns)
+    if sort_n:
+        ret = ret.sort_values([name], ascending=[False])
+    return ret
 
-# distinct()
+@register_verb(DataFrame, context='name')
+def tally(_data, wt=None, sort=False, name='n'):
+    if not is_grouped(_data):
+        return DataFrame({
+            name: [_data.shape[0] if wt is None else _data[wt].sum()]
+        })
 
-# Subset distinct/unique rows
+    return count.pipda(_data, *_data.__plyrda_groups__,
+                       wt=wt, sort=sort, name=name)
 
-# filter()
+@register_verb(DataFrame, context=None)
+def add_count(_data, *columns, **mutates):
+    sort_n = mutates.pop('sort', False)
+    count_frame = count.pipda(_data, *columns, **mutates)
+    ret = _data.merge(count_frame, on=count_frame.columns.to_list()[:-1])
+    if not sort_n:
+        return ret
+    return ret.sort_values(count_frame.columns.to_list()[-1],
+                           ascending=[False])
 
-# Subset rows using column values
+@register_verb(DataFrame, context='name')
+def add_tally(_data, wt=None, sort=False, name='n'):
+    tally_frame = tally.pipda(_data, wt=wt, sort=False, name=name)
+    if not is_grouped(_data):
+        return _data.assign(**{name: tally_frame.iloc[0, 0]})
+    ret = _data.merge(tally_frame, on=tally_frame.columns.to_list()[:-1])
+    if not sort:
+        return ret
+    return ret.sort_values(tally_frame.columns.to_list()[-1], ascending=[False])
 
-# mutate() transmute()
+@register_verb(DataFrame, context=None)
+def distinct(_data, *columns, **mutates):
+    keep_all = mutates.pop('_keep_all', False)
+    columns = [column.compile_to('name') if isinstance(column, VerbArg)
+               else column
+               for column in columns]
+    columns = select_columns(_data.columns, *columns)
+    mutates = {key: (val.compile_to('data') if isinstance(val, VerbArg)
+                     else val) for key, val in mutates.items()}
+    data = mutate.pipda(_data, **normalize_kw_series(mutates, _data))
+    columns = columns + list(mutates)
+
+    if not columns:
+        columns = data.columns
+
+    if is_grouped(_data):
+        columns = _data.__plyrda_groups__ + [
+            col for col in columns if col not in _data.__plyrda_groups__
+        ]
+    uniq_frame = data.drop_duplicates(columns, ignore_index=True)
+    if is_grouped(_data):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            uniq_frame.__plyrda_groups__ = _data.__plyrda_groups__
+    return uniq_frame if keep_all else uniq_frame[columns]
+
+@register_verb(DataFrame)
+def filter(_data, condition, *conditions, _preserve=False):
+    # check condition, conditions
+    for cond in conditions:
+        condition = condition & cond
+    return _data[condition]
+
+@register_verb(DataFrame)
+def mutate(_data, **kwargs):
+    keep = kwargs.pop('_keep', 'all')
+    before = kwargs.pop('_before', None)
+    after = kwargs.pop('_after', None)
+    kwargs = normalize_kw_series(kwargs, _data)
+    data = _data.copy()
+    for key, val in kwargs.items():
+        data[key] = val
+    return data
+
+# transmute()
 
 # Create, modify, and delete columns
 
@@ -169,23 +268,35 @@ def arrange(_data, column, *columns, _by_group=False):
 
 # Subset columns using their names and types
 
-@register_verb(DataFrame, compile_proxy=None)
-def summarise(_data, *, _groups=None, **kwargs):
+@register_verb(DataFrame, context=None)
+def summarise(_data, *crosses, _groups=None, **kwargs):
     """Summarise each group to fewer rows
 
     See: https://dplyr.tidyverse.org/reference/summarise.html
     """
+    cross = OrderedDict()
+    for crs in crosses:
+        cross.update(crs)
+
+    cross.update(kwargs)
+    kwargs = cross
 
     if not is_grouped(_data):
-        kwargs = {key: val.compile_to('data') for key, val in kwargs.items()}
-        kwargs = normalize_kw_series(kwargs)
+        kwargs = {key: (val.compile_to('data')
+                        if isinstance(val, VerbArg)
+                        else val)
+                  for key, val in kwargs.items()}
+        kwargs = normalize_kw_series(kwargs, _data)
         return DataFrame(kwargs)
 
     grouped = _data.groupby(by=_data.__plyrda_groups__)
-    kwargs = {key: val.set_data(grouped).compile_to('data')
+    kwargs = {key: (val.set_data(grouped).compile_to('data')
+                    if isinstance(val, VerbArg)
+                    else val)
               for key, val in kwargs.items()}
 
-    ret = DataFrame(normalize_kw_series(kwargs)).reset_index(
+    ret = DataFrame(normalize_kw_series(kwargs))
+    ret = ret.reset_index(
         level=_data.__plyrda_groups__
     ).reset_index(drop=True)
     if _groups is None:
@@ -232,10 +343,10 @@ summarize =summarise
 
 # Grouping
 
-@register_verb(DataFrame, compile_proxy='name')
+@register_verb(DataFrame, context='name')
 def group_by(_data, column, *columns, _add=False):
     columns = select_columns(_data.columns, column, *columns)
-    if _add and hasattr(_data, '__plyrda_groups__'):
+    if _add and is_grouped(_data):
         setattr(
             _data,
             '__plyrda_groups__',
@@ -243,7 +354,11 @@ def group_by(_data, column, *columns, _add=False):
             [col for col in columns if col not in _data.__plyrda_groups__]
         )
     else:
-        setattr(_data, '__plyrda_groups__', columns)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            # This is intended
+            setattr(_data, '__plyrda_groups__', columns)
+
     return _data
 
 # ungroup()
@@ -437,3 +552,13 @@ def group_by(_data, column, *columns, _add=False):
 # vars()
 
 # Select variables
+
+
+
+@register_verb(DataFrame)
+def nrow(_data):
+    return _data.shape[0]
+
+@register_verb(DataFrame)
+def ncol(_data):
+    return _data.shape[1]

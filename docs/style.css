@@ -12,6 +12,10 @@
     padding: .75em 1.25em !important;
 }
 
+.md-grid {
+    max-width: none;
+}
+
 .mkapi-docstring{
     line-height: 1;
 }
