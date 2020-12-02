@@ -39,7 +39,7 @@ See: https://dplyr.tidyverse.org/reference/index.html and https://tidyr.tidyvers
 
 ### dplyr - Vector functions
 - [ ] [`across()`](https://pwwang.github.io/plyrda/reference/across) [`c_across()`](https://pwwang.github.io/plyrda/reference/across): Apply a function (or a set of functions) to a set of columns
-- [ ] [`between()`](https://pwwang.github.io/plyrda/reference/between): Do values in a numeric vector fall in specified range?
+- [x] [`between()`](https://pwwang.github.io/plyrda/reference/between): Do values in a numeric vector fall in specified range?
 - [ ] [`case_when()`](https://pwwang.github.io/plyrda/reference/case_when): A general vectorised if
 - [ ] [`coalesce()`](https://pwwang.github.io/plyrda/reference/coalesce): Find first non-missing element
 - [ ] [`cumall()`](https://pwwang.github.io/plyrda/reference/cumall) [`cumany()`](https://pwwang.github.io/plyrda/reference/cumall) [`cummean()`](https://pwwang.github.io/plyrda/reference/cumall): Cumulativate versions of any, all, and mean
@@ -52,7 +52,7 @@ See: https://dplyr.tidyverse.org/reference/index.html and https://tidyr.tidyvers
 - [ ] [`na_if()`](https://pwwang.github.io/plyrda/reference/na_if): Convert values to NA
 - [ ] [`near()`](https://pwwang.github.io/plyrda/reference/near): Compare two numeric vectors
 - [ ] [`nth()`](https://pwwang.github.io/plyrda/reference/nth) [`first()`](https://pwwang.github.io/plyrda/reference/nth) [`last()`](https://pwwang.github.io/plyrda/reference/nth): Extract the first, last or nth value from a vector
-- [ ] [`row_number()`](https://pwwang.github.io/plyrda/reference/ranking) [`ntile()`](https://pwwang.github.io/plyrda/reference/ranking) [`min_rank()`](https://pwwang.github.io/plyrda/reference/ranking) [`dense_rank()`](https://pwwang.github.io/plyrda/reference/ranking) [`percent_rank()`](https://pwwang.github.io/plyrda/reference/ranking) [`cume_dist()`](https://pwwang.github.io/plyrda/reference/ranking): Windowed rank functions.
+- [x] [`row_number()`](https://pwwang.github.io/plyrda/reference/ranking) [`ntile()`](https://pwwang.github.io/plyrda/reference/ranking) [`min_rank()`](https://pwwang.github.io/plyrda/reference/ranking) [`dense_rank()`](https://pwwang.github.io/plyrda/reference/ranking) [`percent_rank()`](https://pwwang.github.io/plyrda/reference/ranking) [`cume_dist()`](https://pwwang.github.io/plyrda/reference/ranking): Windowed rank functions.
 - [ ] [`recode()`](https://pwwang.github.io/plyrda/reference/recode) [`recode_factor()`](https://pwwang.github.io/plyrda/reference/recode): Recode values
 
 ### dplyr - Data

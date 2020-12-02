@@ -12,8 +12,6 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/mutate.html](https:/
 </tr>
 <tr valign="top">
 <td>
-<tr valign="top">
-<td>
 
 ```python
 from plyrda.all import *

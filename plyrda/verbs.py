@@ -204,6 +204,10 @@ def filter(_data, condition, *conditions, _preserve=False):
     # check condition, conditions
     for cond in conditions:
         condition = condition & cond
+    try:
+        condition = condition.values
+    except AttributeError:
+        ...
     return _data[condition]
 
 @register_verb(DataFrame, context=None)
@@ -243,7 +247,10 @@ def mutate(_data, *acrosses, **kwargs):
                if isinstance(val, VerbArg)
                else val)
         val = normalize_series(val, data)
-        data[key] = val
+        try:
+            data[key] = val.values
+        except AttributeError:
+            data[key] = val
 
     outcols = list(kwargs)
     # do the relocate first

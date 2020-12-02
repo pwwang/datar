@@ -1,8 +1,10 @@
-import builtins
+import numpy
 from numbers import Number
 from collections import OrderedDict
+from numpy.core.numeric import NaN
 
 from pandas import DataFrame, Series
+import pandas
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.groupby.generic import SeriesGroupBy
 
@@ -141,24 +143,83 @@ def _(_data, _context, series, na_rm=True):
     # Involve dropna() in getting series?
     return series.mean()
 
-@register_func
-def min_rank(_data, _context, series, na_last=True):
-    raise NotImplementedError
-
-@min_rank.register(DataFrame)
-@min_rank.register(DataFrameGroupBy)
-def _(_data, _context, series, na_last=True):
+def _ranking(_data, _context, series, na_last, method, percent=False):
     if isinstance(series, UnaryNeg):
         ascending = False
         series = series.operand
     else:
         ascending = True
     series = get_series(_data, _context, series)
-    return series.rank(method='min',
+    return series.rank(method=method,
                        ascending=ascending,
+                       pct=percent, # min-max scaling?
                        na_option=('keep' if na_last == 'keep'
                                   else 'top' if not na_last
                                   else 'bottom'))
+
+@register_func
+def min_rank(_data, _context, series, na_last="keep"):
+    raise NotImplementedError
+
+@min_rank.register(DataFrame)
+@min_rank.register(DataFrameGroupBy)
+def _(_data, _context, series, na_last="keep"):
+    return _ranking(_data, _context, series, na_last, 'min')
+
+@register_func
+def row_number(_data, _context, series, na_last="keep"):
+    raise NotImplementedError
+
+@row_number.register(DataFrame)
+def _(_data, _context, series=None, na_last="keep"):
+    if series is not None:
+        return _ranking(_data, _context, series, na_last, 'first')
+    if not is_grouped(_data):
+        return DataFrame({'n': list(range(_data.shape[0]))})['n']
+    grouped = _data.groupby(_data.__plyrda_groups__)
+    return row_number.pipda(grouped, _context, None, na_last)
+
+@row_number.register(DataFrameGroupBy)
+def _(_data, _context, series=None, na_last="keep"):
+    if series is not None:
+        return _ranking(_data, _context, series, na_last, 'first')
+    return _data.cumcount()
+
+@register_func
+def dense_rank(_data, _context, series, na_last="keep"):
+    raise NotImplementedError
+
+@dense_rank.register(DataFrame)
+@dense_rank.register(DataFrameGroupBy)
+def _(_data, _context, series, na_last="keep"):
+    return _ranking(_data, _context, series, na_last, 'dense')
+
+@register_func
+def percent_rank(_data, _context, series, na_last="keep"):
+    raise NotImplementedError
+
+@percent_rank.register(DataFrame)
+@percent_rank.register(DataFrameGroupBy)
+def _(_data, _context, series, na_last="keep"):
+    ranking = _ranking(_data, _context, series, na_last, 'min', True)
+    min_rank = ranking.min()
+    max_rank = ranking.max()
+    ret = ranking.transform(lambda r: (r-min_rank)/(max_rank-min_rank))
+    ret[ranking.isna()] = NaN
+    return ret
+
+@register_func
+def cume_dist(_data, _context, series, na_last="keep"):
+    raise NotImplementedError
+
+@cume_dist.register(DataFrame)
+@cume_dist.register(DataFrameGroupBy)
+def _(_data, _context, series, na_last="keep"):
+    ranking = _ranking(_data, _context, series, na_last, 'min')
+    max_ranking = ranking.max()
+    ret = ranking.transform(lambda r: ranking.le(r).sum() / max_ranking)
+    ret[ranking.isna()] = NaN
+    return ret
 
 @register_func
 def quantile(_data, series, prob=0.5):
@@ -244,3 +305,19 @@ def as_factor(_data, _context, column):
     return column.astype('category')
 
 as_factor.pipda.name = 'as_factor_plyrda_ignore'
+
+@register_func
+def between(_data, _context, column, left, right, inclusive=True):
+    series = get_series(_data, _context, column)
+    ret = series >= left
+    if inclusive:
+        return ret & (series <= right)
+    return ret & (series < right)
+
+@register_func
+def ntile(_data, _context, series=None, n=None):
+    if n is None:
+        raise ValueError('Argument n is required for ntile.')
+    if series is None:
+        series = row_number(_data, _context)
+    return pandas.cut(series, n, labels=range(n))

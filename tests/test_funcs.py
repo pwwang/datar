@@ -1,4 +1,6 @@
 import unittest
+
+from numpy.core.numeric import NaN
 from plyrda.funcs import *
 from plyrda.verbs import *
 from plyrda.common import X
@@ -77,6 +79,29 @@ class TestFuncs(unittest.TestCase):
         x = starwars >> select(X.height) >> head(2)
         self.assertEqual(x.height.to_list(), [172.0, 167.0])
 
+    def test_ranking(self):
+        d = DataFrame({'x': [5, 1, 3, 2, 2, NaN]}).x
+        x = row_number.pipda(DataFrame(), None, d)
+        self.assertListEqual(x.to_list()[:-1], [5.0, 1.0, 4.0, 2.0, 3.0])
+        self.assertTrue(x.isna().to_list()[-1])
+
+        x = min_rank.pipda(DataFrame(), None, d)
+        self.assertListEqual(x.to_list()[:-1], [5.0, 1.0, 4.0, 2.0, 2.0])
+        self.assertTrue(x.isna().to_list()[-1])
+
+        x = dense_rank.pipda(DataFrame(), None, d)
+        self.assertListEqual(x.to_list()[:-1], [4.0, 1.0, 3.0, 2.0, 2.0])
+        self.assertTrue(x.isna().to_list()[-1])
+
+        x = percent_rank.pipda(DataFrame(), None, d)
+        self.assertListEqual(
+            [round(s, 2) for s in x.to_list()[:-1]],
+            [1.00, 0.00, 0.75, 0.25, 0.25])
+        self.assertTrue(x.isna().to_list()[-1])
+
+        x = cume_dist.pipda(DataFrame(), None, d)
+        self.assertListEqual(x.to_list()[:-1], [1.00, 0.20, 0.8, 0.6, 0.6])
+        self.assertTrue(x.isna().to_list()[-1])
 
 if __name__ == "__main__":
     unittest.main(verbosity = 2)
