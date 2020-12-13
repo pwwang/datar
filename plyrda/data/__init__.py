@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas
+from modkit import install, submodule
 
 HERE = Path(__file__).parent
 WITH_INDEX = ['mtcars']
@@ -18,10 +19,7 @@ def load_data(name):
 
 __all__ = all_datasets()
 
-from modkit import modkit
-@modkit.delegate
-def delegate(module, name):
-    # for mkapi to work
-    if name.startswith('_'): # pragma: no cover
-        raise AttributeError
+def __getattr__(name):
     return load_data(name)
+
+install(__name__)
