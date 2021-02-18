@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pandas
-from modkit import install
+from modkit import install, submodule
 
 HERE = Path(__file__).parent
 WITH_INDEX = ['mtcars']

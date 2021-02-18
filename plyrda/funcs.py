@@ -1,323 +1,355 @@
+from plyrda.verbs import select
 import numpy
-from numbers import Number
-from collections import OrderedDict
-from numpy.core.numeric import NaN
+from plyrda.group_by import get_groups, get_rowwise
+import re
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
-from pandas import DataFrame, Series
-import pandas
+from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
-from pandas.core.groupby.generic import SeriesGroupBy
+from pipda import register_function, Context
 
-from pipda import register_func
-from .common import Collection, UnaryNeg, UnaryInvert
-from .utils import (
-    is_grouped, select_columns, filter_columns, func_name, get_series
-)
+from .utils import filter_columns, select_columns
+from .middlewares import Across, CAcross, UnaryNeg
+from .exceptions import ColumnNotExistingError
 
-@register_func
-def c(_data, _context, *args):
-    return Collection(args)
+def _register_datafunc_coln(func: Callable) -> Callable:
 
-@register_func
-def starts_with(_data, _context, match, ignore_case=True, vars=None):
-    return filter_columns(vars or _data.columns,
-                          match,
-                          ignore_case,
-                          lambda mat, cname: cname.startswith(mat))
+    @register_function(DataFrame)
+    def wrapper(_data: DataFrame, *columns, **kwargs):
+        columns = select_columns(_data.columns, *columns)
+        if get_rowwise(_data):
+            return _data.apply(
+                lambda row: func(*(row[col] for col in columns), **kwargs)
+            )
 
-@register_func
-def ends_with(_data, _context, match, ignore_case=True, vars=None):
-    return filter_columns(vars or _data.columns,
-                          match,
-                          ignore_case,
-                          lambda mat, cname: cname.endswith(mat))
+        groups = get_groups(_data)
+        if groups:
+            return _data.groupby(groups)[columns].apply(func, **kwargs)
 
-@register_func
-def contains(_data, _context, match, ignore_case=True, vars=None):
-    return filter_columns(vars or _data.columns,
-                          match,
-                          ignore_case,
-                          lambda mat, cname: mat in cname)
+        return func(*_data[columns].values.flatten(), **kwargs)
 
-@register_func
-def matches(_data, _context, match, ignore_case=True, vars=None):
-    import re
-    return filter_columns(vars or _data.columns,
-                          match,
-                          ignore_case,
-                          lambda mat, cname: re.search(mat, cname))
+    return wrapper
 
-@register_func
-def num_range(_data, _context, prefix, range, width=None, vars=None):
-    return [f'{prefix}{elem if not width else str(elem).zfill(width)}'
-            for elem in range]
+def _register_datafunc_col1(func: Callable) -> Callable:
 
-@register_func
-def everything(_data, _context):
+    @register_function(DataFrame)
+    def wrapper(_data: DataFrame, column, *args, **kwargs):
+        columns = select_columns(_data.columns, column)
+        if get_rowwise(_data):
+            return _data.apply(
+                lambda row: func([row[col] for col in columns], *args, **kwargs)
+            )
+
+        groups = get_groups(_data)
+        if groups:
+            return _data.groupby(groups)[columns].apply(func, **kwargs)
+
+        return func(_data[columns].values.flatten(), **kwargs)
+
+    return wrapper
+
+def register_datafunc(func=None, columns='*'):
+    if func is None:
+        return lambda fun: register_datafunc(fun, columns=columns)
+
+    if columns == '*':
+        return _register_datafunc_coln(func)
+
+    if columns == 1:
+        return _register_datafunc_col1(func)
+
+    raise ValueError("Expect columns to be either '*', or 1.")
+
+@register_function
+def starts_with(
+        _data: DataFrame,
+        match: Union[Iterable[str], str],
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None,
+) -> List[str]:
+    """Select columns starting with a prefix.
+
+    Args:
+        _data: The data piped in
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: cname.startswith(mat),
+    )
+
+@register_function
+def ends_with(
+        _data: DataFrame,
+        match: str,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None,
+) -> List[str]:
+    """Select columns ending with a suffix.
+
+    Args:
+        _data: The data piped in
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: cname.endswith(mat),
+    )
+
+@register_function
+def contains(
+        _data: DataFrame,
+        match: str,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None,
+) -> List[str]:
+    """Select columns containing substrings.
+
+    Args:
+        _data: The data piped in
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: mat in cname,
+    )
+
+@register_function
+def matches(
+        _data: DataFrame,
+        match: str,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None,
+) -> List[str]:
+    """Select columns matching regular expressions.
+
+    Args:
+        _data: The data piped in
+        match: Regular expressions. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: re.search(mat, cname),
+    )
+
+@register_function
+def everything(_data: DataFrame) -> List[str]:
+    """Matches all columns.
+
+    Args:
+        _data: The data piped in
+
+    Returns:
+        All column names of _data
+    """
     return _data.columns.to_list()
 
-@register_func
-def columns_between(_data, _context, start_col, end_col, inclusive=True):
-    colnames = _data.columns.to_list()
-    if not isinstance(start_col, int):
-        start_col = colnames.index(start_col)
-    if not isinstance(end_col, int):
-        end_col = colnames.index(end_col)
-    if inclusive:
-        end_col += 1
+@register_function
+def last_col(
+        _data: DataFrame,
+        offset: int = 0,
+        vars: Optional[Iterable[str]] = None
+) -> str:
+    """Select last variable, possibly with an offset.
 
-    return colnames[start_col:end_col]
+    Args:
+        _data: The data piped in
+        offset: The offset from the end.
+            Note that this is 0-based, the same as `tidyverse`'s `last_col`
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
 
-@register_func
-def columns_from(_data, _context, start_col):
-    return columns_between.pipda(_data, _context, start_col, _data.shape[1])
+    Returns:
+        The variable
+    """
+    vars = vars or _data.columns
+    return vars[-(offset+1)]
 
-@register_func
-def columns_to(_data, _context, end_col, inclusive=True):
-    return columns_between.pipda(_data, _context, 0, end_col, inclusive)
+@register_function
+def all_of(_data: DataFrame, x: Iterable[Union[int, str]]) -> List[str]:
+    """For strict selection.
 
-@register_func
-def where(_data, _context, filter):
-    return [column for column in _data.columns if filter(_data[column])]
+    If any of the variables in the character vector is missing,
+    an error is thrown.
 
-@register_func
-def last_col(_data, _context):
-    return _data.columns[-1]
+    Args:
+        _data: The data piped in
+        x: A set of variables to match the columns
 
-@register_func
-def all_of(_data, _context, column, *columns):
-    return select_columns(_data, column, *columns)
+    Returns:
+        The matched column names
 
-@register_func
-def any_of(_data, _context, column, *columns):
-    return select_columns(_data, column, *columns, raise_nonexist=False)
+    Raises:
+        ColumnNotExistingError: When any of the elements in `x` does not exist
+            in `_data` columns
+    """
+    nonexists = set(x) - set(_data.columns)
+    if nonexists:
+        nonexists = ', '.join(f'`{elem}`' for elem in nonexists)
+        raise ColumnNotExistingError(
+            "Can't subset columns that don't exist. "
+            f"Column(s) {nonexists} not exist."
+        )
 
-@register_func
-def seq_along(_data, _context, along_with):
-    return list(range(len(along_with)))
+    return list(x)
 
-@register_func
-def seq_len(_data, _context, length_out):
-    return list(range(length_out))
+@register_function
+def any_of(_data: DataFrame,
+           x: Iterable[Union[int, str]],
+           vars: Optional[Iterable[str]] = None) -> List[str]:
+    """Select but doesn't check for missing variables.
 
-@register_func
-def seq(_data, _context, from_=None, to=None, by=None, length_out=None, along_with=None):
-    if along_with is not None:
-        return seq_along.pipda(_data, _context, along_with)
-    if from_ is not None and not isinstance(from_, Number):
-        return seq_along.pipda(_data, _context, from_)
-    if length_out is not None and from_ is None and to is None:
-        return seq_len.pipda(_data, _context, length_out)
+    It is especially useful with negative selections,
+    when you would like to make sure a variable is removed.
 
-    if from_ is None:
-        from_ = 0
-    elif to is None:
-        from_, to = 0, from_
+    Args:
+        _data: The data piped in
+        x: A set of variables to match the columns
 
-    if length_out is not None:
-        by = (float(to) - float(from_)) / float(length_out)
-    elif by is None:
-        by = 1
-        length_out = to - from_
+    Returns:
+        The matched column names
+    """
+    vars = vars or _data.columns
+    return [elem for elem in x if elem in vars]
+
+@register_function
+def where(_data: DataFrame, fn: Callable) -> List[str]:
+    """Selects the variables for which a function returns True.
+
+    Args:
+        _data: The data piped in
+        fn: A function that returns True or False.
+            Currently it has to be `register_function/register_cfunction
+            registered function purrr-like formula not supported yet.
+
+    Returns:
+        The matched columns
+    """
+    if not hasattr(fn, '__pipda__'):
+        func = lambda _data, *args, **kwargs: fn(*args, **kwargs)
+    elif fn.__pipda__ == 'CommonFunction':
+        func = lambda _data, *args, **kwargs: fn(
+            *args, **kwargs, _force_piping=True
+        ).evaluate(_data)
     else:
-        length_out = (to - from_ + by - by/10.0) // by
-    return [from_ + n * by for n in range(int(length_out))]
+        func = lambda _data, *args, **kwargs: fn(
+            *args, **kwargs, _force_piping=True
+        ).evaluate(_data)
 
-@register_func
-def n(_data, _context):
-    if is_grouped(_data):
-        return _data.groupby(_data.__plyrda_groups__).size()
-    if isinstance(_data, DataFrame):
-        return _data.shape[0]
-    return _data.size()
+    return [col for col in _data.columns if func(_data, _data[col])]
 
-@register_func
-def mean(_data, _context, series, na_rm=True):
-    raise NotImplementedError
+@register_function
+def desc(_data, col):
+    return UnaryNeg(col, data=_data)
 
-@mean.register(DataFrame)
-@mean.register(DataFrameGroupBy)
-def _(_data, _context, series, na_rm=True):
-    series = get_series(_data, _context, series)
-    # SeriesGroupBy.mean doesn't have skipna argument
-    # Involve dropna() in getting series?
-    return series.mean()
+@register_function
+def across(
+        _data: DataFrame,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[Mapping[str, Callable]]] = None,
+        _names: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any
+) -> Across:
+    return Across(_data, _cols, _fns, _names, args, kwargs)
 
-def _ranking(_data, _context, series, na_last, method, percent=False):
-    if isinstance(series, UnaryNeg):
+@register_function
+def c_across(
+        _data: DataFrame,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[Mapping[str, Callable]]] = None,
+        _names: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any
+) -> CAcross:
+    return CAcross(_data, _cols, _fns, _names, args, kwargs)
+
+def _ranking(_data, column, na_last, method, percent=False):
+    groups = get_groups(_data)
+    if groups:
+        _data = _data.groupby(groups)
+
+    if isinstance(column, UnaryNeg):
         ascending = False
-        series = series.operand
+        _data = _data[column.elems[0]]
     else:
         ascending = True
-    series = get_series(_data, _context, series)
-    return series.rank(method=method,
-                       ascending=ascending,
-                       pct=percent, # min-max scaling?
-                       na_option=('keep' if na_last == 'keep'
-                                  else 'top' if not na_last
-                                  else 'bottom'))
+        _data = _data[column]
 
-@register_func
-def min_rank(_data, _context, series, na_last="keep"):
-    raise NotImplementedError
+    return _data.rank(
+        method=method,
+        ascending=ascending,
+        pct=percent,
+        na_option=('keep' if na_last == 'keep'
+                   else 'top' if not na_last
+                   else 'bottom')
+    )
 
-@min_rank.register(DataFrame)
-@min_rank.register(DataFrameGroupBy)
-def _(_data, _context, series, na_last="keep"):
-    return _ranking(_data, _context, series, na_last, 'min')
+@register_datafunc(columns=1)
+def min_rank(_data, column, na_last="keep"):
+    return _ranking(_data, column, na_last=na_last, method='min')
 
-@register_func
-def row_number(_data, _context, series, na_last="keep"):
-    raise NotImplementedError
 
-@row_number.register(DataFrame)
-def _(_data, _context, series=None, na_last="keep"):
-    if series is not None:
-        return _ranking(_data, _context, series, na_last, 'first')
-    if not is_grouped(_data):
-        return DataFrame({'n': list(range(_data.shape[0]))})['n']
-    grouped = _data.groupby(_data.__plyrda_groups__)
-    return row_number.pipda(grouped, _context, None, na_last)
+@register_datafunc(columns=1)
+def sum(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
+    return numpy.nansum(x) if na_rm else numpy.sum(x)
 
-@row_number.register(DataFrameGroupBy)
-def _(_data, _context, series=None, na_last="keep"):
-    if series is not None:
-        return _ranking(_data, _context, series, na_last, 'first')
-    return _data.cumcount()
+@register_datafunc(columns=1)
+def mean(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
+    return numpy.nanmean(x) if na_rm else numpy.mean(x)
 
-@register_func
-def dense_rank(_data, _context, series, na_last="keep"):
-    raise NotImplementedError
+@register_datafunc(columns=1)
+def min(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
+    return numpy.nanmin(x) if na_rm else numpy.min(x)
 
-@dense_rank.register(DataFrame)
-@dense_rank.register(DataFrameGroupBy)
-def _(_data, _context, series, na_last="keep"):
-    return _ranking(_data, _context, series, na_last, 'dense')
+@register_datafunc(columns=1)
+def max(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
+    return numpy.nanmax(x) if na_rm else numpy.max(x)
 
-@register_func
-def percent_rank(_data, _context, series, na_last="keep"):
-    raise NotImplementedError
+@register_function
+def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
+    return [min(elem, na_rm) for elem in zip(*x)]
 
-@percent_rank.register(DataFrame)
-@percent_rank.register(DataFrameGroupBy)
-def _(_data, _context, series, na_last="keep"):
-    ranking = _ranking(_data, _context, series, na_last, 'min', True)
-    min_rank = ranking.min()
-    max_rank = ranking.max()
-    ret = ranking.transform(lambda r: (r-min_rank)/(max_rank-min_rank))
-    ret[ranking.isna()] = NaN
-    return ret
+@register_function
+def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
+    return [max(elem, na_rm) for elem in zip(*x)]
 
-@register_func
-def cume_dist(_data, _context, series, na_last="keep"):
-    raise NotImplementedError
-
-@cume_dist.register(DataFrame)
-@cume_dist.register(DataFrameGroupBy)
-def _(_data, _context, series, na_last="keep"):
-    ranking = _ranking(_data, _context, series, na_last, 'min')
-    max_ranking = ranking.max()
-    ret = ranking.transform(lambda r: ranking.le(r).sum() / max_ranking)
-    ret[ranking.isna()] = NaN
-    return ret
-
-@register_func
-def quantile(_data, series, prob=0.5):
-    raise NotImplementedError
-
-@quantile.register(DataFrame)
-@quantile.register(DataFrameGroupBy)
-def _(_data, _context, series, prob=0.5):
-    series = get_series(_data, _context, series)
-    # drop the quantile index
-    ret = series.quantile(q=prob).reset_index(level=1, drop=True)
-    return ret
-
-@register_func
-def desc(_data, _context, col):
-    return UnaryNeg(col)
-
-@register_func
-def group_vars(_data, _context):
-    return getattr(_data, '__plyrda_groups__', None)
-
-@register_func
-def across(_data, _context, _cols=None, _fns=None, *args, **kwargs):
-    names = kwargs.pop('_names', None)
-    cols = _cols or everything.pipda(_data, _context)
-    if not isinstance(cols, (list, tuple)):
-        cols = [cols]
-    cols = select_columns(_data.columns, *cols)
-    fns = OrderedDict()
-    if callable(_fns):
-        fns[func_name(_fns)] = {'fn': _fns, 'index': 1}
-    elif isinstance(_fns, (list, tuple)):
-        for i, fn in enumerate(_fns):
-            fns[func_name(fn)] = {'fn': fn, 'index': i+1}
-    elif isinstance(_fns, dict):
-        i = 0
-        for key, value in _fns.items():
-            fns[key] = {'fn': value, 'index': i+1}
-            i += 1
-
-    if not fns:
-        return cols
-
-    if _context == 'name':
-        fn = list(fns.items())[0][1]['fn']
-        return [fn.pipda(_data, _context, col, *args, **kwargs) for col in cols]
-
-    ret = OrderedDict()
-    for column in cols:
-        for fn_name, fn_index in fns.items():
-            fn = fn_index['fn']
-            index = fn_index['index']
-            name = (names.format(**{
-                        '.col': column,
-                        '_col': column,
-                        '.fn': index,
-                        '_fn': index,
-                        '.fn0': index - 1,
-                        '_fn0': index - 1
-                    }) if names
-                    else column if not fn_name.endswith('_plyrda_ignore')
-                    else f'{column}_{fn_name}' )
-            ret[name] = fn.pipda(_data, _context, column, *args, **kwargs)
-
-    return ret
-
-@register_func
-def round(_data, _context, column, digits=0):
-    if isinstance(column, str):
-        return _data[column].round(digits)
-    return column.round(digits)
-
-@register_func
-def abs(_data, _context, column):
-    if isinstance(column, str):
-        return _data[column].abs()
-    return column.abs()
-
-@register_func
-def as_factor(_data, _context, column):
-    if _context == 'name' or isinstance(column, str):
-        return _data[column].astype('category')
-    return column.astype('category')
-
-as_factor.pipda.name = 'as_factor_plyrda_ignore'
-
-@register_func
-def between(_data, _context, column, left, right, inclusive=True):
-    series = get_series(_data, _context, column)
-    ret = series >= left
-    if inclusive:
-        return ret & (series <= right)
-    return ret & (series < right)
-
-@register_func
-def ntile(_data, _context, series=None, n=None):
-    if n is None:
-        raise ValueError('Argument n is required for ntile.')
-    if series is None:
-        series = row_number(_data, _context)
-    return pandas.cut(series, n, labels=range(n))
+@register_datafunc(columns=1)
+def sd(
+        x: Iterable[Union[int, float]],
+        na_rm: bool = False,
+        ddof: int = 1 # numpy default is 0. Make it 1 to be consistent with R
+) -> float:
+    return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)

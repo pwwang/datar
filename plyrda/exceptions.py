@@ -1,8 +1,8 @@
 class PlyrdaException(Exception):
     ...
 
-class PlyrdaColumnNameInvalidException(Exception):
-    ...
+class ColumnNotExistingError(PlyrdaException):
+    """When selecting non-existing columns"""
 
-class PlyrdaGroupByException(Exception):
-    ...
+class ColumnNameInvalidError(PlyrdaException):
+    """When invalid column names provided to select"""
