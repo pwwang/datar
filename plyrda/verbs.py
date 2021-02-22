@@ -1,16 +1,19 @@
 from itertools import chain
+from plyrda.contexts import ContextEvalWithUsedRefs
+from re import DEBUG
+import sys
+from pandas.core.groupby.groupby import GroupBy
 from pandas.core.indexes.multi import MultiIndex
-
+from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.series import Series
 from pipda.utils import Expression, evaluate_expr
-from pipda.symbolic import DirectSubsetRef
 from plyrda.group_by import get_groups, get_rowwise, is_grouped, set_groups, set_rowwise
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import align_value, list_diff, select_columns
-from .middlewares import Across, CAcross, Collection, UnaryNeg
+from .utils import align_value, list_diff, list_union, select_columns
+from .middlewares import Across, CAcross, Collection, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
 @register_verb(DataFrame)
@@ -25,6 +28,10 @@ def head(_data, n: int = 5) -> DataFrame:
     """
     return _data.head(n)
 
+@head.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy, n: int = 5) -> DataFrame:
+    return _data.obj.head(n)
+
 @register_verb(DataFrame)
 def tail(_data, n=5):
     """Get the last n rows of the dataframe
@@ -37,10 +44,14 @@ def tail(_data, n=5):
     """
     return _data.tail(n)
 
-@register_verb(DataFrame, context=Context.NAME)
+@tail.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy, n: int = 5) -> DataFrame:
+    return _data.obj.tail(n)
+
+@register_verb((DataFrame, DataFrameGroupBy))
 def select(
         _data: DataFrame,
-        *columns: Union[str, Iterable[str], UnaryNeg],
+        *columns: Union[str, Iterable[str], Inverted],
         **renamings: Mapping[str, str]
 ) -> DataFrame:
     """Select (and optionally rename) variables in a data frame
@@ -63,8 +74,6 @@ def select(
         return _data[selected].rename(columns=new_names)
     return _data[selected]
 
-    # todo: keep groupby
-
 @register_verb(DataFrame, context=Context.UNSET)
 def mutate(
         _data: DataFrame,
@@ -75,44 +84,37 @@ def mutate(
         **kwargs: Any
 ) -> DataFrame:
 
-    used_cols = []
-    def ref_counter(expr: Expression):
-        if (
-                isinstance(expr, DirectSubsetRef) and
-                isinstance(expr.ref, str) and
-                expr.ref not in used_cols
-        ):
-            used_cols.append(expr.ref)
-
+    context = ContextEvalWithUsedRefs()
     if _before is not None:
-        _before = evaluate_expr(_before, _data, Context.NAME)
+        _before = evaluate_expr(_before, _data, Context.SELECT)
     if _after is not None:
-        _after = evaluate_expr(_after, _data, Context.NAME)
+        _after = evaluate_expr(_after, _data, Context.SELECT)
 
     across = {} # no need OrderedDict in python3.7+ anymore
     for acrs in acrosses:
-        acrs = evaluate_expr(acrs, _data, Context.DATA, ref_counter)
+        acrs = evaluate_expr(acrs, _data, context)
         if isinstance(acrs, Across):
-            across.update(acrs.evaluate(Context.DATA))
+            across.update(acrs.evaluate(context))
         else:
             across.update(acrs)
 
     across.update(kwargs)
     kwargs = across
 
-    data = _data.copy()
-    set_groups(data, get_groups(_data))
-    set_rowwise(data, get_rowwise(_data))
+    if isinstance(_data, RowwiseDataFrame):
+        data = RowwiseDataFrame(_data, _data.rowwise)
+    else:
+        data = _data.copy()
 
     for key, val in kwargs.items():
         if val is None:
             data.drop(columns=[key], inplace=True)
             continue
-        val = evaluate_expr(val, data, Context.DATA, callback=ref_counter)
+        val = evaluate_expr(val, data, context)
         if isinstance(val, CAcross):
             val.names = key
         if isinstance(val, Across):
-            val = DataFrame(val.evaluate(Context.DATA, data))
+            val = DataFrame(val.evaluate(context, data))
 
         value = align_value(val, data)
         try:
@@ -130,17 +132,42 @@ def mutate(
         data = relocate(data, *outcols, _before=_before, _after=_after)
 
     # do the keep
+    used_cols = context.used_refs.keys()
     if _keep == 'used':
-        data = data[used_cols + list_diff(outcols, used_cols)]
+        data = data[list_union(used_cols, outcols)]
     elif _keep == 'unused':
         unused_cols = list_diff(data.columns, used_cols)
-        data = data[list_diff(unused_cols, outcols) + outcols]
+        data = data[list_union(unused_cols, outcols)]
     elif _keep == 'none':
-        data = data[list_diff(get_groups(_data), outcols) + outcols]
+        data = data[outcols]
+    # else:
+    # raise
+    if (isinstance(_data, RowwiseDataFrame) and
+            not isinstance(data, RowwiseDataFrame)):
+        return RowwiseDataFrame(data, rowwise=_data.rowwise)
 
     return data
 
-@register_verb(DataFrame, context=Context.NAME)
+@mutate.register(DataFrameGroupBy)
+def _(
+        _data: DataFrameGroupBy,
+        *acrosses: Across,
+        _keep: str = 'all',
+        _before: Optional[str] = None,
+        _after: Optional[str] = None,
+        **kwargs: Any
+) -> DataFrameGroupBy:
+    ret = mutate(
+        _data.obj,
+        *acrosses,
+        _keep=_keep,
+        _before=_before,
+        _after=_after,
+        **kwargs
+    )
+    return ret.groupby(_data.keys)
+
+@register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
         _data,
         cols,
@@ -200,7 +227,7 @@ def pivot_longer(
 
     return ret
 
-@register_verb(DataFrame, context=Context.NAME)
+@register_verb(DataFrame, context=Context.SELECT)
 def relocate(_data, column, *columns, _before=None, _after=None):
     all_columns = _data.columns.to_list()
     columns = select_columns(all_columns, column, *columns)
@@ -221,22 +248,46 @@ def relocate(_data, column, *columns, _before=None, _after=None):
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     return _data[rearranged]
 
-@register_verb(DataFrame, context=Context.NAME)
+@register_verb(DataFrame)
 def group_by(
         _data: DataFrame,
-        column: str,
         *columns: str,
-        _add: bool = False
-) -> DataFrame:
-    data = _data.copy()
-    columns = select_columns(data.columns, column, *columns)
-    set_groups(data, columns, _add)
-    return data
+        _add: bool = False, # not working, since _data is not grouped
+        **kwargs: Any
+) -> DataFrameGroupBy:
+    if kwargs:
+        _data = mutate(_data, **kwargs)
 
+    columns = select_columns(_data.columns, *columns, *kwargs.keys())
+    return _data.groupby(columns)
 
-@register_verb(DataFrame)
+@group_by.register(DataFrameGroupBy)
+def _(
+    _data: DataFrameGroupBy,
+    *columns: str,
+    _add: bool = False,
+    **kwargs: Any
+) -> DataFrameGroupBy:
+    if kwargs:
+        _data = mutate(_data, **kwargs)
+
+    columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
+    if _add:
+        groups = Collection(_data.keys) + columns
+        return _data.obj.groupby(groups)
+    return _data.obj.groupby(columns)
+
+@register_verb(DataFrameGroupBy)
+def ungroup(_data: DataFrameGroupBy) -> DataFrame:
+    return _data.obj
+
+@register_verb(DataFrameGroupBy)
+def group_vars(_data: DataFrameGroupBy) -> List[str]:
+    return _data.keys
+
+@register_verb((DataFrame, DataFrameGroupBy))
 def summarise(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         *acrosses: Across,
         _groups: Optional[str] = None,
         **kwargs: Any
@@ -248,87 +299,80 @@ def summarise(
     across = {} # no need OrderedDict in python3.7+ anymore
     for acrs in acrosses:
         if isinstance(acrs, Across):
-            across.update(acrs.evaluate(Context.DATA, _data))
+            across.update(acrs.evaluate(Context.EVAL, _data))
         else:
             across.update(acrs)
 
     across.update(kwargs)
     kwargs = across
 
-    rowwise = get_rowwise(_data)
-    groups = get_groups(_data)
-    if rowwise:
-        if rowwise is True:
-            ret = DataFrame({'__plyrda__': [0] * _data.shape[0]})
-        else:
-            ret = _data[rowwise]
-        set_rowwise(ret, rowwise)
-    elif groups:
-        grouped = _data.groupby(by=groups)
-        ret = grouped.size().to_frame('__plyrda__')
-        set_groups(ret, groups)
-    else:
-        ret = DataFrame({'__plyrda__': [0]})
+    ret = None
+    if isinstance(_data, RowwiseDataFrame) and _data.rowwise is not True:
+        ret = _data[_data.rowwise]
 
     for key, val in kwargs.items():
         if isinstance(val, CAcross):
             val.names = key
         if isinstance(val, Across):
-            val = DataFrame(val.evaluate(Context.DATA, _data))
+            val = DataFrame(val.evaluate(Context.EVAL, _data))
 
-        if isinstance(val, Series) and val.index.name == ret.index.name:
-            # in case val has more rows than ret, ie. quantile
-            # we expand ret
-            ret =  ret.loc[val.index, :]
-            ret[key] = val
+        if ret is None:
+            try:
+                ret = DataFrame(val, columns=[key])
+            except ValueError:
+                ret = DataFrame([val], columns=[key])
+        # if isinstance(val, Series) and val.index.name == ret.index.name:
+        #     # in case val has more rows than ret, ie. quantile
+        #     # we expand ret
+        #     ret =  ret.loc[val.index, :]
+        #     ret[key] = val
         else:
             ret[key] = align_value(val, ret)
 
-    if '__plyrda__' in ret.columns:
-        ret.drop(columns=['__plyrda__'], inplace=True)
+    if _groups == 'rowwise':
+        return RowwiseDataFrame(ret)
 
-    ret.reset_index(level=groups, inplace=True)
-    ret.reset_index(drop=True, inplace=True)
+    if not isinstance(_data, DataFrameGroupBy):
+        return ret
 
     if _groups is None:
-        if rowwise and rowwise is not True:
-            set_groups(ret, rowwise)
-        elif ret.shape[0] == 1:
+        if ret.shape[0] == 1:
             _groups = 'drop_last'
         elif isinstance(ret.index, MultiIndex):
             _groups = 'drop_last'
 
+    ret.reset_index(inplace=True)
+
     if _groups == 'drop_last':
-        set_groups(ret, groups[:-1])
-    elif _groups == 'keep':
-        set_groups(ret, groups[:])
-    elif _groups == 'rowwise':
-         set_rowwise(ret, True)
+        return ret.groupby(_data.keys[:-1]) if _data.keys[:-1] else ret
+
+    if _groups == 'keep':
+        return ret.groupby(_data.keys)
+
     # else:
     # todo: raise
-
     return ret
 
-summarize =summarise
+summarize = summarise
 
-@register_verb(DataFrame, context=Context.NAME)
+@register_verb(DataFrame, context=Context.SELECT)
 def arrange(
         _data: DataFrame,
-        column: Union[UnaryNeg, Across, str],
-        *columns: Union[UnaryNeg, Across, str],
+        column: Union[Inverted, Across, str],
+        *columns: Union[Inverted, Across, str],
         _by_group: bool = False
 ) -> DataFrame:
     columns = (column, ) + columns
     by = []
     ascending = []
     for column in Collection(columns):
-        if isinstance(column, UnaryNeg):
+        if isinstance(column, Inverted):
             cols = select_columns(_data.columns, column.elems)
             by.extend(cols)
             ascending.extend([False] * len(cols))
         elif isinstance(column, Across):
-            cols = column.evaluate(Context.NAME)
-            if any(isinstance(col, UnaryNeg) for col in cols):
+            cols = column.evaluate(Context.SELECT)
+            if any(isinstance(col, Inverted) for col in cols):
                 cols = list(chain(*(col.elems for col in cols)))
                 by.extend(cols)
                 ascending.extend([False] * len(cols))
@@ -346,25 +390,76 @@ def arrange(
         ascending = [True] * len(groups) + ascending
     return _data.sort_values(by, ascending=ascending)
 
-@register_verb
-def rowwise(_data: DataFrame, *columns: str) -> DataFrame:
-    data = _data.copy()
-    if not columns:
-        columns = True
-    else:
-        columns = select_columns(data.columns, columns)
-    set_rowwise(data, columns)
-    return data
+@register_verb(DataFrame)
+def rowwise(_data: DataFrame, *columns: str) -> RowwiseDataFrame:
+    columns = select_columns(_data.columns, columns)
+    return RowwiseDataFrame(_data, rowwise=columns)
 
-@register_verb(context=Context.DATA)
-def filter(_data, condition, *conditions, _preserve=False):
+@rowwise.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy, *columns: str) -> RowwiseDataFrame:
+    columns = select_columns(_data.obj.columns, columns)
+    return RowwiseDataFrame(_data, rowwise=columns)
+
+@register_verb(DataFrame, context=Context.EVAL)
+def filter(
+        _data: DataFrame,
+        condition,
+        *conditions,
+        _preserve=False
+):
     # check condition, conditions
-    print(condition)
     for cond in conditions:
         condition = condition & cond
     try:
         condition = condition.values.flatten()
     except AttributeError:
         ...
-    print(condition)
+
     return _data[condition]
+
+@filter.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy, condition, *conditions, _preserve=True):
+    for cond in conditions:
+        condition = condition & cond
+    try:
+        condition = condition.values.flatten()
+    except AttributeError:
+        ...
+    ret = _data.obj[condition]
+    if _preserve:
+        return ret.groupby(_data.keys)
+    return ret
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.UNSET)
+def debug(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *args: Any,
+        context: Union[Context, str] = Context.SELECT,
+        **kwargs: Any
+) -> None: # not going any further
+
+    def print_msg(msg: str, end: str = "\n"):
+        sys.stderr.write(f"[plyrda] DEBUG: {msg}{end}")
+
+    if isinstance(_data, DataFrameGroupBy):
+        print_msg("# DataFrameGroupBy:")
+        print_msg(_data.describe())
+    else:
+        print_msg("# DataFrame:")
+        print_msg(_data)
+
+    if args:
+        for i, arg in enumerate(args):
+            print_msg(f"# Arg#{i+1}")
+            print_msg("## Raw")
+            print_msg(arg)
+            print_msg("## Evaluated")
+            print_msg(evaluate_expr(arg, _data, context))
+
+    if kwargs:
+        for key, val in kwargs.items():
+            print_msg(f"# Kwarg#{key}")
+            print_msg("## Raw")
+            print_msg(val)
+            print_msg("## Evaluated")
+            print_msg(evaluate_expr(val, _data, context))

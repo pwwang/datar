@@ -9,8 +9,8 @@ from plyrda.utils import *
 def test_expand_collections(collections, expects):
     assert expand_collections(collections) == expects
 
-def test_unaryneg():
-    x = UnaryNeg('a', DataFrame({'a': [1], 'b': [2]}))
+def test_Inverted():
+    x = Inverted('a', DataFrame({'a': [1], 'b': [2]}))
     assert x.elems == Collection('a')
     assert x.complements == ['b']
 
@@ -44,13 +44,13 @@ def test_check_column():
     (['a', 'b'], ('a', ), ['a']),
     (['a', 'b'], (0, ), ['a']),
     (['a', 'b'], (['b'], ), ['b']),
-    (['a', 'b'], (UnaryNeg('a', DataFrame({'a':[1], 'b':[2]})), ), ['b']),
+    (['a', 'b'], (Inverted('a', DataFrame({'a':[1], 'b':[2]})), ), ['b']),
 ])
 def test_select_columns(all_columns, columns, expects):
     assert select_columns(all_columns, *columns, raise_nonexist=False) == expects
 
 def test_select_columns_error():
     with pytest.raises(ColumnNameInvalidError):
-        select_columns(["a", "b"], "a", UnaryNeg("b", None))
+        select_columns(["a", "b"], "a", Inverted("b", None))
     with pytest.raises(ColumnNotExistingError):
         select_columns(["a", "b"], "c")

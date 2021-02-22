@@ -10,7 +10,7 @@ from pandas.core.indexes.multi import MultiIndex
 from pipda import register_verb
 from pipda.verb import VerbArg
 from .exceptions import PlyrdaColumnNameInvalidException, PlyrdaGroupByException
-from .common import UnaryNeg, Collection
+from .common import Inverted, Collection
 from .utils import (
     expand_collections, is_neg, check_column, select_columns, nrows_or_nelems,
     normalize_series, is_grouped,
@@ -107,7 +107,7 @@ def arrange(_data, column, *columns, _by_group=False):
     by = []
     ascending = []
     for column in expand_collections(columns):
-        if isinstance(column, UnaryNeg):
+        if isinstance(column, Inverted):
             cols = select_columns(_data.columns, column.operand)
             by.extend(cols)
             ascending.extend([False] * len(cols))

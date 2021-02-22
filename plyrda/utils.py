@@ -1,9 +1,9 @@
 from typing import Any, Callable, Iterable, List, Union
-from numpy.core.numeric import NaN
 
 from pandas import DataFrame
 from pandas.core.series import Series
-from pipda.utils import Context
+from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
+from pipda.context import Context
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
 
@@ -52,9 +52,9 @@ def check_column(column: Any) -> None:
     Raises:
         ColumnNameInvalidError: When the column name is invalid
     """
-    from .middlewares import UnaryNeg, Across
+    from .middlewares import Inverted, Across
     if not isinstance(column, (
-            (int, str, list, set, tuple, UnaryNeg, Across)
+            (int, str, list, set, tuple, Inverted, Across, slice)
     )):
         raise ColumnNameInvalidError(
             'Invalid column, expected int, str, list, tuple, c(), across(), '
@@ -109,6 +109,19 @@ def filter_columns(
                 ret.append(column)
     return ret
 
+def sanitize_slice(slc: slice, all_columns: List[str]) -> slice:
+    int_start, int_stop, step = slc.start, slc.stop, slc.step
+    if isinstance(int_start, str):
+        int_start = all_columns.index(int_start)
+    if isinstance(int_stop, str):
+        int_stop = all_columns.index(int_stop)
+
+    int_stop += 1
+    if step == 0:
+        step = None
+        int_stop -= 1
+    return slice(int_start, int_stop, step)
+
 def select_columns(
         all_columns: Iterable[str],
         *columns: Any,
@@ -129,8 +142,11 @@ def select_columns(
         ColumnNameInvalidError: When the column is invalid to select
         ColumnNotExistingError: When the column does not exist in the pool
     """
-    from .middlewares import UnaryNeg, Across
-    negs = [isinstance(column, UnaryNeg) for column in columns]
+    from .middlewares import Inverted, Across
+    if not isinstance(all_columns, list):
+        all_columns = list(all_columns)
+
+    negs = [isinstance(column, Inverted) for column in columns]
     has_negs = any(negs)
     if has_negs and not all(negs):
         raise ColumnNameInvalidError(
@@ -145,10 +161,12 @@ def select_columns(
             selected.append(all_columns[column])
         elif isinstance(column, (list, tuple, set)): # ['x', 'y']
             selected.extend(column)
-        elif isinstance(column, UnaryNeg):
+        elif isinstance(column, Inverted):
             selected.extend(column.elems)
+        elif isinstance(column, slice):
+            selected.extend(all_columns[sanitize_slice(column, all_columns)])
         elif isinstance(column, Across):
-            selected.extend(column.evaluate(Context.NAME))
+            selected.extend(column.evaluate(Context.SELECT))
         else:
             selected.append(column)
 
@@ -170,35 +188,46 @@ def series_expandable(
     if (not isinstance(df_or_series, (Series, DataFrame)) or
             not isinstance(series_or_df, (Series, DataFrame))):
         return False
+
     if type(df_or_series) is type(series_or_df):
-        return False
+        if df_or_series.shape[0] < series_or_df.shape[0]:
+            series, df = df_or_series, series_or_df
+        else:
+            df, series = df_or_series, series_or_df
+    elif isinstance(df_or_series, Series):
+        series, df = df_or_series, series_or_df
+    else:
+        df, series = df_or_series, series_or_df
 
-    series = df_or_series if isinstance(df_or_series, Series) else series_or_df
-    df = df_or_series if isinstance(df_or_series, DataFrame) else series_or_df
-    if series.index.name not in df.columns:
-        return False
-    return True
+    return series.index.name in df.columns
 
-def series_expand(series: Series, df: DataFrame):
-    holder = DataFrame({'x': [NaN] * df.shape[0]})
-    holder.loc[df[series.index.name].notna().values, 'x'] = series[
-        df[series.index.name].dropna()
-    ].values
-    holder.index = df[series.index.name]
-    return holder['x']
+def series_expand(series: Union[DataFrame, Series], df: DataFrame):
+    if isinstance(series, DataFrame):
+        #assert series.shape[1] == 1
+        series = series.iloc[:, 0]
+    return df[series.index.name].map(series)
 
-def align_value(value: Any, data: DataFrame) -> Iterable[Any]:
+def align_value(
+        value: Any,
+        data: Union[DataFrame, DataFrameGroupBy]
+) -> Iterable[Any]:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
+    if isinstance(data, DataFrameGroupBy):
+        data = data.obj
+    if isinstance(value, (DataFrameGroupBy, SeriesGroupBy)):
+        value = value.obj
+
     if isinstance(value, (str, bytes)) or not isinstance(value, Iterable):
         value = [value]
+
     if series_expandable(value, data):
         return series_expand(value, data)
 
-    if isinstance(value, (DataFrame, Series)):
-        len_series = value.shape[0]
-    else:
-        len_series = len(value)
+    len_series = (
+        value.shape[0] if isinstance(value, (DataFrame, Series))
+        else len(value)
+    )
 
     if len_series == data.shape[0]:
         return value

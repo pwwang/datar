@@ -1,7 +1,7 @@
 import warnings
 
 import pytest
-from pipda import register_function
+from pipda import register_func
 from plyrda.funcs import *
 from plyrda.data import iris
 
@@ -100,7 +100,7 @@ def test_where():
         'Sepal.Length', 'Sepal.Width', 'Petal.Length', 'Petal.Width'
     ]
 
-    @register_function
+    @register_func
     def return_true(data, x):
         return True
 

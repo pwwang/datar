@@ -9,8 +9,8 @@ from pandas.core.series import Series
 from .exceptions import PlyrdaColumnNameInvalidException
 
 def is_neg(val):
-    from .common import UnaryNeg
-    if isinstance(val, UnaryNeg):
+    from .common import Inverted
+    if isinstance(val, Inverted):
         return True
 
     if not isinstance(val, int):
@@ -19,9 +19,9 @@ def is_neg(val):
     return val < 0
 
 def check_column(column):
-    from .common import UnaryNeg
+    from .common import Inverted
     if not isinstance(column, (
-            (int, str, list, tuple, UnaryNeg)
+            (int, str, list, tuple, Inverted)
     )):
         raise PlyrdaColumnNameInvalidException(
             'Invalid column, expected int, str, list, tuple, c(), '

@@ -9,7 +9,7 @@ from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.groupby.generic import SeriesGroupBy
 
 from pipda import register_func
-from .common import Collection, UnaryNeg, UnaryInvert
+from .common import Collection, Inverted, UnaryInvert
 from .utils import (
     is_grouped, select_columns, filter_columns, func_name, get_series
 )
@@ -144,7 +144,7 @@ def _(_data, _context, series, na_rm=True):
     return series.mean()
 
 def _ranking(_data, _context, series, na_last, method, percent=False):
-    if isinstance(series, UnaryNeg):
+    if isinstance(series, Inverted):
         ascending = False
         series = series.operand
     else:
@@ -235,7 +235,7 @@ def _(_data, _context, series, prob=0.5):
 
 @register_func
 def desc(_data, _context, col):
-    return UnaryNeg(col)
+    return Inverted(col)
 
 @register_func
 def group_vars(_data, _context):

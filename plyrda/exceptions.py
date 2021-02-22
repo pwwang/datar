@@ -6,3 +6,6 @@ class ColumnNotExistingError(PlyrdaException):
 
 class ColumnNameInvalidError(PlyrdaException):
     """When invalid column names provided to select"""
+
+class DataUnalignableError(PlyrdaException):
+    """When two data cannot be aligned to each other"""

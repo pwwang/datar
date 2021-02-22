@@ -1,12 +1,12 @@
 from pandas.core.series import Series
 from pipda import register_operators, Operators
 from .utils import series_expand, series_expandable
-from .common import UnaryNeg
+from .common import Inverted
 
 class PlyrdaOperators(Operators):
 
     def neg(self):
-        return UnaryNeg(self.operand)
+        return Inverted(self.operand)
 
     def _expand_series(self, other, drop_index='other'):
         if (not series_expandable(self.data, other) and

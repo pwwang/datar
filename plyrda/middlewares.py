@@ -1,9 +1,9 @@
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 from pandas import DataFrame
-from pipda.utils import Context
+from pipda.context import Context, ContextBase, ContextSelect
 
-from .utils import expand_collections, list_diff, select_columns
+from .utils import expand_collections, list_diff, sanitize_slice, select_columns
 from .group_by import get_rowwise, is_grouped, get_groups
 
 
@@ -18,19 +18,22 @@ class Collection(list):
     def __init__(self, *args: Any) -> None:
         super().__init__(expand_collections(args))
 
-class UnaryNeg:
-    """Unary negative object, pending for next action"""
+class Inverted:
+    """Inverted object, pending for next action"""
 
     def __init__(self, elems: Any, data: DataFrame) -> None:
         self.data = data
-        if not isinstance(elems, Collection):
+        if isinstance(elems, slice):
+            columns = data.columns.tolist()
+            self.elems = columns[sanitize_slice(elems, columns)]
+        elif not isinstance(elems, Collection):
             self.elems = Collection(elems)
         else:
             self.elems = elems
         self._complements = None
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, UnaryNeg):
+        if not isinstance(other, Inverted):
             return False
         return self.elem == other.elem and self.data == other.data
 
@@ -42,6 +45,14 @@ class UnaryNeg:
         if self._complements is None:
             self._complements = list_diff(self.data.columns, self.elems)
         return self._complements
+
+    def __repr__(self) -> str:
+        return f"Inverted({self.elems})"
+
+class Descending(str):
+
+    def __new__(cls, content):
+        return str.__new__(cls, content)
 
 class Across:
 
@@ -75,14 +86,14 @@ class Across:
         self.kwargs = kwargs
         self.context = None
 
-    def evaluate(self, context: Context, data: Optional[DataFrame] = None):
+    def evaluate(self, context: ContextBase, data: Optional[DataFrame] = None):
         if data is None:
             data = self.data
 
         if not self.fns:
             return self.cols
 
-        if context == Context.NAME:
+        if isinstance(context, ContextSelect):
             fn = self.fns[0]['fn']
             # todo: check # fns
             return [
@@ -107,7 +118,7 @@ class Across:
                 name = name_format.format(**render_data)
                 if (
                         hasattr(fn, '__pipda__') and
-                        fn.__pipda__ == 'CommonFunction'
+                        fn.__pipda__ == 'FunctionNoDataArg'
                 ):
                     # apply group by
                     if is_grouped(data):
@@ -149,3 +160,14 @@ class CAcross(Across):
                 **self.kwargs
             ).values
         }
+
+class RowwiseDataFrame(DataFrame):
+
+    def __init__(
+            self,
+            *args: Any,
+            rowwise: Optional[Iterable[str]] = None,
+            **kwargs: Any
+    ) -> None:
+        self.__dict__['rowwise'] = rowwise or True
+        super().__init__(*args, **kwargs)

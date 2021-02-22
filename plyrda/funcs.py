@@ -1,54 +1,66 @@
+import datetime
+from functools import wraps
+import functools
+from numpy.core.numeric import NaN
+from pandas.core.series import Series
+
+from pipda.context import ContextBase, ContextSelect
 from plyrda.verbs import select
 import numpy
 from plyrda.group_by import get_groups, get_rowwise
 import re
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
 
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
-from pipda import register_function, Context
+from pipda import register_func, Context
 
 from .utils import filter_columns, select_columns
-from .middlewares import Across, CAcross, UnaryNeg
+from .middlewares import Across, CAcross, Collection, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNotExistingError
 
-def _register_datafunc_coln(func: Callable) -> Callable:
+DateType = Union[int, str, datetime.date]
 
-    @register_function(DataFrame)
-    def wrapper(_data: DataFrame, *columns, **kwargs):
-        columns = select_columns(_data.columns, *columns)
-        if get_rowwise(_data):
-            return _data.apply(
-                lambda row: func(*(row[col] for col in columns), **kwargs)
-            )
+def _register_datafunc_coln(
+        func: Callable,
+        context: Union[Context, ContextBase] = Context.EVAL
+) -> Callable:
 
-        groups = get_groups(_data)
-        if groups:
-            return _data.groupby(groups)[columns].apply(func, **kwargs)
+    @register_func(DataFrame, context=context)
+    @wraps(func)
+    def wrapper(_data: DataFrame, *columns, **kwargs) -> Any:
 
-        return func(*_data[columns].values.flatten(), **kwargs)
+        if isinstance(_data, RowwiseDataFrame):
+            return  func(*(row for row in zip(*columns)), **kwargs)
+        # flatten
+        return func(*columns, **kwargs)
 
     return wrapper
 
-def _register_datafunc_col1(func: Callable) -> Callable:
+def _register_datafunc_col1(
+        func: Callable,
+        context: Union[Context, ContextBase] = Context.EVAL
+) -> Callable:
 
-    @register_function(DataFrame)
+    @register_func(DataFrame, context=context)
+    @wraps(func)
     def wrapper(_data: DataFrame, column, *args, **kwargs):
-        columns = select_columns(_data.columns, column)
-        if get_rowwise(_data):
+
+        if isinstance(_data, RowwiseDataFrame):
             return _data.apply(
                 lambda row: func([row[col] for col in columns], *args, **kwargs)
             )
 
-        groups = get_groups(_data)
-        if groups:
-            return _data.groupby(groups)[columns].apply(func, **kwargs)
+        return func(_data[columns].values.flatten(), *args, **kwargs)
 
-        return func(_data[columns].values.flatten(), **kwargs)
+    @wrapper.register(DataFrameGroupBy)
+    def _(_data: DataFrameGroupBy, column, *args, **kwargs: Any) -> Any:
+        column = select_columns(_data.obj.columns, column)
+        return _data[column].apply(func, *args, **kwargs)
 
     return wrapper
 
-def register_datafunc(func=None, columns='*'):
+def register_datafunc(func=None, columns=1):
     if func is None:
         return lambda fun: register_datafunc(fun, columns=columns)
 
@@ -60,7 +72,7 @@ def register_datafunc(func=None, columns='*'):
 
     raise ValueError("Expect columns to be either '*', or 1.")
 
-@register_function
+@register_func
 def starts_with(
         _data: DataFrame,
         match: Union[Iterable[str], str],
@@ -86,7 +98,7 @@ def starts_with(
         lambda mat, cname: cname.startswith(mat),
     )
 
-@register_function
+@register_func
 def ends_with(
         _data: DataFrame,
         match: str,
@@ -112,7 +124,7 @@ def ends_with(
         lambda mat, cname: cname.endswith(mat),
     )
 
-@register_function
+@register_func
 def contains(
         _data: DataFrame,
         match: str,
@@ -138,7 +150,7 @@ def contains(
         lambda mat, cname: mat in cname,
     )
 
-@register_function
+@register_func
 def matches(
         _data: DataFrame,
         match: str,
@@ -164,7 +176,7 @@ def matches(
         lambda mat, cname: re.search(mat, cname),
     )
 
-@register_function
+@register_func
 def everything(_data: DataFrame) -> List[str]:
     """Matches all columns.
 
@@ -176,7 +188,7 @@ def everything(_data: DataFrame) -> List[str]:
     """
     return _data.columns.to_list()
 
-@register_function
+@register_func
 def last_col(
         _data: DataFrame,
         offset: int = 0,
@@ -197,7 +209,7 @@ def last_col(
     vars = vars or _data.columns
     return vars[-(offset+1)]
 
-@register_function
+@register_func
 def all_of(_data: DataFrame, x: Iterable[Union[int, str]]) -> List[str]:
     """For strict selection.
 
@@ -225,7 +237,7 @@ def all_of(_data: DataFrame, x: Iterable[Union[int, str]]) -> List[str]:
 
     return list(x)
 
-@register_function
+@register_func
 def any_of(_data: DataFrame,
            x: Iterable[Union[int, str]],
            vars: Optional[Iterable[str]] = None) -> List[str]:
@@ -244,14 +256,14 @@ def any_of(_data: DataFrame,
     vars = vars or _data.columns
     return [elem for elem in x if elem in vars]
 
-@register_function
+@register_func
 def where(_data: DataFrame, fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
     Args:
         _data: The data piped in
         fn: A function that returns True or False.
-            Currently it has to be `register_function/register_cfunction
+            Currently it has to be `register_func/register_cfunction
             registered function purrr-like formula not supported yet.
 
     Returns:
@@ -270,11 +282,11 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
 
     return [col for col in _data.columns if func(_data, _data[col])]
 
-@register_function
+@register_func
 def desc(_data, col):
-    return UnaryNeg(col, data=_data)
+    return Inverted(col, data=_data)
 
-@register_function
+@register_func(context=Context.SELECT)
 def across(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
@@ -285,7 +297,7 @@ def across(
 ) -> Across:
     return Across(_data, _cols, _fns, _names, args, kwargs)
 
-@register_function
+@register_func(context=Context.SELECT)
 def c_across(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
@@ -296,12 +308,12 @@ def c_across(
 ) -> CAcross:
     return CAcross(_data, _cols, _fns, _names, args, kwargs)
 
-def _ranking(_data, column, na_last, method, percent=False):
-    groups = get_groups(_data)
+def _ranking(data: Iterable[Any], na_last: str, method: str, percent: bool = False) -> Iterable[float]:
+    groups = get_groups(data)
     if groups:
-        _data = _data.groupby(groups)
+        _data = data.groupby(groups)
 
-    if isinstance(column, UnaryNeg):
+    if isinstance(column, Inverted):
         ascending = False
         _data = _data[column.elems[0]]
     else:
@@ -317,39 +329,233 @@ def _ranking(_data, column, na_last, method, percent=False):
                    else 'bottom')
     )
 
-@register_datafunc(columns=1)
+@register_datafunc
 def min_rank(_data, column, na_last="keep"):
     return _ranking(_data, column, na_last=na_last, method='min')
 
 
-@register_datafunc(columns=1)
+@register_datafunc
 def sum(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nansum(x) if na_rm else numpy.sum(x)
 
-@register_datafunc(columns=1)
+@register_datafunc
 def mean(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nanmean(x) if na_rm else numpy.mean(x)
 
-@register_datafunc(columns=1)
+@register_datafunc
 def min(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nanmin(x) if na_rm else numpy.min(x)
 
-@register_datafunc(columns=1)
+@register_datafunc
 def max(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nanmax(x) if na_rm else numpy.max(x)
 
-@register_function
+@register_func
 def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
     return [min(elem, na_rm) for elem in zip(*x)]
 
-@register_function
+@register_func
 def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
     return [max(elem, na_rm) for elem in zip(*x)]
 
-@register_datafunc(columns=1)
+@register_datafunc
 def sd(
         x: Iterable[Union[int, float]],
         na_rm: bool = False,
         ddof: int = 1 # numpy default is 0. Make it 1 to be consistent with R
 ) -> float:
     return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)
+
+@register_datafunc(columns='*')
+def n(x: Optional[Iterable[Any]] = None) -> int:
+    return len(x)
+
+
+# Functions without data arguments
+# --------------------------------
+
+def register_vectorized(func):
+    """Vectorize the common functions
+
+    Note that only the first argument is vectorized.
+
+    Args:
+        func: The function to be vectorized
+    """
+
+
+    @register_func
+    @functools.wraps(func)
+    def wrapper(x, *args, **kwargs):
+        partial_func = lambda y: func(y, *args, **kwargs)
+        vec_func = vectorize(partial_func)
+        return vec_func(x)
+    return wrapper
+
+@register_func(None, context=Context.SELECT)
+def c(*elems: Any) -> Collection:
+    """Mimic R's concatenation. Named one is not supported yet
+    All elements passed in will be flattened.
+
+    Args:
+        _data: The data piped in
+        *elems: The elements
+
+    Returns:
+        A collection of elements
+    """
+    return Collection(elems)
+
+@register_vectorized
+def is_numeric(x: Any) -> bool:
+    return isinstance(x, (int, float))
+
+@register_vectorized
+def is_character(x: Any) -> bool:
+    """Mimic the is.character function in R
+
+    Args:
+        x: The elements to check
+
+    Returns:
+        True if
+    """
+    return isinstance(x, str)
+
+@register_func
+def is_categorical(x: Series) -> bool:
+    return isinstance(x.dtype, CategoricalDtype)
+
+@register_func(None)
+def as_categorical(x: Series) -> Series:
+    return x.astype('category')
+
+@register_vectorized
+def as_character(x: Any) -> str:
+    return str(x)
+
+
+@register_func
+def num_range(
+        prefix: str,
+        range: Iterable[int],
+        width: Optional[int] = None
+) -> List[str]:
+    """Matches a numerical range like x01, x02, x03.
+
+    Args:
+        _data: The data piped in
+        prefix: A prefix that starts the numeric range.
+        range: A sequence of integers, like `range(3)` (produces `0,1,2`).
+        width: Optionally, the "width" of the numeric range.
+            For example, a range of 2 gives "01", a range of three "001", etc.
+
+    Returns:
+        A list of ranges with prefix.
+    """
+    return [
+        f"{prefix}{elem if not width else str(elem).zfill(width)}"
+        for elem in range
+    ]
+
+# todo: figure out singledispatch for as_date
+def _as_date_format(
+        x: str,
+        format: Optional[str],
+        try_formats: Optional[Iterator[str]],
+        optional: bool,
+        offset: datetime.timedelta
+) -> datetime.date:
+    try_formats = try_formats or [
+        "%Y-%m-%d",
+        "%Y/%m/%d",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y/%m/%d %H:%M:%S"
+    ]
+    if not format:
+        format = try_formats
+    else:
+        format = [format]
+
+    for fmt in format:
+        try:
+            return (datetime.datetime.strptime(x, fmt) + offset).date()
+        except ValueError:
+            continue
+    else:
+        if optional:
+            return NaN
+        else:
+            raise ValueError(
+                "character string is not in a standard unambiguous format"
+            )
+
+def _as_date_diff(
+        x: int,
+        origin: Union[DateType, datetime.datetime],
+        offset: datetime.timedelta
+) -> datetime.date:
+    if isinstance(origin, str):
+        origin = as_date(origin)
+
+    dt = origin + datetime.timedelta(days=x) + offset
+    if isinstance(dt, datetime.date):
+        return dt
+
+    return dt.date()
+
+@register_vectorized
+def as_date(
+        x: DateType,
+        format: Optional[str] = None,
+        try_formats: Optional[List[str]] = None,
+        optional: bool = False,
+        tz: Union[int, datetime.timedelta] = 0,
+        origin: Optional[Union[DateType, datetime.datetime]] = None
+):
+    """Convert an object to a datetime.date object
+
+    See: https://rdrr.io/r/base/as.Date.html
+
+    Args:
+        x: Object that can be converted into a datetime.date object
+        format:  If not specified, it will try try_formats one by one on
+            the first non-NaN element, and give an error if none works.
+            Otherwise, the processing is via strptime
+        try_formats: vector of format strings to try if format is not specified.
+        optional: indicating to return NA (instead of signalling an error)
+            if the format guessing does not succeed.
+        origin: a datetime.date/datetime object, or something which can be
+            coerced by as_date(origin, ...) to such an object.
+        tz: a time zone offset or a datetime.timedelta object.
+            Note that time zone name is not supported yet.
+
+    Returns:
+        The datetime.date object
+
+    Raises:
+        ValueError: When string is not in a standard unambiguous format
+    """
+    if isinstance(tz, (int, numpy.integer)):
+        tz = datetime.timedelta(hours=int(tz))
+
+    if isinstance(x, datetime.date):
+        return x + tz
+
+    if isinstance(x, datetime.datetime):
+        return (x + tz).date()
+
+    if isinstance(x, str):
+        return _as_date_format(
+            x,
+            format=format,
+            try_formats=try_formats,
+            optional=optional,
+            offset=tz
+        )
+
+    if isinstance(x, (int, numpy.integer)):
+        return _as_date_diff(int(x), origin=origin, offset=tz)
+
+    raise ValueError("character string is not in a standard unambiguous format")
+

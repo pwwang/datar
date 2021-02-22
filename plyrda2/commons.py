@@ -12,7 +12,7 @@ class UnaryOp(ABC):
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.operand}>'
 
-class UnaryNeg(UnaryOp):
+class Inverted(UnaryOp):
     ...
 
 class UnaryPos(UnaryOp):
@@ -27,7 +27,7 @@ class Collection(list):
         super().__init__(expand_collections(args))
 
     def __neg__(self):
-        return UnaryNeg(self)
+        return Inverted(self)
 
     def __pos__(self):
         return UnaryPos(self)
