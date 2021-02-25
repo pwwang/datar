@@ -58,7 +58,7 @@ def check_column(column: Any) -> None:
     )):
         raise ColumnNameInvalidError(
             'Invalid column, expected int, str, list, tuple, c(), across(), '
-            f'f.column, -c() or -f.column, got {type(column)}'
+            f'f.column, ~c() or ~f.column, got {type(column)}'
         )
 
 def expand_collections(collections: Any) -> List[Any]:
@@ -237,3 +237,26 @@ def align_value(
             return value * nrepeat
         return value.append([value] * (nrepeat - 1))
     return value
+
+def copy_df(
+        df: Union[DataFrame, DataFrameGroupBy]
+) -> Union[DataFrame, DataFrameGroupBy]:
+    if isinstance(df, DataFrame):
+        return df.copy()
+    obj = df.obj.copy()
+    return obj.groupby(df.keys, dropna=False)
+
+def df_assign_item(
+        df: Union[DataFrame, DataFrameGroupBy],
+        item: str,
+        value: Any
+) -> None:
+    if isinstance(df, DataFrame):
+        df[item] = value
+    else:
+        df.obj[item] = value
+
+def arithmetize(data: Any) -> Any:
+    if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
+        return data.obj
+    return data

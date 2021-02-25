@@ -1,80 +1,108 @@
+import builtins
 import datetime
 from functools import wraps
 import functools
-from numpy.core.numeric import NaN
+from pandas.core import series
+from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_string_dtype
+from pandas.core.groupby.generic import SeriesGroupBy
 from pandas.core.series import Series
+from pandas.api.types import is_numeric_dtype
 
-from pipda.context import ContextBase, ContextSelect
+from pipda.context import ContextBase, ContextEval, ContextSelect
+from pipda import evaluate_expr
+from pipda.utils import evaluate_args, evaluate_kwargs
 from plyrda.verbs import select
 import numpy
 from plyrda.group_by import get_groups, get_rowwise
 import re
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Type, Union
 
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from pipda import register_func, Context
 
-from .utils import filter_columns, select_columns
-from .middlewares import Across, CAcross, Collection, RowwiseDataFrame, Inverted
+from .utils import arithmetize, filter_columns, select_columns
+from .middlewares import Across, CAcross, Collection, DescSeries, RowwiseDataFrame
 from .exceptions import ColumnNotExistingError
 
 DateType = Union[int, str, datetime.date]
 
-def _register_datafunc_coln(
+def _register_grouped_coln(
         func: Callable,
-        context: Union[Context, ContextBase] = Context.EVAL
+        context: ContextBase
 ) -> Callable:
 
-    @register_func(DataFrame, context=context)
+    @register_func(DataFrame, context=None)
     @wraps(func)
-    def wrapper(_data: DataFrame, *columns, **kwargs) -> Any:
-
+    def wrapper(_data: DataFrame, *columns: Any, **kwargs: Any) -> Any:
+        columns = [evaluate_expr(col, _data, context) for col in columns]
         if isinstance(_data, RowwiseDataFrame):
             return  func(*(row for row in zip(*columns)), **kwargs)
         # flatten
-        return func(*columns, **kwargs)
+        return func(*sum((list(col) for col in columns), []), **kwargs)
 
     return wrapper
 
-def _register_datafunc_col1(
+def _register_grouped_col1(
         func: Callable,
-        context: Union[Context, ContextBase] = Context.EVAL
+        context: ContextBase
 ) -> Callable:
+    """Register a function with argument of single column as groupby aware"""
 
-    @register_func(DataFrame, context=context)
+    @register_func(DataFrame, context=None)
     @wraps(func)
-    def wrapper(_data: DataFrame, column, *args, **kwargs):
-
-        if isinstance(_data, RowwiseDataFrame):
-            return _data.apply(
-                lambda row: func([row[col] for col in columns], *args, **kwargs)
-            )
-
-        return func(_data[columns].values.flatten(), *args, **kwargs)
+    def wrapper(
+            _data: DataFrame,
+            _column: Any,
+            *args: Any,
+            **kwargs: Any
+    ) -> Any:
+        series = evaluate_expr(_column, _data, context)
+        args = evaluate_args(args, _data, context.args)
+        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
+        return func(series, *args, **kwargs)
 
     @wrapper.register(DataFrameGroupBy)
-    def _(_data: DataFrameGroupBy, column, *args, **kwargs: Any) -> Any:
-        column = select_columns(_data.obj.columns, column)
-        return _data[column].apply(func, *args, **kwargs)
+    def _(
+            _data: DataFrameGroupBy,
+            _column: Any,
+            *args: Any,
+            **kwargs: Any
+    ) -> Any:
+        series = evaluate_expr(_column, _data, context)
+        args = evaluate_args(args, _data, context.args)
+        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
+        return series.apply(func, *args, **kwargs)
 
     return wrapper
 
-def register_datafunc(func=None, columns=1):
+def register_grouped(
+        func: Optional[Callable] = None,
+        context: Optional[Union[Context, ContextBase]] = None,
+        columns: Union[str, int] = 1
+) -> Callable:
+    """Register a function as a group-by-aware function"""
     if func is None:
-        return lambda fun: register_datafunc(fun, columns=columns)
+        return lambda fun: register_grouped(
+            fun,
+            context=context,
+            columns=columns
+        )
+
+    if isinstance(context, Context):
+        context = context.value
 
     if columns == '*':
-        return _register_datafunc_coln(func)
+        return _register_grouped_coln(func, context=context)
 
     if columns == 1:
-        return _register_datafunc_col1(func)
+        return _register_grouped_col1(func, context=context)
 
     raise ValueError("Expect columns to be either '*', or 1.")
 
 @register_func
 def starts_with(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         match: Union[Iterable[str], str],
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -92,7 +120,7 @@ def starts_with(
         A list of matched vars
     """
     return filter_columns(
-        vars or _data.columns,
+        vars or arithmetize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: cname.startswith(mat),
@@ -100,7 +128,7 @@ def starts_with(
 
 @register_func
 def ends_with(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         match: str,
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -118,7 +146,7 @@ def ends_with(
         A list of matched vars
     """
     return filter_columns(
-        vars or _data.columns,
+        vars or arithmetize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: cname.endswith(mat),
@@ -126,7 +154,7 @@ def ends_with(
 
 @register_func
 def contains(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         match: str,
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -144,7 +172,7 @@ def contains(
         A list of matched vars
     """
     return filter_columns(
-        vars or _data.columns,
+        vars or arithmetize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: mat in cname,
@@ -152,7 +180,7 @@ def contains(
 
 @register_func
 def matches(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         match: str,
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -170,14 +198,14 @@ def matches(
         A list of matched vars
     """
     return filter_columns(
-        vars or _data.columns,
+        vars or arithmetize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: re.search(mat, cname),
     )
 
 @register_func
-def everything(_data: DataFrame) -> List[str]:
+def everything(_data: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
     """Matches all columns.
 
     Args:
@@ -186,11 +214,11 @@ def everything(_data: DataFrame) -> List[str]:
     Returns:
         All column names of _data
     """
-    return _data.columns.to_list()
+    return arithmetize(_data).columns.to_list()
 
 @register_func
 def last_col(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         offset: int = 0,
         vars: Optional[Iterable[str]] = None
 ) -> str:
@@ -210,7 +238,10 @@ def last_col(
     return vars[-(offset+1)]
 
 @register_func
-def all_of(_data: DataFrame, x: Iterable[Union[int, str]]) -> List[str]:
+def all_of(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        x: Iterable[Union[int, str]]
+) -> List[str]:
     """For strict selection.
 
     If any of the variables in the character vector is missing,
@@ -227,7 +258,7 @@ def all_of(_data: DataFrame, x: Iterable[Union[int, str]]) -> List[str]:
         ColumnNotExistingError: When any of the elements in `x` does not exist
             in `_data` columns
     """
-    nonexists = set(x) - set(_data.columns)
+    nonexists = set(x) - set(arithmetize(_data).columns)
     if nonexists:
         nonexists = ', '.join(f'`{elem}`' for elem in nonexists)
         raise ColumnNotExistingError(
@@ -238,7 +269,7 @@ def all_of(_data: DataFrame, x: Iterable[Union[int, str]]) -> List[str]:
     return list(x)
 
 @register_func
-def any_of(_data: DataFrame,
+def any_of(_data: Union[DataFrame, DataFrameGroupBy],
            x: Iterable[Union[int, str]],
            vars: Optional[Iterable[str]] = None) -> List[str]:
     """Select but doesn't check for missing variables.
@@ -253,11 +284,11 @@ def any_of(_data: DataFrame,
     Returns:
         The matched column names
     """
-    vars = vars or _data.columns
+    vars = vars or arithmetize(_data).columns
     return [elem for elem in x if elem in vars]
 
-@register_func
-def where(_data: DataFrame, fn: Callable) -> List[str]:
+@register_func((DataFrame, DataFrameGroupBy))
+def where(_data: Union[DataFrame, DataFrameGroupBy], fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
     Args:
@@ -269,22 +300,38 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
     Returns:
         The matched columns
     """
-    if not hasattr(fn, '__pipda__'):
-        func = lambda _data, *args, **kwargs: fn(*args, **kwargs)
-    elif fn.__pipda__ == 'CommonFunction':
-        func = lambda _data, *args, **kwargs: fn(
-            *args, **kwargs, _force_piping=True
-        ).evaluate(_data)
-    else:
-        func = lambda _data, *args, **kwargs: fn(
-            *args, **kwargs, _force_piping=True
-        ).evaluate(_data)
+    _data = arithmetize(_data)
+    retcols = []
 
-    return [col for col in _data.columns if func(_data, _data[col])]
+    pipda_type = getattr(fn, '__pipda__', None)
+    for col in _data.columns:
+        if not pipda_type:
+            conditions = fn(_data[col])
+        else:
+            conditions = (
+                fn(_data[col], _force_piping=True).evaluate(_data)
+                if pipda_type == 'PlainFunction'
+                else fn(_data, _data[col], _force_piping=True).evaluate(_data)
+            )
+        if isinstance(conditions, bool):
+            if conditions:
+                retcols.append(col)
+            else:
+                continue
+        elif all(conditions):
+            retcols.append(col)
 
-@register_func
-def desc(_data, col):
-    return Inverted(col, data=_data)
+    return retcols
+
+@register_func((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def desc(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        col: str
+) -> Union[DescSeries, SeriesGroupBy]:
+    if isinstance(_data, DataFrameGroupBy):
+        series = DescSeries(_data[col].obj.values)
+        return series.groupby(_data.grouper, dropna=False)
+    return DescSeries(_data[col].values)
 
 @register_func(context=Context.SELECT)
 def across(
@@ -308,45 +355,49 @@ def c_across(
 ) -> CAcross:
     return CAcross(_data, _cols, _fns, _names, args, kwargs)
 
-def _ranking(data: Iterable[Any], na_last: str, method: str, percent: bool = False) -> Iterable[float]:
-    groups = get_groups(data)
-    if groups:
-        _data = data.groupby(groups)
+def _ranking(
+        data: Iterable[Any],
+        na_last: str,
+        method: str,
+        percent: bool = False
+) -> Iterable[float]:
+    """Rank the data"""
+    if not isinstance(data, Series):
+        data = Series(data)
 
-    if isinstance(column, Inverted):
-        ascending = False
-        _data = _data[column.elems[0]]
-    else:
-        ascending = True
-        _data = _data[column]
+    ascending = not isinstance(data, DescSeries)
 
-    return _data.rank(
+    ret = data.rank(
         method=method,
         ascending=ascending,
         pct=percent,
-        na_option=('keep' if na_last == 'keep'
-                   else 'top' if not na_last
-                   else 'bottom')
+        na_option=(
+            'keep' if na_last == 'keep'
+            else 'top' if not na_last
+            else 'bottom'
+        )
     )
+    return ret
 
-@register_datafunc
-def min_rank(_data, column, na_last="keep"):
-    return _ranking(_data, column, na_last=na_last, method='min')
+@register_grouped(context=Context.EVAL)
+def min_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
+    """Rank the data using min method"""
+    return _ranking(series, na_last=na_last, method='min')
 
 
-@register_datafunc
+@register_grouped(context=Context.EVAL)
 def sum(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nansum(x) if na_rm else numpy.sum(x)
 
-@register_datafunc
-def mean(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
-    return numpy.nanmean(x) if na_rm else numpy.mean(x)
+@register_grouped(context=Context.EVAL)
+def mean(series: Iterable[Any], na_rm: bool = False) -> float:
+    return numpy.nanmean(series) if na_rm else numpy.mean(series)
 
-@register_datafunc
+@register_grouped
 def min(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nanmin(x) if na_rm else numpy.min(x)
 
-@register_datafunc
+@register_grouped
 def max(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
     return numpy.nanmax(x) if na_rm else numpy.max(x)
 
@@ -358,7 +409,7 @@ def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
 def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
     return [max(elem, na_rm) for elem in zip(*x)]
 
-@register_datafunc
+@register_grouped
 def sd(
         x: Iterable[Union[int, float]],
         na_rm: bool = False,
@@ -366,7 +417,7 @@ def sd(
 ) -> float:
     return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)
 
-@register_datafunc(columns='*')
+@register_grouped(columns='*')
 def n(x: Optional[Iterable[Any]] = None) -> int:
     return len(x)
 
@@ -374,23 +425,6 @@ def n(x: Optional[Iterable[Any]] = None) -> int:
 # Functions without data arguments
 # --------------------------------
 
-def register_vectorized(func):
-    """Vectorize the common functions
-
-    Note that only the first argument is vectorized.
-
-    Args:
-        func: The function to be vectorized
-    """
-
-
-    @register_func
-    @functools.wraps(func)
-    def wrapper(x, *args, **kwargs):
-        partial_func = lambda y: func(y, *args, **kwargs)
-        vec_func = vectorize(partial_func)
-        return vec_func(x)
-    return wrapper
 
 @register_func(None, context=Context.SELECT)
 def c(*elems: Any) -> Collection:
@@ -406,11 +440,23 @@ def c(*elems: Any) -> Collection:
     """
     return Collection(elems)
 
-@register_vectorized
+@register_func(None, context=Context.EVAL)
+def round(
+        number: Union[Series, SeriesGroupBy, float],
+        ndigits: int = 0
+) -> float:
+    number = arithmetize(number)
+    if isinstance(number, Series):
+        return number.round(ndigits)
+    return builtins.round(number, ndigits)
+
+@register_func(None, context=Context.EVAL)
 def is_numeric(x: Any) -> bool:
+    x = arithmetize(x)
+    if isinstance(x, Series):
+        return is_numeric_dtype(x)
     return isinstance(x, (int, float))
 
-@register_vectorized
 def is_character(x: Any) -> bool:
     """Mimic the is.character function in R
 
@@ -420,22 +466,36 @@ def is_character(x: Any) -> bool:
     Returns:
         True if
     """
+    x = arithmetize(x)
+    if isinstance(x, Series):
+        return is_string_dtype(x)
     return isinstance(x, str)
 
-@register_func
-def is_categorical(x: Series) -> bool:
-    return isinstance(x.dtype, CategoricalDtype)
+@register_func(None, context=Context.EVAL)
+def is_categorical(x: Union[Series, SeriesGroupBy]) -> bool:
+    x = arithmetize(x)
+    return is_categorical_dtype(x)
 
-@register_func(None)
-def as_categorical(x: Series) -> Series:
+@register_func(None, context=Context.EVAL)
+def is_double(x: Any) -> bool:
+    x = arithmetize(x)
+    if isinstance(x, Series):
+        return is_float_dtype(x)
+    return isinstance(x, float)
+
+is_float = is_double
+
+@register_func(None, context=Context.EVAL)
+def as_categorical(x: Union[Series, SeriesGroupBy]) -> Series:
+    x = arithmetize(x)
     return x.astype('category')
 
-@register_vectorized
-def as_character(x: Any) -> str:
-    return str(x)
+@register_func(None, context=Context.EVAL)
+def as_character(x: Union[Series, SeriesGroupBy]) -> Series:
+    x = arithmetize(x)
+    return x.astype('str')
 
-
-@register_func
+@register_func(None)
 def num_range(
         prefix: str,
         range: Iterable[int],
@@ -484,7 +544,7 @@ def _as_date_format(
             continue
     else:
         if optional:
-            return NaN
+            return numpy.nan
         else:
             raise ValueError(
                 "character string is not in a standard unambiguous format"
@@ -496,7 +556,7 @@ def _as_date_diff(
         offset: datetime.timedelta
 ) -> datetime.date:
     if isinstance(origin, str):
-        origin = as_date(origin)
+        origin = _as_date(origin)
 
     dt = origin + datetime.timedelta(days=x) + offset
     if isinstance(dt, datetime.date):
@@ -504,15 +564,14 @@ def _as_date_diff(
 
     return dt.date()
 
-@register_vectorized
-def as_date(
+def _as_date(
         x: DateType,
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
         tz: Union[int, datetime.timedelta] = 0,
         origin: Optional[Union[DateType, datetime.datetime]] = None
-):
+) -> datetime.date:
     """Convert an object to a datetime.date object
 
     See: https://rdrr.io/r/base/as.Date.html
@@ -559,3 +618,10 @@ def as_date(
 
     raise ValueError("character string is not in a standard unambiguous format")
 
+@register_func(None, context=Context.EVAL)
+def _as_date(
+        x: Union[Series, SeriesGroupBy],
+        **kwargs: Any
+) -> datetime.date:
+    x = arithmetize(x)
+    return x.transform(_as_date, **kwargs)

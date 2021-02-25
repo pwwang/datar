@@ -12,7 +12,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import align_value, list_diff, list_union, select_columns
+from .utils import align_value, copy_df, df_assign_item, list_diff, list_union, select_columns
 from .middlewares import Across, CAcross, Collection, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
@@ -74,7 +74,7 @@ def select(
         return _data[selected].rename(columns=new_names)
     return _data[selected]
 
-@register_verb(DataFrame, context=Context.UNSET)
+@register_verb((DataFrame, DataFrameGroupBy), context=None)
 def mutate(
         _data: DataFrame,
         *acrosses: Across,
@@ -104,25 +104,27 @@ def mutate(
     if isinstance(_data, RowwiseDataFrame):
         data = RowwiseDataFrame(_data, _data.rowwise)
     else:
-        data = _data.copy()
+        data = copy_df(_data)
 
     for key, val in kwargs.items():
         if val is None:
             data.drop(columns=[key], inplace=True)
             continue
         val = evaluate_expr(val, data, context)
+
         if isinstance(val, CAcross):
             val.names = key
         if isinstance(val, Across):
             val = DataFrame(val.evaluate(context, data))
 
         value = align_value(val, data)
+
         try:
-            data[key] = value
+            df_assign_item(data, key, value)
         except ValueError as verr:
             # cannot reindex from a duplicate axis
             try:
-                data[key] = value.values
+                df_assign_item(data, key, value.values)
             except AttributeError:
                 raise verr from None
 
@@ -132,7 +134,7 @@ def mutate(
         data = relocate(data, *outcols, _before=_before, _after=_after)
 
     # do the keep
-    used_cols = context.used_refs.keys()
+    used_cols = list(context.used_refs.keys())
     if _keep == 'used':
         data = data[list_union(used_cols, outcols)]
     elif _keep == 'unused':
@@ -147,25 +149,6 @@ def mutate(
         return RowwiseDataFrame(data, rowwise=_data.rowwise)
 
     return data
-
-@mutate.register(DataFrameGroupBy)
-def _(
-        _data: DataFrameGroupBy,
-        *acrosses: Across,
-        _keep: str = 'all',
-        _before: Optional[str] = None,
-        _after: Optional[str] = None,
-        **kwargs: Any
-) -> DataFrameGroupBy:
-    ret = mutate(
-        _data.obj,
-        *acrosses,
-        _keep=_keep,
-        _before=_before,
-        _after=_after,
-        **kwargs
-    )
-    return ret.groupby(_data.keys)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -259,7 +242,10 @@ def group_by(
         _data = mutate(_data, **kwargs)
 
     columns = select_columns(_data.columns, *columns, *kwargs.keys())
-    return _data.groupby(columns)
+    # requires pandas 1.2+
+    # eariler versions have bugs with apply/transform
+    # GH35889
+    return _data.groupby(columns, dropna=False)
 
 @group_by.register(DataFrameGroupBy)
 def _(
@@ -274,8 +260,8 @@ def _(
     columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
     if _add:
         groups = Collection(_data.keys) + columns
-        return _data.obj.groupby(groups)
-    return _data.obj.groupby(columns)
+        return _data.obj.groupby(groups, dropna=False)
+    return _data.obj.groupby(columns, dropna=False)
 
 @register_verb(DataFrameGroupBy)
 def ungroup(_data: DataFrameGroupBy) -> DataFrame:

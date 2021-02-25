@@ -1,17 +1,19 @@
 import operator
 
 from typing import Any
+from pandas.core.groupby.generic import DataFrameGroupBy
+from pandas.core.groupby.groupby import GroupBy
 from pipda import register_operator, Operator, Context
 from pipda.context import ContextSelect
 
-from .utils import align_value, list_diff, list_intersect, list_union
-from .middlewares import Inverted
+from .utils import align_value, arithmetize, list_intersect, list_union
+from .middlewares import Collection, Inverted
 
 @register_operator
 class PlyrdaOperator(Operator):
 
     def invert(self, operand: Any) -> Any:
-        if isinstance(self.context, ContextSelect):
+        if isinstance(operand, (slice, str, list)):
             return Inverted(operand, self.data).complements
         return operator.invert(operand)
 
@@ -27,7 +29,7 @@ class PlyrdaOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(self.context, ContextSelect):
+        if isinstance(left, list) and isinstance(left[0], str):
             return list_intersect(left, right)
 
         return operator.and_(left, right)
@@ -47,7 +49,7 @@ class PlyrdaOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(self.context, ContextSelect):
+        if isinstance(left, list) and isinstance(left[0], str):
             return list_union(left, right)
 
         return operator.or_(left, right)
@@ -62,3 +64,8 @@ class PlyrdaOperator(Operator):
 
     def ne(self, left: Any, right: Any) -> bool:
         return not self.eq(left, right)
+
+    def truediv(self, left: Any, right: Any) -> Any:
+        left = align_value(left, self.data)
+        right = align_value(right, self.data)
+        return operator.truediv(left, right)

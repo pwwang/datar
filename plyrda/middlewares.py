@@ -1,9 +1,10 @@
 from typing import Any, Iterable, Optional
 
 from pandas import DataFrame
+from pandas.core.series import Series
 from pipda.context import Context, ContextBase, ContextSelect
 
-from .utils import expand_collections, list_diff, sanitize_slice, select_columns
+from .utils import arithmetize, expand_collections, list_diff, sanitize_slice, select_columns
 from .group_by import get_rowwise, is_grouped, get_groups
 
 
@@ -49,18 +50,19 @@ class Inverted:
     def __repr__(self) -> str:
         return f"Inverted({self.elems})"
 
-class Descending(str):
+class DescSeries(Series):
 
-    def __new__(cls, content):
-        return str.__new__(cls, content)
+    @property
+    def _constructor(self):
+        return DescSeries
 
 class Across:
 
     def __init__(self, data, cols, fns, names, args, kwargs):
-        cols = cols or data.columns
+        cols = cols or arithmetize(data).columns
         if not isinstance(cols, (list, tuple)):
             cols = [cols]
-        cols = select_columns(data.columns, *cols)
+        cols = select_columns(arithmetize(data).columns, *cols)
 
         fns_list = []
         if callable(fns):
@@ -118,7 +120,7 @@ class Across:
                 name = name_format.format(**render_data)
                 if (
                         hasattr(fn, '__pipda__') and
-                        fn.__pipda__ == 'FunctionNoDataArg'
+                        fn.__pipda__ == 'PlainFunction'
                 ):
                     # apply group by
                     if is_grouped(data):
