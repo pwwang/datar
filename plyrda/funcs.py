@@ -329,9 +329,9 @@ def desc(
         col: str
 ) -> Union[DescSeries, SeriesGroupBy]:
     if isinstance(_data, DataFrameGroupBy):
-        series = DescSeries(_data[col].obj.values)
+        series = DescSeries(_data[col].obj.values, name=col)
         return series.groupby(_data.grouper, dropna=False)
-    return DescSeries(_data[col].values)
+    return DescSeries(_data[col].values, name=col)
 
 @register_func(context=Context.SELECT)
 def across(

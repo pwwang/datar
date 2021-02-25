@@ -1,4 +1,6 @@
 from itertools import chain
+
+from pandas.core.groupby.generic import SeriesGroupBy
 from plyrda.contexts import ContextEvalWithUsedRefs
 from re import DEBUG
 import sys
@@ -12,8 +14,8 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import align_value, copy_df, df_assign_item, list_diff, list_union, select_columns
-from .middlewares import Across, CAcross, Collection, IfCross, RowwiseDataFrame, Inverted
+from .utils import align_value, arithmetize, copy_df, df_assign_item, list_diff, list_union, select_columns
+from .middlewares import Across, CAcross, Collection, DescSeries, IfCross, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
 @register_verb(DataFrame)
@@ -344,19 +346,24 @@ def summarise(
 
 summarize = summarise
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def arrange(
-        _data: DataFrame,
+        _data: Union[DataFrame, DataFrameGroupBy],
         column: Union[Inverted, Across, str],
         *columns: Union[Inverted, Across, str],
         _by_group: bool = False
 ) -> DataFrame:
-    columns = (column, ) + columns
+    columns = list((column, ) + columns)
     by = []
     ascending = []
+    all_columns = arithmetize(_data).columns
+    for i, column in enumerate(columns):
+        if isinstance(column, Across):
+            columns[i] = column.evaluate(Context.SELECT, _data)
+
     for column in Collection(columns):
         if isinstance(column, Inverted):
-            cols = select_columns(_data.columns, column.elems)
+            cols = select_columns(all_columns, column.elems)
             by.extend(cols)
             ascending.extend([False] * len(cols))
         elif isinstance(column, Across):
@@ -368,15 +375,28 @@ def arrange(
             else:
                 by.extend(cols)
                 ascending.extend([True] * len(cols))
+        elif isinstance(column, DescSeries):
+            by.append(column.name)
+            ascending.append(False)
+        elif (
+                isinstance(column, SeriesGroupBy) and
+                isinstance(column.obj, DescSeries)
+        ):
+            by.append(column.obj.name)
+            ascending.append(False)
         else:
-            cols = select_columns(_data.columns, column)
+            cols = select_columns(all_columns, column)
             by.extend(cols)
             ascending.extend([True] * len(cols))
 
-    if _by_group and is_grouped(_data):
-        groups = get_groups(_data)
-        by = groups + list_diff(by, groups)
-        ascending = [True] * len(groups) + ascending
+    if _by_group and isinstance(_data, DataFrameGroupBy):
+        by = list_union(_data.keys, by)
+        ascending = [True] * (len(by) - len(ascending)) + ascending
+
+    if isinstance(_data, DataFrameGroupBy):
+        return _data.obj.sort_values(by, ascending=ascending).groupby(
+            _data.keys, dropna=False
+        )
     return _data.sort_values(by, ascending=ascending)
 
 @register_verb(DataFrame)
