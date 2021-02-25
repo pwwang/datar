@@ -9,7 +9,7 @@ from pandas.core.series import Series
 from pandas.api.types import is_numeric_dtype
 
 from pipda.context import ContextBase, ContextEval, ContextSelect
-from pipda.symbolic import DirectRefAttr
+from pipda.symbolic import DirectRefAttr, DirectRefItem
 from pipda import evaluate_expr
 from pipda.utils import evaluate_args, evaluate_kwargs
 from plyrda.verbs import select
@@ -474,14 +474,23 @@ def sd(
     )
 
 
-@register_func
-def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
-    return [min(elem, na_rm) for elem in zip(*x)]
+@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+def pmin(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *series: Union[Series, SeriesGroupBy],
+        na_rm: bool = False
+) -> Iterable[float]:
+    series = (objectize(ser) for ser in series)
+    return [min(_data, elem, na_rm=na_rm) for elem in zip(*series)]
 
-@register_func
-def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
-    return [max(elem, na_rm) for elem in zip(*x)]
-
+@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+def pmax(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *series: Union[Series, SeriesGroupBy],
+        na_rm: bool = False
+) -> Iterable[float]:
+    series = (objectize(ser) for ser in series)
+    return [max(_data, elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_grouped(context=Context.EVAL, columns=0)
 def n(series: Iterable[Any]) -> int:
@@ -691,3 +700,21 @@ def _as_date(
 ) -> datetime.date:
     x = objectize(x)
     return x.transform(_as_date, **kwargs)
+
+
+# Helper functions
+# --------------------------------
+def tribble(*dummies: Any) -> DataFrame:
+    columns = []
+    data = [[]]
+    for dummy in dummies:
+        # columns
+        if isinstance(dummy, (DirectRefAttr, DirectRefItem)):
+            columns.append(dummy.ref)
+        else:
+            # columns have been finished
+            if len(data[-1]) == len(columns):
+                data.append([])
+            data[-1].append(dummy)
+
+    return DataFrame(data, columns=columns)

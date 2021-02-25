@@ -297,7 +297,7 @@ def summarise(
     kwargs = across
     ret = None
     if isinstance(_data, RowwiseDataFrame) and _data.rowwise is not True:
-        ret = _data[_data.rowwise]
+        ret = _data.loc[:, _data.rowwise]
 
     for key, val in kwargs.items():
         if isinstance(val, CAcross):
@@ -334,7 +334,6 @@ def summarise(
             _groups = 'drop_last'
 
     ret.reset_index(inplace=True)
-
     if _groups == 'drop_last':
         return ret.groupby(_data.keys[:-1]) if _data.keys[:-1] else ret
 
@@ -468,3 +467,95 @@ def debug(
             print_msg(val)
             print_msg("## Evaluated")
             print_msg(evaluate_expr(val, _data, context))
+
+
+@register_verb((DataFrame, DataFrameGroupBy), context=None)
+def count(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *columns: Any,
+        wt: Optional[str] = None,
+        sort: bool = False,
+        name: str = 'n',
+        **mutates: Any
+) -> DataFrame:
+    """Count observations by group
+
+    See: https://dplyr.tidyverse.org/reference/count.html
+    """
+    _data = objectize(_data)
+    columns = evaluate_args(columns, _data, Context.SELECT)
+    columns = select_columns(_data.columns, *columns)
+
+    wt = evaluate_expr(wt, _data, Context.SELECT)
+    _data = mutate(_data, **mutates)
+
+    columns = columns + list(mutates)
+    grouped = _data.groupby(columns, dropna=False)
+
+    if not wt:
+        count_frame = grouped[columns].size().to_frame(name)
+    else:
+        count_frame = grouped[wt].sum().to_frame(name)
+
+    ret = count_frame.reset_index(level=columns)
+    if sort:
+        ret = ret.sort_values([name], ascending=[False])
+    return ret
+
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def tally(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        wt: str = None,
+        sort: bool = False,
+        name: str = 'n'
+) -> DataFrame:
+    if isinstance(_data, DataFrameGroupBy):
+        return count(_data, *_data.keys, wt=wt, sort=sort, name=name)
+
+    return DataFrame({
+        name: [_data.shape[0] if wt is None else _data[wt].sum()]
+    })
+
+@register_verb((DataFrame, DataFrameGroupBy), context=None)
+def add_count(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *columns: Any,
+        wt: Optional[str] = None,
+        sort: bool = False,
+        name: str = 'n',
+        **mutates: Any
+) -> Union[DataFrame, DataFrameGroupBy]:
+    count_frame = count(_data, *columns, wt=wt, sort=sort, name=name, **mutates)
+    ret = objectize(_data).merge(
+        count_frame,
+        on=count_frame.columns.to_list()[:-1]
+    )
+
+    if sort:
+        ret = ret.sort_values([name], ascending=[False])
+
+    if isinstance(_data, DataFrameGroupBy):
+        return ret.groupby(_data.keys, dropna=False)
+    return ret
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def add_tally(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        wt: str = None,
+        sort: bool = False,
+        name: str = 'n'
+) -> Union[DataFrame, DataFrameGroupBy]:
+    tally_frame = tally(_data, wt=wt, sort=False, name=name)
+
+    ret = objectize(_data).assign(**{
+        name: tally_frame.values.flatten()[0]
+    })
+
+    if sort:
+        ret = ret.sort_values([name], ascending=[False])
+
+    if isinstance(_data, DataFrameGroupBy):
+        return ret.groupby(_data.keys, dropna=False)
+
+    return ret
