@@ -8,7 +8,7 @@ from pandas.core.groupby import DataFrameGroupBy
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
 
-from .utils import arithmetize, expand_collections, list_diff, sanitize_slice, select_columns
+from .utils import objectize, expand_collections, list_diff, sanitize_slice, select_columns
 from .group_by import get_rowwise, is_grouped, get_groups
 
 
@@ -63,10 +63,10 @@ class DescSeries(Series):
 class Across:
 
     def __init__(self, data, cols, fns, names, args, kwargs):
-        cols = cols or arithmetize(data).columns
+        cols = cols or objectize(data).columns
         if not isinstance(cols, (list, tuple)):
             cols = [cols]
-        cols = select_columns(arithmetize(data).columns, *cols)
+        cols = select_columns(objectize(data).columns, *cols)
 
         fns_list = []
         if callable(fns):

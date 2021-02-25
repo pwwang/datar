@@ -256,7 +256,7 @@ def df_assign_item(
     else:
         df.obj[item] = value
 
-def arithmetize(data: Any) -> Any:
+def objectize(data: Any) -> Any:
     if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
         return data.obj
     return data

@@ -8,13 +8,12 @@ from pandas.core.groupby.groupby import GroupBy
 from pandas.core.indexes.multi import MultiIndex
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.series import Series
-from pipda.utils import Expression, evaluate_expr
-from plyrda.group_by import get_groups, get_rowwise, is_grouped, set_groups, set_rowwise
+from pipda.utils import Expression, evaluate_args, evaluate_expr
 from typing import Any, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import align_value, arithmetize, copy_df, df_assign_item, list_diff, list_union, select_columns
+from .utils import align_value, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns
 from .middlewares import Across, CAcross, Collection, DescSeries, IfCross, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
@@ -233,7 +232,7 @@ def relocate(_data, column, *columns, _before=None, _after=None):
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     return _data[rearranged]
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=None)
 def group_by(
         _data: DataFrame,
         *columns: str,
@@ -243,6 +242,7 @@ def group_by(
     if kwargs:
         _data = mutate(_data, **kwargs)
 
+    columns = evaluate_args(columns, _data, Context.SELECT)
     columns = select_columns(_data.columns, *columns, *kwargs.keys())
     # requires pandas 1.2+
     # eariler versions have bugs with apply/transform
@@ -259,6 +259,7 @@ def _(
     if kwargs:
         _data = mutate(_data, **kwargs)
 
+    columns = evaluate_args(columns, _data, Context.SELECT)
     columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
     if _add:
         groups = Collection(_data.keys) + columns
@@ -356,7 +357,7 @@ def arrange(
     columns = list((column, ) + columns)
     by = []
     ascending = []
-    all_columns = arithmetize(_data).columns
+    all_columns = objectize(_data).columns
     for i, column in enumerate(columns):
         if isinstance(column, Across):
             columns[i] = column.evaluate(Context.SELECT, _data)
@@ -409,7 +410,7 @@ def _(_data: DataFrameGroupBy, *columns: str) -> RowwiseDataFrame:
     columns = select_columns(_data.obj.columns, columns)
     return RowwiseDataFrame(_data, rowwise=columns)
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def filter(
         _data: DataFrame,
         condition,
@@ -425,23 +426,13 @@ def filter(
             cond = cond.evaluate(Context.EVAL, _data)
         condition = condition & cond
     try:
-        condition = condition.values.flatten()
+        condition = objectize(condition).values.flatten()
     except AttributeError:
         ...
 
-    return _data[condition]
-
-@filter.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy, condition, *conditions, _preserve=True):
-    for cond in conditions:
-        condition = condition & cond
-    try:
-        condition = condition.values.flatten()
-    except AttributeError:
-        ...
-    ret = _data.obj[condition]
-    if _preserve:
-        return ret.groupby(_data.keys)
+    ret = objectize(_data)[condition]
+    if isinstance(_data, DataFrameGroupBy) and _preserve:
+        return ret.groupby(_data.keys, dropna=True)
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.UNSET)

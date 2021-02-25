@@ -9,6 +9,7 @@ from pandas.core.series import Series
 from pandas.api.types import is_numeric_dtype
 
 from pipda.context import ContextBase, ContextEval, ContextSelect
+from pipda.symbolic import DirectRefAttr
 from pipda import evaluate_expr
 from pipda.utils import evaluate_args, evaluate_kwargs
 from plyrda.verbs import select
@@ -21,7 +22,7 @@ from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from pipda import register_func, Context
 
-from .utils import arithmetize, filter_columns, select_columns
+from .utils import objectize, filter_columns, select_columns
 from .middlewares import Across, CAcross, Collection, DescSeries, RowwiseDataFrame, IfAny, IfAll
 from .exceptions import ColumnNotExistingError
 
@@ -76,6 +77,39 @@ def _register_grouped_col1(
 
     return wrapper
 
+def _register_grouped_col0(
+        func: Callable,
+        context: ContextBase
+) -> Callable:
+    """Register a function with argument of no column as groupby aware"""
+
+    @register_func(DataFrame, context=None)
+    @wraps(func)
+    def wrapper(
+            _data: DataFrame,
+            *args: Any,
+            **kwargs: Any
+    ) -> Any:
+        _column = DirectRefAttr(_data, _data.columns[0])
+        series = evaluate_expr(_column, _data, context)
+        args = evaluate_args(args, _data, context.args)
+        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
+        return func(series, *args, **kwargs)
+
+    @wrapper.register(DataFrameGroupBy)
+    def _(
+            _data: DataFrameGroupBy,
+            *args: Any,
+            **kwargs: Any
+    ) -> Any:
+        _column = DirectRefAttr(_data, _data.obj.columns[0])
+        series = evaluate_expr(_column, _data, context)
+        args = evaluate_args(args, _data, context.args)
+        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
+        return series.apply(func, *args, **kwargs)
+
+    return wrapper
+
 def register_grouped(
         func: Optional[Callable] = None,
         context: Optional[Union[Context, ContextBase]] = None,
@@ -98,7 +132,10 @@ def register_grouped(
     if columns == 1:
         return _register_grouped_col1(func, context=context)
 
-    raise ValueError("Expect columns to be either '*', or 1.")
+    if columns == 0:
+        return _register_grouped_col0(func, context=context)
+
+    raise ValueError("Expect columns to be either '*', 0 or 1.")
 
 @register_func
 def starts_with(
@@ -120,7 +157,7 @@ def starts_with(
         A list of matched vars
     """
     return filter_columns(
-        vars or arithmetize(_data).columns,
+        vars or objectize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: cname.startswith(mat),
@@ -146,7 +183,7 @@ def ends_with(
         A list of matched vars
     """
     return filter_columns(
-        vars or arithmetize(_data).columns,
+        vars or objectize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: cname.endswith(mat),
@@ -172,7 +209,7 @@ def contains(
         A list of matched vars
     """
     return filter_columns(
-        vars or arithmetize(_data).columns,
+        vars or objectize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: mat in cname,
@@ -198,7 +235,7 @@ def matches(
         A list of matched vars
     """
     return filter_columns(
-        vars or arithmetize(_data).columns,
+        vars or objectize(_data).columns,
         match,
         ignore_case,
         lambda mat, cname: re.search(mat, cname),
@@ -214,7 +251,7 @@ def everything(_data: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
     Returns:
         All column names of _data
     """
-    return arithmetize(_data).columns.to_list()
+    return objectize(_data).columns.to_list()
 
 @register_func
 def last_col(
@@ -258,7 +295,7 @@ def all_of(
         ColumnNotExistingError: When any of the elements in `x` does not exist
             in `_data` columns
     """
-    nonexists = set(x) - set(arithmetize(_data).columns)
+    nonexists = set(x) - set(objectize(_data).columns)
     if nonexists:
         nonexists = ', '.join(f'`{elem}`' for elem in nonexists)
         raise ColumnNotExistingError(
@@ -284,7 +321,7 @@ def any_of(_data: Union[DataFrame, DataFrameGroupBy],
     Returns:
         The matched column names
     """
-    vars = vars or arithmetize(_data).columns
+    vars = vars or objectize(_data).columns
     return [elem for elem in x if elem in vars]
 
 @register_func((DataFrame, DataFrameGroupBy))
@@ -300,7 +337,7 @@ def where(_data: Union[DataFrame, DataFrameGroupBy], fn: Callable) -> List[str]:
     Returns:
         The matched columns
     """
-    _data = arithmetize(_data)
+    _data = objectize(_data)
     retcols = []
 
     pipda_type = getattr(fn, '__pipda__', None)
@@ -446,9 +483,9 @@ def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
     return [max(elem, na_rm) for elem in zip(*x)]
 
 
-@register_grouped(columns='*')
-def n(x: Optional[Iterable[Any]] = None) -> int:
-    return len(x)
+@register_grouped(context=Context.EVAL, columns=0)
+def n(series: Iterable[Any]) -> int:
+    return len(series)
 
 
 # Functions without data arguments
@@ -474,14 +511,14 @@ def round(
         number: Union[Series, SeriesGroupBy, float],
         ndigits: int = 0
 ) -> float:
-    number = arithmetize(number)
+    number = objectize(number)
     if isinstance(number, Series):
         return number.round(ndigits)
     return builtins.round(number, ndigits)
 
 @register_func(None, context=Context.EVAL)
 def is_numeric(x: Any) -> bool:
-    x = arithmetize(x)
+    x = objectize(x)
     if isinstance(x, Series):
         return is_numeric_dtype(x)
     return isinstance(x, (int, float))
@@ -495,19 +532,19 @@ def is_character(x: Any) -> bool:
     Returns:
         True if
     """
-    x = arithmetize(x)
+    x = objectize(x)
     if isinstance(x, Series):
         return is_string_dtype(x)
     return isinstance(x, str)
 
 @register_func(None, context=Context.EVAL)
 def is_categorical(x: Union[Series, SeriesGroupBy]) -> bool:
-    x = arithmetize(x)
+    x = objectize(x)
     return is_categorical_dtype(x)
 
 @register_func(None, context=Context.EVAL)
 def is_double(x: Any) -> bool:
-    x = arithmetize(x)
+    x = objectize(x)
     if isinstance(x, Series):
         return is_float_dtype(x)
     return isinstance(x, float)
@@ -516,12 +553,12 @@ is_float = is_double
 
 @register_func(None, context=Context.EVAL)
 def as_categorical(x: Union[Series, SeriesGroupBy]) -> Series:
-    x = arithmetize(x)
+    x = objectize(x)
     return x.astype('category')
 
 @register_func(None, context=Context.EVAL)
 def as_character(x: Union[Series, SeriesGroupBy]) -> Series:
-    x = arithmetize(x)
+    x = objectize(x)
     return x.astype('str')
 
 @register_func(None)
@@ -652,5 +689,5 @@ def _as_date(
         x: Union[Series, SeriesGroupBy],
         **kwargs: Any
 ) -> datetime.date:
-    x = arithmetize(x)
+    x = objectize(x)
     return x.transform(_as_date, **kwargs)
