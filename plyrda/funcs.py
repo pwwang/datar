@@ -409,7 +409,7 @@ def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
 def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
     return [max(elem, na_rm) for elem in zip(*x)]
 
-@register_grouped
+@register_grouped(context=Context.EVAL)
 def sd(
         x: Iterable[Union[int, float]],
         na_rm: bool = False,

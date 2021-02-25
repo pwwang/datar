@@ -1,7 +1,9 @@
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Union
 
 from pandas import DataFrame
 from pandas.core.series import Series
+from pandas.core.groupby import DataFrameGroupBy
+from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
 
 from .utils import arithmetize, expand_collections, list_diff, sanitize_slice, select_columns
@@ -88,18 +90,32 @@ class Across:
         self.kwargs = kwargs
         self.context = None
 
-    def evaluate(self, context: ContextBase, data: Optional[DataFrame] = None):
+    def evaluate(
+            self,
+            context: Union[Context, ContextBase],
+            data: Optional[Union[DataFrame, DataFrameGroupBy]] = None
+    ) -> Any:
         if data is None:
             data = self.data
 
         if not self.fns:
             return self.cols
 
+        if isinstance(context, Context):
+            context = context.value
+
         if isinstance(context, ContextSelect):
             fn = self.fns[0]['fn']
             # todo: check # fns
+            pipda_type = getattr(fn, '__pipda__', None)
             return [
-                fn(data, col, *self.args, **self.kwargs)
+                fn(col, *self.args, **self.kwargs) if not pipda_type
+                else fn(
+                    col,
+                    *self.args,
+                    **self.kwargs,
+                    _force_piping=True
+                ).evaluate(data)
                 for col in self.cols
             ]
 
@@ -118,21 +134,21 @@ class Across:
                     )
 
                 name = name_format.format(**render_data)
-                if (
-                        hasattr(fn, '__pipda__') and
-                        fn.__pipda__ == 'PlainFunction'
-                ):
-                    # apply group by
-                    if is_grouped(data):
-                        # todo: check # groups
-                        ret[name] = data.groupby(
-                            get_groups(data)
-                        )[column].apply(fn, *self.args, **self.kwargs)
-                    else:
-                        ret[name] = fn(data[column], *self.args, **self.kwargs)
+                pipda_type = getattr(fn, '__pipda__', None)
+                if not pipda_type:
+                    ret[name] = fn(
+                        context.getattr(data, column),
+                        *self.args,
+                        **self.kwargs,
+                    )
                 else:
-                    # otherwise, fn should handle group by itself
-                    ret[name] = fn(data, column, *self.args, **self.kwargs)
+                    # use fn's own context
+                    ret[name] = fn(
+                        DirectRefAttr(data, column),
+                        *self.args,
+                        **self.kwargs,
+                        _force_piping=True
+                    ).evaluate(data)
 
         return ret
 
