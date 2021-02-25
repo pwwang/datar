@@ -22,7 +22,7 @@ from pandas.core.groupby import DataFrameGroupBy
 from pipda import register_func, Context
 
 from .utils import arithmetize, filter_columns, select_columns
-from .middlewares import Across, CAcross, Collection, DescSeries, RowwiseDataFrame
+from .middlewares import Across, CAcross, Collection, DescSeries, RowwiseDataFrame, IfAny, IfAll
 from .exceptions import ColumnNotExistingError
 
 DateType = Union[int, str, datetime.date]
@@ -355,6 +355,29 @@ def c_across(
 ) -> CAcross:
     return CAcross(_data, _cols, _fns, _names, args, kwargs)
 
+@register_func(context=Context.SELECT)
+def if_any(
+        _data: DataFrame,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[Mapping[str, Callable]]] = None,
+        _names: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any
+) -> Across:
+    return IfAny(_data, _cols, _fns, _names, args, kwargs)
+
+
+@register_func(context=Context.SELECT)
+def if_all(
+        _data: DataFrame,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[Mapping[str, Callable]]] = None,
+        _names: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any
+) -> Across:
+    return IfAll(_data, _cols, _fns, _names, args, kwargs)
+
 def _ranking(
         data: Iterable[Any],
         na_last: str,
@@ -386,20 +409,33 @@ def min_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
 
 
 @register_grouped(context=Context.EVAL)
-def sum(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
-    return numpy.nansum(x) if na_rm else numpy.sum(x)
+def sum(series: Iterable[Any], na_rm: bool = False) -> float:
+    return numpy.nansum(series) if na_rm else numpy.sum(series)
 
 @register_grouped(context=Context.EVAL)
 def mean(series: Iterable[Any], na_rm: bool = False) -> float:
     return numpy.nanmean(series) if na_rm else numpy.mean(series)
 
-@register_grouped
-def min(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
-    return numpy.nanmin(x) if na_rm else numpy.min(x)
+@register_grouped(context=Context.EVAL)
+def min(series: Iterable[Any], na_rm: bool = False) -> float:
+    return numpy.nanmin(series) if na_rm else numpy.min(series)
 
-@register_grouped
-def max(x: Iterable[Union[int, float]], na_rm: bool = False) -> float:
-    return numpy.nanmax(x) if na_rm else numpy.max(x)
+@register_grouped(context=Context.EVAL)
+def max(series: Iterable[Any], na_rm: bool = False) -> float:
+    return numpy.nanmax(series) if na_rm else numpy.max(series)
+
+@register_grouped(context=Context.EVAL)
+def sd(
+        series: Iterable[Any],
+        na_rm: bool = False,
+        # numpy default is 0. Make it 1 to be consistent with R
+        ddof: int = 1
+) -> float:
+    return (
+        numpy.nanstd(series, ddof=ddof) if na_rm
+        else numpy.std(series, ddof=ddof)
+    )
+
 
 @register_func
 def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
@@ -409,13 +445,6 @@ def pmin(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
 def pmax(*x: Union[int, float], na_rm: bool = False) -> Iterable[float]:
     return [max(elem, na_rm) for elem in zip(*x)]
 
-@register_grouped(context=Context.EVAL)
-def sd(
-        x: Iterable[Union[int, float]],
-        na_rm: bool = False,
-        ddof: int = 1 # numpy default is 0. Make it 1 to be consistent with R
-) -> float:
-    return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)
 
 @register_grouped(columns='*')
 def n(x: Optional[Iterable[Any]] = None) -> int:

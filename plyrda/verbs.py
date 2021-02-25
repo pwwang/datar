@@ -13,7 +13,7 @@ from pandas import DataFrame
 from pipda import register_verb, Context
 
 from .utils import align_value, copy_df, df_assign_item, list_diff, list_union, select_columns
-from .middlewares import Across, CAcross, Collection, RowwiseDataFrame, Inverted
+from .middlewares import Across, CAcross, Collection, IfCross, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
 @register_verb(DataFrame)
@@ -102,7 +102,7 @@ def mutate(
     kwargs = across
 
     if isinstance(_data, RowwiseDataFrame):
-        data = RowwiseDataFrame(_data, _data.rowwise)
+        data = RowwiseDataFrame(_data, rowwise=_data.rowwise)
     else:
         data = copy_df(_data)
 
@@ -284,14 +284,14 @@ def summarise(
     """
     across = {} # no need OrderedDict in python3.7+ anymore
     for acrs in acrosses:
-        if isinstance(acrs, Across):
-            across.update(acrs.evaluate(Context.EVAL, _data))
-        else:
-            across.update(acrs)
+        across.update(
+            acrs.evaluate(Context.EVAL, _data)
+            if isinstance(acrs, Across)
+            else acrs
+        )
 
     across.update(kwargs)
     kwargs = across
-
     ret = None
     if isinstance(_data, RowwiseDataFrame) and _data.rowwise is not True:
         ret = _data[_data.rowwise]
@@ -303,10 +303,13 @@ def summarise(
             val = DataFrame(val.evaluate(Context.EVAL, _data))
 
         if ret is None:
-            try:
-                ret = DataFrame(val, columns=[key])
-            except ValueError:
-                ret = DataFrame([val], columns=[key])
+            if isinstance(val, Series):
+                ret = val.to_frame(key)
+            else:
+                try:
+                    ret = DataFrame(val, columns=[key])
+                except ValueError:
+                    ret = DataFrame([val], columns=[key])
         # if isinstance(val, Series) and val.index.name == ret.index.name:
         #     # in case val has more rows than ret, ie. quantile
         #     # we expand ret
@@ -393,8 +396,13 @@ def filter(
         *conditions,
         _preserve=False
 ):
+    if isinstance(condition, IfCross):
+        condition = condition.evaluate(Context.EVAL, _data)
+
     # check condition, conditions
     for cond in conditions:
+        if isinstance(cond, IfCross):
+            cond = cond.evaluate(Context.EVAL, _data)
         condition = condition & cond
     try:
         condition = condition.values.flatten()

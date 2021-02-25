@@ -1,4 +1,6 @@
+import builtins
 from typing import Any, Iterable, Optional, Union
+from abc import ABC
 
 from pandas import DataFrame
 from pandas.core.series import Series
@@ -149,12 +151,13 @@ class Across:
                         **self.kwargs,
                         _force_piping=True
                     ).evaluate(data)
-
         return ret
 
 class CAcross(Across):
 
-    def evaluate(self, context: Context, data: Optional[DataFrame] = None):
+    def __init__(self, data, cols, fns, names, args, kwargs):
+        super().__init__(data, cols, fns, names, args, kwargs)
+
         if not self.fns:
             raise ValueError(
                 "No functions specified for c_across. "
@@ -163,21 +166,102 @@ class CAcross(Across):
                 "calling it with c_across(...) as arguments."
             )
 
+        if len(self.fns) > 1:
+            raise ValueError("Only a single function is allowed in c_across.")
+
+        fn = self.fns[0]['fn']
+        pipda_type = getattr(fn, '__pipda__', None)
+        if pipda_type not in (None, 'PlainFunction'):
+            self.fn = lambda _column, *args, **kwargs: fn(
+                data, _column, *args, **kwargs
+            )
+        else:
+            self.fn = fn
+
+    def evaluate(
+            self,
+            context: Union[Context, ContextBase],
+            data: Optional[DataFrame] = None
+    ) -> Any:
+        if isinstance(context, Context):
+            context = context.value
+
         if data is None:
             data = self.data
 
-        if not get_rowwise(data):
+        if not isinstance(data, RowwiseDataFrame):
             return super().evaluate(context, data)
 
-        # todo: check, only one function and one name is allowed
         return {
             self.names: data[self.cols].apply(
-                self.fns[0]['fn'],
+                self.fn,
                 axis=1,
                 args=self.args,
                 **self.kwargs
-            ).values
+            )
         }
+
+class IfCross(Across, ABC):
+
+    if_type = None
+
+    def __init__(self, data, cols, fns, names, args, kwargs):
+        super().__init__(data, cols, fns, names, args, kwargs)
+
+        func_name = f"if_{self.__class__.if_type}"
+        if not self.fns:
+            raise ValueError(f"No functions specified for {func_name!r}.")
+
+        if len(self.fns) > 1:
+            raise ValueError(
+                f"Only a single function is allowed in {func_name!r}."
+            )
+
+        self.fn = self.fns[0]['fn']
+
+    def evaluate(
+            self,
+            context: Union[Context, ContextBase],
+            data: Optional[DataFrame] = None
+    ) -> Any:
+        if not self.fns:
+            raise ValueError("No functions specified for if_any.")
+
+        if isinstance(context, Context):
+            context = context.value
+
+        if data is None:
+            data = self.data
+
+        agg_func = getattr(builtins, self.__class__.if_type)
+
+        pipda_type = getattr(self.fn, '__pipda__', None)
+        if pipda_type not in (None, 'PlainFunction'):
+            def transform_fn(*args, **kwargs):
+                return self.fn(data, *args, **kwargs)
+            transform_fn = lambda *args, **kwargs: self.fn(
+                data, *args, **kwargs
+            )
+        else:
+            transform_fn = self.fn
+
+        def if_fn(_series, *args, **kwargs):
+            return agg_func(_series.transform(transform_fn, *args, **kwargs))
+
+        return data[self.cols].apply(
+            if_fn,
+            axis=1,
+            args=self.args,
+            **self.kwargs
+        )
+
+class IfAny(IfCross):
+
+    if_type = 'any'
+
+class IfAll(IfCross):
+
+    if_type = 'all'
 
 class RowwiseDataFrame(DataFrame):
 
