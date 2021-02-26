@@ -1,5 +1,7 @@
-from typing import Any, Callable, Iterable, List, Union
+from functools import singledispatch
+from typing import Any, Callable, Iterable, List, Optional, Union
 
+import numpy
 from pandas import DataFrame
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
@@ -260,3 +262,39 @@ def objectize(data: Any) -> Any:
     if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
         return data.obj
     return data
+
+@singledispatch
+def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
+    try:
+        df = DataFrame(data, columns=[name]) if name else DataFrame(data)
+    except ValueError:
+        df = DataFrame([data], columns=[name]) if name else DataFrame([data])
+
+    return df
+
+@to_df.register(numpy.ndarray)
+def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
+    if len(data.shape) == 1:
+        return DataFrame(data, columns=[name]) if name else DataFrame(data)
+
+    ncols = data.shape[1]
+    if isinstance(name, Iterable) and len(name) == ncols:
+        return DataFrame(data, columns=name)
+    if len(name) == 1 and name and isinstance(name, str):
+        return DataFrame(data, columns=[name])
+    # ignore the name
+    return DataFrame(data)
+
+@to_df.register(DataFrame)
+def _(data: DataFrame, name: Optional[str] = None) -> DataFrame:
+    return data
+
+@to_df.register(Series)
+def _(data: Series, name: Optional[str] = None) -> DataFrame:
+    name = name or data.name
+    return data.to_frame(name)
+
+@to_df.register(SeriesGroupBy)
+def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
+    name = name or data.obj.name
+    return data.obj.to_frame(name).groupby(data.grouper, dropna=False)

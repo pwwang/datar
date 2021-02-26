@@ -9,11 +9,11 @@ from pandas.core.indexes.multi import MultiIndex
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.series import Series
 from pipda.utils import Expression, evaluate_args, evaluate_expr
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import align_value, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns
+from .utils import align_value, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns, to_df
 from .middlewares import Across, CAcross, Collection, DescSeries, IfCross, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
@@ -151,6 +151,24 @@ def mutate(
 
     return data
 
+@register_verb((DataFrame, DataFrameGroupBy), context=None)
+def transmutate(
+        _data: DataFrame,
+        *acrosses: Across,
+        _keep: str = 'all',
+        _before: Optional[str] = None,
+        _after: Optional[str] = None,
+        **kwargs: Any
+) -> DataFrame:
+    return mutate(
+        _data,
+        *acrosses,
+        _keep='none',
+        _before=_before,
+        _after=_after,
+        **kwargs
+    )
+
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
         _data,
@@ -274,6 +292,8 @@ def ungroup(_data: DataFrameGroupBy) -> DataFrame:
 def group_vars(_data: DataFrameGroupBy) -> List[str]:
     return _data.keys
 
+group_cols = group_vars
+
 @register_verb((DataFrame, DataFrameGroupBy))
 def summarise(
         _data: Union[DataFrame, DataFrameGroupBy],
@@ -306,13 +326,7 @@ def summarise(
             val = DataFrame(val.evaluate(Context.EVAL, _data))
 
         if ret is None:
-            if isinstance(val, Series):
-                ret = val.to_frame(key)
-            else:
-                try:
-                    ret = DataFrame(val, columns=[key])
-                except ValueError:
-                    ret = DataFrame([val], columns=[key])
+            ret = to_df(val, key)
         # if isinstance(val, Series) and val.index.name == ret.index.name:
         #     # in case val has more rows than ret, ie. quantile
         #     # we expand ret
@@ -559,3 +573,81 @@ def add_tally(
         return ret.groupby(_data.keys, dropna=False)
 
     return ret
+
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.MIXED)
+def distinct(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *columns: Any,
+        _keep_all: bool = False,
+        **mutates: Any
+) -> Union[DataFrame, DataFrameGroupBy]:
+
+    data = objectize(_data)
+
+    all_columns = data.columns
+    columns = select_columns(all_columns, *columns)
+    if isinstance(_data, DataFrameGroupBy):
+        columns = list_union(_data.keys, columns)
+
+    data = mutate(data, **mutates)
+    columns = columns + list(mutates)
+
+    if not columns:
+        columns = all_columns
+
+    uniq_frame = data.drop_duplicates(columns, ignore_index=True)
+    ret = uniq_frame if _keep_all else uniq_frame[columns]
+    if isinstance(_data, DataFrameGroupBy):
+        return ret.groupby(_data.keys, dropna=False)
+    return ret
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def dim(_data: Union[DataFrame, DataFrameGroupBy]):
+    return objectize(_data).shape
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def nrow(_data: Union[DataFrame, DataFrameGroupBy]):
+    return dim(_data)[0]
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def ncol(_data: Union[DataFrame, DataFrameGroupBy]):
+    return dim(_data)[1]
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def pull(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        var: Union[int, str] = -1,
+        name: Optional[str] = None,
+        to_list: bool = False
+) -> Iterable[Any]:
+    _data = objectize(_data)
+    if isinstance(var, int):
+        var = _data.columns[var]
+
+    if name:
+        return zip(_data[name].values, _data[var].values)
+
+    if to_list:
+        return _data[var].values.tolist()
+    return _data[var].values
+
+@register_verb(DataFrame, context=Context.SELECT)
+def rename(
+        _data: DataFrame,
+        **kwargs: str
+) -> DataFrame:
+
+    return _data.rename(columns={val: key for key, val in kwargs.items()})
+
+
+@register_verb(DataFrame, context=Context.SELECT)
+def rename_with(
+        _data: DataFrame,
+        _fn: Callable[[str], str],
+        _cols: Optional[Iterable[str]] = None
+) -> DataFrame:
+    _cols = _cols or _data.columns
+
+    new_columns = {col: _fn(col) for col in _cols}
+    return _data.rename(columns=new_columns)

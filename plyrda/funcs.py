@@ -593,6 +593,14 @@ def num_range(
         for elem in range
     ]
 
+
+@register_func(None, context=Context.EVAL)
+def abs(x: Any) -> bool:
+    x = objectize(x)
+    if isinstance(x, Series):
+        return x.abs()
+    builtins.abs(x)
+
 # todo: figure out singledispatch for as_date
 def _as_date_format(
         x: str,
@@ -700,21 +708,3 @@ def _as_date(
 ) -> datetime.date:
     x = objectize(x)
     return x.transform(_as_date, **kwargs)
-
-
-# Helper functions
-# --------------------------------
-def tribble(*dummies: Any) -> DataFrame:
-    columns = []
-    data = [[]]
-    for dummy in dummies:
-        # columns
-        if isinstance(dummy, (DirectRefAttr, DirectRefItem)):
-            columns.append(dummy.ref)
-        else:
-            # columns have been finished
-            if len(data[-1]) == len(columns):
-                data.append([])
-            data[-1].append(dummy)
-
-    return DataFrame(data, columns=columns)
