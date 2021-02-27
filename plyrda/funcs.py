@@ -1,7 +1,8 @@
 import builtins
 import datetime
+import math
+import pandas
 from functools import wraps
-import functools
 from pandas.core import series
 from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_string_dtype
 from pandas.core.groupby.generic import SeriesGroupBy
@@ -444,6 +445,33 @@ def min_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     """Rank the data using min method"""
     return _ranking(series, na_last=na_last, method='min')
 
+@register_grouped(context=Context.EVAL)
+def dense_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
+    """Rank the data using dense method"""
+    return _ranking(series, na_last=na_last, method='dense')
+
+@register_grouped(context=Context.EVAL)
+def percent_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
+    """Rank the data using percent_rank method"""
+    ranking = _ranking(series, na_last, 'min', True)
+    min_rank = ranking.min()
+    max_rank = ranking.max()
+    ret = ranking.transform(lambda r: (r-min_rank)/(max_rank-min_rank))
+    ret[ranking.isna()] = numpy.nan
+    return ret
+
+@register_grouped(context=Context.EVAL)
+def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
+    """Rank the data using percent_rank method"""
+    ranking = _ranking(series, na_last, 'min')
+    max_ranking = ranking.max()
+    ret = ranking.transform(lambda r: ranking.le(r).sum() / max_ranking)
+    ret[ranking.isna()] = numpy.nan
+    return ret
+
+@register_grouped(context=Context.EVAL)
+def ntile(series: Iterable[Any], n: int) -> Iterable[Any]:
+    return pandas.cut(series, n, labels=range(n))
 
 @register_grouped(context=Context.EVAL)
 def sum(series: Iterable[Any], na_rm: bool = False) -> float:
@@ -492,16 +520,42 @@ def pmax(
     series = (objectize(ser) for ser in series)
     return [max(_data, elem, na_rm=na_rm) for elem in zip(*series)]
 
+@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+def case_when(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *when_cases: Any
+) -> Series:
+    if len(when_cases) % 2 != 0:
+        raise ValueError('Number of arguments of case_when should be even.')
+
+    nrow = objectize(_data).shape[0]
+    df = DataFrame({'x': [numpy.nan] * nrow})
+    when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
+    for case, ret in when_cases:
+        if case is True:
+            df['x'] = ret
+        else:
+            df.loc[case, 'x'] = ret
+
+    return df.x
+
 @register_grouped(context=Context.EVAL, columns=0)
 def n(series: Iterable[Any]) -> int:
     return len(series)
+
+@register_grouped(context=Context.EVAL, columns=0)
+def row_number(series: Iterable[Any]) -> Iterable[int]:
+    if isinstance(series, Series):
+        return Series(range(len(series)))
+    return series.cumcount()
+
 
 
 # Functions without data arguments
 # --------------------------------
 
 
-@register_func(None, context=Context.SELECT)
+@register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
     """Mimic R's concatenation. Named one is not supported yet
     All elements passed in will be flattened.
@@ -513,7 +567,7 @@ def c(*elems: Any) -> Collection:
     Returns:
         A collection of elements
     """
-    return Collection(elems)
+    return Collection(*elems)
 
 @register_func(None, context=Context.EVAL)
 def round(
@@ -524,6 +578,31 @@ def round(
     if isinstance(number, Series):
         return number.round(ndigits)
     return builtins.round(number, ndigits)
+
+@register_func(None, context=Context.EVAL)
+def sqrt(x: Any) -> bool:
+    x = objectize(x)
+    if isinstance(x, Series):
+        return x.apply(sqrt)
+    return math.sqrt(x) if x > 0 else math.sqrt(-x) * 1j
+
+@register_func(None, context=Context.EVAL)
+def coalesce(x: Any, replace: Any) -> Any:
+    x = objectize(x)
+    if isinstance(x, Iterable):
+        if not isinstance(replace, Iterable):
+            replace = [replace] * len(x)
+        elif len(replace) != len(x):
+            raise ValueError(
+                f"Expect length {len(x)} for coalesce replacement, "
+                f"got {len(replace)}"
+            )
+        return [
+            rep if numpy.math.isnan(elem) else elem
+            for elem, rep in zip(x, replace)
+        ]
+
+    return replace if numpy.math.isnan(x) else x
 
 @register_func(None, context=Context.EVAL)
 def is_numeric(x: Any) -> bool:
@@ -559,6 +638,45 @@ def is_double(x: Any) -> bool:
     return isinstance(x, float)
 
 is_float = is_double
+
+@register_func(None, context=Context.EVAL)
+def is_na(x: Any) -> bool:
+    x = objectize(x)
+    if isinstance(x, Series):
+        return x.isna()
+    return numpy.isnan(x)
+
+
+@register_func(None)
+def seq_along(along_with):
+    return list(range(len(along_with)))
+
+@register_func(None)
+def seq_len(length_out):
+    return list(range(length_out))
+
+@register_func(None, context=Context.EVAL)
+def seq(from_=None, to=None, by=None, length_out=None, along_with=None):
+    if along_with is not None:
+        return seq_along(along_with)
+    if from_ is not None and not isinstance(from_, (int, float)):
+        return seq_along(from_)
+    if length_out is not None and from_ is None and to is None:
+        return seq_len(length_out)
+
+    if from_ is None:
+        from_ = 0
+    elif to is None:
+        from_, to = 0, from_
+
+    if length_out is not None:
+        by = (float(to) - float(from_)) / float(length_out)
+    elif by is None:
+        by = 1
+        length_out = to - from_
+    else:
+        length_out = (to - from_ + by - by/10.0) // by
+    return [from_ + n * by for n in range(int(length_out))]
 
 @register_func(None, context=Context.EVAL)
 def as_categorical(x: Union[Series, SeriesGroupBy]) -> Series:

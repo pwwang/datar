@@ -9,6 +9,8 @@ from pipda.context import Context
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
 
+IterableLiterals = (list, tuple, set)
+
 def list_diff(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
     """Get the difference between two lists and keep the order
 
@@ -72,7 +74,7 @@ def expand_collections(collections: Any) -> List[Any]:
     Returns:
         The flattened list
     """
-    if not isinstance(collections, (list, tuple, set)):
+    if not isinstance(collections, IterableLiterals):
         return [collections]
     ret = []
     for collection in collections:
@@ -123,6 +125,55 @@ def sanitize_slice(slc: slice, all_columns: List[str]) -> slice:
         step = None
         int_stop -= 1
     return slice(int_start, int_stop, step)
+
+def _expand_slice_dummy(
+        elems: Union[slice, list, int, tuple, "Negated", "Inverted"],
+        total: int,
+        from_negated: bool = False
+) -> List[int]:
+    from .middlewares import Negated, Inverted
+    all_indexes = list(range(total))
+    if isinstance(elems, int):
+        return [elems + 1 if from_negated else elems]
+    if isinstance(elems, slice):
+        if from_negated:
+            # we want [0, 1, 2, 3]
+            # to be negated as [-1, -2, -3, -4]
+            return [elem+1 for elem in all_indexes[elems]]
+        return all_indexes[elems]
+    if isinstance(elems, (list, tuple)):
+        selected_indexes = sum(
+            (_expand_slice_dummy(elem, total, from_negated) for elem in elems),
+            []
+        )
+        return list_intersect(selected_indexes, all_indexes)
+    if isinstance(elems, Negated):
+        if from_negated:
+            raise ValueError('Cannot nest negated selections.')
+        selected_indexes = sum(
+            (_expand_slice_dummy(elem, total, True) for elem in elems.elems),
+            []
+        )
+        return [-elem for elem in selected_indexes]
+    if isinstance(elems, Inverted):
+        selected_indexes = sum(
+            (_expand_slice_dummy(elem, total, from_negated)
+             for elem in elems.elems),
+            []
+        )
+        return list_diff(all_indexes, selected_indexes)
+
+    raise TypeError(f'Unsupported type for slice expansion: {type(elems)!r}.')
+
+def expand_slice(
+        elems: Union[slice, list, "Negated", "Inverted"],
+        total: Union[int, Iterable[int]]
+) -> Union[List[int], List[List[int]]]:
+    """Expand the slide in an iterable, in a groupby-aware way"""
+    from .middlewares import Negated, Inverted, Collection
+    if isinstance(total, int):
+        return _expand_slice_dummy(elems, total)
+    # return _expand_slice_grouped(elems, total)
 
 def select_columns(
         all_columns: Iterable[str],
@@ -212,16 +263,16 @@ def series_expand(series: Union[DataFrame, Series], df: DataFrame):
 def align_value(
         value: Any,
         data: Union[DataFrame, DataFrameGroupBy]
-) -> Iterable[Any]:
+) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
+    if not isinstance(value, Iterable):
+        return value
+
     if isinstance(data, DataFrameGroupBy):
         data = data.obj
     if isinstance(value, (DataFrameGroupBy, SeriesGroupBy)):
         value = value.obj
-
-    if isinstance(value, (str, bytes)) or not isinstance(value, Iterable):
-        value = [value]
 
     if series_expandable(value, data):
         return series_expand(value, data)
@@ -253,10 +304,14 @@ def df_assign_item(
         item: str,
         value: Any
 ) -> None:
-    if isinstance(df, DataFrame):
-        df[item] = value
-    else:
-        df.obj[item] = value
+    if isinstance(df, DataFrameGroupBy):
+        df = df.obj
+    try:
+        value = value.values
+    except AttributeError:
+        ...
+
+    df[item] = value
 
 def objectize(data: Any) -> Any:
     if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
@@ -292,9 +347,20 @@ def _(data: DataFrame, name: Optional[str] = None) -> DataFrame:
 @to_df.register(Series)
 def _(data: Series, name: Optional[str] = None) -> DataFrame:
     name = name or data.name
-    return data.to_frame(name)
+    return data.to_frame(name=name)
 
 @to_df.register(SeriesGroupBy)
 def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
     name = name or data.obj.name
-    return data.obj.to_frame(name).groupby(data.grouper, dropna=False)
+    return data.obj.to_frame(name=name).groupby(data.grouper, dropna=False)
+
+def get_n_from_prop(
+        total: int,
+        n: Optional[int] = None,
+        prop: Optional[float] = None
+) -> int:
+    if n is None and prop is None:
+        return 1
+    if prop is not None:
+        return int(float(total) * min(prop, 1.0))
+    return min(n, total)

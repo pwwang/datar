@@ -1,6 +1,5 @@
 from collections import defaultdict
-from plyrda.middlewares import Inverted
-from pipda.context import ContextEval
+from pipda.context import ContextEval, ContextSelect
 
 class ContextEvalWithUsedRefs(ContextEval):
 
@@ -15,11 +14,8 @@ class ContextEvalWithUsedRefs(ContextEval):
         self.used_refs[ref] += 1
         return super().getitem(data, ref)
 
-class ContextEvalWithDesc(ContextEval):
+class ContextSelectSlice(ContextSelect):
+    """Mark the context to interpret slice
 
-    def getattr(self, data, ref):
-        if isinstance(ref, Inverted):
-            return data[ref].transform(lambda x: x[::-1])
-        return data[ref]
-
-    getitem = getattr
+    Whether turn f[:3] to first 3 columns or just the slice itself.
+    """

@@ -3,6 +3,7 @@ import re
 import inspect
 from typing import Any, Callable, Iterable, Union
 
+import numpy
 import pandas
 from pandas import DataFrame
 from pandas.core.series import Series
@@ -12,6 +13,8 @@ from pipda.symbolic import DirectRefAttr, DirectRefItem
 from varname import argname
 
 from .utils import to_df
+
+NA = numpy.nan
 
 def tibble(
         *args: Any,

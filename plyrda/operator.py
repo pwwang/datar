@@ -2,13 +2,15 @@ from functools import partial
 import operator
 
 from typing import Any
-from pandas.core.groupby.generic import DataFrameGroupBy
+from pandas.core.frame import DataFrame
+from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.groupby import GroupBy
+from pandas.core.series import Series
 from pipda import register_operator, Operator, Context
 from pipda.context import ContextSelect
 
 from .utils import align_value, objectize, list_intersect, list_union
-from .middlewares import Collection, Inverted
+from .middlewares import Collection, Inverted, Negated
 
 @register_operator
 class PlyrdaOperator(Operator):
@@ -32,8 +34,13 @@ class PlyrdaOperator(Operator):
 
     def invert(self, operand: Any) -> Any:
         if isinstance(operand, (slice, str, list)):
-            return Inverted(operand, self.data).complements
+            return Inverted(operand, self.data, self.context).complements
         return self._arithmetize1(operand, 'invert')
+
+    def neg(self, operand: Any) -> Any:
+        if isinstance(operand, (slice, list)):
+            return Negated(operand)
+        return self._arithmetize1(operand, 'neg')
 
     def and_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.

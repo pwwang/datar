@@ -1,7 +1,11 @@
+import builtins
 from itertools import chain
+import numpy
+import pandas
 
 from pandas.core.groupby.generic import SeriesGroupBy
-from plyrda.contexts import ContextEvalWithUsedRefs
+from pipda.context import ContextSelect
+from plyrda.contexts import ContextEvalWithUsedRefs, ContextSelectSlice
 from re import DEBUG
 import sys
 from pandas.core.groupby.groupby import GroupBy
@@ -13,8 +17,8 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import align_value, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns, to_df
-from .middlewares import Across, CAcross, Collection, DescSeries, IfCross, RowwiseDataFrame, Inverted
+from .utils import IterableLiterals, align_value, expand_slice, get_n_from_prop, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns, to_df
+from .middlewares import Across, CAcross, Collection, DescSeries, IfCross, Negated, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
 @register_verb(DataFrame)
@@ -119,15 +123,7 @@ def mutate(
             val = DataFrame(val.evaluate(context, data))
 
         value = align_value(val, data)
-
-        try:
-            df_assign_item(data, key, value)
-        except ValueError as verr:
-            # cannot reindex from a duplicate axis
-            try:
-                df_assign_item(data, key, value.values)
-            except AttributeError:
-                raise verr from None
+        df_assign_item(data, key, value)
 
     outcols = list(kwargs)
     # do the relocate first
@@ -280,7 +276,7 @@ def _(
     columns = evaluate_args(columns, _data, Context.SELECT)
     columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
     if _add:
-        groups = Collection(_data.keys) + columns
+        groups = Collection(*_data.keys) + columns
         return _data.obj.groupby(groups, dropna=False)
     return _data.obj.groupby(columns, dropna=False)
 
@@ -360,58 +356,51 @@ def summarise(
 
 summarize = summarise
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def arrange(
         _data: Union[DataFrame, DataFrameGroupBy],
-        column: Union[Inverted, Across, str],
-        *columns: Union[Inverted, Across, str],
+        *series: Union[Series, SeriesGroupBy, Across],
         _by_group: bool = False
-) -> DataFrame:
-    columns = list((column, ) + columns)
-    by = []
-    ascending = []
-    all_columns = objectize(_data).columns
-    for i, column in enumerate(columns):
-        if isinstance(column, Across):
-            columns[i] = column.evaluate(Context.SELECT, _data)
-
-    for column in Collection(columns):
-        if isinstance(column, Inverted):
-            cols = select_columns(all_columns, column.elems)
-            by.extend(cols)
-            ascending.extend([False] * len(cols))
-        elif isinstance(column, Across):
-            cols = column.evaluate(Context.SELECT)
-            if any(isinstance(col, Inverted) for col in cols):
-                cols = list(chain(*(col.elems for col in cols)))
-                by.extend(cols)
-                ascending.extend([False] * len(cols))
+) -> Union[DataFrame, DataFrameGroupBy]:
+    data = objectize(_data)
+    sorting_df = (
+        data.index.to_frame(name='__index__').drop(columns=['__index__'])
+    )
+    desc_cols = set()
+    acrosses = []
+    kwargs = {}
+    for ser in series:
+        if isinstance(ser, Across):
+            desc_cols |= ser.desc_cols()
+            if ser.fns:
+                acrosses.append(ser)
             else:
-                by.extend(cols)
-                ascending.extend([True] * len(cols))
-        elif isinstance(column, DescSeries):
-            by.append(column.name)
-            ascending.append(False)
-        elif (
-                isinstance(column, SeriesGroupBy) and
-                isinstance(column.obj, DescSeries)
-        ):
-            by.append(column.obj.name)
-            ascending.append(False)
+                for col in ser.cols:
+                    kwargs[col] = data[col].values
         else:
-            cols = select_columns(all_columns, column)
-            by.extend(cols)
-            ascending.extend([True] * len(cols))
+            ser = objectize(ser)
+            if isinstance(ser, DescSeries):
+                desc_cols.add(ser.name)
+            kwargs[ser.name] = ser.values
 
-    if _by_group and isinstance(_data, DataFrameGroupBy):
-        by = list_union(_data.keys, by)
-        ascending = [True] * (len(by) - len(ascending)) + ascending
+    sorting_df = mutate(sorting_df, *acrosses, **kwargs)
+
+    by = sorting_df.columns.to_list()
+    if isinstance(_data, DataFrameGroupBy):
+        for key in _data.keys:
+            if key not in sorting_df:
+                sorting_df[key] = _data[key].obj.values
+        if _by_group:
+            by = list_union(_data.keys, by)
+
+    ascending = [col not in desc_cols for col in by]
+    sorting_df.sort_values(by=by, ascending=ascending, inplace=True)
+    data = data.loc[sorting_df.index, :]
 
     if isinstance(_data, DataFrameGroupBy):
-        return _data.obj.sort_values(by, ascending=ascending).groupby(
-            _data.keys, dropna=False
-        )
-    return _data.sort_values(by, ascending=ascending)
+        return data.groupby(_data.keys, dropna=False)
+
+    return data
 
 @register_verb(DataFrame)
 def rowwise(_data: DataFrame, *columns: str) -> RowwiseDataFrame:
@@ -507,9 +496,9 @@ def count(
     grouped = _data.groupby(columns, dropna=False)
 
     if not wt:
-        count_frame = grouped[columns].size().to_frame(name)
+        count_frame = grouped[columns].size().to_frame(name=name)
     else:
-        count_frame = grouped[wt].sum().to_frame(name)
+        count_frame = grouped[wt].sum().to_frame(name=name)
 
     ret = count_frame.reset_index(level=columns)
     if sort:
@@ -651,3 +640,300 @@ def rename_with(
 
     new_columns = {col: _fn(col) for col in _cols}
     return _data.rename(columns=new_columns)
+
+@register_verb(DataFrame, context=ContextSelectSlice())
+def slice(
+        _data: DataFrame,
+        rows: Any,
+        _preserve: bool = False
+) -> DataFrame:
+    rows = expand_slice(rows, nrow(_data))
+    return _data.iloc[rows, :]
+
+# todo: slice.register(DataFrameGroupBy)
+
+@register_verb(DataFrame)
+def slice_head(
+        _data: DataFrame,
+        n: Optional[int] = None,
+        prop: Optional[float] = None
+) -> DataFrame:
+    n = get_n_from_prop(nrow(_data), n, prop)
+    rows = list(range(n))
+    return _data.iloc[rows, :]
+
+@slice_head.register(DataFrameGroupBy)
+def _(
+        _data: DataFrameGroupBy,
+        n: Optional[Union[int, Iterable[int]]] = None,
+        prop: Optional[Union[float, Iterable[float]]] = None
+) -> DataFrame:
+    # any other better way?
+    total = _data.size().to_frame(name='size')
+    total['n'] = n
+    total['prop'] = prop
+    indexes = total.apply(
+        lambda row: _data.groups[row.name][
+            :get_n_from_prop(row.size, row.n, row.prop)
+        ],
+        axis=1
+    )
+    indexes = numpy.concatenate(indexes.values)
+    return _data.obj.iloc[indexes, :].groupby(_data.grouper, dropna=False)
+
+@register_verb(DataFrame)
+def slice_tail(
+        _data: DataFrame,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None
+) -> DataFrame:
+    n = get_n_from_prop(nrow(_data), n, prop)
+    rows = [-(elem+1) for elem in range(n)]
+    return _data.iloc[rows, :]
+
+@slice_tail.register(DataFrameGroupBy)
+def _(
+        _data: DataFrameGroupBy,
+        n: Optional[Union[int, Iterable[int]]] = None,
+        prop: Optional[Union[float, Iterable[float]]] = None
+) -> DataFrame:
+    # any other better way?
+    total = _data.size().to_frame(name='size')
+    total['n'] = n
+    total['prop'] = prop
+    indexes = total.apply(
+        lambda row: _data.groups[row.name][
+            -get_n_from_prop(row.size, row.n, row.prop):
+        ],
+        axis=1
+    )
+    indexes = numpy.concatenate(indexes.values)
+    return _data.obj.iloc[indexes, :].groupby(_data.grouper, dropna=False)
+
+@register_verb(DataFrame, context=Context.EVAL)
+def slice_min(
+        _data: DataFrame,
+        order_by: Series,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None,
+        with_ties: Union[bool, str] = True
+) -> DataFrame:
+    data = _data.assign(**{'__slice_order__': order_by.values})
+    n = get_n_from_prop(nrow(_data), n, prop)
+
+    keep = {True: 'all', False: 'first'}.get(with_ties, with_ties)
+    return data.nsmallest(n, '__slice_order__', keep).drop(
+        columns=['__slice_order__']
+    )
+
+# todo: slice_min.register(DataFrameGroupBy)
+
+@register_verb(DataFrame, context=Context.EVAL)
+def slice_max(
+        _data: DataFrame,
+        order_by: Series,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None,
+        with_ties: Union[bool, str] = True
+) -> DataFrame:
+    data = _data.assign(**{'__slice_order__': order_by.values})
+    n = get_n_from_prop(nrow(_data), n, prop)
+
+    keep = {True: 'all', False: 'first'}.get(with_ties, with_ties)
+    return data.nlargest(n, '__slice_order__', keep).drop(
+        columns=['__slice_order__']
+    )
+
+# todo: slice_max.register(DataFrameGroupBy)
+
+@register_verb(DataFrame, context=Context.EVAL)
+def slice_sample(
+        _data: DataFrame,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None,
+        weight_by: Optional[Iterable[Union[int, float]]] = None,
+        replace: bool = False,
+        random_state: Any = None
+) -> DataFrame:
+    n = get_n_from_prop(nrow(_data), n, prop)
+
+    return _data.sample(
+        n=n,
+        replace=replace,
+        weights=weight_by,
+        random_state=random_state,
+        axis=0
+    )
+
+# todo: slice_sample.register(DataFrameGroupBy)
+
+# Two table verbs
+# ---------------
+
+@register_verb(DataFrame)
+def bind_rows(
+        _data: DataFrame,
+        *datas: DataFrame
+) -> DataFrame:
+
+    return pandas.concat([_data, *datas])
+
+@register_verb(DataFrame)
+def bind_cols(
+        _data: DataFrame,
+        *datas: DataFrame
+) -> DataFrame:
+
+    return pandas.concat([_data, *datas], axis=1)
+
+@register_verb(DataFrame)
+def intersect(
+    _data: DataFrame,
+    *datas: DataFrame,
+    on: Optional[Union[str, List[str]]] = None
+) -> DataFrame:
+    if not on:
+        on = _data.columns.to_list()
+
+    return pandas.merge(_data, *datas, on=on, how='inner') >> distinct(*on)
+
+@register_verb(DataFrame)
+def union(
+    _data: DataFrame,
+    *datas: DataFrame,
+    on: Optional[Union[str, List[str]]] = None
+) -> DataFrame:
+    if not on:
+        on = _data.columns.to_list()
+
+    return pandas.merge(_data, *datas, on=on, how='outer') >> distinct(*on)
+
+@register_verb(DataFrame)
+def setdiff(
+    _data: DataFrame,
+    data2: DataFrame,
+    on: Optional[Union[str, List[str]]] = None
+) -> DataFrame:
+    if not on:
+        on = _data.columns.to_list()
+
+    return _data.merge(
+        data2,
+        how='outer',
+        on=on,
+        indicator=True
+    ).loc[
+        lambda x : x['_merge']=='left_only'
+    ].drop(columns=['_merge']) >> distinct(*on)
+
+@register_verb(DataFrame)
+def union_all(
+    _data: DataFrame,
+    data2: DataFrame
+) -> DataFrame:
+    return bind_rows(_data, data2)
+
+@register_verb(DataFrame)
+def setequal(
+    _data: DataFrame,
+    data2: DataFrame
+) -> DataFrame:
+    data1 = _data.sort_values(by=_data.columns.to_list()).reset_index(drop=True)
+    data2 = data2.sort_values(by=data2.columns.to_list()).reset_index(drop=True)
+    return data1.equals(data2)
+
+@register_verb(DataFrame)
+def inner_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False,
+    suffix: Iterable[str] = ("_x", "_y"),
+    keep: bool = False
+) -> DataFrame:
+    if isinstance(by, dict):
+        right_on=list(by.values())
+        ret = pandas.merge(
+            x, y,
+            left_on=list(by.keys()),
+            right_on=right_on,
+            how='inner',
+            copy=copy,
+            suffixes=suffix
+        )
+        if not keep:
+            return ret.drop(columns=right_on)
+        return ret
+    return pandas.merge(x, y, on=by, how='inner', copy=copy, suffixes=suffix)
+
+@register_verb(DataFrame)
+def left_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False,
+    suffix: Iterable[str] = ("_x", "_y"),
+    keep: bool = False
+) -> DataFrame:
+    if isinstance(by, dict):
+        right_on=list(by.values())
+        ret = pandas.merge(
+            x, y,
+            left_on=list(by.keys()),
+            right_on=right_on,
+            how='left',
+            copy=copy,
+            suffixes=suffix
+        )
+        if not keep:
+            return ret.drop(columns=right_on)
+        return ret
+    return pandas.merge(x, y, on=by, how='left', copy=copy, suffixes=suffix)
+
+@register_verb(DataFrame)
+def right_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False,
+    suffix: Iterable[str] = ("_x", "_y"),
+    keep: bool = False
+) -> DataFrame:
+    if isinstance(by, dict):
+        right_on=list(by.values())
+        ret = pandas.merge(
+            x, y,
+            left_on=list(by.keys()),
+            right_on=right_on,
+            how='right',
+            copy=copy,
+            suffixes=suffix
+        )
+        if not keep:
+            return ret.drop(columns=right_on)
+        return ret
+    return pandas.merge(x, y, on=by, how='right', copy=copy, suffixes=suffix)
+
+@register_verb(DataFrame)
+def full_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False,
+    suffix: Iterable[str] = ("_x", "_y"),
+    keep: bool = False
+) -> DataFrame:
+    if isinstance(by, dict):
+        right_on=list(by.values())
+        ret = pandas.merge(
+            x, y,
+            left_on=list(by.keys()),
+            right_on=right_on,
+            how='outer',
+            copy=copy,
+            suffixes=suffix
+        )
+        if not keep:
+            return ret.drop(columns=right_on)
+        return ret
+    return pandas.merge(x, y, on=by, how='outer', copy=copy, suffixes=suffix)

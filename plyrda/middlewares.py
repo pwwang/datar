@@ -1,16 +1,22 @@
 import builtins
-from typing import Any, Iterable, Optional, Union
+
+from pipda import operator
+from plyrda.contexts import ContextSelectSlice
+from typing import Any, Iterable, List, Optional, Set, Union
 from abc import ABC
+from threading import Lock
 
 from pandas import DataFrame
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
+from pipda.utils import Expression
 
-from .utils import objectize, expand_collections, list_diff, sanitize_slice, select_columns
+from .utils import IterableLiterals, objectize, expand_collections, list_diff, sanitize_slice, select_columns
 from .group_by import get_rowwise, is_grouped, get_groups
 
+LOCK = Lock()
 
 class Collection(list):
     """Mimic the c function in R
@@ -23,16 +29,41 @@ class Collection(list):
     def __init__(self, *args: Any) -> None:
         super().__init__(expand_collections(args))
 
+    def expand_slice(
+            self,
+            total: Union[int, Iterable[int]]
+    ) -> Union[List[int], List[List[int]]]:
+        """Expand the slice in the list in a groupby-aware way"""
+
+
 class Inverted:
     """Inverted object, pending for next action"""
 
-    def __init__(self, elems: Any, data: DataFrame) -> None:
-        self.data = data
+    def __init__(
+            self,
+            elems: Any,
+            data: Union[DataFrame, DataFrameGroupBy],
+            context: ContextBase = Context.SELECT.value
+    ) -> None:
+        self.data = objectize(data)
+        self.context = context
         if isinstance(elems, slice):
-            columns = data.columns.tolist()
-            self.elems = columns[sanitize_slice(elems, columns)]
+            if isinstance(context, ContextSelectSlice):
+                self.elems = [elems]
+            else:
+                columns = self.data.columns.tolist()
+                self.elems = columns[sanitize_slice(elems, columns)]
         elif not isinstance(elems, Collection):
-            self.elems = Collection(elems)
+            if isinstance(elems, IterableLiterals):
+                self.elems = Collection(*elems)
+            else:
+                self.elems = Collection(elems)
+        elif not isinstance(context, ContextSelectSlice):
+            columns = self.data.columns.to_list()
+            self.elems = [
+                columns[elem] if isinstance(elem, int) else elem
+                for elem in elems
+            ]
         else:
             self.elems = elems
         self._complements = None
@@ -47,12 +78,24 @@ class Inverted:
 
     @property
     def complements(self):
+        if isinstance(self.context, ContextSelectSlice):
+            # slice literal not being expanded
+            return self
         if self._complements is None:
             self._complements = list_diff(self.data.columns, self.elems)
         return self._complements
 
     def __repr__(self) -> str:
         return f"Inverted({self.elems})"
+
+class Negated:
+
+    def __init__(self, elems: Union[slice, list]) -> None:
+        """In case of -[1,2,3] or -c(1,2,3) or -f[1:3]"""
+        self.elems = [elems] if isinstance(elems, slice) else elems
+
+    def __repr__(self) -> str:
+        return f"Negated({self.elems})"
 
 class DescSeries(Series):
 
@@ -91,6 +134,14 @@ class Across:
         self.args = args
         self.kwargs = kwargs
         self.context = None
+
+    def desc_cols(self) -> Set[str]:
+        from .funcs import desc
+        if len(self.fns) != 1:
+            return set()
+        if self.fns[0]['fn'] is not desc:
+            return set()
+        return set(self.cols)
 
     def evaluate(
             self,
@@ -273,3 +324,13 @@ class RowwiseDataFrame(DataFrame):
     ) -> None:
         self.__dict__['rowwise'] = rowwise or True
         super().__init__(*args, **kwargs)
+
+class Slice(Expression):
+    ...
+    # def __init__(self, context: Optional["ContextBase"] = None) -> None:
+    #     super().__init__(context or Context.EVAL.value)
+
+    # def __getitem__(self, item: slice) -> Iterable[int]:
+    #     self.start, self.stop, self.step = item.start, item.stop, item.step
+
+    # def evaluate(self, data: Any = None, context: Optional["ContextBase"] = None): -> Union[slice, List[slice]]
