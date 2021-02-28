@@ -290,7 +290,7 @@ def group_vars(_data: DataFrameGroupBy) -> List[str]:
 
 group_cols = group_vars
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.MIXED)
 def summarise(
         _data: Union[DataFrame, DataFrameGroupBy],
         *acrosses: Across,
@@ -311,6 +311,7 @@ def summarise(
 
     across.update(kwargs)
     kwargs = across
+
     ret = None
     if isinstance(_data, RowwiseDataFrame) and _data.rowwise is not True:
         ret = _data.loc[:, _data.rowwise]
@@ -937,3 +938,9 @@ def full_join(
             return ret.drop(columns=right_on)
         return ret
     return pandas.merge(x, y, on=by, how='outer', copy=copy, suffixes=suffix)
+
+@register_verb(DataFrame)
+def transpose(_data: DataFrame, copy: bool = False) -> DataFrame:
+    return _data.transpose(copy=copy)
+
+t = transpose

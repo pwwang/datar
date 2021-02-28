@@ -539,6 +539,21 @@ def case_when(
 
     return df.x
 
+@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+def if_else(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        condition: Union[bool, Iterable[bool]],
+        true: Any,
+        false: Any,
+        missing: Any = None
+) -> Series:
+    return case_when(
+        _data,
+        numpy.invert(condition), false,
+        condition, true,
+        True, missing
+    )
+
 @register_grouped(context=Context.EVAL, columns=0)
 def n(series: Iterable[Any]) -> int:
     return len(series)

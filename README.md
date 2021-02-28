@@ -8,9 +8,79 @@ Probably the closest port of [tidyr][1] + [dplyr][2] in python, using [pipda][3]
 pip install -U plyrda
 ```
 
-## Progress & docs
+## Philosophy
+- Try to keep API consistent with `tidyr`/`dplyr`
+- Try not to change python's default behaviors (i.e, 0-based indexing)
 
-See: https://dplyr.tidyverse.org/reference/index.html and https://tidyr.tidyverse.org/reference/index.html
+## Example usage
+
+```python
+from plyrda import f
+from plyrda.verbs import mutate, filter
+from plyrda.funcs import if_else
+from plyrda.helpers import tibble
+
+df = tibble(
+    x=range(4),
+    y=['zero', 'one', 'two', 'three']
+)
+df >> mutate(z=f.x)
+"""# output
+   x      y  z
+0  0   zero  0
+1  1    one  1
+2  2    two  2
+3  3  three  3
+"""
+
+df >> mutate(z=if_else(f.x>1, 1, 0))
+"""# output:
+   x      y  z
+0  0   zero  0
+1  1    one  0
+2  2    two  1
+3  3  three  1
+"""
+
+df >> filter(f.x>1)
+"""# output:
+   x      y
+2  2    two
+3  3  three
+"""
+
+df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
+"""# output:
+   x      y  z
+2  2    two  1
+3  3  three  1
+"""
+```
+
+```python
+# works with plotnine
+import numpy
+from pipda import register_verb, register_func
+from plotnine import ggplot, aes, geom_line
+
+sin = register_func(None, func=numpy.sin)
+
+df = tibble(x=numpy.linspace(0, 2*numpy.pi, 500))
+(
+    df >>
+        mutate(y=sin(f.x), sign=if_else(f.y>=0, "positive", "negative")) >>
+        ggplot(aes(x='x', y='y'))
+) + geom_line(aes(color='sign'), size=1.5)
+```
+
+![example](./example.png)
+
+## Examples
+
+To compare with `dplyr`'s and `tidyr`'s APIs, see:
+
+- https://dplyr.tidyverse.org/reference/index.html and
+- https://tidyr.tidyverse.org/reference/index.html
 
 ### dplyr - One table verbs
 - [x] [`arrange()`](https://pwwang.github.io/plyrda/reference/arrange): Arrange rows by column values
