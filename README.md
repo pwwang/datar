@@ -94,33 +94,33 @@ To compare with `dplyr`'s and `tidyr`'s APIs, see:
 - [x] [`rename()`, `rename_with()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Frename.ipynb): Rename columns
 - [x] [`select()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fselect.ipynb): Subset columns using their names and types
 - [x] [`summarise()`, `summarize()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fsummarise.ipynb): Summarise each group to fewer rows
-- [x] [`slice()`, `slice_head()`, `slice_tail()`, `slice_min()`, `slice_max()`, `slice_sample()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fslice.ipynb): Subset rows using their positions
+- [x] [`slice()`, `slice_head()`, `slice_tail()`, `slice_min()`, `slice_max()`, `slice_sample()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fslice.ipynb): Subset rows using their positions (TODO: implement groupby-aware `slice`)
 
 ### dplyr - Two table verbs
 - [x] [`bind_rows()`, `bind_cols()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fbind.ipynb): Efficiently bind multiple data frames by row and column
 - [x] [`inner_join()`, `left_join()`, `right_join()`, `full_join()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fmutate-joins.ipynb): Mutating joins
-- [ ] [`nest_join()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnest_join.ipynb): Nest join
-- [ ] [`semi_join()`, `anti_join()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Ffilter-joins.ipynb): Filtering joins
+- [x] [`nest_join()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnest_join.ipynb): Nest join (TODO: check API consistency)
+- [x] [`semi_join()`, `anti_join()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Ffilter-joins.ipynb): Filtering joins (TODO: warning when `by` is not specified)
 
 ### dplyr - Grouping
 - [x] [`group_by()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_by) [`ungroup()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_by): Group by one or more variables
-- [ ] [`group_cols()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_cols): Select grouping variables
-- [ ] [`rowwise()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Frowwise): Group input by rows
+- [x] `group_cols()`: Select grouping variables
+- [x] [`rowwise()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Frowwise): Group input by rows
 
 ### dplyr - Vector functions
 - [x] [`across()`, `c_across()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Facross.ipynb): Apply a function (or a set of functions) to a set of columns
 - [x] `between()`: No need, use `a < x < b` in python instead
 - [x] [`case_when()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcase_when.ipynb): A general vectorised if
 - [x] [`coalesce()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcoalesce.ipynb): Find first non-missing element
-- [ ] [`cumall()`, `cumany()`, `cummean()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcumall.ipynb): Cumulativate versions of any, all, and mean
+- [x] [`cumall()`, `cumany()`, `cummean()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcumall.ipynb): Cumulativate versions of any, all, and mean
 - [x] [`desc()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fdesc.ipynb): Descending order
 - [x] [`if_else()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fif_else.ipynb): Vectorised if
-- [ ] [`lag()`, `lead()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Flead-lag.ipynb): Compute lagged or leading values
-- [ ] [`order_by()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Forder_by.ipynb): A helper function for ordering window function output
-- [ ] [`n()`, `cur_data()`, `cur_data_all()`, `cur_group()`, `cur_group_id()`, `cur_group_rows()`, `cur_column()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcontext.ipynb): Context dependent expressions
-- [ ] [`n_distinct()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fn_distinct.ipynb): Efficiently count the number of unique values in a set of vector
-- [ ] [`na_if()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fna_if.ipynb): Convert values to NA
-- [ ] [`near()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnear.ipynb): Compare two numeric vectors
+- [x] [`lag()`, `lead()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Flead-lag.ipynb): Compute lagged or leading values
+- [x] `order_by()`: A helper function for ordering window function output (will not be implemented). The behavior is implemented in the functions themselves (i.e, `lead` and `lag`).
+- [x] [`n()`, `cur_data()`, `cur_data_all()`, `cur_group()`, `cur_group_id()`, `cur_group_rows()`, `cur_column()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcontext.ipynb): Context dependent expressions
+- [x] [`n_distinct()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fn_distinct.ipynb): Efficiently count the number of unique values in a set of vector
+- [x] [`na_if()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fna_if.ipynb): Convert values to NA
+- [x] [`near()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnear.ipynb): Compare two numeric vectors
 - [ ] [`nth()`, `first()`, `last()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnth.ipynb): Extract the first, last or nth value from a vector
 - [x] [`row_number()`, `ntile()`, `min_rank()`, `dense_rank()`, `percent_rank()`, `cume_dist()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Franking.ipynb): Windowed rank functions.
 - [ ] [`recode()`, `recode_factor()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Frecode.ipynb): Recode values

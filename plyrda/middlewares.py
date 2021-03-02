@@ -2,7 +2,7 @@ import builtins
 
 from pipda import operator
 from plyrda.contexts import ContextSelectSlice
-from typing import Any, Iterable, List, Optional, Set, Union
+from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
 from abc import ABC
 from threading import Lock
 
@@ -103,6 +103,23 @@ class DescSeries(Series):
     def _constructor(self):
         return DescSeries
 
+class CurColumn:
+
+    @classmethod
+    def replace_args(cls, args: Tuple[Any], column: str) -> Tuple[Any]:
+        return tuple(column if isinstance(arg, cls) else arg for arg in args)
+
+    @classmethod
+    def replace_kwargs(
+            cls,
+            kwargs: Mapping[str, Any],
+            column: str
+    ) -> Mapping[str, Any]:
+        return {
+            key: column if isinstance(val, cls) else val
+            for key, val in kwargs.items()
+        }
+
 class Across:
 
     def __init__(self, data, cols, fns, names, args, kwargs):
@@ -165,14 +182,15 @@ class Across:
                 fn(col, *self.args, **self.kwargs) if not pipda_type
                 else fn(
                     col,
-                    *self.args,
-                    **self.kwargs,
+                    *CurColumn.replace_args(self.args, col),
+                    **CurColumn.replace_kwargs(self.kwargs, col),
                     _force_piping=True
                 ).evaluate(data)
                 for col in self.cols
             ]
 
         ret = {}
+        # Todo: groupby
         for column in self.cols:
             for fn_info in self.fns:
                 render_data = fn_info.copy()
@@ -191,15 +209,15 @@ class Across:
                 if not pipda_type:
                     ret[name] = fn(
                         context.getattr(data, column),
-                        *self.args,
-                        **self.kwargs,
+                        *CurColumn.replace_args(self.args, column),
+                        **CurColumn.replace_kwargs(self.kwargs, column)
                     )
                 else:
                     # use fn's own context
                     ret[name] = fn(
                         DirectRefAttr(data, column),
-                        *self.args,
-                        **self.kwargs,
+                        *CurColumn.replace_args(self.args, column),
+                        **CurColumn.replace_kwargs(self.kwargs, column),
                         _force_piping=True
                     ).evaluate(data)
         return ret

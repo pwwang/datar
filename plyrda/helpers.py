@@ -1,7 +1,7 @@
 """Provide some helper functions"""
 import re
 import inspect
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Iterable, List, Union
 
 import numpy
 import pandas
@@ -11,6 +11,7 @@ from pipda.context import Context
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 from varname import argname
+from varname.core import varname
 
 from .utils import to_df
 
@@ -122,7 +123,9 @@ def tibble(
             new_names != df.columns.to_list() and
             _name_repair not in ('minimal', 'check_unique')
     ):
-        return df.rename(columns=dict(zip(df.columns, new_names)))
+        df = df.rename(columns=dict(zip(df.columns, new_names)))
+
+    df.__dfname__ = varname(raise_exc=False)
 
     return df
 
@@ -139,4 +142,9 @@ def tribble(*dummies: Any) -> DataFrame:
                 data.append([])
             data[-1].append(dummy)
 
-    return DataFrame(data, columns=columns)
+    ret = DataFrame(data, columns=columns)
+    ret.__dfname__ = varname(raise_exc=False)
+    return ret
+
+def runif(n: int, min: float = 0.0, max: float = 1.0) -> List[float]:
+    return numpy.random.uniform(low=min, high=max, size=n)

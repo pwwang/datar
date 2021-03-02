@@ -23,60 +23,11 @@ from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from pipda import register_func, Context
 
-from .utils import objectize, filter_columns, select_columns
-from .middlewares import Across, CAcross, Collection, DescSeries, RowwiseDataFrame, IfAny, IfAll
+from .utils import IterableLiterals, list_diff, objectize, filter_columns, select_columns
+from .middlewares import Across, CAcross, Collection, CurColumn, DescSeries, RowwiseDataFrame, IfAny, IfAll
 from .exceptions import ColumnNotExistingError
 
 DateType = Union[int, str, datetime.date]
-
-def _register_grouped_coln(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(_data: DataFrame, *columns: Any, **kwargs: Any) -> Any:
-        columns = [evaluate_expr(col, _data, context) for col in columns]
-        if isinstance(_data, RowwiseDataFrame):
-            return  func(*(row for row in zip(*columns)), **kwargs)
-        # flatten
-        return func(*sum((list(col) for col in columns), []), **kwargs)
-
-    return wrapper
-
-def _register_grouped_col1(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of single column as groupby aware"""
-
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            _data: DataFrame,
-            _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
-
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return series.apply(func, *args, **kwargs)
-
-    return wrapper
 
 def _register_grouped_col0(
         func: Callable,
@@ -111,6 +62,40 @@ def _register_grouped_col0(
 
     return wrapper
 
+def _register_grouped_col1(
+        func: Callable,
+        context: ContextBase
+) -> Callable:
+    """Register a function with argument of single column as groupby aware"""
+
+    @register_func(DataFrame, context=None)
+    @wraps(func)
+    def wrapper(
+            _data: DataFrame,
+            _column: Any,
+            *args: Any,
+            **kwargs: Any
+    ) -> Any:
+        series = evaluate_expr(_column, _data, context)
+        args = evaluate_args(args, _data, context.args)
+        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
+        return func(series, *args, **kwargs)
+
+    @wrapper.register(DataFrameGroupBy)
+    def _(
+            _data: DataFrameGroupBy,
+            _column: Any,
+            *args: Any,
+            **kwargs: Any
+    ) -> Any:
+        series = evaluate_expr(_column, _data, context)
+        args = evaluate_args(args, _data, context.args)
+        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
+        # Todo: check if we have SeriesGroupby in args/kwargs
+        return series.apply(func, *args, **kwargs)
+
+    return wrapper
+
 def register_grouped(
         func: Optional[Callable] = None,
         context: Optional[Union[Context, ContextBase]] = None,
@@ -127,16 +112,13 @@ def register_grouped(
     if isinstance(context, Context):
         context = context.value
 
-    if columns == '*':
-        return _register_grouped_coln(func, context=context)
-
     if columns == 1:
         return _register_grouped_col1(func, context=context)
 
     if columns == 0:
         return _register_grouped_col0(func, context=context)
 
-    raise ValueError("Expect columns to be either '*', 0 or 1.")
+    raise ValueError("Expect columns to be either 0 or 1.")
 
 @register_func
 def starts_with(
@@ -252,7 +234,9 @@ def everything(_data: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
     Returns:
         All column names of _data
     """
-    return objectize(_data).columns.to_list()
+    if isinstance(_data, DataFrameGroupBy):
+        return list_diff(_data.obj.columns.tolist(), _data.keys)
+    return _data.columns.to_list()
 
 @register_func
 def last_col(
@@ -554,6 +538,10 @@ def if_else(
         True, missing
     )
 
+@register_grouped(context=Context.EVAL)
+def n_distinct(series: Iterable[Any]) -> int:
+    return len(set(series))
+
 @register_grouped(context=Context.EVAL, columns=0)
 def n(series: Iterable[Any]) -> int:
     return len(series)
@@ -563,6 +551,146 @@ def row_number(series: Iterable[Any]) -> Iterable[int]:
     if isinstance(series, Series):
         return Series(range(len(series)))
     return series.cumcount()
+
+@register_func(DataFrameGroupBy)
+def cur_group_id(_data: DataFrameGroupBy) -> int:
+    groups = [
+        group_indexes.tolist()
+        for group_indexes in _data.grouper.groups.values()
+    ]
+    return _data.apply(lambda df: groups.index(df.index.tolist()))
+
+@register_func(DataFrameGroupBy)
+def cur_group_rows(_data: DataFrameGroupBy) -> int:
+    return _data.apply(lambda df: df.index.tolist())
+
+@register_func(DataFrameGroupBy)
+def cur_group(_data: DataFrameGroupBy) -> Series:
+
+    ret = []
+    for key, group_indexes in _data.groups.items():
+        if len(_data.keys) == 1:
+            ret.append(DataFrame([key], columns=_data.keys))
+        else:
+            ret.append(DataFrame(zip(*key), columns=_data.keys))
+
+    return Series(ret)
+
+@register_func(DataFrameGroupBy)
+def cur_data(_data: DataFrameGroupBy) -> int:
+    return Series(
+        _data.obj.loc[index].drop(columns=_data.keys)
+        for index in _data.grouper.groups.values()
+    )
+
+@register_func(DataFrameGroupBy)
+def cur_data_all(_data: DataFrameGroupBy) -> int:
+    return Series(
+        _data.obj.loc[index]
+        for index in _data.grouper.groups.values()
+    )
+
+def cur_column() -> CurColumn:
+    return CurColumn()
+
+@register_grouped(context=Context.EVAL)
+def cummean(series: Iterable[Union[int, float]]) -> Iterable[float]:
+    if not isinstance(series, Series):
+        series = Series(series)
+    return series.cumsum(skipna=False) / (Series(range(len(series))) + 1.0)
+
+@register_grouped(context=Context.EVAL)
+def cumsum(series: Iterable[Union[int, float]]) -> Iterable[float]:
+    if not isinstance(series, Series):
+        series = Series(series)
+    return series.cumsum(skipna=False)
+
+@register_grouped(context=Context.EVAL)
+def cummin(series: Iterable[Union[int, float]]) -> Iterable[float]:
+    if not isinstance(series, Series):
+        series = Series(series)
+    return series.cummin(skipna=False)
+
+@register_grouped(context=Context.EVAL)
+def cummax(series: Iterable[Union[int, float]]) -> Iterable[float]:
+    if not isinstance(series, Series):
+        series = Series(series)
+    return series.cummax(skipna=False)
+
+@register_grouped(context=Context.EVAL)
+def cumall(series: Iterable[Union[int, float]]) -> Iterable[float]:
+    if not isinstance(series, Series):
+        series = Series(series)
+    return series.cummin(skipna=False).astype(bool)
+
+@register_grouped(context=Context.EVAL)
+def cumany(series: Iterable[Union[int, float]]) -> Iterable[float]:
+    if not isinstance(series, Series):
+        series = Series(series)
+    return series.cummax(skipna=False).astype(bool)
+
+@register_grouped(context=Context.EVAL)
+def lead(
+        series: Iterable[Union[int, float]],
+        n: bool = 1,
+        default = numpy.nan,
+        order_by: Optional[Iterable[Union[int, float]]] = None
+) -> Series:
+    if not isinstance(series, Series):
+        series = Series(series)
+
+    index = series.index
+    if order_by is not None:
+        if not isinstance(order_by, Series):
+            order_by = Series(order_by)
+        order_by = order_by.sort_values(
+            ascending=not isinstance(order_by, DescSeries)
+        )
+        series = series.loc[order_by.index]
+
+    ret = [default] * len(series)
+    ret[:-n] = series.values[n:]
+    if order_by is not None:
+        ret = Series(ret, index=order_by.index)
+        return ret.loc[index]
+    return Series(ret, index=index)
+
+@register_grouped(context=Context.EVAL)
+def lag(
+        series: Iterable[Union[int, float]],
+        n: bool = 1,
+        default = numpy.nan,
+        order_by: Optional[Iterable[Union[int, float]]] = None
+) -> Series:
+    if not isinstance(series, Series):
+        series = Series(series)
+
+    index = series.index
+    if order_by is not None:
+        if not isinstance(order_by, Series):
+            order_by = Series(order_by)
+        order_by = order_by.sort_values(
+            ascending=not isinstance(order_by, DescSeries)
+        )
+        series = series.loc[order_by.index]
+
+    ret = [default] * len(series)
+    ret[n:] = series.values[:-n]
+    if order_by is not None:
+        ret = Series(ret, index=order_by.index)
+        return ret.loc[index]
+    return Series(ret, index=index)
+
+@register_grouped(context=Context.EVAL)
+def sample(
+        x: Union[int, Iterable[Any]],
+        n: int,
+        replace: bool = False,
+        prob: Optional[Iterable[Union[int, float]]] = None
+) -> Iterable[Any]:
+    """https://rdrr.io/r/base/sample.html"""
+    return numpy.random.choice(x, int(n), replace=replace, p=prob)
+
 
 
 
@@ -618,6 +746,36 @@ def coalesce(x: Any, replace: Any) -> Any:
         ]
 
     return replace if numpy.math.isnan(x) else x
+
+@register_func(None, context=Context.EVAL)
+def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
+
+    x = objectize(x)
+    if not isinstance(x, (Series, IterableLiterals)):
+        x = [x]
+    if not isinstance(x, Series):
+        x = Series(x)
+
+    y = objectize(y)
+    if not isinstance(y, Series) and isinstance(y, IterableLiterals):
+        y = Series(y)
+    if isinstance(y, Series):
+        y = y.values
+
+    x = x.to_frame(name='x')
+    x.loc[x.x.values==y] = numpy.nan
+    return x['x']
+
+@register_func(None, context=Context.EVAL)
+def near(x: Iterable[Any], y: Any) -> Iterable[Any]:
+
+    x = objectize(x)
+    if not isinstance(x, (Series, IterableLiterals)):
+        x = [x]
+
+    y = objectize(y)
+
+    return numpy.isclose(x, y)
 
 @register_func(None, context=Context.EVAL)
 def is_numeric(x: Any) -> bool:
@@ -835,9 +993,11 @@ def _as_date(
     raise ValueError("character string is not in a standard unambiguous format")
 
 @register_func(None, context=Context.EVAL)
-def _as_date(
+def as_date(
         x: Union[Series, SeriesGroupBy],
         **kwargs: Any
 ) -> datetime.date:
+    if not isinstance(x, (Series, SeriesGroupBy)):
+        x = Series([x]) if not isinstance(x, IterableLiterals) else Series(x)
     x = objectize(x)
     return x.transform(_as_date, **kwargs)

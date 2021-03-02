@@ -6,7 +6,6 @@ import pandas
 from pandas.core.groupby.generic import SeriesGroupBy
 from pipda.context import ContextSelect
 from plyrda.contexts import ContextEvalWithUsedRefs, ContextSelectSlice
-from re import DEBUG
 import sys
 from pandas.core.groupby.groupby import GroupBy
 from pandas.core.indexes.multi import MultiIndex
@@ -17,7 +16,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, Context
 
-from .utils import IterableLiterals, align_value, expand_slice, get_n_from_prop, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns, to_df
+from .utils import IterableLiterals, align_value, expand_slice, get_n_from_prop, list_intersect, objectize, copy_df, df_assign_item, list_diff, list_union, select_columns, to_df
 from .middlewares import Across, CAcross, Collection, DescSeries, IfCross, Negated, RowwiseDataFrame, Inverted
 from .exceptions import ColumnNameInvalidError
 
@@ -938,6 +937,70 @@ def full_join(
             return ret.drop(columns=right_on)
         return ret
     return pandas.merge(x, y, on=by, how='outer', copy=copy, suffixes=suffix)
+
+@register_verb(DataFrame)
+def nest_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False,
+    suffix: Iterable[str] = ("_x", "_y"),
+    keep: bool = False
+) -> DataFrame:
+    on = by
+    if isinstance(by, (list, tuple, set)):
+        on = dict(zip(by, by))
+    elif by is None:
+        common_cols = list_intersect(x.columns.tolist(), y.columns)
+        on = dict(zip(common_cols, common_cols))
+    elif not isinstance(by, dict):
+        on = {by: by}
+
+    if copy:
+        x = x.copy()
+
+    def get_nested_df(row: Series) -> DataFrame:
+        condition = None
+        for key in on:
+            if condition is None:
+                condition = y[on[key]] == row[key]
+            else:
+                condition = condition and (y[on[key]] == row[key])
+        df = filter(y, condition)
+        if not keep:
+            df = df[list_diff(df.columns.tolist(), on.values())]
+        if suffix:
+            for col in df.columns:
+                if col in x:
+                    x.rename(columns={col: f'{col}{suffix[0]}'}, inplace=True)
+                    df.rename(columns={col: f'{col}{suffix[1]}'}, inplace=True)
+        return df
+
+    y_matched = x.apply(lambda row: get_nested_df(row), axis=1)
+    y_name = getattr(y, '__dfname__', None)
+    if y_name:
+        y_matched = y_matched.to_frame(name=y_name)
+    return pandas.concat([x, y_matched], axis=1)
+
+@register_verb(DataFrame)
+def semi_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False
+) -> DataFrame:
+    ret = pandas.merge(x, y, on=by, how='left', copy=copy, indicator=True)
+    return ret[ret._merge == 'both'].loc[:, x.columns.tolist()]
+
+@register_verb(DataFrame)
+def anti_join(
+    x: DataFrame,
+    y: DataFrame,
+    by: Optional[Union[Iterable[str], Mapping[str, str]]] = None,
+    copy: bool = False
+) -> DataFrame:
+    ret = pandas.merge(x, y, on=by, how='left', copy=copy, indicator=True)
+    return ret[ret._merge != 'both'].loc[:, x.columns.tolist()]
 
 @register_verb(DataFrame)
 def transpose(_data: DataFrame, copy: bool = False) -> DataFrame:

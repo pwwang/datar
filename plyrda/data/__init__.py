@@ -14,8 +14,10 @@ def load_data(name):
     if not datafile.is_file():
         raise ImportError(f'No such dataset: {name}, '
                           f'available are: {all_datasets()}')
-    return pandas.read_csv(datafile,
+    data = pandas.read_csv(datafile,
                            index_col=0 if name in WITH_INDEX else False)
+    data.__dfname__ = name
+    return data
 
 __all__ = all_datasets()
 
