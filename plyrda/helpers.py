@@ -15,8 +15,6 @@ from varname.core import varname
 
 from .utils import to_df
 
-NA = numpy.nan
-
 def tibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',

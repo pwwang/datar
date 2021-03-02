@@ -10,6 +10,8 @@ from pipda.context import Context
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
 
 IterableLiterals = (list, tuple, set, Iterable)
+NumericType = Union[int, float]
+NA = numpy.nan
 
 def list_diff(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
     """Get the difference between two lists and keep the order

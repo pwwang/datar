@@ -1007,3 +1007,29 @@ def transpose(_data: DataFrame, copy: bool = False) -> DataFrame:
     return _data.transpose(copy=copy)
 
 t = transpose
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def get(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        rows: Any = None,
+        cols: Any = None
+) -> Any:
+    _data = objectize(_data)
+    # getting single element
+    if (
+            rows is not None and
+            cols is not None and (
+                isinstance(rows, str) or
+                not isinstance(rows, tuple([*IterableLiterals, builtins.slice]))
+            ) and (
+                isinstance(cols, str) or
+                not isinstance(cols, tuple([*IterableLiterals, builtins.slice]))
+            )
+    ):
+        return _data.loc[rows, cols]
+
+    if rows is not None:
+        _data = slice(_data, rows)
+    if cols is not None:
+        _data = select(_data, cols)
+    return _data

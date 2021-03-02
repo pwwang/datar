@@ -213,6 +213,10 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 - [x] `who`, `population`: World Health Organization TB data
 - [x] `world_bank_pop`: Population data from the world bank
 
+### plyrda - Specific verbs and functions
+
+- [x] [`get`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fget.ipynb): Get an element, or a subset of a dataframe.
+
 [1]: https://tidyr.tidyverse.org/index.html
 [2]: https://dplyr.tidyverse.org/index.html
 [3]: https://github.com/pwwang/pipda

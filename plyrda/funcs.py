@@ -1,29 +1,32 @@
+import sys
+import re
 import builtins
 import datetime
 import math
-import pandas
+import inspect
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Type, Union
 from functools import wraps
+
+import pandas
+import executing
+import numpy
+from pandas import DataFrame
 from pandas.core import series
+from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_string_dtype
 from pandas.core.groupby.generic import SeriesGroupBy
 from pandas.core.series import Series
 from pandas.api.types import is_numeric_dtype
 
+import pipda
+from pipda import register_func, Context, evaluate_expr
 from pipda.context import ContextBase, ContextEval, ContextSelect
 from pipda.symbolic import DirectRefAttr, DirectRefItem
-from pipda import evaluate_expr
-from pipda.utils import evaluate_args, evaluate_kwargs
+from pipda.utils import evaluate_args, evaluate_kwargs, is_piping
 from plyrda.verbs import select
-import numpy
 from plyrda.group_by import get_groups, get_rowwise
-import re
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Type, Union
 
-from pandas import DataFrame
-from pandas.core.groupby import DataFrameGroupBy
-from pipda import register_func, Context
-
-from .utils import IterableLiterals, list_diff, objectize, filter_columns, select_columns
+from .utils import IterableLiterals, NA, list_diff, objectize, filter_columns, select_columns
 from .middlewares import Across, CAcross, Collection, CurColumn, DescSeries, RowwiseDataFrame, IfAny, IfAll
 from .exceptions import ColumnNotExistingError
 
@@ -71,11 +74,23 @@ def _register_grouped_col1(
     @register_func(DataFrame, context=None)
     @wraps(func)
     def wrapper(
-            _data: DataFrame,
-            _column: Any,
+            # in case this is called directly (not in a piping env)
+            # we should not have the _data argument
+            # _data: DataFrame,
+            # _column: Any,
             *args: Any,
             **kwargs: Any
     ) -> Any:
+        # Let's if the function is called in a piping env
+        # If so, the previous frame should be in functools
+        # Otherwise, it should be pipda.function, where the wrapped
+        # function should be called directly, instead of generating an
+        # Expression object
+
+        if inspect.getmodule(sys._getframe(1)) is pipda.function:
+            # called directly
+            return func(*args, **kwargs)
+        _data, _column, *args = args
         series = evaluate_expr(_column, _data, context)
         args = evaluate_args(args, _data, context.args)
         kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
@@ -819,6 +834,51 @@ def is_na(x: Any) -> bool:
         return x.isna()
     return numpy.isnan(x)
 
+@register_grouped(context=Context.EVAL)
+def nth(
+        x: Iterable[Any],
+        n: int,
+        order_by: Optional[Iterable[Any]] = None,
+        default: Any = NA
+) -> Any:
+    x = numpy.array(x)
+    if order_by is not None:
+        order_by = numpy.array(order_by)
+        x = x[order_by.argsort()]
+    try:
+        return x[n]
+    except IndexError:
+        return default
+
+@register_grouped(context=Context.EVAL)
+def first(
+        x: Iterable[Any],
+        order_by: Optional[Iterable[Any]] = None,
+        default: Any = NA
+) -> Any:
+    x = numpy.array(x)
+    if order_by is not None:
+        order_by = numpy.array(order_by)
+        x = x[order_by.argsort()]
+    try:
+        return x[0]
+    except IndexError:
+        return default
+
+@register_grouped(context=Context.EVAL)
+def last(
+        x: Iterable[Any],
+        order_by: Optional[Iterable[Any]] = None,
+        default: Any = NA
+) -> Any:
+    x = numpy.array(x)
+    if order_by is not None:
+        order_by = numpy.array(order_by)
+        x = x[order_by.argsort()]
+    try:
+        return x[-1]
+    except IndexError:
+        return default
 
 @register_func(None)
 def seq_along(along_with):
