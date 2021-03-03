@@ -61,16 +61,16 @@ df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
 # works with plotnine
 import numpy
 from pipda import register_verb, register_func
-from plotnine import ggplot, aes, geom_line
+from plotnine import ggplot, aes, geom_line, theme_classic
 
-sin = register_func(None, func=numpy.sin)
+sin = register_func(func=numpy.sin)
 
 df = tibble(x=numpy.linspace(0, 2*numpy.pi, 500))
 (
     df >>
         mutate(y=sin(f.x), sign=if_else(f.y>=0, "positive", "negative")) >>
-        ggplot(aes(x='x', y='y'))
-) + geom_line(aes(color='sign'), size=1.5)
+        ggplot(aes(x='x', y='y')) + theme_classic()
+) + geom_line(aes(color='sign'), size=1.2)
 ```
 
 ![example](./example.png)
