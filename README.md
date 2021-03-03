@@ -121,32 +121,23 @@ To compare with `dplyr`'s and `tidyr`'s APIs, see:
 - [x] [`n_distinct()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fn_distinct.ipynb): Efficiently count the number of unique values in a set of vector
 - [x] [`na_if()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fna_if.ipynb): Convert values to NA
 - [x] [`near()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnear.ipynb): Compare two numeric vectors
-- [ ] [`nth()`, `first()`, `last()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnth.ipynb): Extract the first, last or nth value from a vector
+- [x] [`nth()`, `first()`, `last()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fnth.ipynb): Extract the first, last or nth value from a vector
 - [x] [`row_number()`, `ntile()`, `min_rank()`, `dense_rank()`, `percent_rank()`, `cume_dist()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Franking.ipynb): Windowed rank functions.
-- [ ] [`recode()`, `recode_factor()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Frecode.ipynb): Recode values
+- [x] [`recode()`, `recode_factor()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Frecode.ipynb): Recode values
 
 ### dplyr - Data
 - [x] `band_members`, `band_instruments`, `band_instruments2`: Band membership
 - [x] `starwars`: Starwars characters
 - [x] `storms`: Storm tracks data
 
-### dplyr - Remote tables
-- [ ] [`auto_copy()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fauto_copy.ipynb): Copy tables to same source, if necessary
-- [ ] [`compute()`, `collect()`, `collapse()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcompute.ipynb): Force computation of a database query
-- [ ] [`copy_to()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fcopy_to.ipynb): Copy a local data frame to a remote src
-- [ ] [`ident()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fident.ipynb): Flag a character vector as SQL identifiers
-- [ ] [`explain()`, `show_query()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fexplain.ipynb): Explain details of a tbl
-- [ ] [`tbl()`, `is.tbl()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Ftbl.ipynb): Create a table from a data source
-- [ ] [`sql()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fsql.ipynb): SQL escaping.
-
 ### dplyr - Experimental
 
-Experimental functions are a testing ground for new approaches that we believe to be worthy of greater exposure. There is no guarantee that these functions will stay around in the future, so please reach out if you find them useful.
+Experimental functions in dplyr.
 
-- [ ] [`group_map()`, `group_modify()`, `group_walk()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_map.ipynb): Apply a function to each group
-- [ ] [`group_trim()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_trim.ipynb): Trim grouping structure
-- [ ] [`group_split()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_split.ipynb): Split data frame by groups
-- [ ] [`with_groups()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fwith_groups.ipynb): Perform an operation with temporary groups
+- [x] [`group_map()`, `group_modify()`, `group_walk()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_map.ipynb): Apply a function to each group
+- [x] [`group_trim()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_trim.ipynb): Trim grouping structure
+- [x] [`group_split()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fgroup_split.ipynb): Split data frame by groups
+- [x] [`with_groups()`](https://mybinder.org/v2/gh/pwwang/plyrda/HEAD?filepath=examples%2Fwith_groups.ipynb): Perform an operation with temporary groups
 
 
 ### tidyr - Pivoting

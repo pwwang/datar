@@ -76,7 +76,10 @@ def expand_collections(collections: Any) -> List[Any]:
     Returns:
         The flattened list
     """
-    if not isinstance(collections, IterableLiterals):
+    if (
+            isinstance(collections, str) or
+            not isinstance(collections, IterableLiterals)
+    ):
         return [collections]
     ret = []
     for collection in collections:
@@ -268,7 +271,7 @@ def align_value(
 ) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
-    if not isinstance(value, Iterable):
+    if isinstance(value, str) or not isinstance(value, IterableLiterals):
         return value
 
     if isinstance(data, DataFrameGroupBy):
@@ -299,7 +302,7 @@ def copy_df(
     if isinstance(df, DataFrame):
         return df.copy()
     obj = df.obj.copy()
-    return obj.groupby(df.keys, dropna=False)
+    return obj.groupby(df.grouper, dropna=False)
 
 def df_assign_item(
         df: Union[DataFrame, DataFrameGroupBy],

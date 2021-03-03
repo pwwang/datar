@@ -1,3 +1,4 @@
+from os import replace
 import sys
 import re
 import builtins
@@ -10,8 +11,9 @@ from functools import wraps
 import pandas
 import executing
 import numpy
-from pandas import DataFrame
+from pandas import DataFrame, Categorical
 from pandas.core import series
+from pandas.core.dtypes.missing import notna
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_string_dtype
 from pandas.core.groupby.generic import SeriesGroupBy
@@ -23,10 +25,11 @@ from pipda import register_func, Context, evaluate_expr
 from pipda.context import ContextBase, ContextEval, ContextSelect
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 from pipda.utils import evaluate_args, evaluate_kwargs, is_piping
+from typing_extensions import Literal
 from plyrda.verbs import select
 from plyrda.group_by import get_groups, get_rowwise
 
-from .utils import IterableLiterals, NA, list_diff, objectize, filter_columns, select_columns
+from .utils import IterableLiterals, NA, NumericType, list_diff, objectize, filter_columns, select_columns
 from .middlewares import Across, CAcross, Collection, CurColumn, DescSeries, RowwiseDataFrame, IfAny, IfAll
 from .exceptions import ColumnNotExistingError
 
@@ -250,7 +253,7 @@ def everything(_data: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
         All column names of _data
     """
     if isinstance(_data, DataFrameGroupBy):
-        return list_diff(_data.obj.columns.tolist(), _data.keys)
+        return list_diff(_data.obj.columns.tolist(), _data.grouper.names)
     return _data.columns.to_list()
 
 @register_func
@@ -500,6 +503,16 @@ def sd(
         else numpy.std(series, ddof=ddof)
     )
 
+@register_grouped(context=Context.EVAL)
+def quantile(
+        series: Iterable[Any],
+        probs: Union[float, Iterable[float]],
+        na_rm: bool = False):
+    return (
+        numpy.nanquantile(series, probs) if na_rm
+        else numpy.quantile(series, probs)
+    )
+
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def pmin(
@@ -508,7 +521,7 @@ def pmin(
         na_rm: bool = False
 ) -> Iterable[float]:
     series = (objectize(ser) for ser in series)
-    return [min(_data, elem, na_rm=na_rm) for elem in zip(*series)]
+    return [min(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def pmax(
@@ -517,7 +530,7 @@ def pmax(
         na_rm: bool = False
 ) -> Iterable[float]:
     series = (objectize(ser) for ser in series)
-    return [max(_data, elem, na_rm=na_rm) for elem in zip(*series)]
+    return [max(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def case_when(
@@ -583,18 +596,19 @@ def cur_group_rows(_data: DataFrameGroupBy) -> int:
 def cur_group(_data: DataFrameGroupBy) -> Series:
 
     ret = []
-    for key, group_indexes in _data.groups.items():
-        if len(_data.keys) == 1:
-            ret.append(DataFrame([key], columns=_data.keys))
+    keys = _data.grouper.names
+    for key in _data.groups:
+        if len(keys) == 1:
+            ret.append(DataFrame([key], columns=keys))
         else:
-            ret.append(DataFrame(zip(*key), columns=_data.keys))
+            ret.append(DataFrame(zip(*key), columns=keys))
 
     return Series(ret)
 
 @register_func(DataFrameGroupBy)
 def cur_data(_data: DataFrameGroupBy) -> int:
     return Series(
-        _data.obj.loc[index].drop(columns=_data.keys)
+        _data.obj.loc[index].drop(columns=_data.grouper.names)
         for index in _data.grouper.groups.values()
     )
 
@@ -606,6 +620,7 @@ def cur_data_all(_data: DataFrameGroupBy) -> int:
     )
 
 def cur_column() -> CurColumn:
+    """Used in the functions of across. So we don't have to register it."""
     return CurColumn()
 
 @register_grouped(context=Context.EVAL)
@@ -706,8 +721,83 @@ def sample(
     """https://rdrr.io/r/base/sample.html"""
     return numpy.random.choice(x, int(n), replace=replace, p=prob)
 
+@register_func(None, context=Context.EVAL)
+def recode(
+        series: Iterable[Any],
+        *args: Any,
+        _default: Any = None,
+        _missing: Any = NA,
+        **kwargs: Any
+) -> Iterable[Any]:
+    kwd_recodes = {}
+    for i, arg in enumerate(args):
+        if isinstance(arg, dict):
+            kwd_recodes.update(arg)
+        else:
+            kwd_recodes[i] = arg
 
+    kwd_recodes.update(kwargs)
 
+    series = objectize(series)
+    series = numpy.array(series) # copied
+    ret = [_missing] * len(series)
+
+    for elem in set(series):
+        if pandas.isna(elem):
+            continue
+        replace = kwd_recodes.get(elem, _default)
+        replace = elem if replace is None else replace
+
+        for i, indicator in enumerate(series == elem):
+            if not indicator:
+                continue
+            ret[i] = replace
+
+    return ret
+
+@register_func(None, context=Context.EVAL)
+def recode_factor(
+        series: Iterable[Any],
+        *args: Any,
+        _default: Any = None,
+        _missing: Any = NA,
+        _ordered: bool = False,
+        **kwargs: Any
+) -> Iterable[Any]:
+    if not is_categorical_dtype(series):
+        series = Categorical(series)
+    else:
+        _default = NA if _default is None else _default
+
+    categories = recode(
+        series,
+        *args,
+        _default=_default,
+        _missing=_missing,
+        **kwargs
+    )
+    cats = []
+    for cat in categories:
+        if pandas.isnull(cat):
+            continue
+        if cat not in cats:
+            cats.append(cat)
+
+    series = recode(
+        series,
+        *args,
+        _default=_default,
+        _missing=_missing,
+        **kwargs
+    )
+
+    return Categorical(
+        series,
+        categories=cats,
+        ordered=_ordered
+    )
+
+recode_categorical = recode_factor
 
 # Functions without data arguments
 # --------------------------------

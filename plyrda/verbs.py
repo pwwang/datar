@@ -275,7 +275,7 @@ def _(
     columns = evaluate_args(columns, _data, Context.SELECT)
     columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
     if _add:
-        groups = Collection(*_data.keys) + columns
+        groups = Collection(*_data.grouper.names) + columns
         return _data.obj.groupby(groups, dropna=False)
     return _data.obj.groupby(columns, dropna=False)
 
@@ -285,9 +285,24 @@ def ungroup(_data: DataFrameGroupBy) -> DataFrame:
 
 @register_verb(DataFrameGroupBy)
 def group_vars(_data: DataFrameGroupBy) -> List[str]:
-    return _data.keys
+    return _data.grouper.names
 
 group_cols = group_vars
+
+@register_verb(DataFrameGroupBy)
+def group_rows(_data: DataFrameGroupBy) -> List[str]:
+    return _data.grouper.groups
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def group_keys(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *cols: str,
+        **kwargs: Any,
+) -> DataFrame:
+    if not isinstance(_data, DataFrameGroupBy):
+        _data = group_by(_data, *cols, **kwargs)
+    group_levels = list(_data.groups.keys())
+    return DataFrame(group_levels, columns=_data.grouper.names)
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.MIXED)
 def summarise(
@@ -344,11 +359,12 @@ def summarise(
             _groups = 'drop_last'
 
     ret.reset_index(inplace=True)
+    group_keys = _data.grouper.names
     if _groups == 'drop_last':
-        return ret.groupby(_data.keys[:-1]) if _data.keys[:-1] else ret
+        return ret.groupby(group_keys[:-1]) if group_keys[:-1] else ret
 
     if _groups == 'keep':
-        return ret.groupby(_data.keys)
+        return ret.groupby(_data.grouper) # even keep the unexisting levels
 
     # else:
     # todo: raise
@@ -387,18 +403,18 @@ def arrange(
 
     by = sorting_df.columns.to_list()
     if isinstance(_data, DataFrameGroupBy):
-        for key in _data.keys:
+        for key in _data.grouper.names:
             if key not in sorting_df:
                 sorting_df[key] = _data[key].obj.values
         if _by_group:
-            by = list_union(_data.keys, by)
+            by = list_union(_data.grouper.names, by)
 
     ascending = [col not in desc_cols for col in by]
     sorting_df.sort_values(by=by, ascending=ascending, inplace=True)
     data = data.loc[sorting_df.index, :]
 
     if isinstance(_data, DataFrameGroupBy):
-        return data.groupby(_data.keys, dropna=False)
+        return data.groupby(_data.grouper.names, dropna=False)
 
     return data
 
@@ -433,8 +449,9 @@ def filter(
         ...
 
     ret = objectize(_data)[condition]
-    if isinstance(_data, DataFrameGroupBy) and _preserve:
-        return ret.groupby(_data.keys, dropna=True)
+    if isinstance(_data, DataFrameGroupBy):
+        grouper = _data.grouper if _preserve else _data.grouper.names
+        return ret.groupby(grouper, dropna=True)
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.UNSET)
@@ -514,7 +531,7 @@ def tally(
         name: str = 'n'
 ) -> DataFrame:
     if isinstance(_data, DataFrameGroupBy):
-        return count(_data, *_data.keys, wt=wt, sort=sort, name=name)
+        return count(_data, *_data.grouper.names, wt=wt, sort=sort, name=name)
 
     return DataFrame({
         name: [_data.shape[0] if wt is None else _data[wt].sum()]
@@ -539,7 +556,7 @@ def add_count(
         ret = ret.sort_values([name], ascending=[False])
 
     if isinstance(_data, DataFrameGroupBy):
-        return ret.groupby(_data.keys, dropna=False)
+        return ret.groupby(_data.grouper.names, dropna=False)
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
@@ -559,7 +576,7 @@ def add_tally(
         ret = ret.sort_values([name], ascending=[False])
 
     if isinstance(_data, DataFrameGroupBy):
-        return ret.groupby(_data.keys, dropna=False)
+        return ret.groupby(_data.grouper.names, dropna=False)
 
     return ret
 
@@ -577,7 +594,7 @@ def distinct(
     all_columns = data.columns
     columns = select_columns(all_columns, *columns)
     if isinstance(_data, DataFrameGroupBy):
-        columns = list_union(_data.keys, columns)
+        columns = list_union(_data.grouper.names, columns)
 
     data = mutate(data, **mutates)
     columns = columns + list(mutates)
@@ -588,7 +605,7 @@ def distinct(
     uniq_frame = data.drop_duplicates(columns, ignore_index=True)
     ret = uniq_frame if _keep_all else uniq_frame[columns]
     if isinstance(_data, DataFrameGroupBy):
-        return ret.groupby(_data.keys, dropna=False)
+        return ret.groupby(_data.grouper.names, dropna=False)
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy))
@@ -1033,3 +1050,76 @@ def get(
     if cols is not None:
         _data = select(_data, cols)
     return _data
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def group_map(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        func: Callable[[DataFrame], Any]
+) -> List[Any]:
+    if isinstance(_data, DataFrame):
+        return func(_data)
+    return [
+        func(_data.obj.loc[index]) for index in _data.grouper.groups.values()
+    ]
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def group_modify(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        func: Callable[[DataFrame], DataFrame]
+) -> List[Any]:
+    if isinstance(_data, DataFrame):
+        return func(_data)
+    return _data.apply(func).reset_index(drop=True, level=0)
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def group_walk(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        func: Callable[[DataFrame], None]
+) -> List[Any]:
+    if isinstance(_data, DataFrame):
+        return func(_data)
+    return _data.apply(func)
+
+@register_verb(DataFrameGroupBy)
+def group_trim(
+        _data: DataFrameGroupBy
+) -> DataFrameGroupBy:
+    return _data.obj.groupby(_data.grouper.names)
+
+@register_verb((DataFrame, DataFrameGroupBy))
+def group_split(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        *cols: str,
+        _keep: bool = False,
+        **kwargs: Any
+) -> DataFrameGroupBy:
+    if isinstance(_data, RowwiseDataFrame):
+        _data = objectize(_data)
+        return [_data.iloc[[i], :] for i in range(_data.shape[0])]
+
+    if isinstance(_data, DataFrameGroupBy):
+        return [
+            _data.obj.loc[index] for index in _data.grouper.groups.values()
+        ]
+
+    _data = group_by(_data, *cols, **kwargs)
+    return group_split(_data)
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.UNSET)
+def with_groups(
+        _data: Union[DataFrame, DataFrameGroupBy],
+        _groups: Optional[Union[str, Iterable[str]]],
+        _func: Callable,
+        *args: Any,
+        **kwargs: Any
+) -> DataFrameGroupBy:
+    _groups = evaluate_expr(_groups, _data, Context.SELECT)
+    if _groups is not None:
+        _data = group_by(_data, _groups)
+    else:
+        _data = objectize(_data)
+
+    if getattr(_func, '__pipda__', None):
+        return _data >> _func(*args, **kwargs)
+
+    return _func(_data, *args, **kwargs)

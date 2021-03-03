@@ -146,3 +146,6 @@ def tribble(*dummies: Any) -> DataFrame:
 
 def runif(n: int, min: float = 0.0, max: float = 1.0) -> List[float]:
     return numpy.random.uniform(low=min, high=max, size=n)
+
+def rnorm(n: int, mean: float = 0.0, var: float = 1.0) -> List[float]:
+    return numpy.random.normal(loc=mean, scale=var, size=n)

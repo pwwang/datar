@@ -238,14 +238,7 @@ class CAcross(Across):
         if len(self.fns) > 1:
             raise ValueError("Only a single function is allowed in c_across.")
 
-        fn = self.fns[0]['fn']
-        pipda_type = getattr(fn, '__pipda__', None)
-        if pipda_type not in (None, 'PlainFunction'):
-            self.fn = lambda _column, *args, **kwargs: fn(
-                data, _column, *args, **kwargs
-            )
-        else:
-            self.fn = fn
+        self.fn = self.fns[0]['fn']
 
     def evaluate(
             self,
