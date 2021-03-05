@@ -1,6 +1,6 @@
 from pipda import Symbolic
 
-from . import operator
+from .core import operator
 
 f = Symbolic()
 

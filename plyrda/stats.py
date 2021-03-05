@@ -1,10 +1,11 @@
 """Some functions ported from R-stats"""
 
 from pipda import Context
-from plyrda.utils import register_grouped
 from typing import Any, Iterable, List, Union
 
 import numpy
+
+from .core.utils import register_grouped
 
 def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
     """random generation for the normal distribution with mean equal to mean

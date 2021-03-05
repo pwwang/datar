@@ -1,7 +1,5 @@
 import builtins
 
-from pipda import operator
-from plyrda.contexts import ContextSelectSlice
 from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
 from abc import ABC
 from threading import Lock
@@ -11,10 +9,10 @@ from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
-from pipda.utils import DataContext, Expression
+from pipda.utils import DataContext
 
 from .utils import IterableLiterals, objectize, expand_collections, list_diff, sanitize_slice, select_columns
-from .group_by import get_rowwise, is_grouped, get_groups
+from .contexts import ContextSelectSlice
 
 LOCK = Lock()
 

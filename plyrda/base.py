@@ -7,7 +7,6 @@ from string import ascii_letters
 
 from pandas.core.dtypes.common import is_categorical_dtype
 
-from plyrda.middlewares import Collection, ContextWithData
 from typing import Any, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy
@@ -17,7 +16,10 @@ from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_func, register_verb, Context
 
-from .utils import IterableLiterals, NumericType, categorize, objectize, register_grouped
+from .core.middlewares import Collection, ContextWithData
+from .core.utils import (
+    IterableLiterals, NumericType, categorize, objectize, register_grouped
+)
 
 NA = numpy.nan
 TRUE = True
