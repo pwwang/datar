@@ -1,6 +1,8 @@
 """Some functions ported from R-stats"""
 
-from typing import List
+from pipda import Context
+from plyrda.utils import register_grouped
+from typing import Any, Iterable, List, Union
 
 import numpy
 
@@ -31,3 +33,14 @@ def rpois(n: int, lambda_: float) -> List[float]:
         Randomly generated deviates.
     """
     return numpy.random.poisson(lam=lambda_, size=n)
+
+@register_grouped(context=Context.EVAL)
+def quantile(
+        series: Iterable[Any],
+        probs: Union[float, Iterable[float]] = (0.0, 0.25, 0.5, 0.75, 1.0),
+        na_rm: bool = False
+):
+    return (
+        numpy.nanquantile(series, probs) if na_rm
+        else numpy.quantile(series, probs)
+    )

@@ -329,6 +329,12 @@ def objectize(data: Any) -> Any:
         return data.obj
     return data
 
+def categorize(data: Any) -> Any:
+    try:
+        return data.cat
+    except AttributeError:
+        return data
+
 @singledispatch
 def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
     try:

@@ -3,20 +3,21 @@ import builtins
 import datetime
 import functools
 import math
-from string import ascii_letters as letters
+from string import ascii_letters
 
 from pandas.core.dtypes.common import is_categorical_dtype
 
 from plyrda.middlewares import Collection, ContextWithData
-from typing import Any, Iterable, List, Optional, Type, Union
+from typing import Any, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy
 import pandas
 from pandas import Series, Categorical, DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_func, register_verb, Context
 
-from .utils import IterableLiterals, NumericType, objectize, register_grouped
+from .utils import IterableLiterals, NumericType, categorize, objectize, register_grouped
 
 NA = numpy.nan
 TRUE = True
@@ -25,6 +26,9 @@ NULL = None
 
 pi = math.pi
 Inf = numpy.inf
+
+letters = list(ascii_letters[:26])
+LETTERS = list(ascii_letters[26:])
 
 @functools.singledispatch
 def _as_date_dummy(
@@ -142,7 +146,6 @@ def _(
         return dt.date()
     return dt
 
-
 def as_date(
         x: Any,
         format: Optional[str] = None,
@@ -234,6 +237,80 @@ def as_factor(x: Iterable[Any]) -> Categorical:
 
 as_categorical = as_factor
 
+def factor(
+        x: Iterable[Any],
+        levels: Optional[Iterable[Any]] = None,
+        exclude: Any = NA,
+        ordered: bool = False
+) -> Categorical:
+    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+    are also used for factors).
+
+    If argument ordered is TRUE, the factor levels are assumed to be ordered
+
+    Args:
+        x: a vector of data
+        levels: an optional vector of the unique values (as character strings)
+            that x might have taken.
+        exclude: a vector of values to be excluded when forming the set of
+            levels. This may be factor with the same level set as x or
+            should be a character
+        ordered: logical flag to determine if the levels should be regarded
+            as ordered (in the order given).
+    """
+    if is_categorical_dtype(x):
+        x = x.to_numpy()
+    ret = Categorical(
+        objectize(x),
+        categories=levels,
+        ordered=ordered
+    )
+    if not isinstance(exclude, IterableLiterals) or isinstance(exclude, str):
+        exclude = [exclude]
+
+    return ret.remove_categories(exclude)
+
+def rep(
+        x: Any,
+        times: Union[int, Iterable[int]] = 1,
+        length: Optional[int] = None,
+        each: int = 1
+) -> Iterable[Any]:
+    """replicates the values in x
+
+    Args:
+        x: a vector or scaler
+        times: number of times to repeat each element if of length len(x),
+            or to repeat the whole vector if of length 1
+        length: non-negative integer. The desired length of the output vector
+        each: non-negative integer. Each element of x is repeated each times.
+
+    Returns:
+        A list of repeated elements in x.
+    """
+    if not isinstance(x, IterableLiterals) or isinstance(x, str):
+        x = [x]
+    if isinstance(times, IterableLiterals):
+        if len(times) != len(x):
+            raise ValueError(
+                "Invalid times argument, expect length "
+                f"{len(times)}, got {len(x)}"
+            )
+        if each != 1:
+            raise ValueError(
+                "Unexpected each argument when times is an iterable."
+            )
+
+    if isinstance(times, int):
+        x = [elem for elem in x for _ in range(each)] * times
+    else:
+        x = [elem for n, elem in zip(times, x) for _ in range(n)]
+    if length is None:
+        return x
+    repeats = length // len(x) + 1
+    x = x * repeats
+    return x[:length]
+
 @register_func(None, context=Context.EVAL)
 def as_int(x: Any) -> Union[int, Iterable[int]]:
     """Convert an object or elements of an iterable into int
@@ -246,6 +323,8 @@ def as_int(x: Any) -> Union[int, Iterable[int]]:
         When x is iterable, convert elements of it into ints
         Otherwise, convert x to int.
     """
+    if is_categorical_dtype(x):
+        return categorize(x).codes
     return _as_type(x, int)
 
 @register_func(None, context=Context.EVAL)
@@ -260,6 +339,8 @@ def as_integer(x: Any) -> Union[numpy.int64, Iterable[numpy.int64]]:
         When x is iterable, convert elements of it into numpy.int64s
         Otherwise, convert x to numpy.int64.
     """
+    if is_categorical_dtype(x):
+        return categorize(x).codes
     return _as_type(x, numpy.int64)
 
 as_int64 = as_integer
@@ -279,6 +360,10 @@ def as_logical(x: Any) -> Union[bool, Iterable[bool]]:
     return _as_type(x, bool)
 
 as_bool = as_logical
+
+def droplevels(x: Categorical) -> Categorical:
+    """drop unused levels from a factor"""
+    return categorize(x).remove_unused_categories()
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
@@ -402,17 +487,80 @@ def cut(
         ordered=ordered_result
     )
 
+def diag(
+        x: Any = 1,
+        nrow: Optional[int] = None,
+        ncol: Optional[int] = None
+) -> Union[DataFrame, numpy.ndarray]:
+    """Extract or construct a diagonal matrix.
+
+    Args:
+        x: a matrix, vector or scalar
+        nrow, ncol: optional dimensions for the result when x is not a matrix.
+
+    Returns:
+        If x is a matrix then diag(x) returns the diagonal of x.
+        In all other cases the value is a diagonal matrix with nrow rows and
+        ncol columns (if ncol is not given the matrix is square).
+        Here nrow is taken from the argument if specified, otherwise
+        inferred from x
+    """
+    if isinstance(x, DataFrame):
+        return numpy.diag(x)
+    if nrow is None and isinstance(x, int):
+        nrow = x
+        x = 1
+    if ncol == None:
+        ncol = nrow
+    if not isinstance(x, IterableLiterals) or isinstance(x, str):
+        nmax = max(nrow, ncol)
+        x = [x] * nmax
+    elif nrow is not None:
+        nmax = max(nrow, ncol)
+        nmax = nmax // len(x)
+        x = x * nmax
+
+    series = numpy.array(x)
+    ret = DataFrame(numpy.diag(series))
+    return ret.iloc[:nrow, :ncol]
+
+def dim(x: Union[DataFrame, DataFrameGroupBy]) -> Tuple[int]:
+    """Retrieve the dimension of a dataframe.
+
+    Args:
+        x: a dataframe
+
+    Returns:
+        The shape of the dataframe.
+    """
+    return objectize(x).shape
+
 @register_grouped(context=Context.EVAL)
 def table(
         obj: Any,
         *objs: Any,
         exclude: Any = NA,
-        use_na: str = "always",
+        # not supported. use exclude instead
+        # use_na: str = "no",
         dnn: Optional[Union[str, List[str]]] = None,
         # not supported, varname.argname not working with wrappers having
         # different signatures.
         # deparse_level: int = 1
 ) -> DataFrame:
+    """uses the cross-classifying factors to build a contingency table of
+    the counts at each combination of factor levels.
+
+    Args:
+        obj, *objs: one or more objects which can be interpreted as factors
+            Only 1 or 2 variables allowed currently.
+            If obj or elements of objs is a DataFrame, each column is counted
+            as a variable.
+        exclude: levels to remove for all factors
+        dnn: the names to be given to the dimensions in the result.
+
+    Returns:
+        A contingency table (DataFrame)
+    """
     obj1 = obj2 = None
     obj_nvar = 1
     if not isinstance(obj, DataFrame):
@@ -475,26 +623,35 @@ def table(
         if isinstance(obj1, Series):
             obj1 = obj2 = obj1[~obj1.isin(exclude)].reset_index(drop=True)
         else:
-            obj1.remove_categories(exclude, inplace=True)
+            obj1.remove_categories(
+                [exc for exc in exclude if exc in obj1.categories],
+                inplace=True
+            )
     else:
         if isinstance(obj1, Series):
             obj1 = obj1[~obj1.isin(exclude)].reset_index(drop=True)
         else:
-            obj1.remove_categories(exclude, inplace=True)
+            obj1.remove_categories(
+                [exc for exc in exclude if exc in obj1.categories],
+                inplace=True
+            )
         if isinstance(obj2, Series):
             obj2 = obj2[~obj2.isin(exclude)].reset_index(drop=True)
         else:
-            obj2.remove_categories(exclude, inplace=True)
+            obj2.remove_categories(
+                [exc for exc in exclude if exc in obj2.categories],
+                inplace=True
+            )
 
     if NA not in exclude:
         if obj1 is obj2:
             if not is_categorical_dtype(obj1):
-                obj1 = obj2 = obj1.fillna('NA')
+                obj1 = obj2 = obj1.fillna('<NA>')
         else:
             if not is_categorical_dtype(obj1):
-                obj1 = obj1.fillna('NA')
+                obj1 = obj1.fillna('<NA>')
             if not is_categorical_dtype(obj2):
-                obj2 = obj2.fillna('NA')
+                obj2 = obj2.fillna('<NA>')
 
     kwargs = {'dropna': False}
     if dn1:
@@ -525,18 +682,6 @@ def context(
         The original or modified data
     """
     return ContextWithData(data)
-
-
-@register_grouped(context=Context.EVAL)
-def quantile(
-        series: Iterable[Any],
-        probs: Union[float, Iterable[float]] = (0.0, 0.25, 0.5, 0.75, 1.0),
-        na_rm: bool = False
-):
-    return (
-        numpy.nanquantile(series, probs) if na_rm
-        else numpy.quantile(series, probs)
-    )
 
 @register_grouped(context=Context.EVAL)
 def sample(

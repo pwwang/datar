@@ -91,7 +91,8 @@ def test_as_categorical(x, expected):
 
 @pytest.mark.parametrize('x,expected', [
     ([1.0,2.0,3.0], [1,2,3]),
-    (numpy.array(['1','2','3']), [1,2,3])
+    (numpy.array(['1','2','3']), [1,2,3]),
+    (factor(['1','2','3']), [0,1,2]),
 ])
 def test_as_int(x, expected):
     assert_equal(as_int(x), expected)
@@ -109,6 +110,29 @@ def test_as_integer(x, expected):
 ])
 def test_as_logical(x, expected):
     assert_equal(as_logical(x), expected)
+
+def test_factor():
+    ff = factor(list("statistics"), levels=letters)
+    assert_equal(ff.to_numpy().flatten(), list("statistics"))
+    assert_equal(ff.categories.tolist(), letters)
+
+    ffi = as_integer(ff)
+    assert_equal(ffi, [18,19,0,19,8,18,19,8,2,18])
+
+    ff = factor(ff)
+    assert_equal(ff.categories.tolist(), list('acist'))
+
+    z = factor(LETTERS[-3:], ordered=TRUE)
+    assert "['X' < 'Y' < 'Z']" in str(z)
+
+    x = factor(c(1, 2, NA), exclude=None)
+    assert len(x) == 3
+    # different from R
+    assert_equal(x.categories.tolist(), [1, 2])
+
+    x = factor(z, exclude = "X")
+    assert x[0] is NA
+    assert len(x.categories) == 2
 
 @pytest.mark.parametrize('x,expected', [
     (1.4, 2),
@@ -174,6 +198,33 @@ def test_cut():
     ct = cut(aaa, 3, precision=3, ordered_result=True)
     assert str(ct[0]) == '(0.994, 3.0]'
 
+def test_diag():
+    assert dim(diag(3)) == (3,3)
+    assert dim(diag(10, 3, 4)) == (3,4)
+    x = diag(c(1j,2j))
+    assert x.iloc[0,0] == 0+1j
+    assert x.iloc[0,1] == 0+0j
+    assert x.iloc[1,0] == 0+0j
+    assert x.iloc[1,1] == 0+2j
+    x = diag(TRUE, 3)
+    assert sum(x.values.flatten()) == 3
+    x = diag(c(2,1), 4)
+    assert_equal(diag(x).flatten(), [2,1,2,1])
+
+def test_sample():
+    x = sample(range(1, 13))
+    assert set(x) == set(range(1,13))
+
+    y = sample(x, replace=TRUE)
+    assert len(y) <= 12
+
+    z = sample(c(0,1), 100, replace=TRUE)
+    assert set(z) == {0, 1}
+    assert len(z) == 100
+
+    w = sample('abc', 100, replace=TRUE)
+    assert set(w) == {'a', 'b', 'c'}
+    assert len(z) == 100
 
 def test_table():
     # https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/table
@@ -191,13 +242,18 @@ def test_table():
     assert tab.index.tolist() == ['A', 'B']
     assert_equal(tab.values.flatten(), [9] * 6)
 
+    tab = table(warpbreaks)
+    assert tab.columns.tolist() == ['H', 'L', 'M']
+    assert tab.index.tolist() == ['A', 'B']
+    assert_equal(tab.values.flatten(), [9] * 6)
+
     #-----------------
     tab = table(state_division, state_region)
     assert tab.loc['New England', 'Northeast'] == 6
 
     #-----------------
     with context(airquality) as _:
-        tab = table(cut(f.Temp, quantile(f.Temp)), f.Month)
+        tab = table(cut(f.Temp, stats.quantile(f.Temp)), f.Month)
 
     assert tab.iloc[0,0] == 24
 
@@ -230,3 +286,55 @@ def test_table():
     assert tab.shape == (1, 2)
     assert_equal(tab.values.flatten(), [10] * 2)
     assert 'B' not in tab.columns
+
+    #-------------------
+    d = factor(rep(c("A","B","C"), 10), levels=c("A","B","C","D","E"))
+    tab = table(d, exclude="B", dnn=['x'])
+    assert_equal(tab.columns.to_list(), ["A", "C", "D", "E"])
+    assert_equal(tab.values.flatten(), [10, 10, 0, 0])
+
+    d2 = factor(rep(c("A","B","C"), 10), levels=c("A","B","C","D","E"))
+    tab = table(d, d2, exclude="B")
+    assert tab.shape == (4, 4)
+
+    tab = table("abc", "cba", dnn='x')
+    assert tab.shape == (3,3)
+    assert sum(tab.values.flatten()) == 3
+
+    with context(airquality) as _:
+        tab = table(f.Ozone, f.Solar_R, exclude=None)
+    assert '<NA>' in tab.columns
+    assert '<NA>' in tab.index
+
+def test_table_error():
+    from plyrda.datasets import iris, warpbreaks
+    with pytest.raises(ValueError):
+        table(iris)
+    with pytest.raises(ValueError):
+        table(warpbreaks, iris)
+    with pytest.raises(ValueError):
+        table(warpbreaks.wool, iris)
+
+@pytest.mark.parametrize('x, times, length, each, expected', [
+    (range(4), 2, None, 1, [0,1,2,3]*2),
+    (range(4), 1, None, 2, [0,0,1,1,2,2,3,3]),
+    (range(4), [2]*4, None, 1, [0,0,1,1,2,2,3,3]),
+    (range(4), [2,1]*2, None, 1, [0,0,1,2,2,3]),
+    (range(4), 1, 4, 2, [0,0,1,1]),
+    (range(4), 1, 10, 2, [0,0,1,1,2,2,3,3,0,0]),
+    (range(4), 3, None, 2, [0,0,1,1,2,2,3,3] * 3),
+    (1, 7, None, 1, [1,1,1,1,1,1,1]),
+])
+def test_rep(x, times, length, each, expected):
+    assert rep(x, times=times, length=length, each=each) == expected
+
+def test_rep_error():
+    with pytest.raises(ValueError):
+        rep(c(1,2,3), c(1,2))
+    with pytest.raises(ValueError):
+        rep(c(1,2,3), c(1,2,3), each=2)
+
+def test_droplevels():
+    x = factor(c(1,2,3), levels=c(1,2,3,4))
+    x = droplevels(x)
+    assert len(x.categories) == 3
