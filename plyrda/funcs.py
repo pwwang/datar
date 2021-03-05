@@ -349,9 +349,13 @@ def where(_data: Union[DataFrame, DataFrameGroupBy], fn: Callable) -> List[str]:
             conditions = fn(_data[col])
         else:
             conditions = (
-                fn(_data[col], _force_piping=True).evaluate(_data)
+                fn(_data[col], _calling_type='piping').evaluate(_data)
                 if pipda_type == 'PlainFunction'
-                else fn(_data, _data[col], _force_piping=True).evaluate(_data)
+                else fn(
+                    _data,
+                    _data[col],
+                    _calling_type='piping'
+                ).evaluate(_data)
             )
         if isinstance(conditions, bool):
             if conditions:
@@ -1006,11 +1010,6 @@ def as_categorical(x: Union[Series, SeriesGroupBy]) -> Series:
     x = objectize(x)
     return x.astype('category')
 
-@register_func(None, context=Context.EVAL)
-def as_character(x: Union[Series, SeriesGroupBy]) -> Series:
-    x = objectize(x)
-    return x.astype('str')
-
 @register_func(None)
 def num_range(
         prefix: str,
@@ -1041,113 +1040,3 @@ def abs(x: Any) -> bool:
     if isinstance(x, Series):
         return x.abs()
     builtins.abs(x)
-
-# todo: figure out singledispatch for as_date
-def _as_date_format(
-        x: str,
-        format: Optional[str],
-        try_formats: Optional[Iterator[str]],
-        optional: bool,
-        offset: datetime.timedelta
-) -> datetime.date:
-    try_formats = try_formats or [
-        "%Y-%m-%d",
-        "%Y/%m/%d",
-        "%Y-%m-%d %H:%M:%S",
-        "%Y/%m/%d %H:%M:%S"
-    ]
-    if not format:
-        format = try_formats
-    else:
-        format = [format]
-
-    for fmt in format:
-        try:
-            return (datetime.datetime.strptime(x, fmt) + offset).date()
-        except ValueError:
-            continue
-    else:
-        if optional:
-            return numpy.nan
-        else:
-            raise ValueError(
-                "character string is not in a standard unambiguous format"
-            )
-
-def _as_date_diff(
-        x: int,
-        origin: Union[DateType, datetime.datetime],
-        offset: datetime.timedelta
-) -> datetime.date:
-    if isinstance(origin, str):
-        origin = _as_date(origin)
-
-    dt = origin + datetime.timedelta(days=x) + offset
-    if isinstance(dt, datetime.date):
-        return dt
-
-    return dt.date()
-
-def _as_date(
-        x: DateType,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
-        origin: Optional[Union[DateType, datetime.datetime]] = None
-) -> datetime.date:
-    """Convert an object to a datetime.date object
-
-    See: https://rdrr.io/r/base/as.Date.html
-
-    Args:
-        x: Object that can be converted into a datetime.date object
-        format:  If not specified, it will try try_formats one by one on
-            the first non-NaN element, and give an error if none works.
-            Otherwise, the processing is via strptime
-        try_formats: vector of format strings to try if format is not specified.
-        optional: indicating to return NA (instead of signalling an error)
-            if the format guessing does not succeed.
-        origin: a datetime.date/datetime object, or something which can be
-            coerced by as_date(origin, ...) to such an object.
-        tz: a time zone offset or a datetime.timedelta object.
-            Note that time zone name is not supported yet.
-
-    Returns:
-        The datetime.date object
-
-    Raises:
-        ValueError: When string is not in a standard unambiguous format
-    """
-    if isinstance(tz, (int, numpy.integer)):
-        tz = datetime.timedelta(hours=int(tz))
-
-    if isinstance(x, datetime.date):
-        return x + tz
-
-    if isinstance(x, datetime.datetime):
-        return (x + tz).date()
-
-    if isinstance(x, str):
-        return _as_date_format(
-            x,
-            format=format,
-            try_formats=try_formats,
-            optional=optional,
-            offset=tz
-        )
-
-    if isinstance(x, (int, numpy.integer)):
-        return _as_date_diff(int(x), origin=origin, offset=tz)
-
-    raise ValueError("character string is not in a standard unambiguous format")
-
-@register_func(None, context=Context.EVAL)
-def as_date(
-        x: Union[Series, SeriesGroupBy],
-        **kwargs: Any
-) -> datetime.date:
-    if not isinstance(x, (Series, SeriesGroupBy)):
-        x = Series([x]) if not isinstance(x, IterableLiterals) else Series(x)
-    x = objectize(x)
-    return x.transform(_as_date, **kwargs)

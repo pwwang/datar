@@ -11,7 +11,7 @@ from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
-from pipda.utils import Expression
+from pipda.utils import DataContext, Expression
 
 from .utils import IterableLiterals, objectize, expand_collections, list_diff, sanitize_slice, select_columns
 from .group_by import get_rowwise, is_grouped, get_groups
@@ -184,7 +184,7 @@ class Across:
                     col,
                     *CurColumn.replace_args(self.args, col),
                     **CurColumn.replace_kwargs(self.kwargs, col),
-                    _force_piping=True
+                    _calling_type='piping'
                 ).evaluate(data)
                 for col in self.cols
             ]
@@ -218,7 +218,7 @@ class Across:
                         DirectRefAttr(data, column),
                         *CurColumn.replace_args(self.args, column),
                         **CurColumn.replace_kwargs(self.kwargs, column),
-                        _force_piping=True
+                        _calling_type='piping'
                     ).evaluate(data)
         return ret
 
@@ -336,12 +336,13 @@ class RowwiseDataFrame(DataFrame):
         self.__dict__['rowwise'] = rowwise or True
         super().__init__(*args, **kwargs)
 
-class Slice(Expression):
-    ...
-    # def __init__(self, context: Optional["ContextBase"] = None) -> None:
-    #     super().__init__(context or Context.EVAL.value)
+class ContextWithData:
 
-    # def __getitem__(self, item: slice) -> Iterable[int]:
-    #     self.start, self.stop, self.step = item.start, item.stop, item.step
+    def __init__(self, data: Any) -> None:
+        self.data = DataContext(data)
 
-    # def evaluate(self, data: Any = None, context: Optional["ContextBase"] = None): -> Union[slice, List[slice]]
+    def __enter__(self) -> Any:
+        return self.data
+
+    def __exit__(self, *exc_info) -> None:
+        self.data.delete()
