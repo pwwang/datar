@@ -43,6 +43,8 @@ __all__ = all_datasets().keys()
 def __getattr__(name):
     if name == '__wrapped__':
         raise AttributeError
+    if name == '__qualname__':
+        return __name__
     return load_data(name)
 
 install(__name__)
