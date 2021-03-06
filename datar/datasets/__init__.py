@@ -41,6 +41,7 @@ def load_data(name: str) -> pandas.DataFrame:
 __all__ = all_datasets().keys()
 
 def __getattr__(name):
+    # mkapi accesses quite a lot of attributes starting with _
     if name.startswith('_'):
         raise AttributeError
     return load_data(name)

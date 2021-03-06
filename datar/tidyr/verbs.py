@@ -1,13 +1,14 @@
 """Verbs from R-tidyr"""
-
 from typing import Any, Callable, Mapping, Optional, Type, Union
+
 import numpy
-from pandas import DataFrame
+from numpy.core.fromnumeric import shape
 import pandas
+from pandas import DataFrame, Series
 from pipda import register_verb, Context
 
 from ..core.utils import select_columns, list_diff
-from ..core.types import StringOrIter, is_iterable, is_scalar
+from ..core.types import IntOrIter, StringOrIter, is_scalar
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -204,4 +205,33 @@ def pivot_wider(
     if names_sort:
         ret = ret.loc[:, sorted(new_columns)]
 
+    return ret
+
+@register_verb(DataFrame, context=Context.EVAL)
+def uncount(
+        _data: DataFrame,
+        weights: IntOrIter,
+        _remove: bool = True,
+        _id: Optional[str] = None,
+) -> DataFrame:
+    if is_scalar(weights):
+        weights = [weights] * _data.shape[0]
+
+    indexes = [
+        idx for i, idx in enumerate(_data.index)
+        for _ in range(weights[i])
+    ]
+
+    all_columns = _data.columns.tolist()
+    weight_name = getattr(weights, 'name', None)
+    if weight_name in all_columns and weights is _data[weight_name]:
+        rest_columns = list_diff(all_columns, [weight_name])
+    else:
+        rest_columns = all_columns
+
+    ret = _data.loc[indexes, rest_columns] if _remove else _data.loc[indexes, :]
+    if _id:
+        return ret.groupby(rest_columns).apply(
+            lambda df: df.assign(**{_id: range(df.shape[0])})
+        ).reset_index(drop=True, level=0)
     return ret
