@@ -45,6 +45,8 @@ def __getattr__(name):
         raise AttributeError
     if name == '__qualname__':
         return __name__
+    if name == '__signature__':
+        return None
     return load_data(name)
 
 install(__name__)
