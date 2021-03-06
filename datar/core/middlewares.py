@@ -11,8 +11,11 @@ from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
 from pipda.utils import DataContext
 
-from .utils import IterableLiterals, objectize, expand_collections, list_diff, sanitize_slice, select_columns
+from .utils import (
+    objectize, expand_collections, list_diff, sanitize_slice, select_columns
+)
 from .contexts import ContextSelectSlice
+from .types import is_scalar
 
 LOCK = Lock()
 
@@ -52,10 +55,10 @@ class Inverted:
                 columns = self.data.columns.tolist()
                 self.elems = columns[sanitize_slice(elems, columns)]
         elif not isinstance(elems, Collection):
-            if isinstance(elems, IterableLiterals):
-                self.elems = Collection(*elems)
-            else:
+            if is_scalar(elems):
                 self.elems = Collection(elems)
+            else:
+                self.elems = Collection(*elems)
         elif not isinstance(context, ContextSelectSlice):
             columns = self.data.columns.to_list()
             self.elems = [

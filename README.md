@@ -142,10 +142,8 @@ Experimental functions in dplyr.
 
 **Pivoting** changes the representation of a rectangular dataset, without changing the data inside of it.
 
-- [x] [`pivot_longer()`](htts://pwwang.github.io/datar/reference/pivot_longer.ipynb): Pivot data from wide to long
-- [ ] [`pivot_wider()`](htts://pwwang.github.io/datar/reference/pivot_wider.ipynb): Pivot data from long to wide
-- [ ] [`spread()`](htts://pwwang.github.io/datar/reference/spread.ipynb): Spread a key-value pair across multiple columns
-- [ ] [`gather()`](htts://pwwang.github.io/datar/reference/gather.ipynb): Gather columns into key-value pairs
+- [x] [`pivot_longer()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpivot_longer.ipynb): Pivot data from wide to long
+- [x] [`pivot_wider()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpivot_wider.ipynb): Pivot data from long to wide
 
 ### tidyr - Rectangling
 

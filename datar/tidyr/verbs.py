@@ -1,25 +1,29 @@
 """Verbs from R-tidyr"""
 
+from typing import Any, Callable, Mapping, Optional, Type, Union
+import numpy
 from pandas import DataFrame
+import pandas
 from pipda import register_verb, Context
 
 from ..core.utils import select_columns, list_diff
+from ..core.types import StringOrIter, is_iterable, is_scalar
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
-        _data,
-        cols,
-        names_to="name",
-        names_prefix=None,
-        names_sep=None,
-        names_pattern=None,
-        names_ptypes=None,
-        names_transform=None,
-        # names_repair="check_unique",
-        values_to="value",
-        values_drop_na=False,
-        values_ptypes=None,
-        values_transform=None
+        _data: DataFrame,
+        cols: StringOrIter,
+        names_to: StringOrIter = "name",
+        names_prefix: Optional[str] = None,
+        names_sep: Optional[str] = None,
+        names_pattern: Optional[str] = None,
+        names_ptypes: Optional[Mapping[str, Type]] = None,
+        names_transform: Optional[Mapping[str, Callable]] = None,
+        # names_repair="check_unique", # todo
+        values_to: str = "value",
+        values_drop_na: bool = False,
+        values_ptypes: Optional[Mapping[str, Type]] = None,
+        values_transform: Optional[Mapping[str, Callable]] = None
 ):
     """"lengthens" data, increasing the number of rows and
     decreasing the number of columns.
@@ -99,8 +103,11 @@ def pivot_longer(
 
         ret2_1 = ret2.iloc[:(ret2.shape[0] // 2), ]
         ret2_2 = ret2.iloc[(ret2.shape[0] // 2):, ].reset_index()
-        ret = ret2_1.assign(**{col: ret2_2[col] for col in ret2_1.columns
-                               if ret2_1[col].isna().all()})
+        ret = ret2_1.assign(**{
+            col: ret2_2[col]
+            for col in ret2_1.columns
+            if ret2_1[col].isna().all()
+        })
 
     if values_drop_na:
         ret.dropna(subset=[values_to], inplace=True)
@@ -116,5 +123,85 @@ def pivot_longer(
     if values_transform:
         for key, tform in values_transform.items():
             ret[key] = ret[key].apply(tform)
+
+    return ret
+
+@register_verb(DataFrame, context=Context.SELECT)
+def pivot_wider(
+        _data: DataFrame,
+        id_cols: Optional[StringOrIter] = None,
+        names_from: str = "name",
+        names_prefix: str = "",
+        names_sep: str = "_",
+        names_glue: Optional[str] = None,
+        names_sort: bool = False,
+        # names_repair: str = "check_unique", # todo
+        values_from: StringOrIter = "value",
+        values_fill: Any = None,
+        values_fn: Optional[Union[Callable, Mapping[str, Callable]]] = None,
+) -> DataFrame:
+    """"widens" data, increasing the number of columns and decreasing
+    the number of rows.
+
+    Args:
+        _data: A data frame to pivot.
+        id_cols: A set of columns that uniquely identifies each observation.
+            Defaults to all columns in data except for the columns specified
+            in names_from and values_from.
+        names_from, values_from: A pair of arguments describing which column
+            (or columns) to get the name of the output column (names_from),
+            and which column (or columns) to get the cell values from
+            (values_from).
+        names_prefix: String added to the start of every variable name.
+        names_sep: If names_from or values_from contains multiple variables,
+            this will be used to join their values together into a single
+            string to use as a column name.
+        names_glue: Instead of names_sep and names_prefix, you can supply
+            a glue specification that uses the names_from columns
+            (and special _value) to create custom column names.
+        names_sort: Should the column names be sorted? If FALSE, the default,
+            column names are ordered by first appearance.
+        names_repair: todo
+        values_fill: Optionally, a (scalar) value that specifies what
+            each value should be filled in with when missing.
+        values_fn: Optionally, a function applied to the value in each cell
+            in the output. You will typically use this when the combination
+            of id_cols and value column does not uniquely identify
+            an observation.
+            This can be a dict you want to apply different aggregations to
+            different value columns.
+
+    Returns:
+        The pivoted dataframe.
+    """
+    if id_cols is None:
+        all_cols = _data.columns.tolist()
+        selected_cols = select_columns(all_cols, names_from, values_from)
+        id_cols = list_diff(all_cols, selected_cols)
+    ret = pandas.pivot_table(
+        _data,
+        index=id_cols,
+        columns=names_from,
+        fill_value=values_fill,
+        values=values_from,
+        aggfunc=values_fn or numpy.mean
+    )
+
+    def get_new_colname(cols, names):
+        if is_scalar(cols):
+            cols = [cols]
+        if not names_glue:
+            return f'{names_prefix}{names_sep.join(cols)}'
+        names = ('_value' if name is None else name for name in names)
+        render_data = dict(zip(names, cols))
+        return names_glue.format(**render_data)
+
+    new_columns = [
+        get_new_colname(col, ret.columns.names)
+        for col in ret.columns
+    ]
+    ret.columns = new_columns
+    if names_sort:
+        ret = ret.loc[:, sorted(new_columns)]
 
     return ret
