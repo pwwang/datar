@@ -12,11 +12,11 @@ def all_datasets():
     """Get the information of all datasets"""
     datasets = {}
     for datafile in HERE.glob('*.csv.gz'):
-        index = True
+        index = False
         name = datafile.name[:-7]
-        if '.noindex' in name:
-            name = name.replace('.noindex', '')
-            index = False
+        if '.indexed' in name:
+            name = name.replace('.indexed', '')
+            index = True
         datasets[name] = {'index': index, 'file': datafile}
     return datasets
 

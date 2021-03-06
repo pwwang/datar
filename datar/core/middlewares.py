@@ -151,7 +151,7 @@ class Across:
         self.context = None
 
     def desc_cols(self) -> Set[str]:
-        from .funcs import desc
+        from ..dplyr.funcs import desc
         if len(self.fns) != 1:
             return set()
         if self.fns[0]['fn'] is not desc:

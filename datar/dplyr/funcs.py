@@ -1,146 +1,111 @@
-from os import replace
-import sys
-import re
-import builtins
-import datetime
-import math
-import inspect
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Type, Union
-from functools import wraps
+"""Functions from R-dplyr"""
 
-import pandas
-import executing
 import numpy
-from pandas import DataFrame, Categorical
-from pandas.core import series
-from pandas.core.dtypes.missing import notna
-from pandas.core.groupby import DataFrameGroupBy
-from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_string_dtype
-from pandas.core.groupby.generic import SeriesGroupBy
-from pandas.core.series import Series
-from pandas.api.types import is_numeric_dtype
+import pandas
+from pandas.core.arrays.categorical import Categorical
+from pandas.core.dtypes.common import is_categorical_dtype
+from datar.core.utils import filter_columns, objectize
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
+from pandas import DataFrame, Series
+from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pipda import register_func, Context
 
-import pipda
-from pipda import register_func, Context, evaluate_expr
-from pipda.context import ContextBase, ContextEval, ContextSelect
-from pipda.symbolic import DirectRefAttr, DirectRefItem
-from pipda.utils import evaluate_args, evaluate_kwargs, is_piping
-from typing_extensions import Literal
-from plyrda.verbs import select
-from plyrda.group_by import get_groups, get_rowwise
+from ..core.middlewares import Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
+from ..core.types import DataFrameType, NumericType, is_scalar
+from ..core.exceptions import ColumnNotExistingError
+from ..core.utils import register_grouped
+from ..base.constants import NA
 
-from .utils import IterableLiterals, NA, NumericType, list_diff, objectize, filter_columns, select_columns
-from .middlewares import Across, CAcross, Collection, CurColumn, DescSeries, RowwiseDataFrame, IfAny, IfAll
-from .exceptions import ColumnNotExistingError
+@register_func((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def desc(
+        _data: DataFrameType,
+        col: str
+) -> Union[DescSeries, SeriesGroupBy]:
+    """Returns a DescSeries object, which can be used in arrange or other
+    environments that need a descending ordered series
 
-DateType = Union[int, str, datetime.date]
+    Args:
+        col: The column
 
-def _register_grouped_col0(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of no column as groupby aware"""
+    Returns:
+        The DescSeries object
+    """
+    if isinstance(_data, DataFrameGroupBy):
+        series = DescSeries(_data[col].obj.values, name=col)
+        return series.groupby(_data.grouper, dropna=False)
+    return DescSeries(_data[col].values, name=col)
 
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            _data: DataFrame,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        _column = DirectRefAttr(_data, _data.columns[0])
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
+@register_func(context=Context.SELECT)
+def across(
+        _data: DataFrameType,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[
+            Callable,
+            Iterable[Callable],
+            Mapping[str, Callable]
+        ]] = None,
+        _names: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any
+) -> Across:
+    """Apply the same transformation to multiple columns
 
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        _column = DirectRefAttr(_data, _data.obj.columns[0])
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return series.apply(func, *args, **kwargs)
+    Args:
+        _data: The dataframe
+        _cols: The columns
+        _fns: Functions to apply to each of the selected columns.
+        _names: A glue specification that describes how to name
+            the output columns. This can use `{_col}` to stand for the
+            selected column name, and `{_fn}` to stand for the name of
+            the function being applied.
+            The default (None) is equivalent to `{_col}` for the
+            single function case and `{_col}_{_fn}` for the case where
+            a list is used for _fns. In such a case, `{_fn}` is 1-based.
+            To use 1-based index, use `{_fn0}`
+        *args, **kwargs: Arguments for the functions
 
-    return wrapper
+    Returns:
+        A dataframe with one column for each column in _cols and
+        each function in _fns.
+    """
+    return Across(_data, _cols, _fns, _names, args, kwargs)
 
-def _register_grouped_col1(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of single column as groupby aware"""
 
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            # in case this is called directly (not in a piping env)
-            # we should not have the _data argument
-            # _data: DataFrame,
-            # _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        # Let's if the function is called in a piping env
-        # If so, the previous frame should be in functools
-        # Otherwise, it should be pipda.function, where the wrapped
-        # function should be called directly, instead of generating an
-        # Expression object
+@register_func(context=Context.SELECT)
+def c_across(
+        _data: DataFrame,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[Mapping[str, Callable]]] = None,
+        _names: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any
+) -> CAcross:
+    """Apply the same transformation to multiple columns rowwisely
 
-        if inspect.getmodule(sys._getframe(1)) is pipda.function:
-            # called directly
-            return func(*args, **kwargs)
-        _data, _column, *args = args
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
+    Args:
+        _data: The dataframe
+        _cols: The columns
+        _fns: Functions to apply to each of the selected columns.
+        _names: A glue specification that describes how to name
+            the output columns. This can use `{_col}` to stand for the
+            selected column name, and `{_fn}` to stand for the name of
+            the function being applied.
+            The default (None) is equivalent to `{_col}` for the
+            single function case and `{_col}_{_fn}` for the case where
+            a list is used for _fns. In such a case, `{_fn}` is 1-based.
+            To use 1-based index, use `{_fn0}`
+        *args, **kwargs: Arguments for the functions
 
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        # Todo: check if we have SeriesGroupby in args/kwargs
-        return series.apply(func, *args, **kwargs)
+    Returns:
+        A dataframe with one column for each column in _cols and
+        each function in _fns.
+    """
+    return CAcross(_data, _cols, _fns, _names, args, kwargs)
 
-    return wrapper
-
-def register_grouped(
-        func: Optional[Callable] = None,
-        context: Optional[Union[Context, ContextBase]] = None,
-        columns: Union[str, int] = 1
-) -> Callable:
-    """Register a function as a group-by-aware function"""
-    if func is None:
-        return lambda fun: register_grouped(
-            fun,
-            context=context,
-            columns=columns
-        )
-
-    if isinstance(context, Context):
-        context = context.value
-
-    if columns == 1:
-        return _register_grouped_col1(func, context=context)
-
-    if columns == 0:
-        return _register_grouped_col0(func, context=context)
-
-    raise ValueError("Expect columns to be either 0 or 1.")
 
 @register_func
 def starts_with(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         match: Union[Iterable[str], str],
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -166,7 +131,7 @@ def starts_with(
 
 @register_func
 def ends_with(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         match: str,
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -190,9 +155,10 @@ def ends_with(
         lambda mat, cname: cname.endswith(mat),
     )
 
+
 @register_func
 def contains(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         match: str,
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -218,7 +184,7 @@ def contains(
 
 @register_func
 def matches(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         match: str,
         ignore_case: bool = True,
         vars: Optional[Iterable[str]] = None,
@@ -243,7 +209,7 @@ def matches(
     )
 
 @register_func
-def everything(_data: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
+def everything(_data: DataFrameType) -> List[str]:
     """Matches all columns.
 
     Args:
@@ -258,7 +224,7 @@ def everything(_data: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
 
 @register_func
 def last_col(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         offset: int = 0,
         vars: Optional[Iterable[str]] = None
 ) -> str:
@@ -279,7 +245,7 @@ def last_col(
 
 @register_func
 def all_of(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         x: Iterable[Union[int, str]]
 ) -> List[str]:
     """For strict selection.
@@ -309,7 +275,7 @@ def all_of(
     return list(x)
 
 @register_func
-def any_of(_data: Union[DataFrame, DataFrameGroupBy],
+def any_of(_data: DataFrameType,
            x: Iterable[Union[int, str]],
            vars: Optional[Iterable[str]] = None) -> List[str]:
     """Select but doesn't check for missing variables.
@@ -328,7 +294,7 @@ def any_of(_data: Union[DataFrame, DataFrameGroupBy],
     return [elem for elem in x if elem in vars]
 
 @register_func((DataFrame, DataFrameGroupBy))
-def where(_data: Union[DataFrame, DataFrameGroupBy], fn: Callable) -> List[str]:
+def where(_data: DataFrameType, fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
     Args:
@@ -367,38 +333,6 @@ def where(_data: Union[DataFrame, DataFrameGroupBy], fn: Callable) -> List[str]:
 
     return retcols
 
-@register_func((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def desc(
-        _data: Union[DataFrame, DataFrameGroupBy],
-        col: str
-) -> Union[DescSeries, SeriesGroupBy]:
-    if isinstance(_data, DataFrameGroupBy):
-        series = DescSeries(_data[col].obj.values, name=col)
-        return series.groupby(_data.grouper, dropna=False)
-    return DescSeries(_data[col].values, name=col)
-
-@register_func(context=Context.SELECT)
-def across(
-        _data: DataFrame,
-        _cols: Optional[Iterable[str]] = None,
-        _fns: Optional[Union[Mapping[str, Callable]]] = None,
-        _names: Optional[str] = None,
-        *args: Any,
-        **kwargs: Any
-) -> Across:
-    return Across(_data, _cols, _fns, _names, args, kwargs)
-
-@register_func(context=Context.SELECT)
-def c_across(
-        _data: DataFrame,
-        _cols: Optional[Iterable[str]] = None,
-        _fns: Optional[Union[Mapping[str, Callable]]] = None,
-        _names: Optional[str] = None,
-        *args: Any,
-        **kwargs: Any
-) -> CAcross:
-    return CAcross(_data, _cols, _fns, _names, args, kwargs)
-
 @register_func(context=Context.SELECT)
 def if_any(
         _data: DataFrame,
@@ -408,6 +342,11 @@ def if_any(
         *args: Any,
         **kwargs: Any
 ) -> Across:
+    """apply the same predicate function to a selection of columns and combine
+    the results True if any element is True.
+
+    See across().
+    """
     return IfAny(_data, _cols, _fns, _names, args, kwargs)
 
 
@@ -420,6 +359,11 @@ def if_all(
         *args: Any,
         **kwargs: Any
 ) -> Across:
+    """apply the same predicate function to a selection of columns and combine
+    the results True if all elements are True.
+
+    See across().
+    """
     return IfAll(_data, _cols, _fns, _names, args, kwargs)
 
 def _ranking(
@@ -457,7 +401,10 @@ def dense_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     return _ranking(series, na_last=na_last, method='dense')
 
 @register_grouped(context=Context.EVAL)
-def percent_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
+def percent_rank(
+        series: Iterable[Any],
+        na_last: str = "keep"
+) -> Iterable[float]:
     """Rank the data using percent_rank method"""
     ranking = _ranking(series, na_last, 'min', True)
     min_rank = ranking.min()
@@ -465,6 +412,7 @@ def percent_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float
     ret = ranking.transform(lambda r: (r-min_rank)/(max_rank-min_rank))
     ret[ranking.isna()] = numpy.nan
     return ret
+
 
 @register_grouped(context=Context.EVAL)
 def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
@@ -477,70 +425,26 @@ def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
 
 @register_grouped(context=Context.EVAL)
 def ntile(series: Iterable[Any], n: int) -> Iterable[Any]:
+    """A rough rank, which breaks the input vector into ‘n’ buckets."""
     return pandas.cut(series, n, labels=range(n))
 
-@register_grouped(context=Context.EVAL)
-def sum(series: Iterable[Any], na_rm: bool = False) -> float:
-    return numpy.nansum(series) if na_rm else numpy.sum(series)
-
-@register_grouped(context=Context.EVAL)
-def mean(series: Iterable[Any], na_rm: bool = False) -> float:
-    return numpy.nanmean(series) if na_rm else numpy.mean(series)
-
-@register_grouped(context=Context.EVAL)
-def min(series: Iterable[Any], na_rm: bool = False) -> float:
-    return numpy.nanmin(series) if na_rm else numpy.min(series)
-
-@register_grouped(context=Context.EVAL)
-def max(series: Iterable[Any], na_rm: bool = False) -> float:
-    return numpy.nanmax(series) if na_rm else numpy.max(series)
-
-@register_grouped(context=Context.EVAL)
-def sd(
-        series: Iterable[Any],
-        na_rm: bool = False,
-        # numpy default is 0. Make it 1 to be consistent with R
-        ddof: int = 1
-) -> float:
-    return (
-        numpy.nanstd(series, ddof=ddof) if na_rm
-        else numpy.std(series, ddof=ddof)
-    )
-
-@register_grouped(context=Context.EVAL)
-def quantile(
-        series: Iterable[Any],
-        probs: Union[float, Iterable[float]],
-        na_rm: bool = False):
-    return (
-        numpy.nanquantile(series, probs) if na_rm
-        else numpy.quantile(series, probs)
-    )
-
-
-@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
-def pmin(
-        _data: Union[DataFrame, DataFrameGroupBy],
-        *series: Union[Series, SeriesGroupBy],
-        na_rm: bool = False
-) -> Iterable[float]:
-    series = (objectize(ser) for ser in series)
-    return [min(elem, na_rm=na_rm) for elem in zip(*series)]
-
-@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
-def pmax(
-        _data: Union[DataFrame, DataFrameGroupBy],
-        *series: Union[Series, SeriesGroupBy],
-        na_rm: bool = False
-) -> Iterable[float]:
-    series = (objectize(ser) for ser in series)
-    return [max(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def case_when(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *when_cases: Any
 ) -> Series:
+    """Vectorise multiple if_else() statements.
+
+    Args:
+        *when_cases: A even-size sequence, with 2n-th element values to match,
+            and 2(n+1)-th element the values to replace.
+            When matching value is True, then next value will be default to
+            replace
+
+    Returns:
+        A series with values replaced
+    """
     if len(when_cases) % 2 != 0:
         raise ValueError('Number of arguments of case_when should be even.')
 
@@ -557,12 +461,24 @@ def case_when(
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def if_else(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         condition: Union[bool, Iterable[bool]],
         true: Any,
         false: Any,
         missing: Any = None
 ) -> Series:
+    """Where condition is TRUE, the matching value from true, where it's FALSE,
+    the matching value from false, otherwise missing.
+
+    Args:
+        condition: the conditions
+        true, false: Values to use for TRUE and FALSE values of condition.
+            They must be either the same length as condition, or length 1.
+        missing: If not None, will be used to replace missing values
+
+    Returns:
+        A series with values replaced.
+    """
     return case_when(
         _data,
         numpy.invert(condition), false,
@@ -572,20 +488,24 @@ def if_else(
 
 @register_grouped(context=Context.EVAL)
 def n_distinct(series: Iterable[Any]) -> int:
+    """Get the length of distince elements"""
     return len(set(series))
 
 @register_grouped(context=Context.EVAL, columns=0)
 def n(series: Iterable[Any]) -> int:
+    """gives the current group size."""
     return len(series)
 
 @register_grouped(context=Context.EVAL, columns=0)
 def row_number(series: Iterable[Any]) -> Iterable[int]:
+    """Gives the row number, 0-based."""
     if isinstance(series, Series):
         return Series(range(len(series)))
     return series.cumcount()
 
 @register_func(DataFrameGroupBy)
 def cur_group_id(_data: DataFrameGroupBy) -> int:
+    """gives a unique numeric identifier for the current group."""
     groups = [
         group_indexes.tolist()
         for group_indexes in _data.grouper.groups.values()
@@ -594,11 +514,13 @@ def cur_group_id(_data: DataFrameGroupBy) -> int:
 
 @register_func(DataFrameGroupBy)
 def cur_group_rows(_data: DataFrameGroupBy) -> int:
+    """gives the row indices for the current group."""
     return _data.apply(lambda df: df.index.tolist())
 
 @register_func(DataFrameGroupBy)
 def cur_group(_data: DataFrameGroupBy) -> Series:
-
+    """gives the group keys, a tibble with one row and one column for
+    each grouping variable."""
     ret = []
     keys = _data.grouper.names
     for key in _data.groups:
@@ -611,6 +533,8 @@ def cur_group(_data: DataFrameGroupBy) -> Series:
 
 @register_func(DataFrameGroupBy)
 def cur_data(_data: DataFrameGroupBy) -> int:
+    """gives the current data for the current group
+    (excluding grouping variables)."""
     return Series(
         _data.obj.loc[index].drop(columns=_data.grouper.names)
         for index in _data.grouper.groups.values()
@@ -618,6 +542,8 @@ def cur_data(_data: DataFrameGroupBy) -> int:
 
 @register_func(DataFrameGroupBy)
 def cur_data_all(_data: DataFrameGroupBy) -> int:
+    """gives the current data for the current group
+    (including grouping variables)"""
     return Series(
         _data.obj.loc[index]
         for index in _data.grouper.groups.values()
@@ -628,48 +554,45 @@ def cur_column() -> CurColumn:
     return CurColumn()
 
 @register_grouped(context=Context.EVAL)
-def cummean(series: Iterable[Union[int, float]]) -> Iterable[float]:
+def cummean(series: Iterable[NumericType]) -> Iterable[float]:
+    """Get cumulative means"""
     if not isinstance(series, Series):
         series = Series(series)
     return series.cumsum(skipna=False) / (Series(range(len(series))) + 1.0)
 
 @register_grouped(context=Context.EVAL)
-def cumsum(series: Iterable[Union[int, float]]) -> Iterable[float]:
-    if not isinstance(series, Series):
-        series = Series(series)
-    return series.cumsum(skipna=False)
-
-@register_grouped(context=Context.EVAL)
-def cummin(series: Iterable[Union[int, float]]) -> Iterable[float]:
-    if not isinstance(series, Series):
-        series = Series(series)
-    return series.cummin(skipna=False)
-
-@register_grouped(context=Context.EVAL)
-def cummax(series: Iterable[Union[int, float]]) -> Iterable[float]:
-    if not isinstance(series, Series):
-        series = Series(series)
-    return series.cummax(skipna=False)
-
-@register_grouped(context=Context.EVAL)
-def cumall(series: Iterable[Union[int, float]]) -> Iterable[float]:
+def cumall(series: Iterable[NumericType]) -> Iterable[float]:
+    """Get cumulative bool. All cases after first False"""
     if not isinstance(series, Series):
         series = Series(series)
     return series.cummin(skipna=False).astype(bool)
 
 @register_grouped(context=Context.EVAL)
-def cumany(series: Iterable[Union[int, float]]) -> Iterable[float]:
+def cumany(series: Iterable[NumericType]) -> Iterable[float]:
+    """Get cumulative bool. All cases after first True"""
     if not isinstance(series, Series):
         series = Series(series)
     return series.cummax(skipna=False).astype(bool)
 
 @register_grouped(context=Context.EVAL)
 def lead(
-        series: Iterable[Union[int, float]],
+        series: Iterable[Any],
         n: bool = 1,
-        default = numpy.nan,
-        order_by: Optional[Iterable[Union[int, float]]] = None
+        default = NA,
+        order_by: Optional[Iterable[NumericType]] = None
 ) -> Series:
+    """Find next values in a vector
+
+    Args:
+        series: Vector of values
+        n: Positive integer of length 1, giving the number of positions to
+            lead or lag by
+        default: Value used for non-existent rows.
+        order_by: Override the default ordering to use another vector or column
+
+    Returns:
+        Lead or lag values with default values filled to series.
+    """
     if not isinstance(series, Series):
         series = Series(series)
 
@@ -691,11 +614,15 @@ def lead(
 
 @register_grouped(context=Context.EVAL)
 def lag(
-        series: Iterable[Union[int, float]],
+        series: Iterable[Any],
         n: bool = 1,
         default = numpy.nan,
-        order_by: Optional[Iterable[Union[int, float]]] = None
+        order_by: Optional[Iterable[NumericType]] = None
 ) -> Series:
+    """Find previous values in a vector
+
+    See lead()
+    """
     if not isinstance(series, Series):
         series = Series(series)
 
@@ -715,15 +642,28 @@ def lag(
         return ret.loc[index]
     return Series(ret, index=index)
 
-@register_grouped(context=Context.EVAL)
-def sample(
-        x: Union[int, Iterable[Any]],
-        n: int,
-        replace: bool = False,
-        prob: Optional[Iterable[Union[int, float]]] = None
-) -> Iterable[Any]:
-    """https://rdrr.io/r/base/sample.html"""
-    return numpy.random.choice(x, int(n), replace=replace, p=prob)
+@register_func(None)
+def num_range(
+        prefix: str,
+        range: Iterable[int],
+        width: Optional[int] = None
+) -> List[str]:
+    """Matches a numerical range like x01, x02, x03.
+
+    Args:
+        _data: The data piped in
+        prefix: A prefix that starts the numeric range.
+        range: A sequence of integers, like `range(3)` (produces `0,1,2`).
+        width: Optionally, the "width" of the numeric range.
+            For example, a range of 2 gives "01", a range of three "001", etc.
+
+    Returns:
+        A list of ranges with prefix.
+    """
+    return [
+        f"{prefix}{elem if not width else str(elem).zfill(width)}"
+        for elem in range
+    ]
 
 @register_func(None, context=Context.EVAL)
 def recode(
@@ -733,6 +673,22 @@ def recode(
         _missing: Any = NA,
         **kwargs: Any
 ) -> Iterable[Any]:
+    """Recode a vector, replacing elements in it
+
+    Args:
+        series: A vector to modify
+        *args, **kwargs: replacements
+        _default: If supplied, all values not otherwise matched will be
+            given this value. If not supplied and if the replacements are
+            the same type as the original values in series, unmatched values
+            are not changed. If not supplied and if the replacements are
+            not compatible, unmatched values are replaced with NA.
+        _missing: If supplied, any missing values in .x will be replaced
+            by this value.
+
+    Returns:
+        The vector with values replaced
+    """
     kwd_recodes = {}
     for i, arg in enumerate(args):
         if isinstance(arg, dict):
@@ -768,6 +724,10 @@ def recode_factor(
         _ordered: bool = False,
         **kwargs: Any
 ) -> Iterable[Any]:
+    """Recode a factor
+
+    see recode().
+    """
     if not is_categorical_dtype(series):
         series = Categorical(series)
     else:
@@ -803,43 +763,20 @@ def recode_factor(
 
 recode_categorical = recode_factor
 
-# Functions without data arguments
-# --------------------------------
-
-
-@register_func(None, context=Context.UNSET)
-def c(*elems: Any) -> Collection:
-    """Mimic R's concatenation. Named one is not supported yet
-    All elements passed in will be flattened.
-
-    Args:
-        _data: The data piped in
-        *elems: The elements
-
-    Returns:
-        A collection of elements
-    """
-    return Collection(*elems)
-
-@register_func(None, context=Context.EVAL)
-def round(
-        number: Union[Series, SeriesGroupBy, float],
-        ndigits: int = 0
-) -> float:
-    number = objectize(number)
-    if isinstance(number, Series):
-        return number.round(ndigits)
-    return builtins.round(number, ndigits)
-
-@register_func(None, context=Context.EVAL)
-def sqrt(x: Any) -> bool:
-    x = objectize(x)
-    if isinstance(x, Series):
-        return x.apply(sqrt)
-    return math.sqrt(x) if x > 0 else math.sqrt(-x) * 1j
-
 @register_func(None, context=Context.EVAL)
 def coalesce(x: Any, replace: Any) -> Any:
+    """Replace missing values
+
+    https://dplyr.tidyverse.org/reference/coalesce.html
+
+    Args:
+        x: The vector to replace
+        replace: The replacement
+
+    Returns:
+        A vector the same length as the first argument with missing values
+        replaced by the first non-missing value.
+    """
     x = objectize(x)
     if isinstance(x, Iterable):
         if not isinstance(replace, Iterable):
@@ -850,23 +787,31 @@ def coalesce(x: Any, replace: Any) -> Any:
                 f"got {len(replace)}"
             )
         return [
-            rep if numpy.math.isnan(elem) else elem
+            rep if numpy.isnan(elem) else elem
             for elem, rep in zip(x, replace)
         ]
 
-    return replace if numpy.math.isnan(x) else x
+    return replace if numpy.isnan(x) else x
 
 @register_func(None, context=Context.EVAL)
 def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
+    """Convert an annoying value to NA
 
+    Args:
+        x: Vector to modify
+        y: Value to replace with NA
+
+    Returns:
+        A vector with values replaced.
+    """
     x = objectize(x)
-    if not isinstance(x, (Series, IterableLiterals)):
+    if is_scalar(x):
         x = [x]
     if not isinstance(x, Series):
         x = Series(x)
 
     y = objectize(y)
-    if not isinstance(y, Series) and isinstance(y, IterableLiterals):
+    if not isinstance(y, Series) and is_scalar(y):
         y = Series(y)
     if isinstance(y, Series):
         y = y.values
@@ -877,56 +822,14 @@ def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
 
 @register_func(None, context=Context.EVAL)
 def near(x: Iterable[Any], y: Any) -> Iterable[Any]:
-
+    """Compare numbers with tolerance"""
     x = objectize(x)
-    if not isinstance(x, (Series, IterableLiterals)):
+    if is_scalar(x):
         x = [x]
 
     y = objectize(y)
 
     return numpy.isclose(x, y)
-
-@register_func(None, context=Context.EVAL)
-def is_numeric(x: Any) -> bool:
-    x = objectize(x)
-    if isinstance(x, Series):
-        return is_numeric_dtype(x)
-    return isinstance(x, (int, float))
-
-def is_character(x: Any) -> bool:
-    """Mimic the is.character function in R
-
-    Args:
-        x: The elements to check
-
-    Returns:
-        True if
-    """
-    x = objectize(x)
-    if isinstance(x, Series):
-        return is_string_dtype(x)
-    return isinstance(x, str)
-
-@register_func(None, context=Context.EVAL)
-def is_categorical(x: Union[Series, SeriesGroupBy]) -> bool:
-    x = objectize(x)
-    return is_categorical_dtype(x)
-
-@register_func(None, context=Context.EVAL)
-def is_double(x: Any) -> bool:
-    x = objectize(x)
-    if isinstance(x, Series):
-        return is_float_dtype(x)
-    return isinstance(x, float)
-
-is_float = is_double
-
-@register_func(None, context=Context.EVAL)
-def is_na(x: Any) -> bool:
-    x = objectize(x)
-    if isinstance(x, Series):
-        return x.isna()
-    return numpy.isnan(x)
 
 @register_grouped(context=Context.EVAL)
 def nth(
@@ -935,6 +838,7 @@ def nth(
         order_by: Optional[Iterable[Any]] = None,
         default: Any = NA
 ) -> Any:
+    """Get the nth element of x"""
     x = numpy.array(x)
     if order_by is not None:
         order_by = numpy.array(order_by)
@@ -950,6 +854,7 @@ def first(
         order_by: Optional[Iterable[Any]] = None,
         default: Any = NA
 ) -> Any:
+    """Get the first element of x"""
     x = numpy.array(x)
     if order_by is not None:
         order_by = numpy.array(order_by)
@@ -965,6 +870,7 @@ def last(
         order_by: Optional[Iterable[Any]] = None,
         default: Any = NA
 ) -> Any:
+    """Get the last element of x"""
     x = numpy.array(x)
     if order_by is not None:
         order_by = numpy.array(order_by)
@@ -973,70 +879,3 @@ def last(
         return x[-1]
     except IndexError:
         return default
-
-@register_func(None)
-def seq_along(along_with):
-    return list(range(len(along_with)))
-
-@register_func(None)
-def seq_len(length_out):
-    return list(range(length_out))
-
-@register_func(None, context=Context.EVAL)
-def seq(from_=None, to=None, by=None, length_out=None, along_with=None):
-    if along_with is not None:
-        return seq_along(along_with)
-    if from_ is not None and not isinstance(from_, (int, float)):
-        return seq_along(from_)
-    if length_out is not None and from_ is None and to is None:
-        return seq_len(length_out)
-
-    if from_ is None:
-        from_ = 0
-    elif to is None:
-        from_, to = 0, from_
-
-    if length_out is not None:
-        by = (float(to) - float(from_)) / float(length_out)
-    elif by is None:
-        by = 1
-        length_out = to - from_
-    else:
-        length_out = (to - from_ + by - by/10.0) // by
-    return [from_ + n * by for n in range(int(length_out))]
-
-@register_func(None, context=Context.EVAL)
-def as_categorical(x: Union[Series, SeriesGroupBy]) -> Series:
-    x = objectize(x)
-    return x.astype('category')
-
-@register_func(None)
-def num_range(
-        prefix: str,
-        range: Iterable[int],
-        width: Optional[int] = None
-) -> List[str]:
-    """Matches a numerical range like x01, x02, x03.
-
-    Args:
-        _data: The data piped in
-        prefix: A prefix that starts the numeric range.
-        range: A sequence of integers, like `range(3)` (produces `0,1,2`).
-        width: Optionally, the "width" of the numeric range.
-            For example, a range of 2 gives "01", a range of three "001", etc.
-
-    Returns:
-        A list of ranges with prefix.
-    """
-    return [
-        f"{prefix}{elem if not width else str(elem).zfill(width)}"
-        for elem in range
-    ]
-
-
-@register_func(None, context=Context.EVAL)
-def abs(x: Any) -> bool:
-    x = objectize(x)
-    if isinstance(x, Series):
-        return x.abs()
-    builtins.abs(x)

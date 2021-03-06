@@ -8,15 +8,15 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/arrange.html](https:
 
 <table width=100%>
 <tr>
-<th> plyrda </th>
+<th> datar </th>
 <th> dplyr </th>
 </tr>
 <tr valign="top">
 <td>
 
 ```python
-from plyrda.all import *
-from plyrda.data import mtcars, iris
+from datar.all import *
+from datar.data import mtcars, iris
 
 mtcars >> arrange(X.cyl, X.disp)
 #                       mpg  cyl   disp   hp  drat     wt   qsec  vs  am  gear  carb

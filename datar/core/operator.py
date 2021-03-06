@@ -13,7 +13,7 @@ from .utils import align_value, objectize, list_intersect, list_union
 from .middlewares import Collection, Inverted, Negated
 
 @register_operator
-class PlyrdaOperator(Operator):
+class DatarOperator(Operator):
 
     def _arithmetize1(self, operand: Any, op: str) -> Any:
         op_func = getattr(operator, op)

@@ -9,7 +9,7 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/ranking.html](https:
 
 <table width=100%>
 <tr>
-<th> plyrda </th>
+<th> datar </th>
 <th> dplyr </th>
 </tr>
 <tr valign="top">

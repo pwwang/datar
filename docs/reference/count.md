@@ -9,7 +9,7 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/count.html](https://
 
 <table width=100%>
 <tr>
-<th> plyrda </th>
+<th> datar </th>
 <th> dplyr </th>
 </tr>
 
@@ -17,8 +17,8 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/count.html](https://
 <td>
 
 ```python
-from plyrda.all import *
-from plyrda.data import starwars
+from datar.all import *
+from datar.data import starwars
 
 starwars >> count(X.species) >> head(10)
 #      species  n

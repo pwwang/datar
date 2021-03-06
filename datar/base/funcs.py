@@ -1,36 +1,27 @@
-"""Some functions ported from R-base"""
+"""Some functions from R-base
+
+If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
+registered by `register_verb` and should be placed in `./verbs.py`
+"""
 import builtins
+import math
 import datetime
 import functools
-import math
-from string import ascii_letters
-
-from pandas.core.dtypes.common import is_categorical_dtype
-
-from typing import Any, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Iterable, List, Optional, Type, Union
 
 import numpy
 import pandas
+from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_numeric_dtype, is_string_dtype
 from pandas import Series, Categorical, DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
-from pandas.core.dtypes.common import is_categorical_dtype
-from pipda import register_func, register_verb, Context
+from pipda import Context, register_func
 
-from .core.middlewares import Collection, ContextWithData
-from .core.utils import (
-    IterableLiterals, NumericType, categorize, objectize, register_grouped
+from .constants import NA
+from ..core.utils import IterableLiterals, categorize, objectize, register_grouped
+from ..core.middlewares import Collection, ContextWithData
+from ..core.types import (
+    BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter, NumericType, SeriesLikeType, StringOrIter, is_int, IntType, is_iterable, is_series_like, is_scalar
 )
-
-NA = numpy.nan
-TRUE = True
-FALSE = False
-NULL = None
-
-pi = math.pi
-Inf = numpy.inf
-
-letters = list(ascii_letters[:26])
-LETTERS = list(ascii_letters[26:])
 
 @functools.singledispatch
 def _as_date_dummy(
@@ -38,7 +29,7 @@ def _as_date_dummy(
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
+        tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
     """Convert a dummy object to date"""
@@ -53,7 +44,7 @@ def _(
         tz: Union[int, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
-    if isinstance(tz, (int, numpy.integer)):
+    if is_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return x + tz
@@ -64,10 +55,10 @@ def _(
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
+        tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ):
-    if isinstance(tz, (int, numpy.integer)):
+    if is_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return (x + tz).date()
@@ -78,10 +69,10 @@ def _(
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
+        tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
-    if isinstance(tz, (int, numpy.integer)):
+    if is_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     try_formats = try_formats or [
@@ -108,13 +99,33 @@ def _(
             "character string is not in a standard unambiguous format"
         )
 
+@register_grouped(context=Context.EVAL)
+def sum(series: Iterable[Any], na_rm: bool = False) -> float:
+    """Get the sum of input"""
+    return numpy.nansum(series) if na_rm else numpy.sum(series)
+
+@register_grouped(context=Context.EVAL)
+def mean(series: Iterable[Any], na_rm: bool = False) -> float:
+    """Get the mean of input"""
+    return numpy.nanmean(series) if na_rm else numpy.mean(series)
+
+@register_grouped(context=Context.EVAL)
+def min(series: Iterable[Any], na_rm: bool = False) -> float:
+    """Get the min of input"""
+    return numpy.nanmin(series) if na_rm else numpy.min(series)
+
+@register_grouped(context=Context.EVAL)
+def max(series: Iterable[Any], na_rm: bool = False) -> float:
+    """Get the max of input"""
+    return numpy.nanmax(series) if na_rm else numpy.max(series)
+
 @_as_date_dummy.register(Series)
 def _(
         x: Series,
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
+        tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
     return _as_date_dummy(
@@ -129,11 +140,11 @@ def _(
 @_as_date_dummy.register(int)
 @_as_date_dummy.register(numpy.integer)
 def _(
-        x: str,
+        x: IntType,
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
+        tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
     if isinstance(tz, (int, numpy.integer)):
@@ -148,12 +159,13 @@ def _(
         return dt.date()
     return dt
 
+@register_func(None, context=Context.EVAL)
 def as_date(
-        x: Any,
+        x: DataFrameType,
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
+        tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> Iterable[datetime.date]:
     """Convert an object to a datetime.date object
@@ -188,16 +200,19 @@ def as_date(
         origin=origin
     )
 
-def _as_type(x: Any, type: Type) -> Any:
+def _as_type(x: Any, type_: Type) -> Any:
     """Convert x or elements of x to certain type"""
-    x = objectize(x)
-    if isinstance(x, (numpy.ndarray, Series)):
-        return x.astype(type)
-    if isinstance(x, IterableLiterals):
-        return builtins.type(x)(map(type, x))
+    if is_series_like(x):
+        x = objectize(x)
+        return x.astype(type_)
+
+    if is_scalar(x):
+        return type_(x)
+
+    return type(x)(map(type_, x))
 
 @register_func(None, context=Context.EVAL)
-def as_character(x: Any) -> Union[str, Iterable[str]]:
+def as_character(x: Any) -> StringOrIter:
     """Convert an object or elements of an iterable into string
 
     Args:
@@ -211,7 +226,7 @@ def as_character(x: Any) -> Union[str, Iterable[str]]:
     return _as_type(x, str)
 
 @register_func(None, context=Context.EVAL)
-def as_double(x: Any) -> Union[numpy.double, Iterable[numpy.double]]:
+def as_double(x: Any) -> DoubleOrIter:
     """Convert an object or elements of an iterable into double/float
 
     Args:
@@ -238,80 +253,6 @@ def as_factor(x: Iterable[Any]) -> Categorical:
     return Categorical(x)
 
 as_categorical = as_factor
-
-def factor(
-        x: Iterable[Any],
-        levels: Optional[Iterable[Any]] = None,
-        exclude: Any = NA,
-        ordered: bool = False
-) -> Categorical:
-    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
-    are also used for factors).
-
-    If argument ordered is TRUE, the factor levels are assumed to be ordered
-
-    Args:
-        x: a vector of data
-        levels: an optional vector of the unique values (as character strings)
-            that x might have taken.
-        exclude: a vector of values to be excluded when forming the set of
-            levels. This may be factor with the same level set as x or
-            should be a character
-        ordered: logical flag to determine if the levels should be regarded
-            as ordered (in the order given).
-    """
-    if is_categorical_dtype(x):
-        x = x.to_numpy()
-    ret = Categorical(
-        objectize(x),
-        categories=levels,
-        ordered=ordered
-    )
-    if not isinstance(exclude, IterableLiterals) or isinstance(exclude, str):
-        exclude = [exclude]
-
-    return ret.remove_categories(exclude)
-
-def rep(
-        x: Any,
-        times: Union[int, Iterable[int]] = 1,
-        length: Optional[int] = None,
-        each: int = 1
-) -> Iterable[Any]:
-    """replicates the values in x
-
-    Args:
-        x: a vector or scaler
-        times: number of times to repeat each element if of length len(x),
-            or to repeat the whole vector if of length 1
-        length: non-negative integer. The desired length of the output vector
-        each: non-negative integer. Each element of x is repeated each times.
-
-    Returns:
-        A list of repeated elements in x.
-    """
-    if not isinstance(x, IterableLiterals) or isinstance(x, str):
-        x = [x]
-    if isinstance(times, IterableLiterals):
-        if len(times) != len(x):
-            raise ValueError(
-                "Invalid times argument, expect length "
-                f"{len(times)}, got {len(x)}"
-            )
-        if each != 1:
-            raise ValueError(
-                "Unexpected each argument when times is an iterable."
-            )
-
-    if isinstance(times, int):
-        x = [elem for elem in x for _ in range(each)] * times
-    else:
-        x = [elem for n, elem in zip(times, x) for _ in range(n)]
-    if length is None:
-        return x
-    repeats = length // len(x) + 1
-    x = x * repeats
-    return x[:length]
 
 @register_func(None, context=Context.EVAL)
 def as_int(x: Any) -> Union[int, Iterable[int]]:
@@ -348,7 +289,7 @@ def as_integer(x: Any) -> Union[numpy.int64, Iterable[numpy.int64]]:
 as_int64 = as_integer
 
 @register_func(None, context=Context.EVAL)
-def as_logical(x: Any) -> Union[bool, Iterable[bool]]:
+def as_logical(x: Any) -> BoolOrIter:
     """Convert an object or elements of an iterable into bool
 
     Args:
@@ -363,9 +304,53 @@ def as_logical(x: Any) -> Union[bool, Iterable[bool]]:
 
 as_bool = as_logical
 
-def droplevels(x: Categorical) -> Categorical:
-    """drop unused levels from a factor"""
-    return categorize(x).remove_unused_categories()
+@register_func(None, context=Context.EVAL)
+def is_numeric(x: Any) -> BoolOrIter:
+    """Check if x is numeric type"""
+    x = objectize(x)
+    if is_scalar(x):
+        return isinstance(x, int, float, complex, numpy.number)
+
+    return is_numeric_dtype(x)
+
+@register_func(None, context=Context.EVAL)
+def is_character(x: Any) -> BoolOrIter:
+    """Mimic the is.character function in R
+
+    Args:
+        x: The elements to check
+
+    Returns:
+        True if
+    """
+    x = objectize(x)
+    if is_scalar(x):
+        return isinstance(x, str)
+    return is_string_dtype(x)
+
+@register_func(None, context=Context.EVAL)
+def is_categorical(x: Any) -> bool:
+    """Check if x is categorical data"""
+    x = objectize(x)
+    return is_categorical_dtype(x)
+
+is_factor = is_categorical
+
+@register_func(None, context=Context.EVAL)
+def is_double(x: Any) -> BoolOrIter:
+    """Check if x is double/float data"""
+    x = objectize(x)
+    if is_scalar(x):
+        return isinstance(x, (float, numpy.float))
+    return is_float_dtype(x)
+
+is_float = is_double
+
+@register_func(None, context=Context.EVAL)
+def is_na(x: Any) -> BoolOrIter:
+    """Check if x is nan or not"""
+    x = objectize(x)
+    return numpy.isnan(x)
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
@@ -381,8 +366,54 @@ def c(*elems: Any) -> Collection:
     """
     return Collection(*elems)
 
+@register_func(None)
+def seq_along(along_with: Iterable[Any]) -> SeriesLikeType:
+    """Generate sequences along an iterable"""
+    return numpy.array(range(len(along_with)))
+
+@register_func(None)
+def seq_len(length_out: int) -> SeriesLikeType:
+    """Generate sequences with the length"""
+    return numpy.array(range(length_out))
+
 @register_func(None, context=Context.EVAL)
-def ceiling(x: NumericType) -> int:
+def seq(
+        from_: IntType = None,
+        to: IntType = None,
+        by: IntType = None,
+        length_out: IntType = None,
+        along_with: IntType = None
+) -> SeriesLikeType:
+    """Generate a sequence"""
+    if along_with is not None:
+        return seq_along(along_with)
+    if from_ is not None and not isinstance(from_, (int, float)):
+        return seq_along(from_)
+    if length_out is not None and from_ is None and to is None:
+        return seq_len(length_out)
+
+    if from_ is None:
+        from_ = 0
+    elif to is None:
+        from_, to = 0, from_
+
+    if length_out is not None:
+        by = (float(to) - float(from_)) / float(length_out)
+    elif by is None:
+        by = 1
+        length_out = to - from_
+    else:
+        length_out = (to - from_ + by - by/10.0) // by
+    return numpy.array([from_ + n * by for n in range(int(length_out))])
+
+@register_func(None, context=Context.EVAL)
+def abs(x: Any) -> NumericOrIter:
+    """Get the absolute value"""
+    x = objectize(x)
+    return numpy.abs(x)
+
+@register_func(None, context=Context.EVAL)
+def ceiling(x: NumericOrIter) -> IntOrIter:
     """Get the ceiling integer of x
 
     Args:
@@ -391,26 +422,41 @@ def ceiling(x: NumericType) -> int:
     Returns:
         The ceiling integer of x
     """
-    return numpy.vectorize(math.ceil)(x)
+    if is_scalar(x):
+        return math.ceil(x)
+    return list(map(math.ceil, x))
 
-@register_verb((DataFrame, DataFrameGroupBy))
-def colnames(df: Union[DataFrame, DataFrameGroupBy]) -> List[str]:
-    """Get the column names of a dataframe
+@register_func(None, context=Context.EVAL)
+def floor(x: NumericOrIter) -> IntOrIter:
+    """Get the floor integer of x
 
     Args:
-        df: The dataframe
+        x: The number
 
     Returns:
-        A list of column names
+        The ceiling integer of x
     """
-    return objectize(df).columns.tolist()
+    if is_scalar(x):
+        return math.floor(x)
+    return list(map(math.floor, x))
 
 @register_grouped(context=Context.EVAL)
 def cumsum(
         series: Iterable[NumericType],
         skipna: bool = False
-) -> Iterable[float]:
-    if not isinstance(series, Series):
+) -> SeriesLikeType:
+    """Returns a vector whose elements are the cumulative sums of
+    the elements of the argument.
+
+    Args:
+        series: A series of numbers
+        skipna: Whether skipping NA's or not. Note that R doesn't have this
+            argument.
+
+    Returns:
+        The cumulative sums
+    """
+    if not is_series_like(series):
         series = Series(series)
     return series.cumsum(skipna=skipna)
 
@@ -418,8 +464,19 @@ def cumsum(
 def cummin(
         series: Iterable[NumericType],
         skipna: bool = False
-) -> Iterable[float]:
-    if not isinstance(series, Series):
+) -> SeriesLikeType:
+    """Returns a vector whose elements are the cumulative minima of
+    the elements of the argument.
+
+    Args:
+        series: A series of numbers
+        skipna: Whether skipping NA's or not. Note that R doesn't have this
+            argument.
+
+    Returns:
+        The cumulative minimas
+    """
+    if not is_series_like(series):
         series = Series(series)
     return series.cummin(skipna=skipna)
 
@@ -427,8 +484,19 @@ def cummin(
 def cummax(
         series: Iterable[NumericType],
         skipna: bool = False
-) -> Iterable[float]:
-    if not isinstance(series, Series):
+) -> SeriesLikeType:
+    """Returns a vector whose elements are the cumulative maxima of
+    the elements of the argument.
+
+    Args:
+        series: A series of numbers
+        skipna: Whether skipping NA's or not. Note that R doesn't have this
+            argument.
+
+    Returns:
+        The cumulative maximas
+    """
+    if not is_series_like(series):
         series = Series(series)
     return series.cummax(skipna=skipna)
 
@@ -436,8 +504,19 @@ def cummax(
 def cumprod(
         series: Iterable[NumericType],
         skipna: bool = False
-) -> Iterable[float]:
-    if not isinstance(series, Series):
+) -> SeriesLikeType:
+    """Returns a vector whose elements are the cumulative products of
+    the elements of the argument.
+
+    Args:
+        series: A series of numbers
+        skipna: Whether skipping NA's or not. Note that R doesn't have this
+            argument.
+
+    Returns:
+        The cumulative products
+    """
+    if not is_series_like(series):
         series = Series(series)
     return series.cumprod(skipna=skipna)
 
@@ -489,53 +568,54 @@ def cut(
         ordered=ordered_result
     )
 
-def diag(
-        x: Any = 1,
-        nrow: Optional[int] = None,
-        ncol: Optional[int] = None
-) -> Union[DataFrame, numpy.ndarray]:
-    """Extract or construct a diagonal matrix.
+@register_grouped(context=Context.EVAL)
+def sample(
+        x: Union[int, Iterable[Any]],
+        size: Optional[int] = None,
+        replace: bool = False,
+        prob: Optional[Iterable[NumericType]] = None
+) -> Iterable[Any]:
+    """Takes a sample of the specified size from the elements of x using
+    either with or without replacement.
+
+    https://rdrr.io/r/base/sample.html
 
     Args:
-        x: a matrix, vector or scalar
-        nrow, ncol: optional dimensions for the result when x is not a matrix.
+        x: either a vector of one or more elements from which to choose,
+            or a positive integer.
+        n: a positive number, the number of items to choose from.
+        size: a non-negative integer giving the number of items to choose.
+        replace: should sampling be with replacement?
+        prob: a vector of probability weights for obtaining the elements of
+            the vector being sampled.
 
     Returns:
-        If x is a matrix then diag(x) returns the diagonal of x.
-        In all other cases the value is a diagonal matrix with nrow rows and
-        ncol columns (if ncol is not given the matrix is square).
-        Here nrow is taken from the argument if specified, otherwise
-        inferred from x
+        A vector of length size with elements drawn from either x or from the
+        integers 1:x.
     """
-    if isinstance(x, DataFrame):
-        return numpy.diag(x)
-    if nrow is None and isinstance(x, int):
-        nrow = x
-        x = 1
-    if ncol == None:
-        ncol = nrow
-    if not isinstance(x, IterableLiterals) or isinstance(x, str):
-        nmax = max(nrow, ncol)
-        x = [x] * nmax
-    elif nrow is not None:
-        nmax = max(nrow, ncol)
-        nmax = nmax // len(x)
-        x = x * nmax
+    if isinstance(x, str):
+        x = list(x)
+    if size is None:
+        size = len(x) if is_iterable(x) else x
+    return numpy.random.choice(x, int(size), replace=replace, p=prob)
 
-    series = numpy.array(x)
-    ret = DataFrame(numpy.diag(series))
-    return ret.iloc[:nrow, :ncol]
+@register_func(None, context=Context.EVAL)
+def pmin(
+        *series: Union[Series, SeriesGroupBy],
+        na_rm: bool = False
+) -> Iterable[float]:
+    """Get the min value rowwisely"""
+    series = (objectize(ser) for ser in series)
+    return [min(elem, na_rm=na_rm) for elem in zip(*series)]
 
-def dim(x: Union[DataFrame, DataFrameGroupBy]) -> Tuple[int]:
-    """Retrieve the dimension of a dataframe.
-
-    Args:
-        x: a dataframe
-
-    Returns:
-        The shape of the dataframe.
-    """
-    return objectize(x).shape
+@register_func(None, context=Context.EVAL)
+def pmax(
+        *series: Union[Series, SeriesGroupBy],
+        na_rm: bool = False
+) -> Iterable[float]:
+    """Get the max value rowwisely"""
+    series = (objectize(ser) for ser in series)
+    return [max(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_grouped(context=Context.EVAL)
 def table(
@@ -551,6 +631,8 @@ def table(
 ) -> DataFrame:
     """uses the cross-classifying factors to build a contingency table of
     the counts at each combination of factor levels.
+
+    When used with DataFrameGroupBy data, groups are ignored.
 
     Args:
         obj, *objs: one or more objects which can be interpreted as factors
@@ -603,7 +685,7 @@ def table(
     dn1 = dn2 = None
     if isinstance(dnn, str):
         dn1 = dn2 = dnn
-    elif isinstance(dnn, IterableLiterals):
+    elif is_iterable(dnn):
         dnn = list(dnn)
         if len(dnn) == 1:
             dnn = dnn * 2
@@ -618,7 +700,7 @@ def table(
         if not isinstance(obj2, (Series, Categorical)):
             obj2 = Series(obj2)
 
-    if not isinstance(exclude, IterableLiterals) or isinstance(exclude, str):
+    if is_scalar(exclude):
         exclude = [exclude]
 
     if obj1 is obj2:
@@ -665,13 +747,132 @@ def table(
         tab = DataFrame(dict(count=numpy.diag(tab)), index=tab.columns).T
     return tab
 
-def context(
-        data: Union[DataFrame, DataFrameGroupBy]
-) -> Any:
+@register_func(None, context=Context.EVAL)
+def round(
+        number: NumericOrIter,
+        ndigits: int = 0
+) -> NumericOrIter:
+    """Rounding a number"""
+    number = objectize(number)
+    if is_series_like(number):
+        return number.round(ndigits)
+    return builtins.round(number, ndigits)
+
+@register_func(None, context=Context.EVAL)
+def sqrt(x: Any) -> bool:
+    """Get the square root of a number"""
+    x = objectize(x)
+    return numpy.sqrt(x)
+
+@register_func(None, context=Context.EVAL)
+def sin(x: Any) -> NumericOrIter:
+    """Get the sin of a number"""
+    x = objectize(x)
+    return numpy.sin(x)
+
+@register_func(None, context=Context.EVAL)
+def cos(x: Any) -> NumericOrIter:
+    """Get the cos of a number"""
+    x = objectize(x)
+    return numpy.cos(x)
+
+@register_func(None, context=Context.EVAL)
+def droplevels(x: Categorical) -> Categorical:
+    """drop unused levels from a factor
+
+    Args:
+        x: The categorical data
+
+    Returns:
+        The categorical data with unused categories dropped.
+    """
+    return categorize(x).remove_unused_categories()
+
+# ---------------------------------
+# Plain functions
+# ---------------------------------
+
+def factor(
+        x: Iterable[Any],
+        levels: Optional[Iterable[Any]] = None,
+        exclude: Any = NA,
+        ordered: bool = False
+) -> Categorical:
+    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+    are also used for factors).
+
+    If argument ordered is TRUE, the factor levels are assumed to be ordered
+
+    Args:
+        x: a vector of data
+        levels: an optional vector of the unique values (as character strings)
+            that x might have taken.
+        exclude: a vector of values to be excluded when forming the set of
+            levels. This may be factor with the same level set as x or
+            should be a character
+        ordered: logical flag to determine if the levels should be regarded
+            as ordered (in the order given).
+    """
+    if is_categorical_dtype(x):
+        x = x.to_numpy()
+    ret = Categorical(
+        objectize(x),
+        categories=levels,
+        ordered=ordered
+    )
+    if is_scalar(exclude):
+        exclude = [exclude]
+
+    return ret.remove_categories(exclude)
+
+def rep(
+        x: Any,
+        times: Union[int, Iterable[int]] = 1,
+        length: Optional[int] = None,
+        each: int = 1
+) -> Iterable[Any]:
+    """replicates the values in x
+
+    Args:
+        x: a vector or scaler
+        times: number of times to repeat each element if of length len(x),
+            or to repeat the whole vector if of length 1
+        length: non-negative integer. The desired length of the output vector
+        each: non-negative integer. Each element of x is repeated each times.
+
+    Returns:
+        A list of repeated elements in x.
+    """
+    if is_scalar(x):
+        x = [x]
+    if is_iterable(times):
+        if len(times) != len(x):
+            raise ValueError(
+                "Invalid times argument, expect length "
+                f"{len(times)}, got {len(x)}"
+            )
+        if each != 1:
+            raise ValueError(
+                "Unexpected each argument when times is an iterable."
+            )
+
+    if is_int(times):
+        x = [elem for elem in x for _ in range(each)] * int(times)
+    else:
+        x = [elem for n, elem in zip(times, x) for _ in range(n)]
+    if length is None:
+        return x
+    repeats = length // len(x) + 1
+    x = x * repeats
+    return x[:length]
+
+def context(data: DataFrameType) -> Any:
     """Evaluate verbs, functions in the
     possibly modifying (a copy of) the original data.
 
-    It mimic the `with` function in R.
+    It mimic the `with` function in R, but you have to write it in a python way,
+    which is using the `with` statement. And you have to use it with `as`, since
+    we need the value returned by `__enter__`.
 
     Args:
         data: The data
@@ -684,17 +885,3 @@ def context(
         The original or modified data
     """
     return ContextWithData(data)
-
-@register_grouped(context=Context.EVAL)
-def sample(
-        x: Union[int, Iterable[Any]],
-        size: Optional[int] = None,
-        replace: bool = False,
-        prob: Optional[Iterable[Union[int, float]]] = None
-) -> Iterable[Any]:
-    """https://rdrr.io/r/base/sample.html"""
-    if isinstance(x, str):
-        x = list(x)
-    if size is None:
-        size = len(x) if isinstance(x, IterableLiterals) else x
-    return numpy.random.choice(x, int(size), replace=replace, p=prob)

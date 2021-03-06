@@ -7,7 +7,7 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/distinct.html](https
 ## Side-by-side comparison
 <table width=100%>
 <tr>
-<th> plyrda </th>
+<th> datar </th>
 <th> dplyr </th>
 </tr>
 
@@ -17,8 +17,8 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/distinct.html](https
 ```python
 from numpy.random import randint
 from pandas import DataFrame
-from plyrda.all import *
-from plyrda.data import starwars
+from datar.all import *
+from datar.data import starwars
 
 df = DataFrame({
     'x': randint(0, 10, 100),

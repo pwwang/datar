@@ -1,56 +1,26 @@
 import pytest
-from plyrda.utils import *
 
-@pytest.mark.parametrize('collections, expects', [
-    (1, [1]),
-    ([1], [1]),
-    ([[1]], [1]),
-])
-def test_expand_collections(collections, expects):
-    assert expand_collections(collections) == expects
+from pandas import DataFrame
+from datar.utils import *
 
-def test_Inverted():
-    x = Inverted('a', DataFrame({'a': [1], 'b': [2]}))
-    assert x.elems == Collection('a')
-    assert x.complements == ['b']
+def test_head_tail():
+    df = DataFrame(range(20), columns=['x'])
+    z = df >> head()
+    assert z.shape[0] == 6
+    z = df >> head(3)
+    assert z.shape[0] == 3
+    z = list(range(10)) >> head()
+    assert len(z) == 6
+    with pytest.raises(TypeError):
+        head(3)
+
+    z = df >> tail()
+    assert z.shape[0] == 6
+    z = df >> tail(3)
+    assert z.shape[0] == 3
+    z = list(range(10)) >> tail()
+    assert len(z) == 6
+    with pytest.raises(TypeError):
+        tail(3)
 
 
-@pytest.mark.parametrize('all_columns,match,ignore_case,func,expects', [
-    (['a1', 'a2', 'b1', 'b2'],
-     'a',
-     True,
-     lambda mat, cname: cname.startswith(mat),
-     ['a1', 'a2']),
-    (['a1', 'a2', 'b1', 'b2', 'c3'],
-     ['1', '2'],
-     True,
-     lambda mat, cname: cname.endswith(mat),
-     ['a1', 'b1', 'a2', 'b2']),
-])
-def test_filter_columns(all_columns, match, ignore_case, func, expects):
-    assert filter_columns(all_columns, match, ignore_case, func) == expects
-
-def test_list_diff():
-    assert list_diff([3,1,2],[2]) == [3,1]
-
-def test_list_intersect():
-    assert list_intersect([3,1,2],[2]) == [2]
-
-def test_check_column():
-    with pytest.raises(ColumnNameInvalidError):
-        check_column({1: 2})
-
-@pytest.mark.parametrize('all_columns, columns, expects', [
-    (['a', 'b'], ('a', ), ['a']),
-    (['a', 'b'], (0, ), ['a']),
-    (['a', 'b'], (['b'], ), ['b']),
-    (['a', 'b'], (Inverted('a', DataFrame({'a':[1], 'b':[2]})), ), ['b']),
-])
-def test_select_columns(all_columns, columns, expects):
-    assert select_columns(all_columns, *columns, raise_nonexist=False) == expects
-
-def test_select_columns_error():
-    with pytest.raises(ColumnNameInvalidError):
-        select_columns(["a", "b"], "a", Inverted("b", None))
-    with pytest.raises(ColumnNotExistingError):
-        select_columns(["a", "b"], "c")

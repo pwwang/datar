@@ -7,15 +7,15 @@ See dplyr reference: [https://dplyr.tidyverse.org/reference/filter.html](https:/
 
 <table width=100%>
 <tr>
-<th> plyrda </th>
+<th> datar </th>
 <th> dplyr </th>
 </tr>
 <tr valign="top">
 <td>
 
 ```python
-from plyrda.all import *
-from plyrda.data import starwars
+from datar.all import *
+from datar.data import starwars
 
 starwars >> filter(X.species == 'Human')
 #                    name  height   mass     hair_color skin_color  eye_color  \

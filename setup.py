@@ -14,16 +14,16 @@ readme = ''
 
 setup(
     long_description=readme,
-    name='plyrda',
+    name='datar',
     version='0.0.3',
     description='Probably the closest port of tidyr + dplyr in python',
     python_requires='==3.*,>=3.7.0',
     author='pwwang',
     author_email='pwwang@pwwang.com',
     license='MIT',
-    packages=['plyrda', 'plyrda.data'],
+    packages=['datar', 'datar.data'],
     package_dir={"": "."},
-    package_data={"plyrda.data": ["*.gz"]},
+    package_data={"datar.data": ["*.gz"]},
     install_requires=['modkit', 'pandas==1.*,>=1.1.4', 'pipda'],
     extras_require={"dev": ["pytest", "pytest-cov"]},
 )

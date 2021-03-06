@@ -1,10 +1,13 @@
-from tests.conftest import assert_equal
 import pytest
 import warnings
+import datetime
 
-from pandas import Interval
-from plyrda import stats
-from plyrda.base import *
+import numpy
+from pandas import Interval, Categorical, DataFrame
+from datar import stats
+from datar.base import *
+
+from .conftest import assert_equal
 
 @pytest.fixture(autouse=True)
 def supress_warnings():
@@ -15,7 +18,8 @@ def supress_warnings():
 
 @pytest.mark.parametrize('x,expected', [
     ([1,2,3], ['1', '2', '3']),
-    (numpy.array([1,2,3]), ['1','2','3'])
+    (numpy.array([1,2,3]), ['1','2','3']),
+    (1, '1'),
 ])
 def test_as_character(x, expected):
     assert_equal(as_character(x), expected)
@@ -141,15 +145,24 @@ def test_factor():
 def test_ceiling(x, expected):
     assert_equal(ceiling(x), expected)
 
+@pytest.mark.parametrize('x,expected', [
+    (1.4, 1),
+    ([1.1,2.1], [1, 2])
+])
+def test_floor(x, expected):
+    assert_equal(floor(x), expected)
+
 def test_c():
     assert c(1,2,3) == [1,2,3]
     assert c(c(1,2), 3) == [1,2,3]
 
-def test_colnames():
+def test_rowcolnames():
     df = DataFrame(dict(x=[1,2,3]))
     assert colnames(df) == ['x']
-    df = DataFrame([1,2,3])
+    assert rownames(df) == [0, 1, 2]
+    df = DataFrame([1,2,3], index=['a', 'b', 'c'])
     assert colnames(df) == [0]
+    assert rownames(df) == ['a', 'b', 'c']
 
 def test_cumx():
     #                                  1,2,3,4,5
@@ -228,8 +241,8 @@ def test_sample():
 
 def test_table():
     # https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/table
-    from plyrda import f
-    from plyrda.datasets import warpbreaks, state_division, state_region, airquality
+    from datar import f
+    from datar.datasets import warpbreaks, state_division, state_region, airquality
     z = stats.rpois(100, 5)
     # x = table(z)
     # assert sum(x.values.flatten()) == 100
@@ -242,7 +255,7 @@ def test_table():
     assert tab.index.tolist() == ['A', 'B']
     assert_equal(tab.values.flatten(), [9] * 6)
 
-    tab = table(warpbreaks)
+    tab = table(warpbreaks.loc[:, ['wool', 'tension']])
     assert tab.columns.tolist() == ['H', 'L', 'M']
     assert tab.index.tolist() == ['A', 'B']
     assert_equal(tab.values.flatten(), [9] * 6)
@@ -307,7 +320,7 @@ def test_table():
     assert '<NA>' in tab.index
 
 def test_table_error():
-    from plyrda.datasets import iris, warpbreaks
+    from datar.datasets import iris, warpbreaks
     with pytest.raises(ValueError):
         table(iris)
     with pytest.raises(ValueError):

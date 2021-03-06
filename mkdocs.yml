@@ -1,4 +1,4 @@
-site_name: plyrda
+site_name: datar
 theme:
     # favicon: favicon.png
     # logo: favicon.png
@@ -21,5 +21,5 @@ extra_css:
     - style.css
 nav:
     - 'Home': 'index.md'
-    - 'API': 'mkapi/api/plyrda'
+    - 'API': 'mkapi/api/datar'
     - 'Change Log': CHANGELOG.md
