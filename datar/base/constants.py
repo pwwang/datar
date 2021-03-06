@@ -9,8 +9,8 @@ TRUE = True
 FALSE = False
 NULL = None
 
-pi = math.pi
-Inf = numpy.inf
+pi = math.pi # pylint: disable=invalid-name
+Inf = numpy.inf # pylint: disable=invalid-name
 
-letters = list(ascii_letters[:26])
+letters = list(ascii_letters[:26]) # pylint: disable=invalid-name
 LETTERS = list(ascii_letters[26:])

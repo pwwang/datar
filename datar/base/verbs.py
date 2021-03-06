@@ -1,6 +1,7 @@
 """Function from R-base that can be used as verbs"""
-import numpy
 from typing import Any, List, Optional, Tuple, Union
+
+import numpy
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
 from pipda import register_verb, Context
@@ -71,8 +72,8 @@ def ncol(_data: Union[DataFrame, DataFrameGroupBy]):
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def diag(
         x: Any = 1,
-        nrow: Optional[IntType] = None,
-        ncol: Optional[IntType] = None
+        nrow: Optional[IntType] = None, # pylint: disable=redefined-outer-name
+        ncol: Optional[IntType] = None  # pylint: disable=redefined-outer-name
 ) -> Union[DataFrame, numpy.ndarray]:
     """Extract or construct a diagonal matrix.
 
@@ -94,7 +95,7 @@ def diag(
     if nrow is None and isinstance(x, int):
         nrow = x
         x = 1
-    if ncol == None:
+    if ncol is None:
         ncol = nrow
     if is_scalar(x):
         nmax = max(nrow, ncol)

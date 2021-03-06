@@ -8,7 +8,7 @@ from pipda import register_verb, Context, evaluate_expr
 
 from ..core.utils import objectize
 from ..core.types import DataFrameType
-from ..dplyr import select, slice
+from ..dplyr import select, slice # pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def get(

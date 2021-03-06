@@ -1,9 +1,9 @@
 """Functions ported from tidyverse-tibble"""
 import re
 import inspect
+from typing import Any, Callable, Union
 
 import pandas
-from typing import Any, Callable, Union
 from pandas import DataFrame
 from varname import argname, varname
 from pipda import Context
@@ -18,6 +18,7 @@ def tibble(
         _name_repair: Union[str, Callable] = 'check_unique',
         **kwargs: Any
 ) -> DataFrame:
+    # pylint: disable=too-many-statements
     """Constructs a data frame
 
     Args:

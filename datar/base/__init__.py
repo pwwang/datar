@@ -1,5 +1,5 @@
 """Public APIs from this submodule"""
-# pylint: disable=unused-import
+# pylint: disable=unused-import,redefined-builtin
 from .constants import NA, TRUE, FALSE, NULL, pi, Inf, letters, LETTERS
 from .verbs import colnames, rownames, dim, nrow, ncol, diag, t
 from .funcs import (

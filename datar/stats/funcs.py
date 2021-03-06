@@ -1,12 +1,13 @@
 """Some functions ported from R-stats"""
-
-from datar.core.types import FloatOrIter, SeriesLikeType
-from pipda import Context
-from typing import Any, Iterable, List, Union
+from typing import Any, Iterable, List
 
 import numpy
+from pipda import Context
 
 from ..core.utils import register_grouped
+from ..core.types import FloatOrIter, SeriesLikeType
+
+# pylint: disable=redefined-builtin, redefined-outer-name
 
 def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
     """random generation for the normal distribution with mean equal to mean

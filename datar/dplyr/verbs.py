@@ -1,19 +1,20 @@
 """Verbs ported from R-dplyr"""
-import numpy
-import pandas
-from pandas.core.groupby import grouper
-from pandas.core.indexes.multi import MultiIndex
-from pipda.utils import evaluate_args
-from datar.core.types import DataFrameType, SeriesLikeType, StringOrIter, is_scalar
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
+import numpy
+import pandas
+from pandas.core.indexes.multi import MultiIndex
 from pandas import DataFrame, Series
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
-from pipda import register_verb, Context, evaluate_expr
+
+from pipda import register_verb, Context, evaluate_expr, evaluate_args
 
 from ..core.middlewares import (
     Across, CAcross, Collection,
     DescSeries, IfCross, Inverted, RowwiseDataFrame
+)
+from ..core.types import (
+    DataFrameType, SeriesLikeType, StringOrIter, is_scalar
 )
 from ..core.contexts import ContextEvalWithUsedRefs, ContextSelectSlice
 from ..core.exceptions import ColumnNameInvalidError
@@ -22,6 +23,8 @@ from ..core.utils import (
     list_diff, list_intersect, list_union,
     objectize, select_columns, to_df
 )
+
+# pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def arrange(
@@ -144,10 +147,10 @@ def mutate(
     across = {} # no need OrderedDict in python3.7+ anymore
     for acrs in acrosses:
         acrs = evaluate_expr(acrs, _data, context)
-        if isinstance(acrs, Across):
-            across.update(acrs.evaluate(context))
-        else:
-            across.update(acrs)
+        across.update(
+            acrs.evaluate(context)
+            if isinstance(acrs, Across) else acrs
+        )
 
     across.update(kwargs)
     kwargs = across
@@ -174,6 +177,7 @@ def mutate(
     outcols = list(kwargs)
     # do the relocate first
     if _before is not None or _after is not None:
+        # pylint: disable=no-value-for-parameter
         data = relocate(data, *outcols, _before=_before, _after=_after)
 
     # do the keep
@@ -343,10 +347,10 @@ def group_by(
 
 @group_by.register(DataFrameGroupBy)
 def _(
-    _data: DataFrameGroupBy,
-    *columns: str,
-    _add: bool = False,
-    **kwargs: Any
+        _data: DataFrameGroupBy,
+        *columns: str,
+        _add: bool = False,
+        **kwargs: Any
 ) -> DataFrameGroupBy:
     """Group by on a DataFrameGroupBy object
 
@@ -405,7 +409,7 @@ def group_vars(_data: DataFrameGroupBy) -> List[str]:
     """gives names of grouping variables as character vector"""
     return _data.grouper.names
 
-group_cols = group_vars
+group_cols = group_vars # pylint: disable=invalid-name
 
 @register_verb((DataFrame, DataFrameGroupBy))
 def group_map(
@@ -563,9 +567,9 @@ def summarise(
             _groups = 'drop_last'
 
     ret.reset_index(inplace=True)
-    group_keys = _data.grouper.names
+    g_keys = _data.grouper.names
     if _groups == 'drop_last':
-        return ret.groupby(group_keys[:-1]) if group_keys[:-1] else ret
+        return ret.groupby(g_keys[:-1]) if g_keys[:-1] else ret
 
     if _groups == 'keep':
         return ret.groupby(_data.grouper) # even keep the unexisting levels
@@ -574,7 +578,7 @@ def summarise(
     # todo: raise
     return ret
 
-summarize = summarise
+summarize = summarise # pylint: disable=invalid-name
 
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
@@ -876,8 +880,8 @@ def _(
     rows = expand_slice(rows, _data.shape[0])
     ret = _data.iloc[rows, :]
     if not _preserve:
-        return _data.groupby(grouper.names, dropna=False)
-    return _data.groupby(grouper, dropna=False)
+        return ret.groupby(grouper.names, dropna=False)
+    return ret.groupby(grouper, dropna=False)
 
 @register_verb(DataFrame)
 def slice_head(
@@ -1064,13 +1068,14 @@ def bind_cols(
 @register_verb(DataFrame)
 def intersect(
         _data: DataFrame,
+        data2: DataFrame,
         *datas: DataFrame,
         on: Optional[StringOrIter] = None
 ) -> DataFrame:
     """Intersect of two dataframes
 
     Args:
-        _data, *datas: Dataframes to perform operations
+        _data, data2, *datas: Dataframes to perform operations
         on: The columns to the dataframes to perform operations on
 
     Returns:
@@ -1079,18 +1084,25 @@ def intersect(
     if not on:
         on = _data.columns.to_list()
 
-    return pandas.merge(_data, *datas, on=on, how='inner') >> distinct(*on)
+    return pandas.merge(
+        _data,
+        data2,
+        *datas,
+        on=on,
+        how='inner'
+    ) >> distinct(*on)
 
 @register_verb(DataFrame)
 def union(
         _data: DataFrame,
+        data2: DataFrame,
         *datas: DataFrame,
         on: Optional[StringOrIter] = None
 ) -> DataFrame:
     """Union of two dataframes
 
     Args:
-        _data, *datas: Dataframes to perform operations
+        _data, data2, *datas: Dataframes to perform operations
         on: The columns to the dataframes to perform operations on
 
     Returns:
@@ -1099,7 +1111,13 @@ def union(
     if not on:
         on = _data.columns.to_list()
 
-    return pandas.merge(_data, *datas, on=on, how='outer') >> distinct(*on)
+    return pandas.merge(
+        _data,
+        data2,
+        *datas,
+        on=on,
+        how='outer'
+    ) >> distinct(*on)
 
 @register_verb(DataFrame)
 def setdiff(
@@ -1125,13 +1143,13 @@ def setdiff(
         on=on,
         indicator=True
     ).loc[
-        lambda x : x['_merge']=='left_only'
+        lambda x: x['_merge'] == 'left_only'
     ].drop(columns=['_merge']) >> distinct(*on)
 
 @register_verb(DataFrame)
 def union_all(
-    _data: DataFrame,
-    data2: DataFrame
+        _data: DataFrame,
+        data2: DataFrame
 ) -> DataFrame:
     """Union of all rows of two dataframes
 
@@ -1189,7 +1207,7 @@ def inner_join(
         The joined dataframe
     """
     if isinstance(by, dict):
-        right_on=list(by.values())
+        right_on = list(by.values())
         ret = pandas.merge(
             x, y,
             left_on=list(by.keys()),
@@ -1205,19 +1223,19 @@ def inner_join(
 
 @register_verb(DataFrame)
 def left_join(
-    x: DataFrame,
-    y: DataFrame,
-    by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-    copy: bool = False,
-    suffix: Iterable[str] = ("_x", "_y"),
-    keep: bool = False
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False,
+        suffix: Iterable[str] = ("_x", "_y"),
+        keep: bool = False
 ) -> DataFrame:
     """Mutating joins including all rows in x.
 
     See inner_join()
     """
     if isinstance(by, dict):
-        right_on=list(by.values())
+        right_on = list(by.values())
         ret = pandas.merge(
             x, y,
             left_on=list(by.keys()),
@@ -1233,19 +1251,19 @@ def left_join(
 
 @register_verb(DataFrame)
 def right_join(
-    x: DataFrame,
-    y: DataFrame,
-    by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-    copy: bool = False,
-    suffix: Iterable[str] = ("_x", "_y"),
-    keep: bool = False
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False,
+        suffix: Iterable[str] = ("_x", "_y"),
+        keep: bool = False
 ) -> DataFrame:
     """Mutating joins including all rows in y.
 
     See inner_join()
     """
     if isinstance(by, dict):
-        right_on=list(by.values())
+        right_on = list(by.values())
         ret = pandas.merge(
             x, y,
             left_on=list(by.keys()),
@@ -1261,19 +1279,19 @@ def right_join(
 
 @register_verb(DataFrame)
 def full_join(
-    x: DataFrame,
-    y: DataFrame,
-    by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-    copy: bool = False,
-    suffix: Iterable[str] = ("_x", "_y"),
-    keep: bool = False
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False,
+        suffix: Iterable[str] = ("_x", "_y"),
+        keep: bool = False
 ) -> DataFrame:
     """Mutating joins including all rows in x or y.
 
     See inner_join()
     """
     if isinstance(by, dict):
-        right_on=list(by.values())
+        right_on = list(by.values())
         ret = pandas.merge(
             x, y,
             left_on=list(by.keys()),
@@ -1289,12 +1307,12 @@ def full_join(
 
 @register_verb(DataFrame)
 def nest_join(
-    x: DataFrame,
-    y: DataFrame,
-    by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-    copy: bool = False,
-    suffix: Iterable[str] = ("_x", "_y"),
-    keep: bool = False
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False,
+        suffix: Iterable[str] = ("_x", "_y"),
+        keep: bool = False
 ) -> DataFrame:
     """Returns all rows and columns in x with a new nested-df column that
     contains all matches from y
@@ -1330,7 +1348,7 @@ def nest_join(
                     df.rename(columns={col: f'{col}{suffix[1]}'}, inplace=True)
         return df
 
-    y_matched = x.apply(lambda row: get_nested_df(row), axis=1)
+    y_matched = x.apply(get_nested_df, axis=1)
     y_name = getattr(y, '__dfname__', None)
     if y_name:
         y_matched = y_matched.to_frame(name=y_name)
@@ -1338,10 +1356,10 @@ def nest_join(
 
 @register_verb(DataFrame)
 def semi_join(
-    x: DataFrame,
-    y: DataFrame,
-    by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-    copy: bool = False
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False
 ) -> DataFrame:
     """Returns all rows from x with a match in y.
 
@@ -1352,10 +1370,10 @@ def semi_join(
 
 @register_verb(DataFrame)
 def anti_join(
-    x: DataFrame,
-    y: DataFrame,
-    by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-    copy: bool = False
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False
 ) -> DataFrame:
     """Returns all rows from x without a match in y.
 

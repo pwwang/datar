@@ -1,20 +1,25 @@
 """Functions from R-dplyr"""
+import re
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
 import pandas
 from pandas.core.arrays.categorical import Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
-from datar.core.utils import filter_columns, objectize
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 from pandas import DataFrame, Series
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+
 from pipda import register_func, Context
 
-from ..core.middlewares import Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
+from ..core.middlewares import (
+    Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
+)
 from ..core.types import DataFrameType, NumericType, is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import register_grouped
+from ..core.utils import register_grouped, filter_columns, objectize, list_diff
 from ..base.constants import NA
+
+# pylint: disable=redefined-outer-name
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def desc(
@@ -45,7 +50,6 @@ def across(
             Mapping[str, Callable]
         ]] = None,
         _names: Optional[str] = None,
-        *args: Any,
         **kwargs: Any
 ) -> Across:
     """Apply the same transformation to multiple columns
@@ -68,7 +72,7 @@ def across(
         A dataframe with one column for each column in _cols and
         each function in _fns.
     """
-    return Across(_data, _cols, _fns, _names, args, kwargs)
+    return Across(_data, _cols, _fns, _names, (), kwargs)
 
 
 @register_func(context=Context.SELECT)
@@ -77,7 +81,6 @@ def c_across(
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
-        *args: Any,
         **kwargs: Any
 ) -> CAcross:
     """Apply the same transformation to multiple columns rowwisely
@@ -100,7 +103,7 @@ def c_across(
         A dataframe with one column for each column in _cols and
         each function in _fns.
     """
-    return CAcross(_data, _cols, _fns, _names, args, kwargs)
+    return CAcross(_data, _cols, _fns, _names, (), kwargs)
 
 
 @register_func
@@ -108,7 +111,7 @@ def starts_with(
         _data: DataFrameType,
         match: Union[Iterable[str], str],
         ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns starting with a prefix.
 
@@ -134,7 +137,7 @@ def ends_with(
         _data: DataFrameType,
         match: str,
         ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns ending with a suffix.
 
@@ -161,7 +164,7 @@ def contains(
         _data: DataFrameType,
         match: str,
         ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns containing substrings.
 
@@ -187,7 +190,7 @@ def matches(
         _data: DataFrameType,
         match: str,
         ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns matching regular expressions.
 
@@ -205,7 +208,7 @@ def matches(
         vars or objectize(_data).columns,
         match,
         ignore_case,
-        lambda mat, cname: re.search(mat, cname),
+        re.search,
     )
 
 @register_func
@@ -226,7 +229,7 @@ def everything(_data: DataFrameType) -> List[str]:
 def last_col(
         _data: DataFrameType,
         offset: int = 0,
-        vars: Optional[Iterable[str]] = None
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
 ) -> str:
     """Select last variable, possibly with an offset.
 
@@ -275,9 +278,11 @@ def all_of(
     return list(x)
 
 @register_func
-def any_of(_data: DataFrameType,
-           x: Iterable[Union[int, str]],
-           vars: Optional[Iterable[str]] = None) -> List[str]:
+def any_of(
+        _data: DataFrameType,
+        x: Iterable[Union[int, str]],
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+) -> List[str]:
     """Select but doesn't check for missing variables.
 
     It is especially useful with negative selections,
@@ -339,7 +344,6 @@ def if_any(
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
-        *args: Any,
         **kwargs: Any
 ) -> Across:
     """apply the same predicate function to a selection of columns and combine
@@ -347,7 +351,7 @@ def if_any(
 
     See across().
     """
-    return IfAny(_data, _cols, _fns, _names, args, kwargs)
+    return IfAny(_data, _cols, _fns, _names, (), kwargs)
 
 
 @register_func(context=Context.SELECT)
@@ -356,7 +360,6 @@ def if_all(
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
-        *args: Any,
         **kwargs: Any
 ) -> Across:
     """apply the same predicate function to a selection of columns and combine
@@ -364,7 +367,7 @@ def if_all(
 
     See across().
     """
-    return IfAll(_data, _cols, _fns, _names, args, kwargs)
+    return IfAll(_data, _cols, _fns, _names, (), kwargs)
 
 def _ranking(
         data: Iterable[Any],
@@ -410,7 +413,7 @@ def percent_rank(
     min_rank = ranking.min()
     max_rank = ranking.max()
     ret = ranking.transform(lambda r: (r-min_rank)/(max_rank-min_rank))
-    ret[ranking.isna()] = numpy.nan
+    ret[ranking.isna()] = NA
     return ret
 
 
@@ -420,7 +423,7 @@ def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     ranking = _ranking(series, na_last, 'min')
     max_ranking = ranking.max()
     ret = ranking.transform(lambda r: ranking.le(r).sum() / max_ranking)
-    ret[ranking.isna()] = numpy.nan
+    ret[ranking.isna()] = NA
     return ret
 
 @register_grouped(context=Context.EVAL)
@@ -449,7 +452,7 @@ def case_when(
         raise ValueError('Number of arguments of case_when should be even.')
 
     nrow = objectize(_data).shape[0]
-    df = DataFrame({'x': [numpy.nan] * nrow})
+    df = DataFrame({'x': [NA] * nrow})
     when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
     for case, ret in when_cases:
         if case is True:
@@ -578,7 +581,7 @@ def cumany(series: Iterable[NumericType]) -> Iterable[float]:
 def lead(
         series: Iterable[Any],
         n: bool = 1,
-        default = NA,
+        default: Any = NA,
         order_by: Optional[Iterable[NumericType]] = None
 ) -> Series:
     """Find next values in a vector
@@ -616,7 +619,7 @@ def lead(
 def lag(
         series: Iterable[Any],
         n: bool = 1,
-        default = numpy.nan,
+        default: Any = NA,
         order_by: Optional[Iterable[NumericType]] = None
 ) -> Series:
     """Find previous values in a vector
@@ -645,7 +648,7 @@ def lag(
 @register_func(None)
 def num_range(
         prefix: str,
-        range: Iterable[int],
+        range: Iterable[int], # pylint: disable=redefined-builtin
         width: Optional[int] = None
 ) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
@@ -761,7 +764,7 @@ def recode_factor(
         ordered=_ordered
     )
 
-recode_categorical = recode_factor
+recode_categorical = recode_factor # pylint: disable=invalid-name
 
 @register_func(None, context=Context.EVAL)
 def coalesce(x: Any, replace: Any) -> Any:
@@ -817,7 +820,7 @@ def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
         y = y.values
 
     x = x.to_frame(name='x')
-    x.loc[x.x.values==y] = numpy.nan
+    x.loc[x.x.values == y] = NA
     return x['x']
 
 @register_func(None, context=Context.EVAL)

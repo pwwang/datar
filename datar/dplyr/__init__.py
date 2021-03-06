@@ -1,5 +1,6 @@
 """Public APIs for dplyr"""
 
+# pylint: disable=redefined-builtin, unused-import
 from .verbs import (
     arrange, mutate, relocate, select, rowwise, transmutate,
     group_by, ungroup, group_keys, group_cols, group_rows,

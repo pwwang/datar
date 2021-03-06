@@ -11,17 +11,23 @@ from typing import Any, Iterable, List, Optional, Type, Union
 
 import numpy
 import pandas
-from pandas.core.dtypes.common import is_categorical_dtype, is_float_dtype, is_numeric_dtype, is_string_dtype
+from pandas.core.dtypes.common import (
+    is_categorical_dtype, is_float_dtype, is_numeric_dtype, is_string_dtype
+)
 from pandas import Series, Categorical, DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import IterableLiterals, categorize, objectize, register_grouped
+from ..core.utils import categorize, objectize, register_grouped
 from ..core.middlewares import Collection, ContextWithData
 from ..core.types import (
-    BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter, NumericType, SeriesLikeType, StringOrIter, is_int, IntType, is_iterable, is_series_like, is_scalar
+    BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
+    NumericType, SeriesLikeType, StringOrIter, is_int, IntType,
+    is_iterable, is_series_like, is_scalar
 )
+
+# pylint: disable=redefined-builtin,invalid-name
 
 @functools.singledispatch
 def _as_date_dummy(
@@ -91,13 +97,13 @@ def _(
             return (datetime.datetime.strptime(x, fmt) + tz).date()
         except ValueError:
             continue
-    else:
-        if optional:
-            return numpy.nan
 
-        raise ValueError(
-            "character string is not in a standard unambiguous format"
-        )
+    if optional:
+        return numpy.nan
+
+    raise ValueError(
+        "character string is not in a standard unambiguous format"
+    )
 
 @register_grouped(context=Context.EVAL)
 def sum(series: Iterable[Any], na_rm: bool = False) -> float:
@@ -189,7 +195,7 @@ def as_date(
         The datetime.date object
     """
     if not isinstance(x, (Series, SeriesGroupBy)):
-        x = Series([x]) if not isinstance(x, IterableLiterals) else Series(x)
+        x = Series([x]) if is_scalar(x) else Series(x)
 
     return objectize(x).transform(
         _as_date_dummy,
@@ -629,6 +635,7 @@ def table(
         # different signatures.
         # deparse_level: int = 1
 ) -> DataFrame:
+    # pylint: disable=too-many-statements,too-many-branches
     """uses the cross-classifying factors to build a contingency table of
     the counts at each combination of factor levels.
 
