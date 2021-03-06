@@ -185,7 +185,7 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 
 - [ ] [`chop()`, `unchop()`](htts://pwwang.github.io/datar/reference/chop.ipynb): Chop and unchop
 - [ ] [`pack()`, `unpack()`](htts://pwwang.github.io/datar/reference/pack.ipynb): Pack and unpack
-- [ ] [`uncount()`](htts://pwwang.github.io/datar/reference/uncount.ipynb): "Uncount" a data frame
+- [x] [`uncount()`](htts://pwwang.github.io/datar/reference/uncount.ipynb): "Uncount" a data frame
 
 ### tidyr - Data
 
