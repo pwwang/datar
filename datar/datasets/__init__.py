@@ -41,6 +41,8 @@ def load_data(name: str) -> pandas.DataFrame:
 __all__ = all_datasets().keys()
 
 def __getattr__(name):
+    if name == '__wrapped__':
+        raise AttributeError
     return load_data(name)
 
 install(__name__)
