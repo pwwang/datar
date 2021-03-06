@@ -6,3 +6,40 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+-   repo: local
+    hooks:
+    -   id: masterpylintrc
+        name: Overwrite local .pylintrc by master one
+        entry: cp ../.pylintrc ./.pylintrc
+        pass_filenames: false
+        always_run: true
+        language: system
+-   repo: https://github.com/pre-commit/mirrors-pylint
+    rev: v2.4.4
+    hooks:
+    -   id: pylint
+        files: ^datar/.+$
+        pass_filenames: false
+        types: [python]
+        args: [datar]
+-   repo: local
+    hooks:
+    -   id: poetry2setuppy
+        name: Convert pyproject.toml to setup.py
+        entry: dephell deps convert --from=poetry --to=setup.py
+        language: system
+        files: pyproject.toml
+        pass_filenames: false
+    -   id: poetry2requirements
+        name: Convert pyproject.toml to requirements.txt
+        entry: dephell deps convert --from=poetry --to=requirements.txt
+        language: system
+        files: pyproject.toml
+        pass_filenames: false
+    -   id: pytest
+        name: Run pytest
+        entry: pytest
+        language: system
+        args: [tests/]
+        pass_filenames: false
+        files: ^tests/.+$|^pipda/.+$

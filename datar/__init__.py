@@ -6,4 +6,4 @@ from .core import operator
 
 f = Symbolic() # pylint: disable=invalid-name
 
-__version__ = '0.0.0'
+__version__ = '0.0.1'

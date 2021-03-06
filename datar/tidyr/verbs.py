@@ -2,13 +2,13 @@
 from typing import Any, Callable, Mapping, Optional, Type, Union
 
 import numpy
-from numpy.core.fromnumeric import shape
 import pandas
-from pandas import DataFrame, Series
+from pandas import DataFrame
+from pandas.core.groupby.generic import DataFrameGroupBy
 from pipda import register_verb, Context
 
-from ..core.utils import select_columns, list_diff
-from ..core.types import IntOrIter, StringOrIter, is_scalar
+from ..core.utils import objectize, select_columns, list_diff
+from ..core.types import DataFrameType, IntOrIter, StringOrIter, is_scalar
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -207,13 +207,31 @@ def pivot_wider(
 
     return ret
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def uncount(
-        _data: DataFrame,
+        _data: DataFrameType,
         weights: IntOrIter,
         _remove: bool = True,
         _id: Optional[str] = None,
-) -> DataFrame:
+) -> DataFrameType:
+    """Duplicating rows according to a weighting variable
+
+    Args:
+        _data: A data frame
+        weights: A vector of weights. Evaluated in the context of data
+        _remove: If TRUE, and weights is the name of a column in data,
+            then this column is removed.
+        _id: Supply a string to create a new variable which gives a
+            unique identifier for each created row (0-based).
+
+    Returns:
+        dataframe with rows repeated.
+    """
+    gnames = (
+        _data.grouper.names
+        if isinstance(_data, DataFrameGroupBy) else None
+    )
+    _data = objectize(_data)
     if is_scalar(weights):
         weights = [weights] * _data.shape[0]
 
@@ -231,7 +249,9 @@ def uncount(
 
     ret = _data.loc[indexes, rest_columns] if _remove else _data.loc[indexes, :]
     if _id:
-        return ret.groupby(rest_columns).apply(
+        ret = ret.groupby(rest_columns).apply(
             lambda df: df.assign(**{_id: range(df.shape[0])})
         ).reset_index(drop=True, level=0)
+    if gnames:
+        return ret.groupby(gnames, dropna=False)
     return ret
