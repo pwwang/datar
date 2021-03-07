@@ -163,7 +163,7 @@ Experimental functions in dplyr.
 
 Multiple variables are sometimes pasted together into a single column, and these tools help you separate back out into individual columns.
 
-- [ ] [`extract()`](htts://pwwang.github.io/datar/reference/extract.ipynb): Extract a character column into multiple columns using regular expression groups
+- [x] [`extract()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fextract.ipynb): Extract a character column into multiple columns using regular expression groups
 - [ ] [`separate()`](htts://pwwang.github.io/datar/reference/separate.ipynb): Separate a character column into multiple columns with a regular expression or numeric locations
 - [ ] [`separate_rows()`](htts://pwwang.github.io/datar/reference/separate_rows.ipynb): Separate a collapsed column into multiple rows
 - [ ] [`unite()`](htts://pwwang.github.io/datar/reference/unite.ipynb): Unite multiple columns into one by pasting strings together

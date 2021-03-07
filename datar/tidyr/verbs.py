@@ -12,8 +12,10 @@ from pipda import register_verb, Context
 
 from ..core.utils import objectize, select_columns, list_diff
 from ..core.types import (
-    DataFrameType, IntOrIter, SeriesLikeType, StringOrIter, is_scalar
+    DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
+    is_scalar
 )
+from ..base.constants import NA
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -399,3 +401,55 @@ def expand_grid(
          for row in itertools.product(*product_args)),
         columns=names
     )
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def extract(
+        _data: DataFrameType,
+        col: str,
+        into: StringOrIter,
+        regex: str = r'(\w+)',
+        remove: bool = True,
+        convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False
+) -> DataFrameType:
+    """Given a regular expression with capturing groups, extract() turns each
+    group into a new column. If the groups don't match, or the input is NA,
+    the output will be NA.
+
+    Args:
+        _data: The dataframe
+        col: Column name or position.
+        into: Names of new variables to create as character vector.
+            Use None to omit the variable in the output.
+        regex: a regular expression used to extract the desired values.
+            There should be one group (defined by ()) for each element of into.
+        remove: If TRUE, remove input column from output data frame.
+        convert: The universal type for the extracted columns or a dict for
+            individual ones
+
+    Returns:
+        Dataframe with extracted columns.
+    """
+    if isinstance(_data, DataFrame):
+        if is_scalar(into):
+            into = [into]
+        colindex = [
+            i for i, outcol in enumerate(into)
+            if outcol not in (None, NA)
+        ]
+        extracted = _data[col].str.extract(regex).iloc[:, colindex]
+        extracted.columns = [col for col in into if col not in (None, NA)]
+
+        if isinstance(convert, (str, Type)):
+            extracted.astype(convert)
+        elif isinstance(convert, dict):
+            for key, conv in convert.items():
+                extracted[key] = extracted[extracted].astype(conv)
+        if remove:
+            _data = _data[_data.columns.difference([col])]
+
+        return pandas.concat([_data, extracted], axis=1)
+
+    grouper = _data.grouper
+    return _data.apply(
+        lambda df: extract(df, col, into, regex, remove, convert)
+    ).groupby(grouper, dropna=False)

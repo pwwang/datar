@@ -3,7 +3,6 @@ from typing import Any, Iterable, Union
 
 # pylint: disable=unused-import
 import numpy
-from numpy.core.numerictypes import ScalarType
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
@@ -45,4 +44,3 @@ def is_scalar(x: Any) -> bool:
 def is_iterable(x: Any) -> bool:
     """Check if a value is iterable, which is not a scalar"""
     return not is_scalar(x)
-
