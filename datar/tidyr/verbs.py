@@ -1,4 +1,5 @@
 """Verbs from R-tidyr"""
+import itertools
 from functools import singledispatch
 from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 
@@ -359,3 +360,42 @@ def fill(
     return _data.apply(
         lambda df: fill(df, *columns, _direction=_direction)
     ).groupby(grouper, dropna=False)
+
+@register_verb(context=Context.EVAL)
+def expand_grid(
+        _data: Iterable[Any] = None,
+        #_name_repair: str = "check_unique", # todo
+        **kwargs: Iterable[Any]
+) -> DataFrame:
+    """Expand elements into a new dataframe
+
+    Args:
+        _data, **kwargs: Name-value pairs. The name will become the column
+            name in the output.
+            For _data, will try to fetch name via `_data.__dfname__`. If failed
+            `_data` will be used.
+
+    Returns:
+        The expanded dataframe
+    """
+    product_args = []
+    names = []
+    if isinstance(_data, DataFrame):
+        dataname = getattr(_data, '__dfname__', '_data')
+        product_args = [(row[1] for row in _data.iterrows())]
+        names = [f'{dataname}_{col}' for col in _data.columns]
+    elif _data is not None:
+        raise ValueError('Positional argument must be a DataFrame or None.')
+    for key, val in kwargs.items():
+        if isinstance(val, DataFrame):
+            product_args.append((row[1] for row in val.iterrows()))
+            names.extend(f'{key}_{col}' for col in val.columns)
+        else:
+            product_args.append(((value, ) for value in val))
+            names.append(key)
+
+    return DataFrame(
+        (itertools.chain.from_iterable(row)
+         for row in itertools.product(*product_args)),
+        columns=names
+    )
