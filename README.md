@@ -179,12 +179,10 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 - [ ] [`expand_grid()`](htts://pwwang.github.io/datar/reference/expand_grid.ipynb): Create a tibble from all combinations of inputs
 - [ ] [`fill()`](htts://pwwang.github.io/datar/reference/fill.ipynb): Fill in missing values with previous or next value
 - [ ] [`full_seq()`](htts://pwwang.github.io/datar/reference/full_seq.ipynb): Create the full sequence of values in a vector
-- [ ] [`replace_na()`](htts://pwwang.github.io/datar/reference/replace_na.ipynb): Replace NAs with specified values
+- [x] [`replace_na()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Freplace_na.ipynb): Replace NAs with specified values
 
 ### tidyr - Miscellanea
 
-- [ ] [`chop()`, `unchop()`](htts://pwwang.github.io/datar/reference/chop.ipynb): Chop and unchop
-- [ ] [`pack()`, `unpack()`](htts://pwwang.github.io/datar/reference/pack.ipynb): Pack and unpack
 - [x] [`uncount()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Funcount.ipynb): "Uncount" a data frame
 
 ### tidyr - Data

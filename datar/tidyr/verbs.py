@@ -1,14 +1,18 @@
 """Verbs from R-tidyr"""
-from typing import Any, Callable, Mapping, Optional, Type, Union
+from functools import singledispatch
+from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 
 import numpy
 import pandas
 from pandas import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy
+from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.series import Series
 from pipda import register_verb, Context
 
 from ..core.utils import objectize, select_columns, list_diff
-from ..core.types import DataFrameType, IntOrIter, StringOrIter, is_scalar
+from ..core.types import (
+    DataFrameType, IntOrIter, SeriesLikeType, StringOrIter, is_scalar
+)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -255,3 +259,60 @@ def uncount(
     if gnames:
         return ret.groupby(gnames, dropna=False)
     return ret
+
+@singledispatch
+def _replace_na(data: Iterable[Any], replace: Any) -> Iterable[Any]:
+    """Replace NA for any iterables"""
+    return type(data)(replace if pandas.isnull(elem) else elem for elem in data)
+
+@_replace_na.register(numpy.ndarray)
+@_replace_na.register(Series)
+def _(data: SeriesLikeType, replace: Any) -> SeriesLikeType:
+    """Replace NA for numpy.ndarray or Series"""
+    ret = data.copy()
+    ret[pandas.isnull(ret)] = replace
+    return ret
+
+@_replace_na.register(DataFrame)
+def _(data: DataFrame, replace: Any) -> DataFrame:
+    """Replace NA for numpy.ndarray or DataFrame"""
+    return data.fillna(replace)
+
+@_replace_na.register(DataFrameGroupBy)
+@_replace_na.register(SeriesGroupBy)
+def _(
+        data: Union[DataFrameGroupBy, SeriesGroupBy],
+        replace: Any
+) -> Union[DataFrameGroupBy, SeriesGroupBy]:
+    """Replace NA for grouped data, keep the group structure"""
+    grouper = data.grouper
+    ret = _replace_na(objectize(data), replace)
+    return ret.groupby(grouper, dropna=False)
+
+@register_verb(
+    (DataFrame, DataFrameGroupBy, Series, numpy.ndarray, list, tuple, set),
+    context=Context.EVAL
+)
+def replace_na(
+        _data: Iterable[Any],
+        series_or_replace: Any,
+        replace: Any = None
+) -> Any:
+    """Replace NA with a value
+
+    This function can be also used not as a verb. As a function called as
+    an argument in a verb, _data is passed implicitly. Then one could
+    pass series_or_replace as the data to replace.
+
+    Args:
+        _data: The data piped in
+        series_or_replace: When called as argument of a verb, this is the
+            data to replace. Otherwise this is the replacement.
+        replace: The value to replace with
+
+    Returns:
+        Corresponding data with NAs replaced
+    """
+    if replace is not None:
+        return _replace_na(series_or_replace, replace)
+    return _replace_na(_data, series_or_replace)
