@@ -177,8 +177,7 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 - [ ] [`drop_na()`](htts://pwwang.github.io/datar/reference/drop_na.ipynb): Drop rows containing missing values
 - [ ] [`expand()`, `crossing()`, `nesting()`](htts://pwwang.github.io/datar/reference/nesting.ipynb): Expand data frame to include all possible combinations of values
 - [ ] [`expand_grid()`](htts://pwwang.github.io/datar/reference/expand_grid.ipynb): Create a tibble from all combinations of inputs
-- [ ] [`fill()`](htts://pwwang.github.io/datar/reference/fill.ipynb): Fill in missing values with previous or next value
-- [ ] [`full_seq()`](htts://pwwang.github.io/datar/reference/full_seq.ipynb): Create the full sequence of values in a vector
+- [x] [`fill()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffo;;.ipynb): Fill in missing values with previous or next value
 - [x] [`replace_na()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Freplace_na.ipynb): Replace NAs with specified values
 
 ### tidyr - Miscellanea

@@ -316,3 +316,46 @@ def replace_na(
     if replace is not None:
         return _replace_na(series_or_replace, replace)
     return _replace_na(_data, series_or_replace)
+
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.SELECT
+)
+def fill(
+        _data: DataFrameType,
+        *columns: str,
+        _direction: str = "down"
+) -> DataFrameType:
+    """Fills missing values in selected columns using the next or
+    previous entry.
+
+    Args:
+        _data: A dataframe
+        *columns: Columns to fill
+        _direction: Direction in which to fill missing values.
+            Currently either "down" (the default), "up",
+            "downup" (i.e. first down and then up) or
+            "updown" (first up and then down).
+
+    Returns:
+        The dataframe with NAs being replaced.
+    """
+    if isinstance(_data, DataFrame):
+        if not columns:
+            _data = _data.fillna(
+                method='ffill' if _direction.startswith('down') else 'bfill',
+            )
+            if _direction in ('updown', 'downup'):
+                _data = _data.fillna(
+                    method='ffill' if _direction.endswith('down') else 'bfill',
+                )
+        else:
+            columns = select_columns(_data.columns, *columns)
+            subset = fill(_data[columns], _direction=_direction)
+            _data[columns] = subset
+        return _data
+    # DataFrameGroupBy
+    grouper = _data.grouper
+    return _data.apply(
+        lambda df: fill(df, *columns, _direction=_direction)
+    ).groupby(grouper, dropna=False)
