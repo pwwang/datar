@@ -1,6 +1,10 @@
 # datar
 
-Probably the closest port of [tidyr][1], [dplyr][2], tibble and other helper function from `R` in python, using [pipda][3].
+Port of R data packages ([tidyr][1], [dplyr][2], [tibble][4], etc) in python, using [pipda][3].
+
+<!-- badges -->
+
+[API][5]
 
 ## Installtion
 
@@ -71,6 +75,20 @@ df = tibble(x=numpy.linspace(0, 2*pi, 500))
 ```
 
 ![example](./example.png)
+
+```python
+# very easy to integrate with other libraries
+# for example: klib
+import klib
+from pipda import register_verb
+from datar.datasets import iris
+from datar.dplyr import pull
+
+dist_plot = register_verb(func=klib.dist_plot)
+iris >> pull(f.Sepal_Length, to_list=True) >> dist_plot()
+```
+
+![example](./example2.png)
 
 ## Examples
 
@@ -204,3 +222,5 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 [1]: https://tidyr.tidyverse.org/index.html
 [2]: https://dplyr.tidyverse.org/index.html
 [3]: https://github.com/pwwang/pipda
+[4]: https://tibble.tidyverse.org/index.html
+[5]: https://pwwang.github.io/datar/
