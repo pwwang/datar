@@ -1,0 +1,1501 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.5">
+    
+    
+      
+        <title>datar.tidyr.verbs - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.77f3fd56.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../style.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datartidyrverbs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="datar" class="md-header__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              datar.tidyr.verbs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="datar" class="md-nav__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    datar
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      <label class="md-nav__link" for="__nav_2_1">
+        datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      <label class="md-nav__link" for="__nav_2_2">
+        datar.dplyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.dplyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.dplyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr.funcs/" class="md-nav__link">
+        datar.dplyr.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr.verbs/" class="md-nav__link">
+        datar.dplyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        datar.stats
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.stats" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.stats
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.stats/" class="md-nav__link">
+        datar.stats
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.stats.funcs/" class="md-nav__link">
+        datar.stats.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        datar.base
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.base" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.base
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.funcs/" class="md-nav__link">
+        datar.base.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.verbs/" class="md-nav__link">
+        datar.base.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.constants/" class="md-nav__link">
+        datar.base.constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      <label class="md-nav__link" for="__nav_2_5">
+        datar.tibble
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tibble" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tibble
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tibble/" class="md-nav__link">
+        datar.tibble
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tibble.funcs/" class="md-nav__link">
+        datar.tibble.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        datar.datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datar/" class="md-nav__link">
+        datar.datar
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datar.verbs/" class="md-nav__link">
+        datar.datar.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" checked>
+      
+      <label class="md-nav__link" for="__nav_2_7">
+        datar.tidyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tidyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_7">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tidyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tidyr/" class="md-nav__link">
+        datar.tidyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          datar.tidyr.verbs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        datar.tidyr.verbs
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datartidyrverbs" class="md-nav__link">
+    verbs
+  </a>
+  
+    <nav class="md-nav" aria-label="verbs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbspivot_longer" class="md-nav__link">
+    pivot_longer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbspivot_wider" class="md-nav__link">
+    pivot_wider
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsuncount" class="md-nav__link">
+    uncount
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsreplace_na" class="md-nav__link">
+    replace_na
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsfill" class="md-nav__link">
+    fill
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsexpand_grid" class="md-nav__link">
+    expand_grid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsextract" class="md-nav__link">
+    extract
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
+      
+      <label class="md-nav__link" for="__nav_2_8">
+        datar.utils
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.utils" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_8">
+          <span class="md-nav__icon md-icon"></span>
+          datar.utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.utils/" class="md-nav__link">
+        datar.utils
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.utils.verbs/" class="md-nav__link">
+        datar.utils.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
+      
+      <label class="md-nav__link" for="__nav_2_9">
+        datar.datasets
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datasets" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datasets
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datartidyrverbs" class="md-nav__link">
+    verbs
+  </a>
+  
+    <nav class="md-nav" aria-label="verbs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbspivot_longer" class="md-nav__link">
+    pivot_longer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbspivot_wider" class="md-nav__link">
+    pivot_wider
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsuncount" class="md-nav__link">
+    uncount
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsreplace_na" class="md-nav__link">
+    replace_na
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsfill" class="md-nav__link">
+    fill
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsexpand_grid" class="md-nav__link">
+    expand_grid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datartidyrverbsextract" class="md-nav__link">
+    extract
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>datar.tidyr.verbs</h1>
+                
+                <div class="mkapi-node" id="datar.tidyr.verbs">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="datartidyrverbs" class="mkapi-object-body module top"><span class="mkapi-object-prefix"><a href="../datar.tidyr/#datar.tidyr">datar.tidyr</a>.</span><span class="mkapi-object-name">verbs</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs" title="Source for datar.tidyr.verbs">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Verbs from R-tidyr</p></div>
+    </div>
+  <div class="mkapi-section functions">
+      <div class="mkapi-section-name functions">
+          <span class="mkapi-section-name-body functions">Functions</span> 
+        </div>
+      <div class="mkapi-section-body functions"><ul class="mkapi-items">
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.expand_grid">expand_grid</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Expand elements into a new dataframe<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.expand_grid" title="Source for datar.tidyr.verbs.expand_grid">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.extract">extract</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">col</code>, <code class="mkapi-object-signature">into</code>, <code class="mkapi-object-signature">regex</code>, <code class="mkapi-object-signature">remove</code>, <code class="mkapi-object-signature">convert</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Given a regular expression with capturing groups, extract() turns each
+group into a new column. If the groups don't match, or the input is NA,
+the output will be NA.<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.extract" title="Source for datar.tidyr.verbs.extract">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.fill">fill</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_direction</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Fills missing values in selected columns using the next or
+previous entry.<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.fill" title="Source for datar.tidyr.verbs.fill">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.pivot_longer">pivot_longer</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">cols</code>, <code class="mkapi-object-signature">names_to</code>, <code class="mkapi-object-signature">names_prefix</code>, <code class="mkapi-object-signature">names_sep</code>, <code class="mkapi-object-signature">names_pattern</code>, <code class="mkapi-object-signature">names_ptypes</code>, <code class="mkapi-object-signature">names_transform</code>, <code class="mkapi-object-signature">values_to</code>, <code class="mkapi-object-signature">values_drop_na</code>, <code class="mkapi-object-signature">values_ptypes</code>, <code class="mkapi-object-signature">values_transform</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">"lengthens" data, increasing the number of rows and
+decreasing the number of columns.<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.pivot_longer" title="Source for datar.tidyr.verbs.pivot_longer">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.pivot_wider">pivot_wider</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">id_cols</code>, <code class="mkapi-object-signature">names_from</code>, <code class="mkapi-object-signature">names_prefix</code>, <code class="mkapi-object-signature">names_sep</code>, <code class="mkapi-object-signature">names_glue</code>, <code class="mkapi-object-signature">names_sort</code>, <code class="mkapi-object-signature">values_from</code>, <code class="mkapi-object-signature">values_fill</code>, <code class="mkapi-object-signature">values_fn</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">"widens" data, increasing the number of columns and decreasing
+the number of rows.<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.pivot_wider" title="Source for datar.tidyr.verbs.pivot_wider">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.replace_na">replace_na</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">series_or_replace</code>, <code class="mkapi-object-signature">replace</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Replace NA with a value<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.replace_na" title="Source for datar.tidyr.verbs.replace_na">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.tidyr.verbs.uncount">uncount</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">weights</code>, <code class="mkapi-object-signature">_remove</code>, <code class="mkapi-object-signature">_id</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Duplicating rows according to a weighting variable<a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.uncount" title="Source for datar.tidyr.verbs.uncount">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.pivot_longer">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbspivot_longer" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">pivot_longer</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">cols</code>, <code class="mkapi-object-signature">names_to=&#39;name&#39;</code>, <code class="mkapi-object-signature">names_prefix=None</code>, <code class="mkapi-object-signature">names_sep=None</code>, <code class="mkapi-object-signature">names_pattern=None</code>, <code class="mkapi-object-signature">names_ptypes=None</code>, <code class="mkapi-object-signature">names_transform=None</code>, <code class="mkapi-object-signature">values_to=&#39;value&#39;</code>, <code class="mkapi-object-signature">values_drop_na=False</code>, <code class="mkapi-object-signature">values_ptypes=None</code>, <code class="mkapi-object-signature">values_transform=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.pivot_longer" title="Source for datar.tidyr.verbs.pivot_longer">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>"lengthens" data, increasing the number of rows and
+decreasing the number of columns.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame to pivot.</span></li>
+
+<li><code class="mkapi-item-name">cols</code>
+<span class="mkapi-item-type">(Union(str, iterable of str))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Columns to pivot into longer format.</span></li>
+
+<li><code class="mkapi-item-name">names_to</code>
+<span class="mkapi-item-type">(Union(str, iterable of str), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A string specifying the name of the column to create from
+the data stored in the column names of data.
+Can be a character vector, creating multiple columns, if names_sep
+or names_pattern is provided. In this case, there are two special
+values you can take advantage of:
+- None will discard that component of the name.
+- .value indicates that component of the name defines the name of
+    the column containing the cell values, overriding values_to.</span></li>
+
+<li><code class="mkapi-item-name">names_prefix</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A regular expression used to remove matching text from
+the start of each variable name.</span></li>
+
+
+<li><code class="mkapi-item-name">names_pattern</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">takes the same specification as extract(),
+a regular expression containing matching groups (()).</span></li>
+
+
+
+<li><code class="mkapi-item-name">values_to</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A string specifying the name of the column to create from
+the data stored in cell values. If names_to is a character
+containing the special .value sentinel, this value will be ignored,
+and the name of the value column will be derived from part of
+the existing column names.</span></li>
+
+<li><code class="mkapi-item-name">values_drop_na</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If TRUE, will drop rows that contain only NAs in
+the value_to column. This effectively converts explicit missing
+values to implicit missing values, and should generally be used
+only when missing values in data were created by its structure.</span></li>
+
+
+
+<li><code class="mkapi-item-name">names_sep, names_pattern</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If names_to contains multiple values,
+these arguments control how the column name is broken up.
+names_sep takes the same specification as separate(), and
+can either be a numeric vector (specifying positions to break on),
+or a single string (specifying a regular expression to split on).</span></li>
+
+<li><code class="mkapi-item-name">names_ptypes, values_ptypes</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of column name-prototype pairs.
+A prototype (or ptype for short) is a zero-length vector
+(like integer() or numeric()) that defines the type, class, and
+attributes of a vector. Use these arguments if you want to confirm
+that the created columns are the types that you expect.
+Note that if you want to change (instead of confirm) the types
+of specific columns, you should use names_transform or
+values_transform instead.</span></li>
+
+<li><code class="mkapi-item-name">names_transform, values_transform</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of column name-function pairs.
+Use these arguments if you need to change the types of
+specific columns. For example,
+names_transform = dict(week = as.integer) would convert a
+character variable called week to an integer.
+If not specified, the type of the columns generated from names_to
+will be character, and the type of the variables generated from
+values_to will be the common type of the input columns used to
+generate them.</span></li>
+
+<li><code class="mkapi-item-name">names_repair</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Not supported yet.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> 
+        </div>
+      <div class="mkapi-section-body returns"><p>The pivoted dataframe.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.pivot_wider">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbspivot_wider" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">pivot_wider</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">id_cols=None</code>, <code class="mkapi-object-signature">names_from=&#39;name&#39;</code>, <code class="mkapi-object-signature">names_prefix=&#39;&#39;</code>, <code class="mkapi-object-signature">names_sep=&#39;_&#39;</code>, <code class="mkapi-object-signature">names_glue=None</code>, <code class="mkapi-object-signature">names_sort=False</code>, <code class="mkapi-object-signature">values_from=&#39;value&#39;</code>, <code class="mkapi-object-signature">values_fill=None</code>, <code class="mkapi-object-signature">values_fn=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.pivot_wider" title="Source for datar.tidyr.verbs.pivot_wider">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>"widens" data, increasing the number of columns and decreasing
+the number of rows.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame to pivot.</span></li>
+
+<li><code class="mkapi-item-name">id_cols</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A set of columns that uniquely identifies each observation.
+Defaults to all columns in data except for the columns specified
+in names_from and values_from.</span></li>
+
+
+<li><code class="mkapi-item-name">names_prefix</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">String added to the start of every variable name.</span></li>
+
+<li><code class="mkapi-item-name">names_sep</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If names_from or values_from contains multiple variables,
+this will be used to join their values together into a single
+string to use as a column name.</span></li>
+
+<li><code class="mkapi-item-name">names_glue</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Instead of names_sep and names_prefix, you can supply
+a glue specification that uses the names_from columns
+(and special _value) to create custom column names.</span></li>
+
+<li><code class="mkapi-item-name">names_sort</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Should the column names be sorted? If FALSE, the default,
+column names are ordered by first appearance.</span></li>
+
+
+<li><code class="mkapi-item-name">values_fill</code>
+<span class="mkapi-item-type">(any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Optionally, a (scalar) value that specifies what
+each value should be filled in with when missing.</span></li>
+
+<li><code class="mkapi-item-name">values_fn</code>
+<span class="mkapi-item-type">(callable, , or NoneType, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Optionally, a function applied to the value in each cell
+in the output. You will typically use this when the combination
+of id_cols and value column does not uniquely identify
+an observation.
+This can be a dict you want to apply different aggregations to
+different value columns.</span></li>
+
+<li><code class="mkapi-item-name">names_from, values_from</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A pair of arguments describing which column
+(or columns) to get the name of the output column (names_from),
+and which column (or columns) to get the cell values from
+(values_from).</span></li>
+
+<li><code class="mkapi-item-name">names_repair</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">todo</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The pivoted dataframe.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.uncount">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbsuncount" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">uncount</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">weights</code>, <code class="mkapi-object-signature">_remove=True</code>, <code class="mkapi-object-signature">_id=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.uncount" title="Source for datar.tidyr.verbs.uncount">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Duplicating rows according to a weighting variable</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame</span></li>
+
+<li><code class="mkapi-item-name">weights</code>
+<span class="mkapi-item-type">(Union(int, integer, iterable of int or integer))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A vector of weights. Evaluated in the context of data</span></li>
+
+<li><code class="mkapi-item-name">_remove</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If TRUE, and weights is the name of a column in data,
+then this column is removed.</span></li>
+
+<li><code class="mkapi-item-name">_id</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Supply a string to create a new variable which gives a
+unique identifier for each created row (0-based).</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>dataframe with rows repeated.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.replace_na">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbsreplace_na" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">replace_na</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">series_or_replace</code>, <code class="mkapi-object-signature">replace=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.replace_na" title="Source for datar.tidyr.verbs.replace_na">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Replace NA with a value</p>
+<p>This function can be also used not as a verb. As a function called as
+an argument in a verb, _data is passed implicitly. Then one could
+pass series_or_replace as the data to replace.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(iterable of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The data piped in</span></li>
+
+<li><code class="mkapi-item-name">series_or_replace</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When called as argument of a verb, this is the
+data to replace. Otherwise this is the replacement.</span></li>
+
+<li><code class="mkapi-item-name">replace</code>
+<span class="mkapi-item-type">(any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The value to replace with</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Corresponding data with NAs replaced</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.fill">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbsfill" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">fill</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_direction=&#39;down&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.fill" title="Source for datar.tidyr.verbs.fill">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Fills missing values in selected columns using the next or
+previous entry.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A dataframe</span></li>
+
+<li><code class="mkapi-item-name">*columns</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Columns to fill</span></li>
+
+<li><code class="mkapi-item-name">_direction</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Direction in which to fill missing values.
+Currently either "down" (the default), "up",
+"downup" (i.e. first down and then up) or
+"updown" (first up and then down).</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe with NAs being replaced.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.expand_grid">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbsexpand_grid" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">expand_grid</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data=None</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.expand_grid" title="Source for datar.tidyr.verbs.expand_grid">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Expand elements into a new dataframe</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">_data, **kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name-value pairs. The name will become the column
+name in the output.
+For _data, will try to fetch name via <code>_data.__dfname__</code>. If failed
+<code>_data</code> will be used.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The expanded dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.tidyr.verbs.extract">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datartidyrverbsextract" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.tidyr.verbs">datar.tidyr.verbs</a>.</code><code class="mkapi-object-name">extract</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">col</code>, <code class="mkapi-object-signature">into</code>, <code class="mkapi-object-signature">regex=&#39;(\\w+)&#39;</code>, <code class="mkapi-object-signature">remove=True</code>, <code class="mkapi-object-signature">convert=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.tidyr.verbs/#datar.tidyr.verbs.extract" title="Source for datar.tidyr.verbs.extract">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Given a regular expression with capturing groups, extract() turns each
+group into a new column. If the groups don't match, or the input is NA,
+the output will be NA.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">col</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Column name or position.</span></li>
+
+<li><code class="mkapi-item-name">into</code>
+<span class="mkapi-item-type">(Union(str, iterable of str))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Names of new variables to create as character vector.
+Use None to omit the variable in the output.</span></li>
+
+<li><code class="mkapi-item-name">regex</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a regular expression used to extract the desired values.
+There should be one group (defined by ()) for each element of into.</span></li>
+
+<li><code class="mkapi-item-name">remove</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If TRUE, remove input column from output data frame.</span></li>
+
+<li><code class="mkapi-item-name">convert</code>
+<span class="mkapi-item-type">(bool, str, type, or , optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The universal type for the extracted columns or a dict for
+individual ones</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Dataframe with extracted columns.</p></div>
+    </div>
+  </div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../datar.tidyr/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              datar.tidyr
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../datar.utils/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              datar.utils
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5cf3e710.min.js"></script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1257 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.5">
+    
+    
+      
+        <title>datar.tidyr.verbs - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.77f3fd56.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datartidyrverbs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="datar" class="md-header__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              datar.tidyr.verbs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="datar" class="md-nav__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    datar
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      <label class="md-nav__link" for="__nav_2_1">
+        datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      <label class="md-nav__link" for="__nav_2_2">
+        datar.dplyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.dplyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.dplyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.dplyr.funcs/" class="md-nav__link">
+        datar.dplyr.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.dplyr.verbs/" class="md-nav__link">
+        datar.dplyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        datar.stats
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.stats" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.stats
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.stats/" class="md-nav__link">
+        datar.stats
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.stats.funcs/" class="md-nav__link">
+        datar.stats.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        datar.base
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.base" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.base
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base.funcs/" class="md-nav__link">
+        datar.base.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base.verbs/" class="md-nav__link">
+        datar.base.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base.constants/" class="md-nav__link">
+        datar.base.constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      <label class="md-nav__link" for="__nav_2_5">
+        datar.tibble
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tibble" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tibble
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tibble/" class="md-nav__link">
+        datar.tibble
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tibble.funcs/" class="md-nav__link">
+        datar.tibble.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        datar.datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.datar/" class="md-nav__link">
+        datar.datar
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.datar.verbs/" class="md-nav__link">
+        datar.datar.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+      
+      <label class="md-nav__link" for="__nav_2_7">
+        datar.tidyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tidyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_7">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tidyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tidyr/" class="md-nav__link">
+        datar.tidyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tidyr.verbs/" class="md-nav__link">
+        datar.tidyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
+      
+      <label class="md-nav__link" for="__nav_2_8">
+        datar.utils
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.utils" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_8">
+          <span class="md-nav__icon md-icon"></span>
+          datar.utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.utils/" class="md-nav__link">
+        datar.utils
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.utils.verbs/" class="md-nav__link">
+        datar.utils.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
+      
+      <label class="md-nav__link" for="__nav_2_9">
+        datar.datasets
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datasets" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datasets
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">datar.tidyr.</span><span class="mkapi-object-name">verbs</span>
+<span id="datar.tidyr.verbs"></span><a class="mkapi-docs-link" href="../../datar.tidyr.verbs">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Verbs from R-tidyr&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatch</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">pandas.core.groupby.generic</span> <span class="kn">import</span> <span class="n">DataFrameGroupBy</span><span class="p">,</span> <span class="n">SeriesGroupBy</span>
+<span class="kn">from</span> <span class="nn">pandas.core.series</span> <span class="kn">import</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">pipda</span> <span class="kn">import</span> <span class="n">register_verb</span><span class="p">,</span> <span class="n">Context</span>
+
+<span class="kn">from</span> <span class="nn">..core.utils</span> <span class="kn">import</span> <span class="n">objectize</span><span class="p">,</span> <span class="n">select_columns</span><span class="p">,</span> <span class="n">list_diff</span>
+<span class="kn">from</span> <span class="nn">..core.types</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DataFrameType</span><span class="p">,</span> <span class="n">IntOrIter</span><span class="p">,</span> <span class="n">SeriesLikeType</span><span class="p">,</span> <span class="n">StringOrIter</span><span class="p">,</span>
+    <span class="n">is_scalar</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..base.constants</span> <span class="kn">import</span> <span class="n">NA</span>
+
+<span class="nd">@register_verb</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.tidyr.verbs.pivot_longer"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.pivot_longer" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.pivot_longer">DOCS</a>
+<span class="k">def</span> <span class="nf">pivot_longer</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">cols</span><span class="p">:</span> <span class="n">StringOrIter</span><span class="p">,</span>
+        <span class="n">names_to</span><span class="p">:</span> <span class="n">StringOrIter</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="n">names_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">names_sep</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">names_pattern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">names_ptypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">names_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># names_repair=&quot;check_unique&quot;, # todo</span>
+        <span class="n">values_to</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span>
+        <span class="n">values_drop_na</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">values_ptypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">values_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;lengthens&quot; data, increasing the number of rows and</span>
+<span class="sd">    decreasing the number of columns.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: A data frame to pivot.</span>
+<span class="sd">        cols: Columns to pivot into longer format.</span>
+<span class="sd">        names_to: A string specifying the name of the column to create from</span>
+<span class="sd">            the data stored in the column names of data.</span>
+<span class="sd">            Can be a character vector, creating multiple columns, if names_sep</span>
+<span class="sd">            or names_pattern is provided. In this case, there are two special</span>
+<span class="sd">            values you can take advantage of:</span>
+<span class="sd">            - None will discard that component of the name.</span>
+<span class="sd">            - .value indicates that component of the name defines the name of</span>
+<span class="sd">                the column containing the cell values, overriding values_to.</span>
+<span class="sd">        names_prefix: A regular expression used to remove matching text from</span>
+<span class="sd">            the start of each variable name.</span>
+<span class="sd">        names_sep, names_pattern: If names_to contains multiple values,</span>
+<span class="sd">            these arguments control how the column name is broken up.</span>
+<span class="sd">            names_sep takes the same specification as separate(), and</span>
+<span class="sd">            can either be a numeric vector (specifying positions to break on),</span>
+<span class="sd">            or a single string (specifying a regular expression to split on).</span>
+<span class="sd">        names_pattern: takes the same specification as extract(),</span>
+<span class="sd">            a regular expression containing matching groups (()).</span>
+<span class="sd">        names_ptypes, values_ptypes: A list of column name-prototype pairs.</span>
+<span class="sd">            A prototype (or ptype for short) is a zero-length vector</span>
+<span class="sd">            (like integer() or numeric()) that defines the type, class, and</span>
+<span class="sd">            attributes of a vector. Use these arguments if you want to confirm</span>
+<span class="sd">            that the created columns are the types that you expect.</span>
+<span class="sd">            Note that if you want to change (instead of confirm) the types</span>
+<span class="sd">            of specific columns, you should use names_transform or</span>
+<span class="sd">            values_transform instead.</span>
+<span class="sd">        names_transform, values_transform: A list of column name-function pairs.</span>
+<span class="sd">            Use these arguments if you need to change the types of</span>
+<span class="sd">            specific columns. For example,</span>
+<span class="sd">            names_transform = dict(week = as.integer) would convert a</span>
+<span class="sd">            character variable called week to an integer.</span>
+<span class="sd">            If not specified, the type of the columns generated from names_to</span>
+<span class="sd">            will be character, and the type of the variables generated from</span>
+<span class="sd">            values_to will be the common type of the input columns used to</span>
+<span class="sd">            generate them.</span>
+<span class="sd">        names_repair: Not supported yet.</span>
+<span class="sd">        values_to: A string specifying the name of the column to create from</span>
+<span class="sd">            the data stored in cell values. If names_to is a character</span>
+<span class="sd">            containing the special .value sentinel, this value will be ignored,</span>
+<span class="sd">            and the name of the value column will be derived from part of</span>
+<span class="sd">            the existing column names.</span>
+<span class="sd">        values_drop_na: If TRUE, will drop rows that contain only NAs in</span>
+<span class="sd">            the value_to column. This effectively converts explicit missing</span>
+<span class="sd">            values to implicit missing values, and should generally be used</span>
+<span class="sd">            only when missing values in data were created by its structure.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The pivoted dataframe.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">select_columns</span><span class="p">(</span><span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+    <span class="n">id_columns</span> <span class="o">=</span> <span class="n">list_diff</span><span class="p">(</span><span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span><span class="p">)</span>
+    <span class="n">var_name</span> <span class="o">=</span> <span class="s1">&#39;__tmp_names_to__&#39;</span> <span class="k">if</span> <span class="n">names_pattern</span> <span class="ow">or</span> <span class="n">names_sep</span> <span class="k">else</span> <span class="n">names_to</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span>
+        <span class="n">id_vars</span><span class="o">=</span><span class="n">id_columns</span><span class="p">,</span>
+        <span class="n">value_vars</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+        <span class="n">var_name</span><span class="o">=</span><span class="n">var_name</span><span class="p">,</span>
+        <span class="n">value_name</span><span class="o">=</span><span class="n">values_to</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">names_pattern</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">names_to</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;__tmp_names_to__&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">names_pattern</span><span class="p">)</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;__tmp_names_to__&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">names_prefix</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">names_to</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">names_to</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">names_prefix</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;.value&#39;</span> <span class="ow">in</span> <span class="n">names_to</span><span class="p">:</span>
+        <span class="n">ret2</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;.value&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values_to</span><span class="p">)</span>
+        <span class="n">rest_columns</span> <span class="o">=</span> <span class="n">list_diff</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;.value&#39;</span><span class="p">,</span> <span class="n">values_to</span><span class="p">])</span>
+        <span class="n">ret2</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">rest_columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">rest_columns</span><span class="p">]</span>
+
+        <span class="n">ret2_1</span> <span class="o">=</span> <span class="n">ret2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:(</span><span class="n">ret2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span> <span class="p">]</span>
+        <span class="n">ret2_2</span> <span class="o">=</span> <span class="n">ret2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[(</span><span class="n">ret2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):,</span> <span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">ret2_1</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="n">col</span><span class="p">:</span> <span class="n">ret2_2</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">ret2_1</span><span class="o">.</span><span class="n">columns</span>
+            <span class="k">if</span> <span class="n">ret2_1</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">values_drop_na</span><span class="p">:</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">values_to</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">names_ptypes</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">ptype</span> <span class="ow">in</span> <span class="n">names_ptypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">ptype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">values_ptypes</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">ptype</span> <span class="ow">in</span> <span class="n">values_ptypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">ptype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">names_transform</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">tform</span> <span class="ow">in</span> <span class="n">names_transform</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">tform</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">values_transform</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">tform</span> <span class="ow">in</span> <span class="n">values_transform</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">tform</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@register_verb</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.tidyr.verbs.pivot_wider"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.pivot_wider" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.pivot_wider">DOCS</a>
+<span class="k">def</span> <span class="nf">pivot_wider</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">id_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StringOrIter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">names_from</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="n">names_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">names_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span>
+        <span class="n">names_glue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">names_sort</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="c1"># names_repair: str = &quot;check_unique&quot;, # todo</span>
+        <span class="n">values_from</span><span class="p">:</span> <span class="n">StringOrIter</span> <span class="o">=</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span>
+        <span class="n">values_fill</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">values_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;&quot;widens&quot; data, increasing the number of columns and decreasing</span>
+<span class="sd">    the number of rows.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: A data frame to pivot.</span>
+<span class="sd">        id_cols: A set of columns that uniquely identifies each observation.</span>
+<span class="sd">            Defaults to all columns in data except for the columns specified</span>
+<span class="sd">            in names_from and values_from.</span>
+<span class="sd">        names_from, values_from: A pair of arguments describing which column</span>
+<span class="sd">            (or columns) to get the name of the output column (names_from),</span>
+<span class="sd">            and which column (or columns) to get the cell values from</span>
+<span class="sd">            (values_from).</span>
+<span class="sd">        names_prefix: String added to the start of every variable name.</span>
+<span class="sd">        names_sep: If names_from or values_from contains multiple variables,</span>
+<span class="sd">            this will be used to join their values together into a single</span>
+<span class="sd">            string to use as a column name.</span>
+<span class="sd">        names_glue: Instead of names_sep and names_prefix, you can supply</span>
+<span class="sd">            a glue specification that uses the names_from columns</span>
+<span class="sd">            (and special _value) to create custom column names.</span>
+<span class="sd">        names_sort: Should the column names be sorted? If FALSE, the default,</span>
+<span class="sd">            column names are ordered by first appearance.</span>
+<span class="sd">        names_repair: todo</span>
+<span class="sd">        values_fill: Optionally, a (scalar) value that specifies what</span>
+<span class="sd">            each value should be filled in with when missing.</span>
+<span class="sd">        values_fn: Optionally, a function applied to the value in each cell</span>
+<span class="sd">            in the output. You will typically use this when the combination</span>
+<span class="sd">            of id_cols and value column does not uniquely identify</span>
+<span class="sd">            an observation.</span>
+<span class="sd">            This can be a dict you want to apply different aggregations to</span>
+<span class="sd">            different value columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The pivoted dataframe.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">id_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">all_cols</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">selected_cols</span> <span class="o">=</span> <span class="n">select_columns</span><span class="p">(</span><span class="n">all_cols</span><span class="p">,</span> <span class="n">names_from</span><span class="p">,</span> <span class="n">values_from</span><span class="p">)</span>
+        <span class="n">id_cols</span> <span class="o">=</span> <span class="n">list_diff</span><span class="p">(</span><span class="n">all_cols</span><span class="p">,</span> <span class="n">selected_cols</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">id_cols</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="n">names_from</span><span class="p">,</span>
+        <span class="n">fill_value</span><span class="o">=</span><span class="n">values_fill</span><span class="p">,</span>
+        <span class="n">values</span><span class="o">=</span><span class="n">values_from</span><span class="p">,</span>
+        <span class="n">aggfunc</span><span class="o">=</span><span class="n">values_fn</span> <span class="ow">or</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_new_colname</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_scalar</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">names_glue</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">names_prefix</span><span class="si">}{</span><span class="n">names_sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_value&#39;</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">)</span>
+        <span class="n">render_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">names_glue</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">render_data</span><span class="p">)</span>
+
+    <span class="n">new_columns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">get_new_colname</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">ret</span><span class="o">.</span><span class="n">columns</span>
+    <span class="p">]</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_columns</span>
+    <span class="k">if</span> <span class="n">names_sort</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">new_columns</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@register_verb</span><span class="p">((</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.tidyr.verbs.uncount"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.uncount" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.uncount">DOCS</a>
+<span class="k">def</span> <span class="nf">uncount</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">IntOrIter</span><span class="p">,</span>
+        <span class="n">_remove</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Duplicating rows according to a weighting variable</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: A data frame</span>
+<span class="sd">        weights: A vector of weights. Evaluated in the context of data</span>
+<span class="sd">        _remove: If TRUE, and weights is the name of a column in data,</span>
+<span class="sd">            then this column is removed.</span>
+<span class="sd">        _id: Supply a string to create a new variable which gives a</span>
+<span class="sd">            unique identifier for each created row (0-based).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dataframe with rows repeated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gnames</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">names</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="n">_data</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">(</span><span class="n">weights</span><span class="p">):</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">weights</span><span class="p">]</span> <span class="o">*</span> <span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">indexes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">idx</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="p">]</span>
+
+    <span class="n">all_columns</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">weight_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">weight_name</span> <span class="ow">in</span> <span class="n">all_columns</span> <span class="ow">and</span> <span class="n">weights</span> <span class="ow">is</span> <span class="n">_data</span><span class="p">[</span><span class="n">weight_name</span><span class="p">]:</span>
+        <span class="n">rest_columns</span> <span class="o">=</span> <span class="n">list_diff</span><span class="p">(</span><span class="n">all_columns</span><span class="p">,</span> <span class="p">[</span><span class="n">weight_name</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rest_columns</span> <span class="o">=</span> <span class="n">all_columns</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">indexes</span><span class="p">,</span> <span class="n">rest_columns</span><span class="p">]</span> <span class="k">if</span> <span class="n">_remove</span> <span class="k">else</span> <span class="n">_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">indexes</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">_id</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">rest_columns</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">_id</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])})</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gnames</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">gnames</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@singledispatch</span>
+<span class="k">def</span> <span class="nf">_replace_na</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">replace</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Replace NA for any iterables&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)(</span><span class="n">replace</span> <span class="k">if</span> <span class="n">pandas</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="k">else</span> <span class="n">elem</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="nd">@_replace_na</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+<span class="nd">@_replace_na</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Series</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">SeriesLikeType</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeriesLikeType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Replace NA for numpy.ndarray or Series&quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">ret</span><span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">ret</span><span class="p">)]</span> <span class="o">=</span> <span class="n">replace</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@_replace_na</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Replace NA for numpy.ndarray or DataFrame&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">replace</span><span class="p">)</span>
+
+<span class="nd">@_replace_na</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">DataFrameGroupBy</span><span class="p">)</span>
+<span class="nd">@_replace_na</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SeriesGroupBy</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataFrameGroupBy</span><span class="p">,</span> <span class="n">SeriesGroupBy</span><span class="p">],</span>
+        <span class="n">replace</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataFrameGroupBy</span><span class="p">,</span> <span class="n">SeriesGroupBy</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Replace NA for grouped data, keep the group structure&quot;&quot;&quot;</span>
+    <span class="n">grouper</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">grouper</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">_replace_na</span><span class="p">(</span><span class="n">objectize</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">replace</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grouper</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nd">@register_verb</span><span class="p">(</span><span id="datar.tidyr.verbs.replace_na"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.replace_na" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.replace_na">DOCS</a>
+    <span class="p">(</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">,</span> <span class="n">Series</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">),</span>
+    <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">replace_na</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">series_or_replace</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">replace</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Replace NA with a value</span>
+
+<span class="sd">    This function can be also used not as a verb. As a function called as</span>
+<span class="sd">    an argument in a verb, _data is passed implicitly. Then one could</span>
+<span class="sd">    pass series_or_replace as the data to replace.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        series_or_replace: When called as argument of a verb, this is the</span>
+<span class="sd">            data to replace. Otherwise this is the replacement.</span>
+<span class="sd">        replace: The value to replace with</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Corresponding data with NAs replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">replace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_replace_na</span><span class="p">(</span><span class="n">series_or_replace</span><span class="p">,</span> <span class="n">replace</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_replace_na</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">series_or_replace</span><span class="p">)</span>
+
+<span class="nd">@register_verb</span><span class="p">(</span><span id="datar.tidyr.verbs.fill"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.fill" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.fill">DOCS</a>
+    <span class="p">(</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">),</span>
+    <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">fill</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">columns</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">_direction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;down&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Fills missing values in selected columns using the next or</span>
+<span class="sd">    previous entry.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: A dataframe</span>
+<span class="sd">        *columns: Columns to fill</span>
+<span class="sd">        _direction: Direction in which to fill missing values.</span>
+<span class="sd">            Currently either &quot;down&quot; (the default), &quot;up&quot;,</span>
+<span class="sd">            &quot;downup&quot; (i.e. first down and then up) or</span>
+<span class="sd">            &quot;updown&quot; (first up and then down).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The dataframe with NAs being replaced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">_data</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span>
+                <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ffill&#39;</span> <span class="k">if</span> <span class="n">_direction</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;down&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;bfill&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">_direction</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;updown&#39;</span><span class="p">,</span> <span class="s1">&#39;downup&#39;</span><span class="p">):</span>
+                <span class="n">_data</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span>
+                    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ffill&#39;</span> <span class="k">if</span> <span class="n">_direction</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;down&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;bfill&#39;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="n">select_columns</span><span class="p">(</span><span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="o">*</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">_data</span><span class="p">[</span><span class="n">columns</span><span class="p">],</span> <span class="n">_direction</span><span class="o">=</span><span class="n">_direction</span><span class="p">)</span>
+            <span class="n">_data</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">subset</span>
+        <span class="k">return</span> <span class="n">_data</span>
+    <span class="c1"># DataFrameGroupBy</span>
+    <span class="n">grouper</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span>
+    <span class="k">return</span> <span class="n">_data</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">fill</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="n">columns</span><span class="p">,</span> <span class="n">_direction</span><span class="o">=</span><span class="n">_direction</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grouper</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nd">@register_verb</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.tidyr.verbs.expand_grid"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.expand_grid" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.expand_grid">DOCS</a>
+<span class="k">def</span> <span class="nf">expand_grid</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1">#_name_repair: str = &quot;check_unique&quot;, # todo</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Expand elements into a new dataframe</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data, **kwargs: Name-value pairs. The name will become the column</span>
+<span class="sd">            name in the output.</span>
+<span class="sd">            For _data, will try to fetch name via `_data.__dfname__`. If failed</span>
+<span class="sd">            `_data` will be used.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The expanded dataframe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">product_args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">dataname</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="s1">&#39;__dfname__&#39;</span><span class="p">,</span> <span class="s1">&#39;_data&#39;</span><span class="p">)</span>
+        <span class="n">product_args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">iterrows</span><span class="p">())]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">dataname</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Positional argument must be a DataFrame or None.&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">product_args</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()))</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">product_args</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">value</span><span class="p">,</span> <span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">val</span><span class="p">))</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">product_args</span><span class="p">)),</span>
+        <span class="n">columns</span><span class="o">=</span><span class="n">names</span>
+    <span class="p">)</span>
+
+<span class="nd">@register_verb</span><span class="p">((</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.tidyr.verbs.extract"></span><a class="mkapi-docs-link" title="datar.tidyr.verbs.extract" href="../../datar.tidyr.verbs/#datar.tidyr.verbs.extract">DOCS</a>
+<span class="k">def</span> <span class="nf">extract</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">into</span><span class="p">:</span> <span class="n">StringOrIter</span><span class="p">,</span>
+        <span class="n">regex</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;(\w+)&#39;</span><span class="p">,</span>
+        <span class="n">remove</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">convert</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrameType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Given a regular expression with capturing groups, extract() turns each</span>
+<span class="sd">    group into a new column. If the groups don&#39;t match, or the input is NA,</span>
+<span class="sd">    the output will be NA.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The dataframe</span>
+<span class="sd">        col: Column name or position.</span>
+<span class="sd">        into: Names of new variables to create as character vector.</span>
+<span class="sd">            Use None to omit the variable in the output.</span>
+<span class="sd">        regex: a regular expression used to extract the desired values.</span>
+<span class="sd">            There should be one group (defined by ()) for each element of into.</span>
+<span class="sd">        remove: If TRUE, remove input column from output data frame.</span>
+<span class="sd">        convert: The universal type for the extracted columns or a dict for</span>
+<span class="sd">            individual ones</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe with extracted columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_scalar</span><span class="p">(</span><span class="n">into</span><span class="p">):</span>
+            <span class="n">into</span> <span class="o">=</span> <span class="p">[</span><span class="n">into</span><span class="p">]</span>
+        <span class="n">colindex</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">outcol</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">into</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">outcol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">NA</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">extracted</span> <span class="o">=</span> <span class="n">_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">colindex</span><span class="p">]</span>
+        <span class="n">extracted</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">into</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">NA</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">convert</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">)):</span>
+            <span class="n">extracted</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">convert</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">convert</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">conv</span> <span class="ow">in</span> <span class="n">convert</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">extracted</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">extracted</span><span class="p">[</span><span class="n">extracted</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remove</span><span class="p">:</span>
+            <span class="n">_data</span> <span class="o">=</span> <span class="n">_data</span><span class="p">[</span><span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">difference</span><span class="p">([</span><span class="n">col</span><span class="p">])]</span>
+
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">_data</span><span class="p">,</span> <span class="n">extracted</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">grouper</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span>
+    <span class="k">return</span> <span class="n">_data</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">extract</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">into</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">remove</span><span class="p">,</span> <span class="n">convert</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grouper</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.5cf3e710.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

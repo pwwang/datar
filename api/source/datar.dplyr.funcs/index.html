@@ -1,0 +1,1686 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.5">
+    
+    
+      
+        <title>datar.dplyr.funcs - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.77f3fd56.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datardplyrfuncs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="datar" class="md-header__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              datar.dplyr.funcs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="datar" class="md-nav__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    datar
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      <label class="md-nav__link" for="__nav_2_1">
+        datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      <label class="md-nav__link" for="__nav_2_2">
+        datar.dplyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.dplyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.dplyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.dplyr.funcs/" class="md-nav__link">
+        datar.dplyr.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.dplyr.verbs/" class="md-nav__link">
+        datar.dplyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        datar.stats
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.stats" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.stats
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.stats/" class="md-nav__link">
+        datar.stats
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.stats.funcs/" class="md-nav__link">
+        datar.stats.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        datar.base
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.base" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.base
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base.funcs/" class="md-nav__link">
+        datar.base.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base.verbs/" class="md-nav__link">
+        datar.base.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.base.constants/" class="md-nav__link">
+        datar.base.constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      <label class="md-nav__link" for="__nav_2_5">
+        datar.tibble
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tibble" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tibble
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tibble/" class="md-nav__link">
+        datar.tibble
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tibble.funcs/" class="md-nav__link">
+        datar.tibble.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        datar.datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.datar/" class="md-nav__link">
+        datar.datar
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.datar.verbs/" class="md-nav__link">
+        datar.datar.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+      
+      <label class="md-nav__link" for="__nav_2_7">
+        datar.tidyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tidyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_7">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tidyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tidyr/" class="md-nav__link">
+        datar.tidyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.tidyr.verbs/" class="md-nav__link">
+        datar.tidyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
+      
+      <label class="md-nav__link" for="__nav_2_8">
+        datar.utils
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.utils" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_8">
+          <span class="md-nav__icon md-icon"></span>
+          datar.utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.utils/" class="md-nav__link">
+        datar.utils
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.utils.verbs/" class="md-nav__link">
+        datar.utils.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
+      
+      <label class="md-nav__link" for="__nav_2_9">
+        datar.datasets
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datasets" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datasets
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">datar.dplyr.</span><span class="mkapi-object-name">funcs</span>
+<span id="datar.dplyr.funcs"></span><a class="mkapi-docs-link" href="../../datar.dplyr.funcs">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Functions from R-dplyr&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">from</span> <span class="nn">pandas.core.arrays.categorical</span> <span class="kn">import</span> <span class="n">Categorical</span>
+<span class="kn">from</span> <span class="nn">pandas.core.dtypes.common</span> <span class="kn">import</span> <span class="n">is_categorical_dtype</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">pandas.core.groupby.generic</span> <span class="kn">import</span> <span class="n">DataFrameGroupBy</span><span class="p">,</span> <span class="n">SeriesGroupBy</span>
+
+<span class="kn">from</span> <span class="nn">pipda</span> <span class="kn">import</span> <span class="n">register_func</span><span class="p">,</span> <span class="n">Context</span>
+
+<span class="kn">from</span> <span class="nn">..core.middlewares</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Across</span><span class="p">,</span> <span class="n">CAcross</span><span class="p">,</span> <span class="n">CurColumn</span><span class="p">,</span> <span class="n">DescSeries</span><span class="p">,</span> <span class="n">IfAll</span><span class="p">,</span> <span class="n">IfAny</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..core.types</span> <span class="kn">import</span> <span class="n">DataFrameType</span><span class="p">,</span> <span class="n">NumericType</span><span class="p">,</span> <span class="n">is_scalar</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">ColumnNotExistingError</span>
+<span class="kn">from</span> <span class="nn">..core.utils</span> <span class="kn">import</span> <span class="n">register_grouped</span><span class="p">,</span> <span class="n">filter_columns</span><span class="p">,</span> <span class="n">objectize</span><span class="p">,</span> <span class="n">list_diff</span>
+<span class="kn">from</span> <span class="nn">..base.constants</span> <span class="kn">import</span> <span class="n">NA</span>
+
+<span class="c1"># pylint: disable=redefined-outer-name</span>
+
+<span class="nd">@register_func</span><span class="p">((</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.dplyr.funcs.desc"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.desc" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.desc">DOCS</a>
+<span class="k">def</span> <span class="nf">desc</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">col</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DescSeries</span><span class="p">,</span> <span class="n">SeriesGroupBy</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Returns a DescSeries object, which can be used in arrange or other</span>
+<span class="sd">    environments that need a descending ordered series</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        col: The column</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The DescSeries object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">DescSeries</span><span class="p">(</span><span class="n">_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">DescSeries</span><span class="p">(</span><span class="n">_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.dplyr.funcs.across"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.across" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.across">DOCS</a>
+<span class="k">def</span> <span class="nf">across</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_fns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span>
+            <span class="n">Callable</span><span class="p">,</span>
+            <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span>
+            <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span>
+        <span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Across</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Apply the same transformation to multiple columns</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The dataframe</span>
+<span class="sd">        _cols: The columns</span>
+<span class="sd">        _fns: Functions to apply to each of the selected columns.</span>
+<span class="sd">        _names: A glue specification that describes how to name</span>
+<span class="sd">            the output columns. This can use `{_col}` to stand for the</span>
+<span class="sd">            selected column name, and `{_fn}` to stand for the name of</span>
+<span class="sd">            the function being applied.</span>
+<span class="sd">            The default (None) is equivalent to `{_col}` for the</span>
+<span class="sd">            single function case and `{_col}_{_fn}` for the case where</span>
+<span class="sd">            a list is used for _fns. In such a case, `{_fn}` is 1-based.</span>
+<span class="sd">            To use 1-based index, use `{_fn0}`</span>
+<span class="sd">        *args, **kwargs: Arguments for the functions</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dataframe with one column for each column in _cols and</span>
+<span class="sd">        each function in _fns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Across</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">_cols</span><span class="p">,</span> <span class="n">_fns</span><span class="p">,</span> <span class="n">_names</span><span class="p">,</span> <span class="p">(),</span> <span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.dplyr.funcs.c_across"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.c_across" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.c_across">DOCS</a>
+<span class="k">def</span> <span class="nf">c_across</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_fns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CAcross</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Apply the same transformation to multiple columns rowwisely</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The dataframe</span>
+<span class="sd">        _cols: The columns</span>
+<span class="sd">        _fns: Functions to apply to each of the selected columns.</span>
+<span class="sd">        _names: A glue specification that describes how to name</span>
+<span class="sd">            the output columns. This can use `{_col}` to stand for the</span>
+<span class="sd">            selected column name, and `{_fn}` to stand for the name of</span>
+<span class="sd">            the function being applied.</span>
+<span class="sd">            The default (None) is equivalent to `{_col}` for the</span>
+<span class="sd">            single function case and `{_col}_{_fn}` for the case where</span>
+<span class="sd">            a list is used for _fns. In such a case, `{_fn}` is 1-based.</span>
+<span class="sd">            To use 1-based index, use `{_fn0}`</span>
+<span class="sd">        *args, **kwargs: Arguments for the functions</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dataframe with one column for each column in _cols and</span>
+<span class="sd">        each function in _fns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">CAcross</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">_cols</span><span class="p">,</span> <span class="n">_fns</span><span class="p">,</span> <span class="n">_names</span><span class="p">,</span> <span class="p">(),</span> <span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.starts_with"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.starts_with" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.starts_with">DOCS</a>
+<span class="k">def</span> <span class="nf">starts_with</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">ignore_case</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="nb">vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Select columns starting with a prefix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        match: Strings. If len&gt;1, the union of the matches is taken.</span>
+<span class="sd">        ignore_case: If True, the default, ignores case when matching names.</span>
+<span class="sd">        vars: A set of variable names. If not supplied, the variables are</span>
+<span class="sd">            taken from the data columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of matched vars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">filter_columns</span><span class="p">(</span>
+        <span class="nb">vars</span> <span class="ow">or</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">,</span>
+        <span class="k">lambda</span> <span class="n">mat</span><span class="p">,</span> <span class="n">cname</span><span class="p">:</span> <span class="n">cname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">mat</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.ends_with"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.ends_with" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.ends_with">DOCS</a>
+<span class="k">def</span> <span class="nf">ends_with</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="nb">vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Select columns ending with a suffix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        match: Strings. If len&gt;1, the union of the matches is taken.</span>
+<span class="sd">        ignore_case: If True, the default, ignores case when matching names.</span>
+<span class="sd">        vars: A set of variable names. If not supplied, the variables are</span>
+<span class="sd">            taken from the data columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of matched vars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">filter_columns</span><span class="p">(</span>
+        <span class="nb">vars</span> <span class="ow">or</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">,</span>
+        <span class="k">lambda</span> <span class="n">mat</span><span class="p">,</span> <span class="n">cname</span><span class="p">:</span> <span class="n">cname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">mat</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.contains"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.contains" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.contains">DOCS</a>
+<span class="k">def</span> <span class="nf">contains</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="nb">vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Select columns containing substrings.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        match: Strings. If len&gt;1, the union of the matches is taken.</span>
+<span class="sd">        ignore_case: If True, the default, ignores case when matching names.</span>
+<span class="sd">        vars: A set of variable names. If not supplied, the variables are</span>
+<span class="sd">            taken from the data columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of matched vars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">filter_columns</span><span class="p">(</span>
+        <span class="nb">vars</span> <span class="ow">or</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">,</span>
+        <span class="k">lambda</span> <span class="n">mat</span><span class="p">,</span> <span class="n">cname</span><span class="p">:</span> <span class="n">mat</span> <span class="ow">in</span> <span class="n">cname</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.matches"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.matches" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.matches">DOCS</a>
+<span class="k">def</span> <span class="nf">matches</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="nb">vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Select columns matching regular expressions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        match: Regular expressions. If len&gt;1, the union of the matches is taken.</span>
+<span class="sd">        ignore_case: If True, the default, ignores case when matching names.</span>
+<span class="sd">        vars: A set of variable names. If not supplied, the variables are</span>
+<span class="sd">            taken from the data columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of matched vars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">filter_columns</span><span class="p">(</span>
+        <span class="nb">vars</span> <span class="ow">or</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+        <span class="n">match</span><span class="p">,</span>
+        <span class="n">ignore_case</span><span class="p">,</span>
+        <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.everything"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.everything" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.everything">DOCS</a>
+<span class="k">def</span> <span class="nf">everything</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Matches all columns.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        All column names of _data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">list_diff</span><span class="p">(</span><span class="n">_data</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.last_col"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.last_col" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.last_col">DOCS</a>
+<span class="k">def</span> <span class="nf">last_col</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="nb">vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Select last variable, possibly with an offset.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        offset: The offset from the end.</span>
+<span class="sd">            Note that this is 0-based, the same as `tidyverse`&#39;s `last_col`</span>
+<span class="sd">        vars: A set of variable names. If not supplied, the variables are</span>
+<span class="sd">            taken from the data columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The variable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">vars</span> <span class="o">=</span> <span class="nb">vars</span> <span class="ow">or</span> <span class="n">_data</span><span class="o">.</span><span class="n">columns</span>
+    <span class="k">return</span> <span class="nb">vars</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">offset</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.all_of"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.all_of" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.all_of">DOCS</a>
+<span class="k">def</span> <span class="nf">all_of</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;For strict selection.</span>
+
+<span class="sd">    If any of the variables in the character vector is missing,</span>
+<span class="sd">    an error is thrown.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        x: A set of variables to match the columns</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The matched column names</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ColumnNotExistingError: When any of the elements in `x` does not exist</span>
+<span class="sd">            in `_data` columns</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nonexists</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nonexists</span><span class="p">:</span>
+        <span class="n">nonexists</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;`</span><span class="si">{</span><span class="n">elem</span><span class="si">}</span><span class="s1">`&#39;</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">nonexists</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ColumnNotExistingError</span><span class="p">(</span>
+            <span class="s2">&quot;Can&#39;t subset columns that don&#39;t exist. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Column(s) </span><span class="si">{</span><span class="n">nonexists</span><span class="si">}</span><span class="s2"> not exist.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="nd">@register_func</span><span id="datar.dplyr.funcs.any_of"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.any_of" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.any_of">DOCS</a>
+<span class="k">def</span> <span class="nf">any_of</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+        <span class="nb">vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Select but doesn&#39;t check for missing variables.</span>
+
+<span class="sd">    It is especially useful with negative selections,</span>
+<span class="sd">    when you would like to make sure a variable is removed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        x: A set of variables to match the columns</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The matched column names</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">vars</span> <span class="o">=</span> <span class="nb">vars</span> <span class="ow">or</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">elem</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
+
+<span class="nd">@register_func</span><span class="p">((</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">))</span><span id="datar.dplyr.funcs.where"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.where" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.where">DOCS</a>
+<span class="k">def</span> <span class="nf">where</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Selects the variables for which a function returns True.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        fn: A function that returns True or False.</span>
+<span class="sd">            Currently it has to be `register_func/register_cfunction</span>
+<span class="sd">            registered function purrr-like formula not supported yet.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The matched columns</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_data</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+    <span class="n">retcols</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">pipda_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;__pipda__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pipda_type</span><span class="p">:</span>
+            <span class="n">conditions</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">_data</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">conditions</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">fn</span><span class="p">(</span><span class="n">_data</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">_calling_type</span><span class="o">=</span><span class="s1">&#39;piping&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pipda_type</span> <span class="o">==</span> <span class="s1">&#39;PlainFunction&#39;</span>
+                <span class="k">else</span> <span class="n">fn</span><span class="p">(</span>
+                    <span class="n">_data</span><span class="p">,</span>
+                    <span class="n">_data</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+                    <span class="n">_calling_type</span><span class="o">=</span><span class="s1">&#39;piping&#39;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conditions</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
+                <span class="n">retcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+            <span class="n">retcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">retcols</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.dplyr.funcs.if_any"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.if_any" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.if_any">DOCS</a>
+<span class="k">def</span> <span class="nf">if_any</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_fns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Across</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;apply the same predicate function to a selection of columns and combine</span>
+<span class="sd">    the results True if any element is True.</span>
+
+<span class="sd">    See across().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">IfAny</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">_cols</span><span class="p">,</span> <span class="n">_fns</span><span class="p">,</span> <span class="n">_names</span><span class="p">,</span> <span class="p">(),</span> <span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">SELECT</span><span class="p">)</span><span id="datar.dplyr.funcs.if_all"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.if_all" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.if_all">DOCS</a>
+<span class="k">def</span> <span class="nf">if_all</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_fns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Across</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;apply the same predicate function to a selection of columns and combine</span>
+<span class="sd">    the results True if all elements are True.</span>
+
+<span class="sd">    See across().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">IfAll</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span> <span class="n">_cols</span><span class="p">,</span> <span class="n">_fns</span><span class="p">,</span> <span class="n">_names</span><span class="p">,</span> <span class="p">(),</span> <span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_ranking</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">na_last</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">percent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Rank the data&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">ascending</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DescSeries</span><span class="p">)</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+        <span class="n">ascending</span><span class="o">=</span><span class="n">ascending</span><span class="p">,</span>
+        <span class="n">pct</span><span class="o">=</span><span class="n">percent</span><span class="p">,</span>
+        <span class="n">na_option</span><span class="o">=</span><span class="p">(</span>
+            <span class="s1">&#39;keep&#39;</span> <span class="k">if</span> <span class="n">na_last</span> <span class="o">==</span> <span class="s1">&#39;keep&#39;</span>
+            <span class="k">else</span> <span class="s1">&#39;top&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">na_last</span>
+            <span class="k">else</span> <span class="s1">&#39;bottom&#39;</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.min_rank"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.min_rank" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.min_rank">DOCS</a>
+<span class="k">def</span> <span class="nf">min_rank</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">na_last</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;keep&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Rank the data using min method&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_ranking</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">na_last</span><span class="o">=</span><span class="n">na_last</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.dense_rank"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.dense_rank" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.dense_rank">DOCS</a>
+<span class="k">def</span> <span class="nf">dense_rank</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">na_last</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;keep&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Rank the data using dense method&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_ranking</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">na_last</span><span class="o">=</span><span class="n">na_last</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;dense&#39;</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.percent_rank"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.percent_rank" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.percent_rank">DOCS</a>
+<span class="k">def</span> <span class="nf">percent_rank</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">na_last</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;keep&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Rank the data using percent_rank method&quot;&quot;&quot;</span>
+    <span class="n">ranking</span> <span class="o">=</span> <span class="n">_ranking</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">na_last</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">min_rank</span> <span class="o">=</span> <span class="n">ranking</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">max_rank</span> <span class="o">=</span> <span class="n">ranking</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">ranking</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">min_rank</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">max_rank</span><span class="o">-</span><span class="n">min_rank</span><span class="p">))</span>
+    <span class="n">ret</span><span class="p">[</span><span class="n">ranking</span><span class="o">.</span><span class="n">isna</span><span class="p">()]</span> <span class="o">=</span> <span class="n">NA</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.cume_dist"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cume_dist" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cume_dist">DOCS</a>
+<span class="k">def</span> <span class="nf">cume_dist</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">na_last</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;keep&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Rank the data using percent_rank method&quot;&quot;&quot;</span>
+    <span class="n">ranking</span> <span class="o">=</span> <span class="n">_ranking</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">na_last</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">)</span>
+    <span class="n">max_ranking</span> <span class="o">=</span> <span class="n">ranking</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">ranking</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">ranking</span><span class="o">.</span><span class="n">le</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">max_ranking</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[</span><span class="n">ranking</span><span class="o">.</span><span class="n">isna</span><span class="p">()]</span> <span class="o">=</span> <span class="n">NA</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.ntile"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.ntile" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.ntile">DOCS</a>
+<span class="k">def</span> <span class="nf">ntile</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;A rough rank, which breaks the input vector into ‘n’ buckets.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+
+
+<span class="nd">@register_func</span><span class="p">((</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.case_when"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.case_when" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.case_when">DOCS</a>
+<span class="k">def</span> <span class="nf">case_when</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">when_cases</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Series</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Vectorise multiple if_else() statements.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *when_cases: A even-size sequence, with 2n-th element values to match,</span>
+<span class="sd">            and 2(n+1)-th element the values to replace.</span>
+<span class="sd">            When matching value is True, then next value will be default to</span>
+<span class="sd">            replace</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A series with values replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">when_cases</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of arguments of case_when should be even.&#39;</span><span class="p">)</span>
+
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">NA</span><span class="p">]</span> <span class="o">*</span> <span class="n">nrow</span><span class="p">})</span>
+    <span class="n">when_cases</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">when_cases</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">when_cases</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])))</span>
+    <span class="k">for</span> <span class="n">case</span><span class="p">,</span> <span class="n">ret</span> <span class="ow">in</span> <span class="n">when_cases</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">case</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">case</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">x</span>
+
+<span class="nd">@register_func</span><span class="p">((</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrameGroupBy</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.if_else"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.if_else" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.if_else">DOCS</a>
+<span class="k">def</span> <span class="nf">if_else</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameType</span><span class="p">,</span>
+        <span class="n">condition</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">bool</span><span class="p">]],</span>
+        <span class="n">true</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">false</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">missing</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Series</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Where condition is TRUE, the matching value from true, where it&#39;s FALSE,</span>
+<span class="sd">    the matching value from false, otherwise missing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        condition: the conditions</span>
+<span class="sd">        true, false: Values to use for TRUE and FALSE values of condition.</span>
+<span class="sd">            They must be either the same length as condition, or length 1.</span>
+<span class="sd">        missing: If not None, will be used to replace missing values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A series with values replaced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">case_when</span><span class="p">(</span>
+        <span class="n">_data</span><span class="p">,</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">condition</span><span class="p">),</span> <span class="n">false</span><span class="p">,</span>
+        <span class="n">condition</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span>
+        <span class="kc">True</span><span class="p">,</span> <span class="n">missing</span>
+    <span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.n_distinct"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.n_distinct" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.n_distinct">DOCS</a>
+<span class="k">def</span> <span class="nf">n_distinct</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the length of distince elements&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">series</span><span class="p">))</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span id="datar.dplyr.funcs.n"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.n" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.n">DOCS</a>
+<span class="k">def</span> <span class="nf">n</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;gives the current group size.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span id="datar.dplyr.funcs.row_number"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.row_number" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.row_number">DOCS</a>
+<span class="k">def</span> <span class="nf">row_number</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Gives the row number, 0-based.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">cumcount</span><span class="p">()</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">DataFrameGroupBy</span><span class="p">)</span><span id="datar.dplyr.funcs.cur_group_id"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cur_group_id" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cur_group_id">DOCS</a>
+<span class="k">def</span> <span class="nf">cur_group_id</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameGroupBy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;gives a unique numeric identifier for the current group.&quot;&quot;&quot;</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">group_indexes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">group_indexes</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">_data</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">groups</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">DataFrameGroupBy</span><span class="p">)</span><span id="datar.dplyr.funcs.cur_group_rows"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cur_group_rows" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cur_group_rows">DOCS</a>
+<span class="k">def</span> <span class="nf">cur_group_rows</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameGroupBy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;gives the row indices for the current group.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_data</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">DataFrameGroupBy</span><span class="p">)</span><span id="datar.dplyr.funcs.cur_group"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cur_group" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cur_group">DOCS</a>
+<span class="k">def</span> <span class="nf">cur_group</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameGroupBy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Series</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;gives the group keys, a tibble with one row and one column for</span>
+<span class="sd">    each grouping variable.&quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">names</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">key</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">keys</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">key</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">keys</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">DataFrameGroupBy</span><span class="p">)</span><span id="datar.dplyr.funcs.cur_data"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cur_data" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cur_data">DOCS</a>
+<span class="k">def</span> <span class="nf">cur_data</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameGroupBy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;gives the current data for the current group</span>
+<span class="sd">    (excluding grouping variables).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Series</span><span class="p">(</span>
+        <span class="n">_data</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">)</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="n">DataFrameGroupBy</span><span class="p">)</span><span id="datar.dplyr.funcs.cur_data_all"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cur_data_all" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cur_data_all">DOCS</a>
+<span class="k">def</span> <span class="nf">cur_data_all</span><span class="p">(</span><span class="n">_data</span><span class="p">:</span> <span class="n">DataFrameGroupBy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;gives the current data for the current group</span>
+<span class="sd">    (including grouping variables)&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Series</span><span class="p">(</span>
+        <span class="n">_data</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">_data</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">cur_column</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">CurColumn</span><span class="p">:</span><span id="datar.dplyr.funcs.cur_column"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cur_column" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cur_column">DOCS</a>
+    <span class="sd">&quot;&quot;&quot;Used in the functions of across. So we don&#39;t have to register it.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">CurColumn</span><span class="p">()</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.cummean"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cummean" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cummean">DOCS</a>
+<span class="k">def</span> <span class="nf">cummean</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">NumericType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get cumulative means&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">skipna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Series</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)))</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.cumall"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cumall" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cumall">DOCS</a>
+<span class="k">def</span> <span class="nf">cumall</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">NumericType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get cumulative bool. All cases after first False&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">cummin</span><span class="p">(</span><span class="n">skipna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.cumany"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.cumany" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.cumany">DOCS</a>
+<span class="k">def</span> <span class="nf">cumany</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">NumericType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get cumulative bool. All cases after first True&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">cummax</span><span class="p">(</span><span class="n">skipna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.lead"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.lead" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.lead">DOCS</a>
+<span class="k">def</span> <span class="nf">lead</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">NumericType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Series</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Find next values in a vector</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        series: Vector of values</span>
+<span class="sd">        n: Positive integer of length 1, giving the number of positions to</span>
+<span class="sd">            lead or lag by</span>
+<span class="sd">        default: Value used for non-existent rows.</span>
+<span class="sd">        order_by: Override the default ordering to use another vector or column</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Lead or lag values with default values filled to series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">index</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order_by</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="n">order_by</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">order_by</span><span class="p">)</span>
+        <span class="n">order_by</span> <span class="o">=</span> <span class="n">order_by</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+            <span class="n">ascending</span><span class="o">=</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order_by</span><span class="p">,</span> <span class="n">DescSeries</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">order_by</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">default</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[:</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">n</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">order_by</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.lag"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.lag" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.lag">DOCS</a>
+<span class="k">def</span> <span class="nf">lag</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">NumericType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Series</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Find previous values in a vector</span>
+
+<span class="sd">    See lead()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">index</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order_by</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="n">order_by</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">order_by</span><span class="p">)</span>
+        <span class="n">order_by</span> <span class="o">=</span> <span class="n">order_by</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+            <span class="n">ascending</span><span class="o">=</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order_by</span><span class="p">,</span> <span class="n">DescSeries</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">order_by</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">default</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[</span><span class="n">n</span><span class="p">:]</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="o">-</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">order_by</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span id="datar.dplyr.funcs.num_range"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.num_range" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.num_range">DOCS</a>
+<span class="k">def</span> <span class="nf">num_range</span><span class="p">(</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="nb">range</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="c1"># pylint: disable=redefined-builtin</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Matches a numerical range like x01, x02, x03.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _data: The data piped in</span>
+<span class="sd">        prefix: A prefix that starts the numeric range.</span>
+<span class="sd">        range: A sequence of integers, like `range(3)` (produces `0,1,2`).</span>
+<span class="sd">        width: Optionally, the &quot;width&quot; of the numeric range.</span>
+<span class="sd">            For example, a range of 2 gives &quot;01&quot;, a range of three &quot;001&quot;, etc.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of ranges with prefix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">elem</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">width</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">width</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">range</span>
+    <span class="p">]</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.recode"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.recode" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.recode">DOCS</a>
+<span class="k">def</span> <span class="nf">recode</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">_default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_missing</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Recode a vector, replacing elements in it</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        series: A vector to modify</span>
+<span class="sd">        *args, **kwargs: replacements</span>
+<span class="sd">        _default: If supplied, all values not otherwise matched will be</span>
+<span class="sd">            given this value. If not supplied and if the replacements are</span>
+<span class="sd">            the same type as the original values in series, unmatched values</span>
+<span class="sd">            are not changed. If not supplied and if the replacements are</span>
+<span class="sd">            not compatible, unmatched values are replaced with NA.</span>
+<span class="sd">        _missing: If supplied, any missing values in .x will be replaced</span>
+<span class="sd">            by this value.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The vector with values replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwd_recodes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">kwd_recodes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwd_recodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
+
+    <span class="n">kwd_recodes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">series</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="n">series</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">series</span><span class="p">)</span> <span class="c1"># copied</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">_missing</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pandas</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">replace</span> <span class="o">=</span> <span class="n">kwd_recodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">_default</span><span class="p">)</span>
+        <span class="n">replace</span> <span class="o">=</span> <span class="n">elem</span> <span class="k">if</span> <span class="n">replace</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">replace</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">indicator</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">series</span> <span class="o">==</span> <span class="n">elem</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">indicator</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace</span>
+
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.recode_factor"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.recode_factor" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.recode_factor">DOCS</a>
+<span class="k">def</span> <span class="nf">recode_factor</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">_default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_missing</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span><span class="p">,</span>
+        <span class="n">_ordered</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Recode a factor</span>
+
+<span class="sd">    see recode().</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_categorical_dtype</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_default</span> <span class="o">=</span> <span class="n">NA</span> <span class="k">if</span> <span class="n">_default</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_default</span>
+
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">recode</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">_default</span><span class="o">=</span><span class="n">_default</span><span class="p">,</span>
+        <span class="n">_missing</span><span class="o">=</span><span class="n">_missing</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+    <span class="n">cats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pandas</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">cat</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">cat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cats</span><span class="p">:</span>
+            <span class="n">cats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cat</span><span class="p">)</span>
+
+    <span class="n">series</span> <span class="o">=</span> <span class="n">recode</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">_default</span><span class="o">=</span><span class="n">_default</span><span class="p">,</span>
+        <span class="n">_missing</span><span class="o">=</span><span class="n">_missing</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Categorical</span><span class="p">(</span>
+        <span class="n">series</span><span class="p">,</span>
+        <span class="n">categories</span><span class="o">=</span><span class="n">cats</span><span class="p">,</span>
+        <span class="n">ordered</span><span class="o">=</span><span class="n">_ordered</span>
+    <span class="p">)</span>
+
+<span class="n">recode_categorical</span> <span class="o">=</span> <span class="n">recode_factor</span> <span class="c1"># pylint: disable=invalid-name</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.coalesce"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.coalesce" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.coalesce">DOCS</a>
+<span class="k">def</span> <span class="nf">coalesce</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Replace missing values</span>
+
+<span class="sd">    https://dplyr.tidyverse.org/reference/coalesce.html</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: The vector to replace</span>
+<span class="sd">        replace: The replacement</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A vector the same length as the first argument with missing values</span>
+<span class="sd">        replaced by the first non-missing value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">replace</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+            <span class="n">replace</span> <span class="o">=</span> <span class="p">[</span><span class="n">replace</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">replace</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expect length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2"> for coalesce replacement, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">replace</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">rep</span> <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="k">else</span> <span class="n">elem</span>
+            <span class="k">for</span> <span class="n">elem</span><span class="p">,</span> <span class="n">rep</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">replace</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">replace</span> <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.na_if"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.na_if" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.na_if">DOCS</a>
+<span class="k">def</span> <span class="nf">na_if</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Convert an annoying value to NA</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Vector to modify</span>
+<span class="sd">        y: Value to replace with NA</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A vector with values replaced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">Series</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_scalar</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">x</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">NA</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+
+<span class="nd">@register_func</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.near"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.near" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.near">DOCS</a>
+<span class="k">def</span> <span class="nf">near</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Compare numbers with tolerance&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">objectize</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.nth"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.nth" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.nth">DOCS</a>
+<span class="k">def</span> <span class="nf">nth</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the nth element of x&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order_by</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">order_by</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">order_by</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.first"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.first" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.first">DOCS</a>
+<span class="k">def</span> <span class="nf">first</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the first element of x&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order_by</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">order_by</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">order_by</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+
+<span class="nd">@register_grouped</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">Context</span><span class="o">.</span><span class="n">EVAL</span><span class="p">)</span><span id="datar.dplyr.funcs.last"></span><a class="mkapi-docs-link" title="datar.dplyr.funcs.last" href="../../datar.dplyr.funcs/#datar.dplyr.funcs.last">DOCS</a>
+<span class="k">def</span> <span class="nf">last</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">NA</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the last element of x&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">order_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order_by</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">order_by</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">order_by</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+</code></pre></div>
+</div>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.5cf3e710.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

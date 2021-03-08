@@ -1,0 +1,3456 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.5">
+    
+    
+      
+        <title>datar.dplyr.verbs - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.77f3fd56.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../style.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datardplyrverbs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="datar" class="md-header__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              datar.dplyr.verbs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="datar" class="md-nav__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    datar
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      <label class="md-nav__link" for="__nav_2_1">
+        datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2_2">
+        datar.dplyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.dplyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.dplyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr.funcs/" class="md-nav__link">
+        datar.dplyr.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          datar.dplyr.verbs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        datar.dplyr.verbs
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datardplyrverbs" class="md-nav__link">
+    verbs
+  </a>
+  
+    <nav class="md-nav" aria-label="verbs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsarrange" class="md-nav__link">
+    arrange
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsmutate" class="md-nav__link">
+    mutate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbstransmutate" class="md-nav__link">
+    transmutate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrelocate" class="md-nav__link">
+    relocate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsselect" class="md-nav__link">
+    select
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrowwise" class="md-nav__link">
+    rowwise
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_by" class="md-nav__link">
+    group_by
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsungroup" class="md-nav__link">
+    ungroup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_keys" class="md-nav__link">
+    group_keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_rows" class="md-nav__link">
+    group_rows
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_vars" class="md-nav__link">
+    group_vars
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_vars_1" class="md-nav__link">
+    group_vars
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_map" class="md-nav__link">
+    group_map
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_modify" class="md-nav__link">
+    group_modify
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_walk" class="md-nav__link">
+    group_walk
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_trim" class="md-nav__link">
+    group_trim
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_split" class="md-nav__link">
+    group_split
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbswith_groups" class="md-nav__link">
+    with_groups
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssummarise" class="md-nav__link">
+    summarise
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssummarise_1" class="md-nav__link">
+    summarise
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsfilter" class="md-nav__link">
+    filter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbscount" class="md-nav__link">
+    count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbstally" class="md-nav__link">
+    tally
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsadd_count" class="md-nav__link">
+    add_count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsadd_tally" class="md-nav__link">
+    add_tally
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsdistinct" class="md-nav__link">
+    distinct
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbspull" class="md-nav__link">
+    pull
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrename" class="md-nav__link">
+    rename
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrename_with" class="md-nav__link">
+    rename_with
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice" class="md-nav__link">
+    slice
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_head" class="md-nav__link">
+    slice_head
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_tail" class="md-nav__link">
+    slice_tail
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_min" class="md-nav__link">
+    slice_min
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_max" class="md-nav__link">
+    slice_max
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_sample" class="md-nav__link">
+    slice_sample
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsbind_rows" class="md-nav__link">
+    bind_rows
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsbind_cols" class="md-nav__link">
+    bind_cols
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsintersect" class="md-nav__link">
+    intersect
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsunion" class="md-nav__link">
+    union
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssetdiff" class="md-nav__link">
+    setdiff
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsunion_all" class="md-nav__link">
+    union_all
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssetequal" class="md-nav__link">
+    setequal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsinner_join" class="md-nav__link">
+    inner_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsleft_join" class="md-nav__link">
+    left_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsright_join" class="md-nav__link">
+    right_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsfull_join" class="md-nav__link">
+    full_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsnest_join" class="md-nav__link">
+    nest_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssemi_join" class="md-nav__link">
+    semi_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsanti_join" class="md-nav__link">
+    anti_join
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        datar.stats
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.stats" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.stats
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.stats/" class="md-nav__link">
+        datar.stats
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.stats.funcs/" class="md-nav__link">
+        datar.stats.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        datar.base
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.base" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.base
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.funcs/" class="md-nav__link">
+        datar.base.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.verbs/" class="md-nav__link">
+        datar.base.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.constants/" class="md-nav__link">
+        datar.base.constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      <label class="md-nav__link" for="__nav_2_5">
+        datar.tibble
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tibble" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tibble
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tibble/" class="md-nav__link">
+        datar.tibble
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tibble.funcs/" class="md-nav__link">
+        datar.tibble.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        datar.datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datar/" class="md-nav__link">
+        datar.datar
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datar.verbs/" class="md-nav__link">
+        datar.datar.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+      
+      <label class="md-nav__link" for="__nav_2_7">
+        datar.tidyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tidyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_7">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tidyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tidyr/" class="md-nav__link">
+        datar.tidyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tidyr.verbs/" class="md-nav__link">
+        datar.tidyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
+      
+      <label class="md-nav__link" for="__nav_2_8">
+        datar.utils
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.utils" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_8">
+          <span class="md-nav__icon md-icon"></span>
+          datar.utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.utils/" class="md-nav__link">
+        datar.utils
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.utils.verbs/" class="md-nav__link">
+        datar.utils.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
+      
+      <label class="md-nav__link" for="__nav_2_9">
+        datar.datasets
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datasets" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datasets
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datardplyrverbs" class="md-nav__link">
+    verbs
+  </a>
+  
+    <nav class="md-nav" aria-label="verbs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsarrange" class="md-nav__link">
+    arrange
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsmutate" class="md-nav__link">
+    mutate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbstransmutate" class="md-nav__link">
+    transmutate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrelocate" class="md-nav__link">
+    relocate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsselect" class="md-nav__link">
+    select
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrowwise" class="md-nav__link">
+    rowwise
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_by" class="md-nav__link">
+    group_by
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsungroup" class="md-nav__link">
+    ungroup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_keys" class="md-nav__link">
+    group_keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_rows" class="md-nav__link">
+    group_rows
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_vars" class="md-nav__link">
+    group_vars
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_vars_1" class="md-nav__link">
+    group_vars
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_map" class="md-nav__link">
+    group_map
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_modify" class="md-nav__link">
+    group_modify
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_walk" class="md-nav__link">
+    group_walk
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_trim" class="md-nav__link">
+    group_trim
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsgroup_split" class="md-nav__link">
+    group_split
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbswith_groups" class="md-nav__link">
+    with_groups
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssummarise" class="md-nav__link">
+    summarise
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssummarise_1" class="md-nav__link">
+    summarise
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsfilter" class="md-nav__link">
+    filter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbscount" class="md-nav__link">
+    count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbstally" class="md-nav__link">
+    tally
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsadd_count" class="md-nav__link">
+    add_count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsadd_tally" class="md-nav__link">
+    add_tally
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsdistinct" class="md-nav__link">
+    distinct
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbspull" class="md-nav__link">
+    pull
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrename" class="md-nav__link">
+    rename
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsrename_with" class="md-nav__link">
+    rename_with
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice" class="md-nav__link">
+    slice
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_head" class="md-nav__link">
+    slice_head
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_tail" class="md-nav__link">
+    slice_tail
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_min" class="md-nav__link">
+    slice_min
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_max" class="md-nav__link">
+    slice_max
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsslice_sample" class="md-nav__link">
+    slice_sample
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsbind_rows" class="md-nav__link">
+    bind_rows
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsbind_cols" class="md-nav__link">
+    bind_cols
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsintersect" class="md-nav__link">
+    intersect
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsunion" class="md-nav__link">
+    union
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssetdiff" class="md-nav__link">
+    setdiff
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsunion_all" class="md-nav__link">
+    union_all
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssetequal" class="md-nav__link">
+    setequal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsinner_join" class="md-nav__link">
+    inner_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsleft_join" class="md-nav__link">
+    left_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsright_join" class="md-nav__link">
+    right_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsfull_join" class="md-nav__link">
+    full_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsnest_join" class="md-nav__link">
+    nest_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbssemi_join" class="md-nav__link">
+    semi_join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datardplyrverbsanti_join" class="md-nav__link">
+    anti_join
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>datar.dplyr.verbs</h1>
+                
+                <div class="mkapi-node" id="datar.dplyr.verbs">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="datardplyrverbs" class="mkapi-object-body module top"><span class="mkapi-object-prefix"><a href="../datar.dplyr/#datar.dplyr">datar.dplyr</a>.</span><span class="mkapi-object-name">verbs</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs" title="Source for datar.dplyr.verbs">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Verbs ported from R-dplyr</p></div>
+    </div>
+  <div class="mkapi-section functions">
+      <div class="mkapi-section-name functions">
+          <span class="mkapi-section-name-body functions">Functions</span> 
+        </div>
+      <div class="mkapi-section-body functions"><ul class="mkapi-items">
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.add_count">add_count</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">wt</code>, <code class="mkapi-object-signature">sort</code>, <code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">**mutates</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Equivalents to count() but use mutate() instead of summarise()<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.add_count" title="Source for datar.dplyr.verbs.add_count">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.add_tally">add_tally</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">wt</code>, <code class="mkapi-object-signature">sort</code>, <code class="mkapi-object-signature">name</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Equivalents to tally() but use mutate() instead of summarise()<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.add_tally" title="Source for datar.dplyr.verbs.add_tally">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.anti_join">anti_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns all rows from x without a match in y.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.anti_join" title="Source for datar.dplyr.verbs.anti_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.arrange">arrange</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*series</code>, <code class="mkapi-object-signature">_by_group</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">orders the rows of a data frame by the values of selected columns.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.arrange" title="Source for datar.dplyr.verbs.arrange">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.bind_cols">bind_cols</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*datas</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Bind columns of give dataframes<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.bind_cols" title="Source for datar.dplyr.verbs.bind_cols">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.bind_rows">bind_rows</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*datas</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Bind rows of give dataframes<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.bind_rows" title="Source for datar.dplyr.verbs.bind_rows">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.count">count</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">wt</code>, <code class="mkapi-object-signature">sort</code>, <code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">**mutates</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Count observations by group<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.count" title="Source for datar.dplyr.verbs.count">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.distinct">distinct</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_keep_all</code>, <code class="mkapi-object-signature">**mutates</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Select only unique/distinct rows from a data frame.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.distinct" title="Source for datar.dplyr.verbs.distinct">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.filter">filter</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">condition</code>, <code class="mkapi-object-signature">*conditions</code>, <code class="mkapi-object-signature">_preserve</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Subset a data frame, retaining all rows that satisfy your conditions<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.filter" title="Source for datar.dplyr.verbs.filter">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.full_join">full_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code>, <code class="mkapi-object-signature">suffix</code>, <code class="mkapi-object-signature">keep</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mutating joins including all rows in x or y.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.full_join" title="Source for datar.dplyr.verbs.full_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_by">group_by</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_add</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Takes an existing tbl and converts it into a grouped tbl where
+operations are performed "by group"<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_by" title="Source for datar.dplyr.verbs.group_by">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_keys">group_keys</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*cols</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the group keys as a dataframe<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_keys" title="Source for datar.dplyr.verbs.group_keys">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_map">group_map</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">func</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(list of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Map function to data in each group, returns a list<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_map" title="Source for datar.dplyr.verbs.group_map">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_modify">group_modify</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">func</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Modify data in each group with func, returns a dataframe<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_modify" title="Source for datar.dplyr.verbs.group_modify">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_rows">group_rows</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(list of str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns the rows which each group contains<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_rows" title="Source for datar.dplyr.verbs.group_rows">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_split">group_split</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*cols</code>, <code class="mkapi-object-signature">_keep</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get a list of data in each group<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_split" title="Source for datar.dplyr.verbs.group_split">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_trim">group_trim</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Trim the unused group levels<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_trim" title="Source for datar.dplyr.verbs.group_trim">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_vars">group_vars</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(list of str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">gives names of grouping variables as character vector<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_vars" title="Source for datar.dplyr.verbs.group_vars">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_vars">group_vars</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(list of str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">gives names of grouping variables as character vector<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_vars" title="Source for datar.dplyr.verbs.group_vars">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.group_walk">group_walk</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">func</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Walk along data in each groups, but don't return anything<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_walk" title="Source for datar.dplyr.verbs.group_walk">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.inner_join">inner_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code>, <code class="mkapi-object-signature">suffix</code>, <code class="mkapi-object-signature">keep</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mutating joins including all rows in x and y.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.inner_join" title="Source for datar.dplyr.verbs.inner_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.intersect">intersect</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code>, <code class="mkapi-object-signature">*datas</code>, <code class="mkapi-object-signature">on</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Intersect of two dataframes<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.intersect" title="Source for datar.dplyr.verbs.intersect">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.left_join">left_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code>, <code class="mkapi-object-signature">suffix</code>, <code class="mkapi-object-signature">keep</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mutating joins including all rows in x.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.left_join" title="Source for datar.dplyr.verbs.left_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.mutate">mutate</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_keep</code>, <code class="mkapi-object-signature">_before</code>, <code class="mkapi-object-signature">_after</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">adds new variables and preserves existing ones<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.mutate" title="Source for datar.dplyr.verbs.mutate">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.nest_join">nest_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code>, <code class="mkapi-object-signature">suffix</code>, <code class="mkapi-object-signature">keep</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns all rows and columns in x with a new nested-df column that
+contains all matches from y<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.nest_join" title="Source for datar.dplyr.verbs.nest_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.pull">pull</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">var</code>, <code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">to_list</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Pull a series from a dataframe<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.pull" title="Source for datar.dplyr.verbs.pull">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.relocate">relocate</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">column</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_before</code>, <code class="mkapi-object-signature">_after</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">change column positions<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.relocate" title="Source for datar.dplyr.verbs.relocate">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.rename">rename</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Changes the names of individual variables using new_name = old_name
+syntax<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.rename" title="Source for datar.dplyr.verbs.rename">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.rename_with">rename_with</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">_fn</code>, <code class="mkapi-object-signature">_cols</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Renames columns using a function.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.rename_with" title="Source for datar.dplyr.verbs.rename_with">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.right_join">right_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code>, <code class="mkapi-object-signature">suffix</code>, <code class="mkapi-object-signature">keep</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mutating joins including all rows in y.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.right_join" title="Source for datar.dplyr.verbs.right_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.rowwise">rowwise</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(<a href="../datar/#datar.core.middlewares.RowwiseDataFrame">RowwiseDataFrame</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Compute on a data frame a row-at-a-time<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.rowwise" title="Source for datar.dplyr.verbs.rowwise">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.select">select</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">**renamings</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Select (and optionally rename) variables in a data frame<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.select" title="Source for datar.dplyr.verbs.select">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.semi_join">semi_join</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">copy</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns all rows from x with a match in y.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.semi_join" title="Source for datar.dplyr.verbs.semi_join">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.setdiff">setdiff</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code>, <code class="mkapi-object-signature">on</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Set diff of two dataframes<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.setdiff" title="Source for datar.dplyr.verbs.setdiff">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.setequal">setequal</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if two dataframes equal<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.setequal" title="Source for datar.dplyr.verbs.setequal">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.slice">slice</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">rows</code>, <code class="mkapi-object-signature">_preserve</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Index rows by their (integer) locations<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice" title="Source for datar.dplyr.verbs.slice">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.slice_head">slice_head</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">prop</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Select first rows<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_head" title="Source for datar.dplyr.verbs.slice_head">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.slice_max">slice_max</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">order_by</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">prop</code>, <code class="mkapi-object-signature">with_ties</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">select rows with highest values of a variable.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_max" title="Source for datar.dplyr.verbs.slice_max">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.slice_min">slice_min</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">order_by</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">prop</code>, <code class="mkapi-object-signature">with_ties</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">select rows with lowest values of a variable.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_min" title="Source for datar.dplyr.verbs.slice_min">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.slice_sample">slice_sample</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">prop</code>, <code class="mkapi-object-signature">weight_by</code>, <code class="mkapi-object-signature">replace</code>, <code class="mkapi-object-signature">random_state</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Randomly selects rows.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_sample" title="Source for datar.dplyr.verbs.slice_sample">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.slice_tail">slice_tail</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">prop</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Select last rows<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_tail" title="Source for datar.dplyr.verbs.slice_tail">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.summarise">summarise</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_groups</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Summarise each group to fewer rows<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.summarise" title="Source for datar.dplyr.verbs.summarise">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.summarise">summarise</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_groups</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Summarise each group to fewer rows<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.summarise" title="Source for datar.dplyr.verbs.summarise">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.tally">tally</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">wt</code>, <code class="mkapi-object-signature">sort</code>, <code class="mkapi-object-signature">name</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A ower-level function for count that assumes you've done the grouping<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.tally" title="Source for datar.dplyr.verbs.tally">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.transmutate">transmutate</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_before</code>, <code class="mkapi-object-signature">_after</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mutate with _keep='none'<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.transmutate" title="Source for datar.dplyr.verbs.transmutate">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.ungroup">ungroup</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Ungroup a grouped dataframe<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.ungroup" title="Source for datar.dplyr.verbs.ungroup">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.union">union</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code>, <code class="mkapi-object-signature">*datas</code>, <code class="mkapi-object-signature">on</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Union of two dataframes<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.union" title="Source for datar.dplyr.verbs.union">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.union_all">union_all</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Union of all rows of two dataframes<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.union_all" title="Source for datar.dplyr.verbs.union_all">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.dplyr.verbs.with_groups">with_groups</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">_groups</code>, <code class="mkapi-object-signature">_func</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Modify the grouping variables for a single operation.<a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.with_groups" title="Source for datar.dplyr.verbs.with_groups">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.arrange">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsarrange" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">arrange</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*series</code>, <code class="mkapi-object-signature">_by_group=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.arrange" title="Source for datar.dplyr.verbs.arrange">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>orders the rows of a data frame by the values of selected columns.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame</span></li>
+
+<li><code class="mkapi-item-name">*series</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or <a href="../datar/#datar.core.middlewares.Across">Across</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Variables, or functions of variables.
+Use desc() to sort a variable in descending order.</span></li>
+
+<li><code class="mkapi-item-name">_by_group</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If TRUE, will sort first by grouping variable.
+Applies to grouped data frames only.</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name-value pairs that apply with mutate</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>An object of the same type as _data.
+The output has the following properties:
+    All rows appear in the output, but (usually) in a different place.
+    Columns are not modified.
+    Groups are not modified.
+    Data frame attributes are preserved.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.mutate">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsmutate" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">mutate</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_keep=&#39;all&#39;</code>, <code class="mkapi-object-signature">_before=None</code>, <code class="mkapi-object-signature">_after=None</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.mutate" title="Source for datar.dplyr.verbs.mutate">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>adds new variables and preserves existing ones</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame</span></li>
+
+<li><code class="mkapi-item-name">*acrosses</code>
+<span class="mkapi-item-type">(<a href="../datar/#datar.core.middlewares.Across">Across</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Values from across function</span></li>
+
+<li><code class="mkapi-item-name">_keep</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">allows you to control which columns from _data are retained
+in the output:
+- "all", the default, retains all variables.
+- "used" keeps any variables used to make new variables;
+    it's useful for checking your work as it displays inputs and
+    outputs side-by-side.
+- "unused" keeps only existing variables not used to make new
+    variables.
+- "none", only keeps grouping keys (like transmute()).</span></li>
+
+
+
+<li><code class="mkapi-item-name">**kwargs</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name-value pairs. The name gives the name of the column
+in the output. The value can be:
+- A vector of length 1, which will be recycled to the correct
+    length.
+- A vector the same length as the current group (or the whole
+    data frame if ungrouped).
+- None to remove the column</span></li>
+
+<li><code class="mkapi-item-name">_before, _after</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Optionally, control where new columns should appear
+(the default is to add to the right hand side).
+See relocate() for more details.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>An object of the same type as .data. The output has the following
+    properties:
+    - Rows are not affected.
+    - Existing columns will be preserved according to the _keep
+        argument. New columns will be placed according to the
+        _before and _after arguments. If _keep = "none"
+        (as in transmute()), the output order is determined only
+        by ..., not the order of existing columns.
+    - Columns given value None will be removed
+    - Groups will be recomputed if a grouping variable is mutated.
+    - Data frame attributes are preserved.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.transmutate">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbstransmutate" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">transmutate</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_before=None</code>, <code class="mkapi-object-signature">_after=None</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.transmutate" title="Source for datar.dplyr.verbs.transmutate">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mutate with _keep='none'</p>
+<p>See mutate().</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.relocate">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsrelocate" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">relocate</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">column</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_before=None</code>, <code class="mkapi-object-signature">_after=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.relocate" title="Source for datar.dplyr.verbs.relocate">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>change column positions</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame</span></li>
+
+
+
+
+
+<li><code class="mkapi-item-name">column, *columns</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Columns to move</span></li>
+
+<li><code class="mkapi-item-name">_before, _after</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Destination. Supplying neither will move columns to
+the left-hand side; specifying both is an error.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>An object of the same type as .data. The output has the following
+    properties:
+    - Rows are not affected.
+    - The same columns appear in the output, but (usually) in a
+        different place.
+    - Data frame attributes are preserved.
+    - Groups are not affected</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.select">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsselect" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">select</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">**renamings</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.select" title="Source for datar.dplyr.verbs.select">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Select (and optionally rename) variables in a data frame</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">*columns</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, <a href="../datar/#datar.core.middlewares.inverted">inverted</a>))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The columns to select</span></li>
+
+<li><code class="mkapi-item-name">**renamings</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The columns to rename and select in new =&gt; old column way.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe with select columns</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.rowwise">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsrowwise" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">rowwise</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.rowwise" title="Source for datar.dplyr.verbs.rowwise">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Compute on a data frame a row-at-a-time</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the dataframe is grouped, the group information will be lost</p>
+</div></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">*columns</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Variables to be preserved when calling summarise().
+This is typically a set of variables whose combination
+uniquely identify each row.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(<a href="../datar/#datar.core.middlewares.RowwiseDataFrame">RowwiseDataFrame</a>)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A row-wise data frame with class RowwiseDataFrame</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_by">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_by" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_by</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_add=False</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrameGroupBy</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_by" title="Source for datar.dplyr.verbs.group_by">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Takes an existing tbl and converts it into a grouped tbl where
+operations are performed "by group"</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">*columns</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">variables or computations to group by.</span></li>
+
+
+<li><code class="mkapi-item-name">**kwargs</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Extra variables to group the dataframe</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Return:
+    A DataFrameGroupBy object</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.ungroup">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsungroup" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">ungroup</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.ungroup" title="Source for datar.dplyr.verbs.ungroup">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Ungroup a grouped dataframe</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The grouped dataframe</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The ungrouped dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_keys">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_keys" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_keys</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*cols</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_keys" title="Source for datar.dplyr.verbs.group_keys">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the group keys as a dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_rows">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_rows" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_rows</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; list of str</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_rows" title="Source for datar.dplyr.verbs.group_rows">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns the rows which each group contains</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_vars">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_vars" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_vars</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; list of str</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_vars" title="Source for datar.dplyr.verbs.group_vars">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>gives names of grouping variables as character vector</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_vars">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_vars_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_vars</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; list of str</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_vars" title="Source for datar.dplyr.verbs.group_vars">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>gives names of grouping variables as character vector</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_map">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_map" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_map</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">func</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; list of any</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_map" title="Source for datar.dplyr.verbs.group_map">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Map function to data in each group, returns a list</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_modify">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_modify" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_modify</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">func</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_modify" title="Source for datar.dplyr.verbs.group_modify">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Modify data in each group with func, returns a dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_walk">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_walk" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_walk</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">func</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_walk" title="Source for datar.dplyr.verbs.group_walk">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Walk along data in each groups, but don't return anything</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_trim">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_trim" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_trim</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrameGroupBy</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_trim" title="Source for datar.dplyr.verbs.group_trim">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Trim the unused group levels</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.group_split">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsgroup_split" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">group_split</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*cols</code>, <code class="mkapi-object-signature">_keep=False</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrameGroupBy</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.group_split" title="Source for datar.dplyr.verbs.group_split">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get a list of data in each group</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.with_groups">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbswith_groups" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">with_groups</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">_groups</code>, <code class="mkapi-object-signature">_func</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.with_groups" title="Source for datar.dplyr.verbs.with_groups">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Modify the grouping variables for a single operation.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A data frame</span></li>
+
+<li><code class="mkapi-item-name">_groups</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, nonetype))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">columns passed by group_by
+Use None to temporarily ungroup.</span></li>
+
+<li><code class="mkapi-item-name">_func</code>
+<span class="mkapi-item-type">(callable)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Function to apply to regrouped data.</span></li>
+
+
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The new data frame with operations applied.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.summarise">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbssummarise" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">summarise</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_groups=None</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.summarise" title="Source for datar.dplyr.verbs.summarise">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Summarise each group to fewer rows</p>
+<p>See: https://dplyr.tidyverse.org/reference/summarise.html</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">_groups</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Grouping structure of the result.
+- "drop_last": dropping the last level of grouping.
+- "drop": All levels of grouping are dropped.
+- "keep": Same grouping structure as _data.
+- "rowwise": Each row is its own group.</span></li>
+
+
+<li><code class="mkapi-item-name">*acrosses, **kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name-value pairs, where value is the summarized
+data for each group</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The summary dataframe.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.summarise">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbssummarise_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">summarise</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*acrosses</code>, <code class="mkapi-object-signature">_groups=None</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.summarise" title="Source for datar.dplyr.verbs.summarise">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Summarise each group to fewer rows</p>
+<p>See: https://dplyr.tidyverse.org/reference/summarise.html</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">_groups</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Grouping structure of the result.
+- "drop_last": dropping the last level of grouping.
+- "drop": All levels of grouping are dropped.
+- "keep": Same grouping structure as _data.
+- "rowwise": Each row is its own group.</span></li>
+
+
+<li><code class="mkapi-item-name">*acrosses, **kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name-value pairs, where value is the summarized
+data for each group</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The summary dataframe.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.filter">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsfilter" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">filter</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">condition</code>, <code class="mkapi-object-signature">*conditions</code>, <code class="mkapi-object-signature">_preserve=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.filter" title="Source for datar.dplyr.verbs.filter">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Subset a data frame, retaining all rows that satisfy your conditions</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+
+<li><code class="mkapi-item-name">_preserve</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Relevant when the .data input is grouped.
+If _preserve = FALSE (the default), the grouping structure
+is recalculated based on the resulting data, otherwise
+the grouping is kept as is.</span></li>
+
+<li><code class="mkapi-item-name">condition, *conditions</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Expressions that return logical values</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The subset dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.count">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbscount" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">count</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">wt=None</code>, <code class="mkapi-object-signature">sort=False</code>, <code class="mkapi-object-signature">name=&#39;n&#39;</code>, <code class="mkapi-object-signature">**mutates</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.count" title="Source for datar.dplyr.verbs.count">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Count observations by group</p>
+<p>See: https://dplyr.tidyverse.org/reference/count.html</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+
+<li><code class="mkapi-item-name">wt</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Frequency weights. Can be None or a variable:
+If None (the default), counts the number of rows in each group.
+If a variable, computes sum(wt) for each group.</span></li>
+
+<li><code class="mkapi-item-name">sort</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If TRUE, will show the largest groups at the top.</span></li>
+
+<li><code class="mkapi-item-name">name</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The name of the new column in the output.</span></li>
+
+
+<li><code class="mkapi-item-name">*columns, **mutates</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Variables to group by</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>DataFrame object with the count column</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.tally">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbstally" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">tally</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">wt=None</code>, <code class="mkapi-object-signature">sort=False</code>, <code class="mkapi-object-signature">name=&#39;n&#39;</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.tally" title="Source for datar.dplyr.verbs.tally">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>A ower-level function for count that assumes you've done the grouping</p>
+<p>See count()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.add_count">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsadd_count" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">add_count</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">wt=None</code>, <code class="mkapi-object-signature">sort=False</code>, <code class="mkapi-object-signature">name=&#39;n&#39;</code>, <code class="mkapi-object-signature">**mutates</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame or DataFrameGroupBy</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.add_count" title="Source for datar.dplyr.verbs.add_count">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Equivalents to count() but use mutate() instead of summarise()</p>
+<p>See count().</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.add_tally">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsadd_tally" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">add_tally</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">wt=None</code>, <code class="mkapi-object-signature">sort=False</code>, <code class="mkapi-object-signature">name=&#39;n&#39;</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame or DataFrameGroupBy</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.add_tally" title="Source for datar.dplyr.verbs.add_tally">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Equivalents to tally() but use mutate() instead of summarise()</p>
+<p>See count().</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.distinct">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsdistinct" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">distinct</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*columns</code>, <code class="mkapi-object-signature">_keep_all=False</code>, <code class="mkapi-object-signature">**mutates</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.distinct" title="Source for datar.dplyr.verbs.distinct">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Select only unique/distinct rows from a data frame.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+
+<li><code class="mkapi-item-name">_keep_all</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If TRUE, keep all variables in _data</span></li>
+
+
+<li><code class="mkapi-item-name">*columns, **mutates</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Optional variables to use when determining
+uniqueness.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A dataframe without duplicated rows in _data</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.pull">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbspull" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">pull</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">var=-1</code>, <code class="mkapi-object-signature">name=None</code>, <code class="mkapi-object-signature">to_list=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.pull" title="Source for datar.dplyr.verbs.pull">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Pull a series from a dataframe</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">var</code>
+<span class="mkapi-item-type">(int or str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The column to pull</span></li>
+
+<li><code class="mkapi-item-name">name</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If specified, a zip object will be return with the name-value
+pairs. It can be a column name or a list of strs with the same
+length as the series</span></li>
+
+<li><code class="mkapi-item-name">to_list</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether return a python list or keep it numpy.ndarray.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The series data.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.rename">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsrename" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">rename</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.rename" title="Source for datar.dplyr.verbs.rename">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Changes the names of individual variables using new_name = old_name
+syntax</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new_name = old_name pairs</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe with new names</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.rename_with">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsrename_with" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">rename_with</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">_fn</code>, <code class="mkapi-object-signature">_cols=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.rename_with" title="Source for datar.dplyr.verbs.rename_with">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Renames columns using a function.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">_fn</code>
+<span class="mkapi-item-type">(callable(str: str))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The function to rename a column</span></li>
+
+<li><code class="mkapi-item-name">_cols</code>
+<span class="mkapi-item-type">(iterable of str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the columns to rename. If not specified, all columns are
+considered</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe with new names</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.slice">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsslice" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">slice</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">rows</code>, <code class="mkapi-object-signature">_preserve=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice" title="Source for datar.dplyr.verbs.slice">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Index rows by their (integer) locations</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe</span></li>
+
+<li><code class="mkapi-item-name">rows</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The indexes</span></li>
+
+<li><code class="mkapi-item-name">_preserve</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Relevant when the .data input is grouped.
+If _preserve = FALSE (the default), the grouping structure is
+recalculated based on the resulting data,
+otherwise the grouping is kept as is.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The sliced dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.slice_head">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsslice_head" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">slice_head</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">n=None</code>, <code class="mkapi-object-signature">prop=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_head" title="Source for datar.dplyr.verbs.slice_head">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Select first rows</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dataframe.</span></li>
+
+
+
+<li><code class="mkapi-item-name">n, prop</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Provide either n, the number of rows, or prop,
+the proportion of rows to select. If neither are supplied,
+n = 1 will be used.
+If n is greater than the number of rows in the group (or prop &gt; 1),
+the result will be silently truncated to the group size.
+If the proportion of a group size is not an integer,
+it is rounded down.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The sliced dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.slice_tail">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsslice_tail" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">slice_tail</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">n=1</code>, <code class="mkapi-object-signature">prop=None</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_tail" title="Source for datar.dplyr.verbs.slice_tail">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Select last rows</p>
+<p>See: <a href="./#datar.dplyr.verbs.slice">slice</a>head()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.slice_min">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsslice_min" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">slice_min</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">order_by</code>, <code class="mkapi-object-signature">n=1</code>, <code class="mkapi-object-signature">prop=None</code>, <code class="mkapi-object-signature">with_ties=True</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_min" title="Source for datar.dplyr.verbs.slice_min">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>select rows with lowest values of a variable.</p>
+<p>See <a href="./#datar.dplyr.verbs.slice">slice</a>head()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.slice_max">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsslice_max" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">slice_max</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">order_by</code>, <code class="mkapi-object-signature">n=1</code>, <code class="mkapi-object-signature">prop=None</code>, <code class="mkapi-object-signature">with_ties=True</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_max" title="Source for datar.dplyr.verbs.slice_max">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>select rows with highest values of a variable.</p>
+<p>See <a href="./#datar.dplyr.verbs.slice">slice</a>head()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.slice_sample">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsslice_sample" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">slice_sample</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">n=1</code>, <code class="mkapi-object-signature">prop=None</code>, <code class="mkapi-object-signature">weight_by=None</code>, <code class="mkapi-object-signature">replace=False</code>, <code class="mkapi-object-signature">random_state=None</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.slice_sample" title="Source for datar.dplyr.verbs.slice_sample">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Randomly selects rows.</p>
+<p>See <a href="./#datar.dplyr.verbs.slice">slice</a>head()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.bind_rows">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsbind_rows" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">bind_rows</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*datas</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.bind_rows" title="Source for datar.dplyr.verbs.bind_rows">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Bind rows of give dataframes</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">_data, *datas</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Dataframes to combine</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The combined dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.bind_cols">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsbind_cols" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">bind_cols</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">*datas</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.bind_cols" title="Source for datar.dplyr.verbs.bind_cols">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Bind columns of give dataframes</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">_data, *datas</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Dataframes to combine</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The combined dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.intersect">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsintersect" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">intersect</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code>, <code class="mkapi-object-signature">*datas</code>, <code class="mkapi-object-signature">on=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.intersect" title="Source for datar.dplyr.verbs.intersect">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Intersect of two dataframes</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+
+<li><code class="mkapi-item-name">on</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The columns to the dataframes to perform operations on</span></li>
+
+<li><code class="mkapi-item-name">_data, data2, *datas</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Dataframes to perform operations</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe of intersect of input dataframes</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.union">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsunion" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">union</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code>, <code class="mkapi-object-signature">*datas</code>, <code class="mkapi-object-signature">on=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.union" title="Source for datar.dplyr.verbs.union">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Union of two dataframes</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+
+<li><code class="mkapi-item-name">on</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The columns to the dataframes to perform operations on</span></li>
+
+<li><code class="mkapi-item-name">_data, data2, *datas</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Dataframes to perform operations</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe of union of input dataframes</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.setdiff">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbssetdiff" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">setdiff</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code>, <code class="mkapi-object-signature">on=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.setdiff" title="Source for datar.dplyr.verbs.setdiff">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Set diff of two dataframes</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">on</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The columns to the dataframes to perform operations on</span></li>
+
+<li><code class="mkapi-item-name">_data, *datas</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Dataframes to perform operations</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe of setdiff of input dataframes</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.union_all">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsunion_all" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">union_all</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.union_all" title="Source for datar.dplyr.verbs.union_all">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Union of all rows of two dataframes</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">_data, *datas</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Dataframes to perform operations</span></li>
+
+<li><code class="mkapi-item-name">on</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The columns to the dataframes to perform operations on</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The dataframe of union of all rows of input dataframes</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.setequal">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbssetequal" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">setequal</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_data</code>, <code class="mkapi-object-signature">data2</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.setequal" title="Source for datar.dplyr.verbs.setequal">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if two dataframes equal</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_data</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The first dataframe</span></li>
+
+<li><code class="mkapi-item-name">data2</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The second dataframe</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(bool)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>True if they equal else False</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.inner_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsinner_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">inner_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code>, <code class="mkapi-object-signature">suffix=(&#39;_x&#39;, &#39;_y&#39;)</code>, <code class="mkapi-object-signature">keep=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.inner_join" title="Source for datar.dplyr.verbs.inner_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mutating joins including all rows in x and y.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">by</code>
+<span class="mkapi-item-type">(Union(str, iterable of str, , nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A character vector of variables to join by.</span></li>
+
+<li><code class="mkapi-item-name">copy</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If x and y are not from the same data source, and copy is
+TRUE, then y will be copied into the same src as x.
+This allows you to join tables across srcs, but it is a
+potentially expensive operation so you must opt into it.</span></li>
+
+<li><code class="mkapi-item-name">suffix</code>
+<span class="mkapi-item-type">(iterable of str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If there are non-joined duplicate variables in x and y,
+these suffixes will be added to the output to disambiguate them.
+Should be a character vector of length 2.</span></li>
+
+<li><code class="mkapi-item-name">keep</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Should the join keys from both x and y be preserved in the output?</span></li>
+
+<li><code class="mkapi-item-name">x, y</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A pair of data frames</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The joined dataframe</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.left_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsleft_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">left_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code>, <code class="mkapi-object-signature">suffix=(&#39;_x&#39;, &#39;_y&#39;)</code>, <code class="mkapi-object-signature">keep=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.left_join" title="Source for datar.dplyr.verbs.left_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mutating joins including all rows in x.</p>
+<p>See inner_join()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.right_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsright_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">right_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code>, <code class="mkapi-object-signature">suffix=(&#39;_x&#39;, &#39;_y&#39;)</code>, <code class="mkapi-object-signature">keep=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.right_join" title="Source for datar.dplyr.verbs.right_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mutating joins including all rows in y.</p>
+<p>See inner_join()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.full_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsfull_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">full_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code>, <code class="mkapi-object-signature">suffix=(&#39;_x&#39;, &#39;_y&#39;)</code>, <code class="mkapi-object-signature">keep=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.full_join" title="Source for datar.dplyr.verbs.full_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mutating joins including all rows in x or y.</p>
+<p>See inner_join()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.nest_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsnest_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">nest_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code>, <code class="mkapi-object-signature">suffix=(&#39;_x&#39;, &#39;_y&#39;)</code>, <code class="mkapi-object-signature">keep=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.nest_join" title="Source for datar.dplyr.verbs.nest_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns all rows and columns in x with a new nested-df column that
+contains all matches from y</p>
+<p>See inner_join()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.semi_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbssemi_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">semi_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.semi_join" title="Source for datar.dplyr.verbs.semi_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns all rows from x with a match in y.</p>
+<p>See inner_join()</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.dplyr.verbs.anti_join">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datardplyrverbsanti_join" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.dplyr.verbs">datar.dplyr.verbs</a>.</code><code class="mkapi-object-name">anti_join</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">y</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">copy=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; DataFrame</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.dplyr.verbs/#datar.dplyr.verbs.anti_join" title="Source for datar.dplyr.verbs.anti_join">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns all rows from x without a match in y.</p>
+<p>See inner_join()</p></div>
+    </div>
+  </div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../datar.dplyr.funcs/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              datar.dplyr.funcs
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../datar.stats/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              datar.stats
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5cf3e710.min.js"></script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

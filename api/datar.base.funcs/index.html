@@ -1,0 +1,3179 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.5">
+    
+    
+      
+        <title>datar.base.funcs - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.77f3fd56.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../style.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datarbasefuncs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="datar" class="md-header__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              datar.base.funcs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="datar" class="md-nav__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    datar
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      <label class="md-nav__link" for="__nav_2_1">
+        datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      <label class="md-nav__link" for="__nav_2_2">
+        datar.dplyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.dplyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.dplyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr.funcs/" class="md-nav__link">
+        datar.dplyr.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr.verbs/" class="md-nav__link">
+        datar.dplyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        datar.stats
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.stats" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.stats
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.stats/" class="md-nav__link">
+        datar.stats
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.stats.funcs/" class="md-nav__link">
+        datar.stats.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" checked>
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        datar.base
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.base" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.base
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          datar.base.funcs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        datar.base.funcs
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datarbasefuncs" class="md-nav__link">
+    funcs
+  </a>
+  
+    <nav class="md-nav" aria-label="funcs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssum" class="md-nav__link">
+    sum
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsmean" class="md-nav__link">
+    mean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsmin" class="md-nav__link">
+    min
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsmax" class="md-nav__link">
+    max
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_date" class="md-nav__link">
+    as_date
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_character" class="md-nav__link">
+    as_character
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_double" class="md-nav__link">
+    as_double
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_factor" class="md-nav__link">
+    as_factor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_factor_1" class="md-nav__link">
+    as_factor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_int" class="md-nav__link">
+    as_int
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_integer" class="md-nav__link">
+    as_integer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_integer_1" class="md-nav__link">
+    as_integer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_logical" class="md-nav__link">
+    as_logical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_logical_1" class="md-nav__link">
+    as_logical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_numeric" class="md-nav__link">
+    is_numeric
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_character" class="md-nav__link">
+    is_character
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_categorical" class="md-nav__link">
+    is_categorical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_categorical_1" class="md-nav__link">
+    is_categorical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_double" class="md-nav__link">
+    is_double
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_double_1" class="md-nav__link">
+    is_double
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_na" class="md-nav__link">
+    is_na
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsc" class="md-nav__link">
+    c
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsseq_along" class="md-nav__link">
+    seq_along
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsseq_len" class="md-nav__link">
+    seq_len
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsseq" class="md-nav__link">
+    seq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsabs" class="md-nav__link">
+    abs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsceiling" class="md-nav__link">
+    ceiling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsfloor" class="md-nav__link">
+    floor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscumsum" class="md-nav__link">
+    cumsum
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscummin" class="md-nav__link">
+    cummin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscummax" class="md-nav__link">
+    cummax
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscumprod" class="md-nav__link">
+    cumprod
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscut" class="md-nav__link">
+    cut
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssample" class="md-nav__link">
+    sample
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncspmin" class="md-nav__link">
+    pmin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncspmax" class="md-nav__link">
+    pmax
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncstable" class="md-nav__link">
+    table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsround" class="md-nav__link">
+    round
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssqrt" class="md-nav__link">
+    sqrt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssin" class="md-nav__link">
+    sin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscos" class="md-nav__link">
+    cos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsdroplevels" class="md-nav__link">
+    droplevels
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsfactor" class="md-nav__link">
+    factor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsrep" class="md-nav__link">
+    rep
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscontext" class="md-nav__link">
+    context
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.verbs/" class="md-nav__link">
+        datar.base.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base.constants/" class="md-nav__link">
+        datar.base.constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      <label class="md-nav__link" for="__nav_2_5">
+        datar.tibble
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tibble" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tibble
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tibble/" class="md-nav__link">
+        datar.tibble
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tibble.funcs/" class="md-nav__link">
+        datar.tibble.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        datar.datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datar/" class="md-nav__link">
+        datar.datar
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datar.verbs/" class="md-nav__link">
+        datar.datar.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+      
+      <label class="md-nav__link" for="__nav_2_7">
+        datar.tidyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tidyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_7">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tidyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tidyr/" class="md-nav__link">
+        datar.tidyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.tidyr.verbs/" class="md-nav__link">
+        datar.tidyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
+      
+      <label class="md-nav__link" for="__nav_2_8">
+        datar.utils
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.utils" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_8">
+          <span class="md-nav__icon md-icon"></span>
+          datar.utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.utils/" class="md-nav__link">
+        datar.utils
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.utils.verbs/" class="md-nav__link">
+        datar.utils.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
+      
+      <label class="md-nav__link" for="__nav_2_9">
+        datar.datasets
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datasets" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datasets
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datarbasefuncs" class="md-nav__link">
+    funcs
+  </a>
+  
+    <nav class="md-nav" aria-label="funcs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssum" class="md-nav__link">
+    sum
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsmean" class="md-nav__link">
+    mean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsmin" class="md-nav__link">
+    min
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsmax" class="md-nav__link">
+    max
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_date" class="md-nav__link">
+    as_date
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_character" class="md-nav__link">
+    as_character
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_double" class="md-nav__link">
+    as_double
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_factor" class="md-nav__link">
+    as_factor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_factor_1" class="md-nav__link">
+    as_factor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_int" class="md-nav__link">
+    as_int
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_integer" class="md-nav__link">
+    as_integer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_integer_1" class="md-nav__link">
+    as_integer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_logical" class="md-nav__link">
+    as_logical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsas_logical_1" class="md-nav__link">
+    as_logical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_numeric" class="md-nav__link">
+    is_numeric
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_character" class="md-nav__link">
+    is_character
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_categorical" class="md-nav__link">
+    is_categorical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_categorical_1" class="md-nav__link">
+    is_categorical
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_double" class="md-nav__link">
+    is_double
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_double_1" class="md-nav__link">
+    is_double
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsis_na" class="md-nav__link">
+    is_na
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsc" class="md-nav__link">
+    c
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsseq_along" class="md-nav__link">
+    seq_along
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsseq_len" class="md-nav__link">
+    seq_len
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsseq" class="md-nav__link">
+    seq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsabs" class="md-nav__link">
+    abs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsceiling" class="md-nav__link">
+    ceiling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsfloor" class="md-nav__link">
+    floor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscumsum" class="md-nav__link">
+    cumsum
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscummin" class="md-nav__link">
+    cummin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscummax" class="md-nav__link">
+    cummax
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscumprod" class="md-nav__link">
+    cumprod
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscut" class="md-nav__link">
+    cut
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssample" class="md-nav__link">
+    sample
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncspmin" class="md-nav__link">
+    pmin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncspmax" class="md-nav__link">
+    pmax
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncstable" class="md-nav__link">
+    table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsround" class="md-nav__link">
+    round
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssqrt" class="md-nav__link">
+    sqrt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncssin" class="md-nav__link">
+    sin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscos" class="md-nav__link">
+    cos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsdroplevels" class="md-nav__link">
+    droplevels
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsfactor" class="md-nav__link">
+    factor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncsrep" class="md-nav__link">
+    rep
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarbasefuncscontext" class="md-nav__link">
+    context
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>datar.base.funcs</h1>
+                
+                <div class="mkapi-node" id="datar.base.funcs">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="datarbasefuncs" class="mkapi-object-body module top"><span class="mkapi-object-prefix"><a href="../datar.base/#datar.base">datar.base</a>.</span><span class="mkapi-object-name">funcs</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs" title="Source for datar.base.funcs">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Some functions from R-base</p>
+<p>If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
+registered by <code>register_verb</code> and should be placed in <code>./verbs.py</code></p></div>
+    </div>
+  <div class="mkapi-section functions">
+      <div class="mkapi-section-name functions">
+          <span class="mkapi-section-name-body functions">Functions</span> 
+        </div>
+      <div class="mkapi-section-body functions"><ul class="mkapi-items">
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.abs">abs</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, float, complex, number, iterable of int, float, complex, or number))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the absolute value<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.abs" title="Source for datar.base.funcs.abs">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_character">as_character</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(str, iterable of str))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into string<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_character" title="Source for datar.base.funcs.as_character">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_date">as_date</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">format</code>, <code class="mkapi-object-signature">try_formats</code>, <code class="mkapi-object-signature">optional</code>, <code class="mkapi-object-signature">tz</code>, <code class="mkapi-object-signature">origin</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(iterable of date)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object to a datetime.date object<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_date" title="Source for datar.base.funcs.as_date">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_double">as_double</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(float64, iterable of float64))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into double/float<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_double" title="Source for datar.base.funcs.as_double">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_factor">as_factor</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Categorical)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an iterable into a pandas.Categorical object<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_factor" title="Source for datar.base.funcs.as_factor">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_factor">as_factor</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Categorical)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an iterable into a pandas.Categorical object<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_factor" title="Source for datar.base.funcs.as_factor">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_int">as_int</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, iterable of int))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into int<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_int" title="Source for datar.base.funcs.as_int">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_integer">as_integer</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int64, iterable of int64))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into int64<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_integer" title="Source for datar.base.funcs.as_integer">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_integer">as_integer</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int64, iterable of int64))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into int64<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_integer" title="Source for datar.base.funcs.as_integer">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_logical">as_logical</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into bool<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_logical" title="Source for datar.base.funcs.as_logical">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.as_logical">as_logical</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Convert an object or elements of an iterable into bool<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_logical" title="Source for datar.base.funcs.as_logical">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.c">c</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*elems</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(<a href="../datar/#datar.core.middlewares.Collection">Collection</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mimic R's concatenation. Named one is not supported yet
+All elements passed in will be flattened.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.c" title="Source for datar.base.funcs.c">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.ceiling">ceiling</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, integer, iterable of int or integer))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the ceiling integer of x<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.ceiling" title="Source for datar.base.funcs.ceiling">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.context">context</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">data</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Evaluate verbs, functions in the
+possibly modifying (a copy of) the original data.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.context" title="Source for datar.base.funcs.context">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.cos">cos</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, float, complex, number, iterable of int, float, complex, or number))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the cos of a number<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cos" title="Source for datar.base.funcs.cos">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.cummax">cummax</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns a vector whose elements are the cumulative maxima of
+the elements of the argument.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cummax" title="Source for datar.base.funcs.cummax">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.cummin">cummin</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns a vector whose elements are the cumulative minima of
+the elements of the argument.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cummin" title="Source for datar.base.funcs.cummin">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.cumprod">cumprod</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns a vector whose elements are the cumulative products of
+the elements of the argument.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cumprod" title="Source for datar.base.funcs.cumprod">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.cumsum">cumsum</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns a vector whose elements are the cumulative sums of
+the elements of the argument.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cumsum" title="Source for datar.base.funcs.cumsum">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.cut">cut</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">breaks</code>, <code class="mkapi-object-signature">labels</code>, <code class="mkapi-object-signature">include_lowest</code>, <code class="mkapi-object-signature">right</code>, <code class="mkapi-object-signature">precision</code>, <code class="mkapi-object-signature">ordered_result</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Categorical)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Divides the range of x into intervals and codes the values in x
+according to which interval they fall. The leftmost interval corresponds
+to level one, the next leftmost to level two and so on.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cut" title="Source for datar.base.funcs.cut">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.droplevels">droplevels</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Categorical)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">drop unused levels from a factor<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.droplevels" title="Source for datar.base.funcs.droplevels">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.factor">factor</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">levels</code>, <code class="mkapi-object-signature">exclude</code>, <code class="mkapi-object-signature">ordered</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Categorical)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+are also used for factors).<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.factor" title="Source for datar.base.funcs.factor">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.floor">floor</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, integer, iterable of int or integer))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the floor integer of x<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.floor" title="Source for datar.base.funcs.floor">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_categorical">is_categorical</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if x is categorical data<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_categorical" title="Source for datar.base.funcs.is_categorical">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_categorical">is_categorical</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if x is categorical data<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_categorical" title="Source for datar.base.funcs.is_categorical">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_character">is_character</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mimic the is.character function in R<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_character" title="Source for datar.base.funcs.is_character">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_double">is_double</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if x is double/float data<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_double" title="Source for datar.base.funcs.is_double">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_double">is_double</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if x is double/float data<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_double" title="Source for datar.base.funcs.is_double">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_na">is_na</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if x is nan or not<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_na" title="Source for datar.base.funcs.is_na">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.is_numeric">is_numeric</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if x is numeric type<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_numeric" title="Source for datar.base.funcs.is_numeric">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.max">max</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the max of input<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.max" title="Source for datar.base.funcs.max">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.mean">mean</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the mean of input<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.mean" title="Source for datar.base.funcs.mean">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.min">min</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the min of input<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.min" title="Source for datar.base.funcs.min">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.pmax">pmax</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*series</code>, <code class="mkapi-object-signature">na_rm</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(iterable of float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the max value rowwisely<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.pmax" title="Source for datar.base.funcs.pmax">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.pmin">pmin</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*series</code>, <code class="mkapi-object-signature">na_rm</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(iterable of float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the min value rowwisely<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.pmin" title="Source for datar.base.funcs.pmin">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.rep">rep</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">times</code>, <code class="mkapi-object-signature">length</code>, <code class="mkapi-object-signature">each</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(iterable of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">replicates the values in x<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.rep" title="Source for datar.base.funcs.rep">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.round">round</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">number</code>, <code class="mkapi-object-signature">ndigits</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, float, complex, number, iterable of int, float, complex, or number))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Rounding a number<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.round" title="Source for datar.base.funcs.round">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.sample">sample</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">size</code>, <code class="mkapi-object-signature">replace</code>, <code class="mkapi-object-signature">prob</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(iterable of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Takes a sample of the specified size from the elements of x using
+either with or without replacement.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sample" title="Source for datar.base.funcs.sample">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.seq">seq</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">from_</code>, <code class="mkapi-object-signature">to</code>, <code class="mkapi-object-signature">by</code>, <code class="mkapi-object-signature">length_out</code>, <code class="mkapi-object-signature">along_with</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generate a sequence<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.seq" title="Source for datar.base.funcs.seq">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.seq_along">seq_along</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">along_with</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generate sequences along an iterable<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.seq_along" title="Source for datar.base.funcs.seq_along">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.seq_len">seq_len</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">length_out</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generate sequences with the length<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.seq_len" title="Source for datar.base.funcs.seq_len">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.sin">sin</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Union(int, float, complex, number, iterable of int, float, complex, or number))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the sin of a number<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sin" title="Source for datar.base.funcs.sin">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.sqrt">sqrt</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the square root of a number<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sqrt" title="Source for datar.base.funcs.sqrt">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.sum">sum</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the sum of input<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sum" title="Source for datar.base.funcs.sum">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.base.funcs.table">table</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">obj</code>, <code class="mkapi-object-signature">*objs</code>, <code class="mkapi-object-signature">exclude</code>, <code class="mkapi-object-signature">dnn</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(DataFrame)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">uses the cross-classifying factors to build a contingency table of
+the counts at each combination of factor levels.<a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.table" title="Source for datar.base.funcs.table">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.sum">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncssum" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">sum</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; float</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sum" title="Source for datar.base.funcs.sum">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the sum of input</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.mean">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsmean" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">mean</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; float</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.mean" title="Source for datar.base.funcs.mean">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the mean of input</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.min">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsmin" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">min</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; float</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.min" title="Source for datar.base.funcs.min">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the min of input</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.max">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsmax" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">max</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">na_rm=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; float</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.max" title="Source for datar.base.funcs.max">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the max of input</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_date">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_date" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_date</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">format=None</code>, <code class="mkapi-object-signature">try_formats=None</code>, <code class="mkapi-object-signature">optional=False</code>, <code class="mkapi-object-signature">tz=0</code>, <code class="mkapi-object-signature">origin=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_date" title="Source for datar.base.funcs.as_date">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object to a datetime.date object</p>
+<p>See: https://rdrr.io/r/base/as.Date.html</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Object that can be converted into a datetime.date object</span></li>
+
+<li><code class="mkapi-item-name">format</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If not specified, it will try try_formats one by one on
+the first non-NaN element, and give an error if none works.
+Otherwise, the processing is via strptime</span></li>
+
+<li><code class="mkapi-item-name">try_formats</code>
+<span class="mkapi-item-type">(list of str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">vector of format strings to try if format is not specified.</span></li>
+
+<li><code class="mkapi-item-name">optional</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">indicating to return NA (instead of signalling an error)
+if the format guessing does not succeed.</span></li>
+
+<li><code class="mkapi-item-name">tz</code>
+<span class="mkapi-item-type">(int, integer, or timedelta, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a time zone offset or a datetime.timedelta object.
+Note that time zone name is not supported yet.</span></li>
+
+<li><code class="mkapi-item-name">origin</code>
+<span class="mkapi-item-type">(any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a datetime.date/datetime object, or something which can be
+coerced by as_date(origin, ...) to such an object.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(iterable of date)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The datetime.date object</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_character">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_character" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_character</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_character" title="Source for datar.base.funcs.as_character">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into string</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(str, iterable of str))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(str).
+When x is iterable, convert elements of it into strings
+Otherwise, convert x to string.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_double">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_double" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_double</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_double" title="Source for datar.base.funcs.as_double">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into double/float</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(float64, iterable of float64))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(float).
+When x is iterable, convert elements of it into floats
+Otherwise, convert x to float.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_factor">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_factor" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_factor</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_factor" title="Source for datar.base.funcs.as_factor">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an iterable into a pandas.Categorical object</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(iterable of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The iterable</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Categorical)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The converted categorical object</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_factor">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_factor_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_factor</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_factor" title="Source for datar.base.funcs.as_factor">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an iterable into a pandas.Categorical object</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(iterable of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The iterable</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Categorical)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The converted categorical object</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_int">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_int" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_int</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_int" title="Source for datar.base.funcs.as_int">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into int</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(int, iterable of int))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(int).
+When x is iterable, convert elements of it into ints
+Otherwise, convert x to int.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_integer">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_integer" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_integer</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_integer" title="Source for datar.base.funcs.as_integer">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into int64</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(int64, iterable of int64))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(numpy.int64).
+When x is iterable, convert elements of it into numpy.int64s
+Otherwise, convert x to numpy.int64.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_integer">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_integer_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_integer</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_integer" title="Source for datar.base.funcs.as_integer">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into int64</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(int64, iterable of int64))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(numpy.int64).
+When x is iterable, convert elements of it into numpy.int64s
+Otherwise, convert x to numpy.int64.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_logical">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_logical" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_logical</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_logical" title="Source for datar.base.funcs.as_logical">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into bool</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(bool).
+When x is iterable, convert elements of it into bools
+Otherwise, convert x to bool.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.as_logical">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsas_logical_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">as_logical</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.as_logical" title="Source for datar.base.funcs.as_logical">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Convert an object or elements of an iterable into bool</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>When x is a numpy.ndarray or a series, return x.astype(bool).
+When x is iterable, convert elements of it into bools
+Otherwise, convert x to bool.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_numeric">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_numeric" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_numeric</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(bool, iterable of bool)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_numeric" title="Source for datar.base.funcs.is_numeric">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if x is numeric type</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_character">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_character" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_character</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_character" title="Source for datar.base.funcs.is_character">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mimic the is.character function in R</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The elements to check</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(bool, iterable of bool))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>True if</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_categorical">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_categorical" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_categorical</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; bool</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_categorical" title="Source for datar.base.funcs.is_categorical">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if x is categorical data</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_categorical">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_categorical_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_categorical</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; bool</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_categorical" title="Source for datar.base.funcs.is_categorical">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if x is categorical data</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_double">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_double" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_double</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(bool, iterable of bool)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_double" title="Source for datar.base.funcs.is_double">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if x is double/float data</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_double">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_double_1" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_double</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(bool, iterable of bool)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_double" title="Source for datar.base.funcs.is_double">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if x is double/float data</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.is_na">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsis_na" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">is_na</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(bool, iterable of bool)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.is_na" title="Source for datar.base.funcs.is_na">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Check if x is nan or not</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.c">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsc" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">c</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*elems</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.c" title="Source for datar.base.funcs.c">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Mimic R's concatenation. Named one is not supported yet
+All elements passed in will be flattened.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">*elems</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The elements</span></li>
+
+<li><code class="mkapi-item-name">_data</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The data piped in</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(<a href="../datar/#datar.core.middlewares.Collection">Collection</a>)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A collection of elements</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.seq_along">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsseq_along" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">seq_along</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">along_with</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Series, SeriesGroupBy, or ndarray</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.seq_along" title="Source for datar.base.funcs.seq_along">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Generate sequences along an iterable</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.seq_len">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsseq_len" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">seq_len</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">length_out</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Series, SeriesGroupBy, or ndarray</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.seq_len" title="Source for datar.base.funcs.seq_len">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Generate sequences with the length</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.seq">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsseq" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">seq</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">from_=None</code>, <code class="mkapi-object-signature">to=None</code>, <code class="mkapi-object-signature">by=None</code>, <code class="mkapi-object-signature">length_out=None</code>, <code class="mkapi-object-signature">along_with=None</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Series, SeriesGroupBy, or ndarray</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.seq" title="Source for datar.base.funcs.seq">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Generate a sequence</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.abs">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsabs" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">abs</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(int, float, complex, number, iterable of int, float, complex, or number)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.abs" title="Source for datar.base.funcs.abs">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the absolute value</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.ceiling">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsceiling" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">ceiling</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.ceiling" title="Source for datar.base.funcs.ceiling">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the ceiling integer of x</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(Union(int, float, complex, number, iterable of int, float, complex, or number))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The number</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(int, integer, iterable of int or integer))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The ceiling integer of x</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.floor">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsfloor" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">floor</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.floor" title="Source for datar.base.funcs.floor">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the floor integer of x</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(Union(int, float, complex, number, iterable of int, float, complex, or number))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The number</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Union(int, integer, iterable of int or integer))</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The ceiling integer of x</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.cumsum">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscumsum" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">cumsum</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cumsum" title="Source for datar.base.funcs.cumsum">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns a vector whose elements are the cumulative sums of
+the elements of the argument.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">series</code>
+<span class="mkapi-item-type">(iterable of int, float, complex, or number)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A series of numbers</span></li>
+
+<li><code class="mkapi-item-name">skipna</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether skipping NA's or not. Note that R doesn't have this
+argument.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The cumulative sums</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.cummin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscummin" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">cummin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cummin" title="Source for datar.base.funcs.cummin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns a vector whose elements are the cumulative minima of
+the elements of the argument.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">series</code>
+<span class="mkapi-item-type">(iterable of int, float, complex, or number)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A series of numbers</span></li>
+
+<li><code class="mkapi-item-name">skipna</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether skipping NA's or not. Note that R doesn't have this
+argument.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The cumulative minimas</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.cummax">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscummax" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">cummax</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cummax" title="Source for datar.base.funcs.cummax">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns a vector whose elements are the cumulative maxima of
+the elements of the argument.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">series</code>
+<span class="mkapi-item-type">(iterable of int, float, complex, or number)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A series of numbers</span></li>
+
+<li><code class="mkapi-item-name">skipna</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether skipping NA's or not. Note that R doesn't have this
+argument.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The cumulative maximas</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.cumprod">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscumprod" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">cumprod</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">series</code>, <code class="mkapi-object-signature">skipna=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cumprod" title="Source for datar.base.funcs.cumprod">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Returns a vector whose elements are the cumulative products of
+the elements of the argument.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">series</code>
+<span class="mkapi-item-type">(iterable of int, float, complex, or number)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A series of numbers</span></li>
+
+<li><code class="mkapi-item-name">skipna</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether skipping NA's or not. Note that R doesn't have this
+argument.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Series, SeriesGroupBy, or ndarray)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The cumulative products</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.cut">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscut" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">cut</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">breaks</code>, <code class="mkapi-object-signature">labels=None</code>, <code class="mkapi-object-signature">include_lowest=False</code>, <code class="mkapi-object-signature">right=True</code>, <code class="mkapi-object-signature">precision=2</code>, <code class="mkapi-object-signature">ordered_result=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cut" title="Source for datar.base.funcs.cut">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Divides the range of x into intervals and codes the values in x
+according to which interval they fall. The leftmost interval corresponds
+to level one, the next leftmost to level two and so on.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(iterable of int, float, complex, or number)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a numeric vector which is to be converted to a factor by cutting.</span></li>
+
+<li><code class="mkapi-item-name">breaks</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">either a numeric vector of two or more unique cut points or
+a single number (greater than or equal to 2) giving the number of
+intervals into which x is to be cut.</span></li>
+
+<li><code class="mkapi-item-name">labels</code>
+<span class="mkapi-item-type">(iterable of any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">labels for the levels of the resulting category. By default,
+labels are constructed using "(a,b]" interval notation.
+If labels = False, simple integer codes are returned instead
+of a factor.</span></li>
+
+<li><code class="mkapi-item-name">include_lowest</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">bool, indicating if an ‘x[i]’ equal to the lowest
+(or highest, for right = FALSE) ‘breaks’ value should be included.</span></li>
+
+<li><code class="mkapi-item-name">right</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">bool, indicating if the intervals should be closed on the right
+(and open on the left) or vice versa.</span></li>
+
+<li><code class="mkapi-item-name">precision</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">integer which is used when labels are not given. It determines
+the precision used in formatting the break numbers. Note, this
+argument is different from R's API, which is dig.lab.</span></li>
+
+<li><code class="mkapi-item-name">ordered_result</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">bool, should the result be an ordered categorical?</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Categorical)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A categorical object with the cuts</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.sample">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncssample" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">sample</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">size=None</code>, <code class="mkapi-object-signature">replace=False</code>, <code class="mkapi-object-signature">prob=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sample" title="Source for datar.base.funcs.sample">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Takes a sample of the specified size from the elements of x using
+either with or without replacement.</p>
+<p>https://rdrr.io/r/base/sample.html</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(Union(int, iterable of any))</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">either a vector of one or more elements from which to choose,
+or a positive integer.</span></li>
+
+<li><code class="mkapi-item-name">size</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a non-negative integer giving the number of items to choose.</span></li>
+
+<li><code class="mkapi-item-name">replace</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">should sampling be with replacement?</span></li>
+
+<li><code class="mkapi-item-name">prob</code>
+<span class="mkapi-item-type">(iterable of int, float, complex, or number, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a vector of probability weights for obtaining the elements of
+the vector being sampled.</span></li>
+
+<li><code class="mkapi-item-name">n</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a positive number, the number of items to choose from.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(iterable of any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A vector of length size with elements drawn from either x or from the
+integers 1:x.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.pmin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncspmin" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">pmin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*series</code>, <code class="mkapi-object-signature">na_rm=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; iterable of float</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.pmin" title="Source for datar.base.funcs.pmin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the min value rowwisely</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.pmax">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncspmax" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">pmax</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*series</code>, <code class="mkapi-object-signature">na_rm=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; iterable of float</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.pmax" title="Source for datar.base.funcs.pmax">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the max value rowwisely</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.table">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncstable" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">table</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">obj</code>, <code class="mkapi-object-signature">*objs</code>, <code class="mkapi-object-signature">exclude=nan</code>, <code class="mkapi-object-signature">dnn=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.table" title="Source for datar.base.funcs.table">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>uses the cross-classifying factors to build a contingency table of
+the counts at each combination of factor levels.</p>
+<p>When used with DataFrameGroupBy data, groups are ignored.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+
+<li><code class="mkapi-item-name">exclude</code>
+<span class="mkapi-item-type">(any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">levels to remove for all factors</span></li>
+
+<li><code class="mkapi-item-name">dnn</code>
+<span class="mkapi-item-type">(Union(str, list of str, nonetype), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the names to be given to the dimensions in the result.</span></li>
+
+<li><code class="mkapi-item-name">obj, *objs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">one or more objects which can be interpreted as factors
+Only 1 or 2 variables allowed currently.
+If obj or elements of objs is a DataFrame, each column is counted
+as a variable.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(DataFrame)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A contingency table (DataFrame)</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.round">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsround" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">round</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">number</code>, <code class="mkapi-object-signature">ndigits=0</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(int, float, complex, number, iterable of int, float, complex, or number)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.round" title="Source for datar.base.funcs.round">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Rounding a number</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.sqrt">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncssqrt" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">sqrt</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; bool</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sqrt" title="Source for datar.base.funcs.sqrt">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the square root of a number</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.sin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncssin" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">sin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(int, float, complex, number, iterable of int, float, complex, or number)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.sin" title="Source for datar.base.funcs.sin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the sin of a number</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.cos">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscos" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">cos</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Union(int, float, complex, number, iterable of int, float, complex, or number)</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.cos" title="Source for datar.base.funcs.cos">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the cos of a number</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.droplevels">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsdroplevels" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">droplevels</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.droplevels" title="Source for datar.base.funcs.droplevels">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>drop unused levels from a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(Categorical)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The categorical data</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Categorical)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The categorical data with unused categories dropped.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.factor">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsfactor" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">factor</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">levels=None</code>, <code class="mkapi-object-signature">exclude=nan</code>, <code class="mkapi-object-signature">ordered=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Categorical</span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.factor" title="Source for datar.base.funcs.factor">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+are also used for factors).</p>
+<p>If argument ordered is TRUE, the factor levels are assumed to be ordered</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(iterable of any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a vector of data</span></li>
+
+<li><code class="mkapi-item-name">levels</code>
+<span class="mkapi-item-type">(iterable of any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">an optional vector of the unique values (as character strings)
+that x might have taken.</span></li>
+
+<li><code class="mkapi-item-name">exclude</code>
+<span class="mkapi-item-type">(any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a vector of values to be excluded when forming the set of
+levels. This may be factor with the same level set as x or
+should be a character</span></li>
+
+<li><code class="mkapi-item-name">ordered</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">logical flag to determine if the levels should be regarded
+as ordered (in the order given).</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.rep">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncsrep" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">rep</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">x</code>, <code class="mkapi-object-signature">times=1</code>, <code class="mkapi-object-signature">length=None</code>, <code class="mkapi-object-signature">each=1</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.rep" title="Source for datar.base.funcs.rep">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>replicates the values in x</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">x</code>
+<span class="mkapi-item-type">(any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">a vector or scaler</span></li>
+
+<li><code class="mkapi-item-name">times</code>
+<span class="mkapi-item-type">(Union(int, iterable of int), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">number of times to repeat each element if of length len(x),
+or to repeat the whole vector if of length 1</span></li>
+
+<li><code class="mkapi-item-name">length</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">non-negative integer. The desired length of the output vector</span></li>
+
+<li><code class="mkapi-item-name">each</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">non-negative integer. Each element of x is repeated each times.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(iterable of any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A list of repeated elements in x.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.base.funcs.context">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarbasefuncscontext" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.base.funcs">datar.base.funcs</a>.</code><code class="mkapi-object-name">context</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">data</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.base.funcs/#datar.base.funcs.context" title="Source for datar.base.funcs.context">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Evaluate verbs, functions in the
+possibly modifying (a copy of) the original data.</p>
+<p>It mimic the <code>with</code> function in R, but you have to write it in a python way,
+which is using the <code>with</code> statement. And you have to use it with <code>as</code>, since
+we need the value returned by <code>__enter__</code>.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">data</code>
+<span class="mkapi-item-type">(DataFrame or DataFrameGroupBy)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The data</span></li>
+
+<li><code class="mkapi-item-name">func</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A function that is registered by
+<code>pipda.register_verb</code> or <code>pipda.register_func</code>.</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Arguments for func</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Keyword arguments for func</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The original or modified data</p></div>
+    </div>
+  </div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../datar.base/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              datar.base
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../datar.base.verbs/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              datar.base.verbs
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5cf3e710.min.js"></script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

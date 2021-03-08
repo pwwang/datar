@@ -1,0 +1,1334 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.5">
+    
+    
+      
+        <title>datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.77f3fd56.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="style.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datar" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="datar" class="md-header__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="datar" class="md-nav__button md-logo" aria-label="datar">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    datar
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        Home
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datar" class="md-nav__link">
+    datar
+  </a>
+  
+    <nav class="md-nav" aria-label="datar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installtion" class="md-nav__link">
+    Installtion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#philosophy" class="md-nav__link">
+    Philosophy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    Example usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-one-table-verbs" class="md-nav__link">
+    dplyr - One table verbs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-two-table-verbs" class="md-nav__link">
+    dplyr - Two table verbs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-grouping" class="md-nav__link">
+    dplyr - Grouping
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-vector-functions" class="md-nav__link">
+    dplyr - Vector functions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-data" class="md-nav__link">
+    dplyr - Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-experimental" class="md-nav__link">
+    dplyr - Experimental
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-pivoting" class="md-nav__link">
+    tidyr - Pivoting
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-rectangling" class="md-nav__link">
+    tidyr - Rectangling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-nesting" class="md-nav__link">
+    tidyr - Nesting
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-character-vectors" class="md-nav__link">
+    tidyr - Character vectors
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-missing-values" class="md-nav__link">
+    tidyr - Missing values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-miscellanea" class="md-nav__link">
+    tidyr - Miscellanea
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-data" class="md-nav__link">
+    tidyr - Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datar-specific-verbs-and-functions" class="md-nav__link">
+    datar - Specific verbs and functions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_1" type="checkbox" id="__nav_2_1" >
+      
+      <label class="md-nav__link" for="__nav_2_1">
+        datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      <label class="md-nav__link" for="__nav_2_2">
+        datar.dplyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.dplyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.dplyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.dplyr.funcs/" class="md-nav__link">
+        datar.dplyr.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.dplyr.verbs/" class="md-nav__link">
+        datar.dplyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        datar.stats
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.stats" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.stats
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.stats/" class="md-nav__link">
+        datar.stats
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.stats.funcs/" class="md-nav__link">
+        datar.stats.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        datar.base
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.base" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.base
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.base.funcs/" class="md-nav__link">
+        datar.base.funcs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.base.verbs/" class="md-nav__link">
+        datar.base.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.base.constants/" class="md-nav__link">
+        datar.base.constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_5" type="checkbox" id="__nav_2_5" >
+      
+      <label class="md-nav__link" for="__nav_2_5">
+        datar.tibble
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tibble" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_5">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tibble
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.tibble/" class="md-nav__link">
+        datar.tibble
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.tibble.funcs/" class="md-nav__link">
+        datar.tibble.funcs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        datar.datar
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.datar/" class="md-nav__link">
+        datar.datar
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.datar.verbs/" class="md-nav__link">
+        datar.datar.verbs
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+      
+      <label class="md-nav__link" for="__nav_2_7">
+        datar.tidyr
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.tidyr" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_7">
+          <span class="md-nav__icon md-icon"></span>
+          datar.tidyr
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.tidyr/" class="md-nav__link">
+        datar.tidyr
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.tidyr.verbs/" class="md-nav__link">
+        datar.tidyr.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
+      
+      <label class="md-nav__link" for="__nav_2_8">
+        datar.utils
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.utils" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_8">
+          <span class="md-nav__icon md-icon"></span>
+          datar.utils
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.utils/" class="md-nav__link">
+        datar.utils
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.utils.verbs/" class="md-nav__link">
+        datar.utils.verbs
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
+      
+      <label class="md-nav__link" for="__nav_2_9">
+        datar.datasets
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="datar.datasets" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
+          <span class="md-nav__icon md-icon"></span>
+          datar.datasets
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datar" class="md-nav__link">
+    datar
+  </a>
+  
+    <nav class="md-nav" aria-label="datar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installtion" class="md-nav__link">
+    Installtion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#philosophy" class="md-nav__link">
+    Philosophy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    Example usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-one-table-verbs" class="md-nav__link">
+    dplyr - One table verbs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-two-table-verbs" class="md-nav__link">
+    dplyr - Two table verbs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-grouping" class="md-nav__link">
+    dplyr - Grouping
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-vector-functions" class="md-nav__link">
+    dplyr - Vector functions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-data" class="md-nav__link">
+    dplyr - Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dplyr-experimental" class="md-nav__link">
+    dplyr - Experimental
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-pivoting" class="md-nav__link">
+    tidyr - Pivoting
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-rectangling" class="md-nav__link">
+    tidyr - Rectangling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-nesting" class="md-nav__link">
+    tidyr - Nesting
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-character-vectors" class="md-nav__link">
+    tidyr - Character vectors
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-missing-values" class="md-nav__link">
+    tidyr - Missing values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-miscellanea" class="md-nav__link">
+    tidyr - Miscellanea
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tidyr-data" class="md-nav__link">
+    tidyr - Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datar-specific-verbs-and-functions" class="md-nav__link">
+    datar - Specific verbs and functions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>Home</h1>
+                
+                <h2 id="datar">datar</h2>
+<p>Port of R data packages (<a href="https://tidyr.tidyverse.org/index.html">tidyr</a>, <a href="https://dplyr.tidyverse.org/index.html">dplyr</a>, <a href="https://tibble.tidyverse.org/index.html">tibble</a>, etc) in python, using <a href="https://github.com/pwwang/pipda">pipda</a>.</p>
+<!-- badges -->
+
+<p><a href="https://pwwang.github.io/datar/">API</a></p>
+<h3 id="installtion">Installtion</h3>
+<div class="highlight"><pre><span></span><code>pip install -U datar
+</code></pre></div>
+<h3 id="philosophy">Philosophy</h3>
+<ul>
+<li>Try to keep API consistent with <code>tidyr</code>/<code>dplyr</code></li>
+<li>Try not to change python's default behaviors (i.e, 0-based indexing)</li>
+</ul>
+<h3 id="example-usage">Example usage</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">datar</span> <span class="kn">import</span> <span class="n">f</span>
+<span class="kn">from</span> <span class="nn">datar.dplyr</span> <span class="kn">import</span> <span class="n">mutate</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">if_else</span>
+<span class="kn">from</span> <span class="nn">datar.tibble</span> <span class="kn">import</span> <span class="n">tibble</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">tibble</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;zero&#39;</span><span class="p">,</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;three&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">df</span> <span class="o">&gt;&gt;</span> <span class="n">mutate</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;# output</span>
+<span class="sd">   x      y  z</span>
+<span class="sd">0  0   zero  0</span>
+<span class="sd">1  1    one  1</span>
+<span class="sd">2  2    two  2</span>
+<span class="sd">3  3  three  3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">df</span> <span class="o">&gt;&gt;</span> <span class="n">mutate</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="n">if_else</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;# output:</span>
+<span class="sd">   x      y  z</span>
+<span class="sd">0  0   zero  0</span>
+<span class="sd">1  1    one  0</span>
+<span class="sd">2  2    two  1</span>
+<span class="sd">3  3  three  1</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">df</span> <span class="o">&gt;&gt;</span> <span class="nb">filter</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;# output:</span>
+<span class="sd">   x      y</span>
+<span class="sd">2  2    two</span>
+<span class="sd">3  3  three</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">df</span> <span class="o">&gt;&gt;</span> <span class="n">mutate</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="n">if_else</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;&gt;</span> <span class="nb">filter</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">z</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;# output:</span>
+<span class="sd">   x      y  z</span>
+<span class="sd">2  2    two  1</span>
+<span class="sd">3  3  three  1</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># works with plotnine</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">datar.base</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="n">ggplot</span><span class="p">,</span> <span class="n">aes</span><span class="p">,</span> <span class="n">geom_line</span><span class="p">,</span> <span class="n">theme_classic</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">tibble</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
+<span class="p">(</span>
+    <span class="n">df</span> <span class="o">&gt;&gt;</span>
+        <span class="n">mutate</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">sin</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">sign</span><span class="o">=</span><span class="n">if_else</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;negative&quot;</span><span class="p">))</span> <span class="o">&gt;&gt;</span>
+        <span class="n">ggplot</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="n">theme_classic</span><span class="p">()</span>
+<span class="p">)</span> <span class="o">+</span> <span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;sign&#39;</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="example" src="./example.png" /></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># very easy to integrate with other libraries</span>
+<span class="c1"># for example: klib</span>
+<span class="kn">import</span> <span class="nn">klib</span>
+<span class="kn">from</span> <span class="nn">pipda</span> <span class="kn">import</span> <span class="n">register_verb</span>
+<span class="kn">from</span> <span class="nn">datar.datasets</span> <span class="kn">import</span> <span class="n">iris</span>
+<span class="kn">from</span> <span class="nn">datar.dplyr</span> <span class="kn">import</span> <span class="n">pull</span>
+
+<span class="n">dist_plot</span> <span class="o">=</span> <span class="n">register_verb</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">klib</span><span class="o">.</span><span class="n">dist_plot</span><span class="p">)</span>
+<span class="n">iris</span> <span class="o">&gt;&gt;</span> <span class="n">pull</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">Sepal_Length</span><span class="p">,</span> <span class="n">to_list</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">dist_plot</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="example" src="./example2.png" /></p>
+<h3 id="examples">Examples</h3>
+<p>To compare with <code>dplyr</code>'s and <code>tidyr</code>'s APIs, see:</p>
+<ul>
+<li>https://dplyr.tidyverse.org/reference/index.html and</li>
+<li>https://tidyr.tidyverse.org/reference/index.html</li>
+</ul>
+<h4 id="dplyr-one-table-verbs">dplyr - One table verbs</h4>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Farrange.ipynb"><code>arrange()</code></a>: Arrange rows by column values</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fcount.ipynb"><code>count()</code>, <code>tally()</code>, <code>add_count()</code>, <code>add_tally()</code></a>: Count observations by group</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fdistinct.ipynb"><code>distinct()</code></a>: Subset distinct/unique rows</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffilter.ipynb"><code>filter()</code></a>: Subset rows using column values</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fmutate.ipynb"><code>mutate()</code>, <code>transmute()</code></a>: Create, modify, and delete columns</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpull.ipynb"><code>pull()</code></a>: Extract a single column</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Frelocate.ipynb"><code>relocate()</code></a>: Change column order</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Frename.ipynb"><code>rename()</code>, <code>rename_with()</code></a>: Rename columns</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fselect.ipynb"><code>select()</code></a>: Subset columns using their names and types</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fsummarise.ipynb"><code>summarise()</code>, <code>summarize()</code></a>: Summarise each group to fewer rows</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fslice.ipynb"><code>slice()</code>, <code>slice_head()</code>, <code>slice_tail()</code>, <code>slice_min()</code>, <code>slice_max()</code>, <code>slice_sample()</code></a>: Subset rows using their positions (TODO: implement groupby-aware <code>slice</code>)</li>
+</ul>
+<h4 id="dplyr-two-table-verbs">dplyr - Two table verbs</h4>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fbind.ipynb"><code>bind_rows()</code>, <code>bind_cols()</code></a>: Efficiently bind multiple data frames by row and column</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fmutate-joins.ipynb"><code>inner_join()</code>, <code>left_join()</code>, <code>right_join()</code>, <code>full_join()</code></a>: Mutating joins</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fnest_join.ipynb"><code>nest_join()</code></a>: Nest join (TODO: check API consistency)</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffilter-joins.ipynb"><code>semi_join()</code>, <code>anti_join()</code></a>: Filtering joins (TODO: warning when <code>by</code> is not specified)</li>
+</ul>
+<h4 id="dplyr-grouping">dplyr - Grouping</h4>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fgroup_by"><code>group_by()</code></a> <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fgroup_by"><code>ungroup()</code></a>: Group by one or more variables</li>
+<li>[x] <code>group_cols()</code>: Select grouping variables</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Frowwise"><code>rowwise()</code></a>: Group input by rows</li>
+</ul>
+<h4 id="dplyr-vector-functions">dplyr - Vector functions</h4>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Facross.ipynb"><code>across()</code>, <code>c_across()</code></a>: Apply a function (or a set of functions) to a set of columns</li>
+<li>[x] <code>between()</code>: No need, use <code>a &lt; x &lt; b</code> in python instead</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fcase_when.ipynb"><code>case_when()</code></a>: A general vectorised if</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fcoalesce.ipynb"><code>coalesce()</code></a>: Find first non-missing element</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fcumall.ipynb"><code>cumall()</code>, <code>cumany()</code>, <code>cummean()</code></a>: Cumulativate versions of any, all, and mean</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fdesc.ipynb"><code>desc()</code></a>: Descending order</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fif_else.ipynb"><code>if_else()</code></a>: Vectorised if</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Flead-lag.ipynb"><code>lag()</code>, <code>lead()</code></a>: Compute lagged or leading values</li>
+<li>[x] <code>order_by()</code>: A helper function for ordering window function output (will not be implemented). The behavior is implemented in the functions themselves (i.e, <code>lead</code> and <code>lag</code>).</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fcontext.ipynb"><code>n()</code>, <code>cur_data()</code>, <code>cur_data_all()</code>, <code>cur_group()</code>, <code>cur_group_id()</code>, <code>cur_group_rows()</code>, <code>cur_column()</code></a>: Context dependent expressions</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fn_distinct.ipynb"><code>n_distinct()</code></a>: Efficiently count the number of unique values in a set of vector</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fna_if.ipynb"><code>na_if()</code></a>: Convert values to NA</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fnear.ipynb"><code>near()</code></a>: Compare two numeric vectors</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fnth.ipynb"><code>nth()</code>, <code>first()</code>, <code>last()</code></a>: Extract the first, last or nth value from a vector</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Franking.ipynb"><code>row_number()</code>, <code>ntile()</code>, <code>min_rank()</code>, <code>dense_rank()</code>, <code>percent_rank()</code>, <code>cume_dist()</code></a>: Windowed rank functions.</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Frecode.ipynb"><code>recode()</code>, <code>recode_factor()</code></a>: Recode values</li>
+</ul>
+<h4 id="dplyr-data">dplyr - Data</h4>
+<ul>
+<li>[x] <code>band_members</code>, <code>band_instruments</code>, <code>band_instruments2</code>: Band membership</li>
+<li>[x] <code>starwars</code>: Starwars characters</li>
+<li>[x] <code>storms</code>: Storm tracks data</li>
+</ul>
+<h4 id="dplyr-experimental">dplyr - Experimental</h4>
+<p>Experimental functions in dplyr.</p>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fgroup_map.ipynb"><code>group_map()</code>, <code>group_modify()</code>, <code>group_walk()</code></a>: Apply a function to each group</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fgroup_trim.ipynb"><code>group_trim()</code></a>: Trim grouping structure</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fgroup_split.ipynb"><code>group_split()</code></a>: Split data frame by groups</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fwith_groups.ipynb"><code>with_groups()</code></a>: Perform an operation with temporary groups</li>
+</ul>
+<h4 id="tidyr-pivoting">tidyr - Pivoting</h4>
+<p><strong>Pivoting</strong> changes the representation of a rectangular dataset, without changing the data inside of it.</p>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpivot_longer.ipynb"><code>pivot_longer()</code></a>: Pivot data from wide to long</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpivot_wider.ipynb"><code>pivot_wider()</code></a>: Pivot data from long to wide</li>
+</ul>
+<h4 id="tidyr-rectangling">tidyr - Rectangling</h4>
+<p><strong>Rectangling</strong> turns deeply nested lists into tidy tibbles.</p>
+<ul>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/unnest_auto.ipynb"><code>hoist()</code>, <code>unnest_longer()</code>, <code>unnest_wider()</code>, <code>unnest_auto()</code></a>: Rectangle a nested list into a tidy tibble</li>
+</ul>
+<h4 id="tidyr-nesting">tidyr - Nesting</h4>
+<p><strong>Nesting</strong> uses alternative representation of grouped data where a group becomes a single row containing a nested data frame.</p>
+<ul>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/unnest.ipynb"><code>nest()</code>, <code>unnest()</code></a>: Nest and unnest</li>
+</ul>
+<h4 id="tidyr-character-vectors">tidyr - Character vectors</h4>
+<p>Multiple variables are sometimes pasted together into a single column, and these tools help you separate back out into individual columns.</p>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fextract.ipynb"><code>extract()</code></a>: Extract a character column into multiple columns using regular expression groups</li>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/separate.ipynb"><code>separate()</code></a>: Separate a character column into multiple columns with a regular expression or numeric locations</li>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/separate_rows.ipynb"><code>separate_rows()</code></a>: Separate a collapsed column into multiple rows</li>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/unite.ipynb"><code>unite()</code></a>: Unite multiple columns into one by pasting strings together</li>
+</ul>
+<h4 id="tidyr-missing-values">tidyr - Missing values</h4>
+<p>Tools for converting between implicit (absent rows) and explicit (<code>NA</code>) missing values, and for handling explicit <code>NA</code>s.</p>
+<ul>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/complete.ipynb"><code>complete()</code></a>: Complete a data frame with missing combinations of data</li>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/drop_na.ipynb"><code>drop_na()</code></a>: Drop rows containing missing values</li>
+<li>[ ] <a href="htts://pwwang.github.io/datar/reference/nesting.ipynb"><code>expand()</code>, <code>crossing()</code>, <code>nesting()</code></a>: Expand data frame to include all possible combinations of values</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fexpand_grid.ipynb"><code>expand_grid()</code></a>: Create a tibble from all combinations of inputs</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffill.ipynb"><code>fill()</code></a>: Fill in missing values with previous or next value</li>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Freplace_na.ipynb"><code>replace_na()</code></a>: Replace NAs with specified values</li>
+</ul>
+<h4 id="tidyr-miscellanea">tidyr - Miscellanea</h4>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Funcount.ipynb"><code>uncount()</code></a>: "Uncount" a data frame</li>
+</ul>
+<h4 id="tidyr-data">tidyr - Data</h4>
+<ul>
+<li>[x] <code>billboard</code>: Song rankings for billboard top 100 in the year 2000</li>
+<li>[x] <code>construction</code>: Completed construction in the US in 2018</li>
+<li>[x] <code>fish_encounters</code>: Fish encounters</li>
+<li>[x] <code>relig_income</code>: Pew religion and income survey</li>
+<li>[x] <code>smiths</code>: Some data about the Smith family</li>
+<li>[x] <code>table1</code>, <code>table3</code>, <code>table4a</code>, <code>table4b</code>, <code>table5</code>: Example tabular representations</li>
+<li>[x] <code>us_rent_income</code>: US rent and income data</li>
+<li>[x] <code>who</code>, <code>population</code>: World Health Organization TB data</li>
+<li>[x] <code>world_bank_pop</code>: Population data from the world bank</li>
+</ul>
+<h4 id="datar-specific-verbs-and-functions">datar - Specific verbs and functions</h4>
+<ul>
+<li>[x] <a href="https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fget.ipynb"><code>get</code></a>: Get an element, or a subset of a dataframe.</li>
+<li>[x] <code>flatten</code>: Flatten the whole dataframe into an array/list.</li>
+</ul>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+      
+        <a href="api/datar/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              datar
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.5cf3e710.min.js"></script>
+      
+        <script src="js/mkapi.js"></script>
+      
+    
+  </body>
+</html>
