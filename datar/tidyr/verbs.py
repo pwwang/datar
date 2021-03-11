@@ -561,3 +561,53 @@ def separate( # pylint: disable=too-many-branches
     return _data.apply(
         lambda df: separate(df, col, into, sep, remove, convert, extra, fill)
     ).groupby(grouper, dropna=False)
+
+
+@register_verb(DataFrame, context=Context.SELECT)
+def separate_rows(
+        _data: DataFrame,
+        *columns: str,
+        sep: str = r'[^\w]+',
+        convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False,
+) -> DataFrame:
+    """Separates the values and places each one in its own row.
+
+    Args:
+        _data: The dataframe
+        *columns: The columns to separate on
+        sep: Separator between columns.
+        convert: The universal type for the extracted columns or a dict for
+            individual ones
+
+    Returns:
+        Dataframe with rows separated and repeated.
+    """
+    all_columns = _data.columns.tolist()
+    selected = select_columns(all_columns, *columns)
+
+    weights = []
+    repeated = []
+    for row in _data[selected].iterrows():
+        row = row[1]
+        weights.append(None)
+        rdata = []
+        for col in selected:
+            splits = re.split(sep, row[col])
+            if weights[-1] and weights[-1] != len(splits):
+                raise ValueError(
+                    f'Error: Incompatible lengths: {weights[-1]}, '
+                    f'{len(splits)}.'
+                )
+            weights[-1] = len(splits)
+            rdata.append(splits)
+        repeated.extend(zip(*rdata))
+
+    ret = uncount(_data, weights)
+    ret[selected] = repeated
+
+    if isinstance(convert, (str, Type)):
+        ret.astype(convert)
+    elif isinstance(convert, dict):
+        for key, conv in convert.items():
+            ret[key] = ret[key].astype(conv)
+    return ret
