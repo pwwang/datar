@@ -1,4 +1,5 @@
 """Verbs from R-tidyr"""
+import re
 import itertools
 from functools import singledispatch
 from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
@@ -10,7 +11,7 @@ from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
 from pipda import register_verb, Context
 
-from ..core.utils import objectize, select_columns, list_diff
+from ..core.utils import objectize, select_columns, list_diff, logger
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
     is_scalar
@@ -443,7 +444,7 @@ def extract(
             extracted.astype(convert)
         elif isinstance(convert, dict):
             for key, conv in convert.items():
-                extracted[key] = extracted[extracted].astype(conv)
+                extracted[key] = extracted[key].astype(conv)
         if remove:
             _data = _data[_data.columns.difference([col])]
 
@@ -452,4 +453,111 @@ def extract(
     grouper = _data.grouper
     return _data.apply(
         lambda df: extract(df, col, into, regex, remove, convert)
+    ).groupby(grouper, dropna=False)
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def separate( # pylint: disable=too-many-branches
+        _data: DataFrameType,
+        col: str,
+        into: StringOrIter,
+        sep: Union[int, str] = r'[^\w]+',
+        remove: bool = True,
+        convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False,
+        extra: str = "warn",
+        fill: str = "warn" # pylint: disable=redefined-outer-name
+) -> DataFrameType: # pylint: disable=too-many-nested-blocks
+    """Given either a regular expression or a vector of character positions,
+    turns a single character column into multiple columns.
+
+    Args:
+        _data: The dataframe
+        col: Column name or position.
+        into: Names of new variables to create as character vector.
+            Use None to omit the variable in the output.
+        sep: Separator between columns.
+            TODO: support index split (sep is an integer)
+        remove: If TRUE, remove input column from output data frame.
+        convert: The universal type for the extracted columns or a dict for
+            individual ones
+        extra: If sep is a character vector, this controls what happens when
+            there are too many pieces. There are three valid options:
+            - "warn" (the default): emit a warning and drop extra values.
+            - "drop": drop any extra values without a warning.
+            - "merge": only splits at most length(into) times
+        fill: If sep is a character vector, this controls what happens when
+            there are not enough pieces. There are three valid options:
+            - "warn" (the default): emit a warning and fill from the right
+            - "right": fill with missing values on the right
+            - "left": fill with missing values on the left
+
+    Returns:
+        Dataframe with separated columns.
+    """
+    if isinstance(_data, DataFrame):
+        if is_scalar(into):
+            into = [into]
+        colindex = [
+            i for i, outcol in enumerate(into)
+            if outcol not in (None, NA)
+        ]
+        non_na_elems = lambda row: [row[i] for i in colindex]
+        # series.str.split can do extra and fill
+        # extracted = _data[col].str.split(sep, expand=True).iloc[:, colindex]
+        nout = len(into)
+        outdata = []
+        extra_warns = []
+        missing_warns = []
+        for i, elem in enumerate(_data[col]):
+            if elem in (NA, None):
+                row = [NA] * nout
+            else:
+                row = re.split(sep, str(elem), nout - 1)
+                if len(row) < nout:
+                    if fill == 'warn':
+                        missing_warns.append(i)
+                    if fill in ('warn', 'right'):
+                        row += [NA] * (nout - len(row))
+                    else:
+                        row = [NA] * (nout - len(row)) + row
+                else:
+                    more_splits = re.split(sep, row[-1], 1)
+                    if len(more_splits) > 1:
+                        if extra == 'warn':
+                            extra_warns.append(i)
+                        if extra in ('warn', 'drop'):
+                            row[-1] = more_splits[0]
+
+            outdata.append(non_na_elems(row))
+
+        if extra_warns:
+            logger.warning(
+                'Expected %s pieces. '
+                'Additional pieces discarded in %s rows %s.',
+                nout,
+                len(extra_warns),
+                extra_warns
+            )
+        if missing_warns:
+            logger.warning(
+                'Expected %s pieces. '
+                'Missing pieces filled with `NA` in %s rows %s.',
+                nout,
+                len(missing_warns),
+                missing_warns
+            )
+        separated = DataFrame(outdata, columns=non_na_elems(into))
+
+        if isinstance(convert, (str, Type)):
+            separated.astype(convert)
+        elif isinstance(convert, dict):
+            for key, conv in convert.items():
+                separated[key] = separated[key].astype(conv)
+        if remove:
+            _data = _data[_data.columns.difference([col])]
+
+        return pandas.concat([_data, separated], axis=1)
+
+    grouper = _data.grouper
+    return _data.apply(
+        lambda df: separate(df, col, into, sep, remove, convert, extra, fill)
     ).groupby(grouper, dropna=False)

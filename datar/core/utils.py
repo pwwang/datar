@@ -1,5 +1,7 @@
+"""Core utilities"""
 import sys
 import inspect
+import logging
 from functools import singledispatch, wraps
 from typing import Any, Callable, Iterable, List, Optional, Union
 
@@ -14,10 +16,17 @@ from pipda.symbolic import DirectRefAttr
 from pipda.utils import evaluate_args, evaluate_expr, evaluate_kwargs
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
+from .types import is_scalar
 
-IterableLiterals = (list, tuple, set, Iterable)
-NumericType = Union[int, float]
-NA = numpy.nan
+# logger
+logger = logging.getLogger('datar') # pylint: disable=invalid-name
+stream_handler = logging.StreamHandler() # pylint: disable=invalid-name
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(logging.Formatter(
+    '[%(asctime)s][%(name)s][%(levelname)7s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+))
+logger.addHandler(stream_handler)
 
 def list_diff(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
     """Get the difference between two lists and keep the order
@@ -82,10 +91,7 @@ def expand_collections(collections: Any) -> List[Any]:
     Returns:
         The flattened list
     """
-    if (
-            isinstance(collections, str) or
-            not isinstance(collections, IterableLiterals)
-    ):
+    if is_scalar(collections):
         return [collections]
     ret = []
     for collection in collections:
@@ -277,7 +283,7 @@ def align_value(
 ) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
-    if isinstance(value, str) or not isinstance(value, IterableLiterals):
+    if is_scalar(value):
         return value
 
     if isinstance(data, DataFrameGroupBy):

@@ -2,5 +2,5 @@
 
 from .verbs import (
     pivot_longer, pivot_wider, uncount, replace_na, fill,
-    expand_grid, extract
+    expand_grid, extract, separate
 )
