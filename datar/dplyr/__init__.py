@@ -19,5 +19,5 @@ from .funcs import (
     if_else, n_distinct, n, row_number, cur_group_id, cur_group_rows,
     cur_group, cur_data, cur_data_all, cur_column, cummean, cumall,
     cumany, lead, lag, num_range, recode, recode_factor, recode_categorical,
-    coalesce, na_if, near, nth, first, last
+    coalesce, na_if, near, nth, first, last, between
 )

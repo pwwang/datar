@@ -19,7 +19,7 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, objectize, register_grouped
+from ..core.utils import categorize, objectize
 from ..core.middlewares import Collection, ContextWithData
 from ..core.types import (
     BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
@@ -105,22 +105,22 @@ def _(
         "character string is not in a standard unambiguous format"
     )
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def sum(series: Iterable[Any], na_rm: bool = False) -> float:
     """Get the sum of input"""
     return numpy.nansum(series) if na_rm else numpy.sum(series)
 
-@register_grouped(context=Context.EVAL)
-def mean(series: Iterable[Any], na_rm: bool = False) -> float:
+@register_func(None, context=Context.EVAL)
+def mean(series: Iterable[NumericType], na_rm: bool = False) -> NumericType:
     """Get the mean of input"""
     return numpy.nanmean(series) if na_rm else numpy.mean(series)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def min(series: Iterable[Any], na_rm: bool = False) -> float:
     """Get the min of input"""
     return numpy.nanmin(series) if na_rm else numpy.min(series)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def max(series: Iterable[Any], na_rm: bool = False) -> float:
     """Get the max of input"""
     return numpy.nanmax(series) if na_rm else numpy.max(series)
@@ -446,7 +446,7 @@ def floor(x: NumericOrIter) -> IntOrIter:
         return math.floor(x)
     return list(map(math.floor, x))
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cumsum(
         series: Iterable[NumericType],
         skipna: bool = False
@@ -466,7 +466,7 @@ def cumsum(
         series = Series(series)
     return series.cumsum(skipna=skipna)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cummin(
         series: Iterable[NumericType],
         skipna: bool = False
@@ -486,7 +486,7 @@ def cummin(
         series = Series(series)
     return series.cummin(skipna=skipna)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cummax(
         series: Iterable[NumericType],
         skipna: bool = False
@@ -506,7 +506,7 @@ def cummax(
         series = Series(series)
     return series.cummax(skipna=skipna)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cumprod(
         series: Iterable[NumericType],
         skipna: bool = False
@@ -526,7 +526,7 @@ def cumprod(
         series = Series(series)
     return series.cumprod(skipna=skipna)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cut(
         x: Iterable[NumericType],
         breaks: Any,
@@ -574,7 +574,7 @@ def cut(
         ordered=ordered_result
     )
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def sample(
         x: Union[int, Iterable[Any]],
         size: Optional[int] = None,
@@ -623,7 +623,7 @@ def pmax(
     series = (objectize(ser) for ser in series)
     return [max(elem, na_rm=na_rm) for elem in zip(*series)]
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def table(
         obj: Any,
         *objs: Any,

@@ -1,4 +1,5 @@
 """Specific verbs from this package"""
+from datar.core.middlewares import RowwiseDataFrame
 import sys
 from typing import Any, List, Union
 
@@ -6,13 +7,13 @@ from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
 from pipda import register_verb, Context, evaluate_expr
 
-from ..core.utils import objectize
+from ..core.utils import objectize, logger
 from ..core.types import DataFrameType
 from ..dplyr import select, slice # pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def get(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         rows: Any = None,
         cols: Any = None
 ) -> Any:
@@ -95,3 +96,30 @@ def debug(
             print_msg(val)
             print_msg("## Evaluated")
             print_msg(evaluate_expr(val, _data, context))
+
+@register_verb(DataFrame)
+def showme(_data: DataFrame) -> DataFrame:
+    """Let jupyter notebook show the (grouped) dataframe"""
+    return _data
+
+@showme.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy) -> DataFrame:
+    """Show the groups for grouped dataframe
+    pandas only just shows repr.
+    """
+    logger.info(
+        '# [DataFrameGroupBy] Groups: %s (%s)',
+        _data.grouper.names,
+        _data.grouper.ngroups
+    )
+    return _data.obj
+
+@showme.register(RowwiseDataFrame)
+def _(_data: RowwiseDataFrame) -> DataFrame:
+    """Show the groups for rowwise dataframe
+    """
+    logger.info(
+        '# [RowwiseDataFrame] Rowwise: %s',
+        _data.flags.rowwise,
+    )
+    return _data.obj

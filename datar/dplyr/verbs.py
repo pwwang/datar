@@ -20,18 +20,18 @@ from ..core.contexts import ContextEvalWithUsedRefs, ContextSelectSlice
 from ..core.exceptions import ColumnNameInvalidError
 from ..core.utils import (
     align_value, copy_df, df_assign_item, expand_slice, get_n_from_prop,
-    list_diff, list_intersect, list_union,
-    objectize, select_columns, to_df
+    group_df, groupby_apply, list_diff, list_intersect, list_union,
+    objectize, select_columns, to_df, logger
 )
 
 # pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def arrange(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *series: Union[Series, SeriesGroupBy, Across],
         _by_group: bool = False
-) -> Union[DataFrame, DataFrameGroupBy]:
+) -> DataFrameType:
     """orders the rows of a data frame by the values of selected columns.
 
     Args:
@@ -86,12 +86,12 @@ def arrange(
     data = data.loc[sorting_df.index, :]
 
     if isinstance(_data, DataFrameGroupBy):
-        return data.groupby(_data.grouper.names, dropna=False)
+        return group_df(data, _data.grouper)
 
     return data
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=None)
+@register_verb(DataFrame, context=None)
 def mutate(
         _data: DataFrame,
         *acrosses: Across,
@@ -155,15 +155,15 @@ def mutate(
     across.update(kwargs)
     kwargs = across
 
+    data = copy_df(_data)
     if isinstance(_data, RowwiseDataFrame):
-        data = RowwiseDataFrame(_data, rowwise=_data.rowwise)
-    else:
-        data = copy_df(_data)
+        data = RowwiseDataFrame(data, rowwise=_data.flags.rowwise)
 
     for key, val in kwargs.items():
         if val is None:
             data.drop(columns=[key], inplace=True)
             continue
+
         val = evaluate_expr(val, data, context)
 
         if isinstance(val, CAcross):
@@ -193,14 +193,27 @@ def mutate(
     # raise
     if (isinstance(_data, RowwiseDataFrame) and
             not isinstance(data, RowwiseDataFrame)):
-        return RowwiseDataFrame(data, rowwise=_data.rowwise)
+        return RowwiseDataFrame(data, rowwise=_data.flags.rowwise)
 
     return data
+
+@mutate.register(DataFrameGroupBy, context=None)
+def _(
+        _data: DataFrameGroupBy,
+        *args: Any,
+        **kwargs: Any
+) -> DataFrameGroupBy:
+    """Mutate on DataFrameGroupBy object"""
+    def apply_func(df):
+        df.flags.grouper = _data.grouper
+        return df >> mutate(*args, **kwargs)
+
+    return group_df(groupby_apply(_data, apply_func), _data.grouper)
 
 # Forward pipda.Expression for mutate to evaluate
 @register_verb((DataFrame, DataFrameGroupBy), context=None)
 def transmutate(
-        _data: DataFrame,
+        _data: DataFrameType,
         *acrosses: Across,
         _before: Optional[str] = None,
         _after: Optional[str] = None,
@@ -221,12 +234,12 @@ def transmutate(
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def relocate(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         column: str,
         *columns: str,
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
-) -> Union[DataFrame, DataFrameGroupBy]:
+) -> DataFrameType:
     """change column positions
 
     Args:
@@ -265,7 +278,7 @@ def relocate(
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     ret = _data[rearranged]
     if grouper is not None:
-        return ret.groupby(grouper, dropna=False)
+        return group_df(ret, grouper)
     return ret
 
 
@@ -274,7 +287,7 @@ def select(
         _data: DataFrameType,
         *columns: Union[StringOrIter, Inverted],
         **renamings: Mapping[str, str]
-) -> DataFrame:
+) -> DataFrameType:
     """Select (and optionally rename) variables in a data frame
 
     Args:
@@ -291,9 +304,13 @@ def select(
     )
     # old -> new
     new_names = {val: key for key, val in renamings.items() if val in selected}
+    data = objectize(_data)[selected]
     if new_names:
-        return _data[selected].rename(columns=new_names)
-    return _data[selected]
+        data = data.rename(columns=new_names)
+
+    if isinstance(_data, DataFrameGroupBy):
+        return group_df(data, _data.grouper)
+    return data
 
 
 @register_verb((DataFrame, DataFrameGroupBy))
@@ -342,7 +359,7 @@ def group_by(
     # requires pandas 1.2+
     # eariler versions have bugs with apply/transform
     # GH35889
-    return _data.groupby(columns, dropna=False)
+    return group_df(_data, columns)
 
 
 @group_by.register(DataFrameGroupBy)
@@ -368,8 +385,8 @@ def _(
     columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
     if _add:
         groups = Collection(*_data.grouper.names) + columns
-        return _data.obj.groupby(groups, dropna=False)
-    return _data.obj.groupby(columns, dropna=False)
+        return group_df(_data.obj, groups)
+    return group_df(_data.obj, columns)
 
 
 @register_verb(DataFrameGroupBy)
@@ -389,7 +406,7 @@ def ungroup(_data: DataFrameGroupBy) -> DataFrame:
 
 @register_verb((DataFrame, DataFrameGroupBy))
 def group_keys(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *cols: str,
         **kwargs: Any,
 ) -> DataFrame:
@@ -413,7 +430,7 @@ group_cols = group_vars # pylint: disable=invalid-name
 
 @register_verb((DataFrame, DataFrameGroupBy))
 def group_map(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         func: Callable[[DataFrame], Any]
 ) -> List[Any]:
     """Map function to data in each group, returns a list"""
@@ -425,7 +442,7 @@ def group_map(
 
 @register_verb((DataFrame, DataFrameGroupBy))
 def group_modify(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         func: Callable[[DataFrame], DataFrame]
 ) -> DataFrame:
     """Modify data in each group with func, returns a dataframe"""
@@ -435,7 +452,7 @@ def group_modify(
 
 @register_verb((DataFrame, DataFrameGroupBy))
 def group_walk(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         func: Callable[[DataFrame], None]
 ) -> None:
     """Walk along data in each groups, but don't return anything"""
@@ -448,11 +465,11 @@ def group_trim(
         _data: DataFrameGroupBy
 ) -> DataFrameGroupBy:
     """Trim the unused group levels"""
-    return _data.obj.groupby(_data.grouper.names)
+    return group_df(_data.obj, _data.grouper.names)
 
 @register_verb((DataFrame, DataFrameGroupBy))
 def group_split(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *cols: str,
         _keep: bool = False,
         **kwargs: Any
@@ -472,7 +489,7 @@ def group_split(
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.UNSET)
 def with_groups(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         _groups: Optional[StringOrIter],
         _func: Callable,
         *args: Any,
@@ -500,9 +517,9 @@ def with_groups(
 
     return _func(_data, *args, **kwargs)
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.MIXED)
+@register_verb(DataFrame, context=Context.MIXED)
 def summarise(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrame,
         *acrosses: Across,
         _groups: Optional[str] = None,
         **kwargs: Any
@@ -535,8 +552,8 @@ def summarise(
     kwargs = across
 
     ret = None
-    if isinstance(_data, RowwiseDataFrame) and _data.rowwise is not True:
-        ret = _data.loc[:, _data.rowwise]
+    if isinstance(_data, RowwiseDataFrame) and _data.flags.rowwise is not True:
+        ret = _data.loc[:, _data.flags.rowwise]
 
     for key, val in kwargs.items():
         if isinstance(val, CAcross):
@@ -546,48 +563,79 @@ def summarise(
 
         if ret is None:
             ret = to_df(val, key)
-        # if isinstance(val, Series) and val.index.name == ret.index.name:
-        #     # in case val has more rows than ret, ie. quantile
-        #     # we expand ret
-        #     ret =  ret.loc[val.index, :]
-        #     ret[key] = val
         else:
             ret[key] = align_value(val, ret)
 
     if _groups == 'rowwise':
         return RowwiseDataFrame(ret)
 
-    if not isinstance(_data, DataFrameGroupBy):
+    return ret
+
+@summarise.register(DataFrameGroupBy, context=None)
+def _(
+        _data: DataFrameGroupBy,
+        *acrosses: Across,
+        _groups: Optional[str] = None,
+        **kwargs: Any
+) -> DataFrameType:
+
+    def apply_func(df):
+        df.flags.grouper = _data.grouper
+        return df >> summarise(*acrosses, _groups=_groups, **kwargs)
+
+    ret = groupby_apply(_data, apply_func, groupdata=True)
+
+    g_keys = _data.grouper.names
+    if _groups is None:
+        gsize = group_df(ret, _data.grouper.names).grouper.size().tolist()
+        if gsize == [1] * len(gsize):
+            _groups = 'drop_last'
+            if len(g_keys) == 1 and summarise.inform:
+                logger.info(
+                    '`summarise()` ungrouping output '
+                    '(override with `_groups` argument)'
+                )
+            elif summarise.inform:
+                logger.info(
+                    '`summarise()` regrouping output by '
+                    '%s (override with `_groups` argument)',
+                    g_keys[:-1]
+                )
+        else:
+            if gsize != [gsize[0]] * len(gsize):
+                _groups = 'keep'
+                if summarise.inform:
+                    logger.info(
+                        '`summarise()` regrouping output by %s. '
+                        'You can override using the `.groups` argument.',
+                        g_keys
+                    )
+
+    if _groups == 'drop':
         return ret
 
-    if _groups is None:
-        if ret.shape[0] == 1:
-            _groups = 'drop_last'
-        elif isinstance(ret.index, MultiIndex):
-            _groups = 'drop_last'
-
-    ret.reset_index(inplace=True)
-    g_keys = _data.grouper.names
     if _groups == 'drop_last':
-        return ret.groupby(g_keys[:-1]) if g_keys[:-1] else ret
+        return group_df(ret, g_keys[:-1]) if g_keys[:-1] else ret
 
     if _groups == 'keep':
-        return ret.groupby(_data.grouper) # even keep the unexisting levels
+        # even keep the unexisting levels
+        return group_df(ret, g_keys)
 
     # else:
     # todo: raise
     return ret
 
+summarise.inform = True
 summarize = summarise # pylint: disable=invalid-name
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL)
 def filter(
-        _data: DataFrameType,
-        condition,
-        *conditions,
-        _preserve=False
-) -> DataFrameType:
+        _data: DataFrame,
+        condition: Iterable[bool],
+        *conditions: Iterable[bool],
+        _preserve: bool = False
+) -> DataFrame:
     """Subset a data frame, retaining all rows that satisfy your conditions
 
     Args:
@@ -616,15 +664,32 @@ def filter(
     ret = objectize(_data)[condition]
     if isinstance(_data, DataFrameGroupBy):
         grouper = _data.grouper if _preserve else _data.grouper.names
-        return ret.groupby(grouper, dropna=True)
+        return group_df(ret, grouper)
     return ret
+
+@filter.register(DataFrameGroupBy, context=None)
+def _(
+        _data: DataFrameGroupBy,
+        condition: Iterable[bool],
+        *conditions: Iterable[bool],
+        _preserve: bool = False
+) -> DataFrameGroupBy:
+
+    def apply_func(df):
+        df.flags.grouper = _data.grouper
+        return df >> filter(condition, *conditions, _preserve=_preserve)
+
+    ret = groupby_apply(_data, apply_func)
+    if _preserve:
+        return group_df(ret, _data.grouper)
+    return group_df(ret, _data.grouper.names)
 
 # ------------------------------
 # count
 
 @register_verb((DataFrame, DataFrameGroupBy), context=None)
 def count(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *columns: Any,
         wt: Optional[str] = None,
         sort: bool = False,
@@ -655,7 +720,7 @@ def count(
     _data = mutate(_data, **mutates)
 
     columns = columns + list(mutates)
-    grouped = _data.groupby(columns, dropna=False)
+    grouped = group_df(_data, columns)
 
     if not wt:
         count_frame = grouped[columns].size().to_frame(name=name)
@@ -670,7 +735,7 @@ def count(
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def tally(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         wt: str = None,
         sort: bool = False,
         name: str = 'n'
@@ -688,13 +753,13 @@ def tally(
 
 @register_verb((DataFrame, DataFrameGroupBy), context=None)
 def add_count(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *columns: Any,
         wt: Optional[str] = None,
         sort: bool = False,
         name: str = 'n',
         **mutates: Any
-) -> Union[DataFrame, DataFrameGroupBy]:
+) -> DataFrameType:
     """Equivalents to count() but use mutate() instead of summarise()
 
     See count().
@@ -709,16 +774,16 @@ def add_count(
         ret = ret.sort_values([name], ascending=[False])
 
     if isinstance(_data, DataFrameGroupBy):
-        return ret.groupby(_data.grouper.names, dropna=False)
+        return group_df(ret, _data.grouper)
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def add_tally(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         wt: str = None,
         sort: bool = False,
         name: str = 'n'
-) -> Union[DataFrame, DataFrameGroupBy]:
+) -> DataFrameType:
     """Equivalents to tally() but use mutate() instead of summarise()
 
     See count().
@@ -733,17 +798,17 @@ def add_tally(
         ret = ret.sort_values([name], ascending=[False])
 
     if isinstance(_data, DataFrameGroupBy):
-        return ret.groupby(_data.grouper.names, dropna=False)
+        return group_df(ret, _data.grouper)
 
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.MIXED)
 def distinct(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         *columns: Any,
         _keep_all: bool = False,
         **mutates: Any
-) -> Union[DataFrame, DataFrameGroupBy]:
+) -> DataFrameType:
     """Select only unique/distinct rows from a data frame.
 
     Args:
@@ -771,15 +836,15 @@ def distinct(
     uniq_frame = data.drop_duplicates(columns, ignore_index=True)
     ret = uniq_frame if _keep_all else uniq_frame[columns]
     if isinstance(_data, DataFrameGroupBy):
-        return ret.groupby(_data.grouper.names, dropna=False)
+        return group_df(ret, _data.grouper)
     return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def pull(
-        _data: Union[DataFrame, DataFrameGroupBy],
+        _data: DataFrameType,
         var: Union[int, str] = -1,
         name: Optional[StringOrIter] = None,
-        to_list: bool = False
+        to: str = 'series'
 ) -> SeriesLikeType:
     """Pull a series from a dataframe
 
@@ -789,7 +854,10 @@ def pull(
         name: If specified, a zip object will be return with the name-value
             pairs. It can be a column name or a list of strs with the same
             length as the series
-        to_list: Whether return a python list or keep it numpy.ndarray.
+        to: Type of data to return.
+            - series: Return a pandas Series object
+            - array: Return a numpy.ndarray object
+            - list: Return a python list
 
     Returns:
         The series data.
@@ -803,9 +871,11 @@ def pull(
     if name is not None:
         return zip(name, _data[var].values)
 
-    if to_list:
+    if to == 'list':
         return _data[var].values.tolist()
-    return _data[var].values
+    if to == 'array':
+        return _data[var].values
+    return _data[var]
 
 @register_verb(DataFrame, context=Context.SELECT)
 def rename(
@@ -857,7 +927,7 @@ def slice(
     Args:
         _data: The dataframe
         rows: The indexes
-        _preserve: Relevant when the .data input is grouped.
+        _preserve: Relevant when the _data input is grouped.
             If _preserve = FALSE (the default), the grouping structure is
             recalculated based on the resulting data,
             otherwise the grouping is kept as is.
@@ -874,14 +944,14 @@ def _(
         rows: Any,
         _preserve: bool = False
 ) -> DataFrameGroupBy:
-    """Slice on grouped datafram"""
+    """Slice on grouped dataframe"""
     grouper = _data.grouper
     _data = objectize(_data)
     rows = expand_slice(rows, _data.shape[0])
     ret = _data.iloc[rows, :]
     if not _preserve:
-        return ret.groupby(grouper.names, dropna=False)
-    return ret.groupby(grouper, dropna=False)
+        return group_df(ret, grouper.names)
+    return group_df(ret, grouper)
 
 @register_verb(DataFrame)
 def slice_head(
@@ -926,7 +996,7 @@ def _(
         axis=1
     )
     indexes = numpy.concatenate(indexes.values)
-    return _data.obj.iloc[indexes, :].groupby(_data.grouper, dropna=False)
+    return group_df(_data.obj.iloc[indexes, :], _data.grouper)
 
 @register_verb(DataFrame)
 def slice_tail(
@@ -960,7 +1030,7 @@ def _(
         axis=1
     )
     indexes = numpy.concatenate(indexes.values)
-    return _data.obj.iloc[indexes, :].groupby(_data.grouper, dropna=False)
+    return group_df(_data.obj.iloc[indexes, :], _data.grouper)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def slice_min(
@@ -982,7 +1052,20 @@ def slice_min(
         columns=['__slice_order__']
     )
 
-# todo: slice_min.register(DataFrameGroupBy)
+@slice_min.register(DataFrameGroupBy, context=None)
+def _(
+        _data: DataFrameGroupBy,
+        order_by: Series,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None,
+        with_ties: Union[bool, str] = True
+) -> DataFrameGroupBy:
+    """slice_min for DataFrameGroupBy object"""
+    def apply_func(df):
+        df.flags.grouper = _data.grouper
+        return df >> slice_min(order_by, n, prop, with_ties)
+
+    return groupby_apply(_data, apply_func)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def slice_max(
@@ -1004,7 +1087,20 @@ def slice_max(
         columns=['__slice_order__']
     )
 
-# todo: slice_max.register(DataFrameGroupBy)
+@slice_max.register(DataFrameGroupBy, context=None)
+def _(
+        _data: DataFrameGroupBy,
+        order_by: Series,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None,
+        with_ties: Union[bool, str] = True
+) -> DataFrameGroupBy:
+    """slice_max for DataFrameGroupBy object"""
+    def apply_func(df):
+        df.flags.grouper = _data.grouper
+        return df >> slice_max(order_by, n, prop, with_ties)
+
+    return groupby_apply(_data, apply_func)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def slice_sample(
@@ -1029,7 +1125,21 @@ def slice_sample(
         axis=0
     )
 
-# todo: slice_sample.register(DataFrameGroupBy)
+@slice_sample.register(DataFrameGroupBy, context=None)
+def _(
+        _data: DataFrameGroupBy,
+        n: Optional[int] = 1,
+        prop: Optional[float] = None,
+        weight_by: Optional[Iterable[Union[int, float]]] = None,
+        replace: bool = False,
+        random_state: Any = None
+) -> DataFrameGroupBy:
+
+    def apply_func(df):
+        df.flags.grouper = _data.grouper
+        return df >> slice_sample(n, prop, weight_by, replace, random_state)
+
+    return groupby_apply(_data, apply_func)
 
 
 # Two table verbs

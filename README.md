@@ -13,7 +13,7 @@ pip install -U datar
 ```
 
 ## Philosophy
-- Try to keep API consistent with `tidyr`/`dplyr`
+- Try to keep APIs with the original ones from those R packages
 - Try not to change python's default behaviors (i.e, 0-based indexing)
 
 ## Example usage
@@ -85,7 +85,7 @@ from datar.datasets import iris
 from datar.dplyr import pull
 
 dist_plot = register_verb(func=klib.dist_plot)
-iris >> pull(f.Sepal_Length, to_list=True) >> dist_plot()
+iris >> pull(f.Sepal_Length) >> dist_plot()
 ```
 
 ![example](./example2.png)

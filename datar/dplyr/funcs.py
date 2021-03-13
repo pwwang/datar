@@ -14,9 +14,9 @@ from pipda import register_func, Context
 from ..core.middlewares import (
     Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
 )
-from ..core.types import DataFrameType, NumericType, is_scalar
+from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import register_grouped, filter_columns, objectize, list_diff
+from ..core.utils import filter_columns, objectize, list_diff
 from ..base.constants import NA
 
 # pylint: disable=redefined-outer-name
@@ -393,17 +393,17 @@ def _ranking(
     )
     return ret
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def min_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     """Rank the data using min method"""
     return _ranking(series, na_last=na_last, method='min')
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def dense_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     """Rank the data using dense method"""
     return _ranking(series, na_last=na_last, method='dense')
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def percent_rank(
         series: Iterable[Any],
         na_last: str = "keep"
@@ -417,7 +417,7 @@ def percent_rank(
     return ret
 
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     """Rank the data using percent_rank method"""
     ranking = _ranking(series, na_last, 'min')
@@ -426,7 +426,7 @@ def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     ret[ranking.isna()] = NA
     return ret
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def ntile(series: Iterable[Any], n: int) -> Iterable[Any]:
     """A rough rank, which breaks the input vector into ‘n’ buckets."""
     return pandas.cut(series, n, labels=range(n))
@@ -489,95 +489,114 @@ def if_else(
         True, missing
     )
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
+def between(
+        x: NumericOrIter,
+        left: NumericType,
+        right: NumericType
+) -> BoolOrIter:
+    """Function version of `left <= x <= right`, which cannot do it rowwisely
+    """
+    if is_scalar(x):
+        return left <= x <= right
+    return Series(between(elem, left, right) for elem in x)
+
+@register_func(None, context=Context.EVAL)
 def n_distinct(series: Iterable[Any]) -> int:
     """Get the length of distince elements"""
     return len(set(series))
 
-@register_grouped(context=Context.EVAL, columns=0)
+@register_func(context=Context.EVAL)
 def n(series: Iterable[Any]) -> int:
     """gives the current group size."""
     return len(series)
 
-@register_grouped(context=Context.EVAL, columns=0)
-def row_number(series: Iterable[Any]) -> Iterable[int]:
+@register_func(context=Context.EVAL)
+def row_number(_data: Iterable[Any]) -> Series:
     """Gives the row number, 0-based."""
-    if isinstance(series, Series):
-        return Series(range(len(series)))
-    return series.cumcount()
+    return Series(range(len(_data)))
 
-@register_func(DataFrameGroupBy)
-def cur_group_id(_data: DataFrameGroupBy) -> int:
+@register_func(DataFrame)
+def cur_group_id(_data: DataFrame) -> int:
     """gives a unique numeric identifier for the current group."""
-    groups = [
-        group_indexes.tolist()
-        for group_indexes in _data.grouper.groups.values()
-    ]
-    return _data.apply(lambda df: groups.index(df.index.tolist()))
+    grouper = getattr(_data.flags, 'grouper', None)
+    if not grouper:
+        raise ValueError(
+            'To get current group id, a dataframe must be grouped '
+            'using `datar.dplyr.group_by`'
+        )
 
-@register_func(DataFrameGroupBy)
-def cur_group_rows(_data: DataFrameGroupBy) -> int:
+    for i, group_indexes in enumerate(grouper.groups.values()):
+        if len(_data.index) != len(group_indexes):
+            continue
+        if (_data.index == group_indexes).all():
+            return i
+
+    raise ValueError('Inconsistent group data.')
+
+@register_func(DataFrame)
+def cur_group_rows(_data: DataFrame) -> int:
     """gives the row indices for the current group."""
-    return _data.apply(lambda df: df.index.tolist())
+    return _data.index
 
-@register_func(DataFrameGroupBy)
-def cur_group(_data: DataFrameGroupBy) -> Series:
+@register_func(DataFrame)
+def cur_group(_data: DataFrame) -> Series:
     """gives the group keys, a tibble with one row and one column for
     each grouping variable."""
-    ret = []
-    keys = _data.grouper.names
-    for key in _data.groups:
-        if len(keys) == 1:
-            ret.append(DataFrame([key], columns=keys))
-        else:
-            ret.append(DataFrame(zip(*key), columns=keys))
+    grouper = getattr(_data.flags, 'grouper', None)
+    if not grouper:
+        raise ValueError(
+            'To get current group, a dataframe must be grouped '
+            'using `datar.dplyr.group_by`'
+        )
 
-    return Series(ret)
+    return _data[grouper.names]
 
-@register_func(DataFrameGroupBy)
-def cur_data(_data: DataFrameGroupBy) -> int:
+@register_func(DataFrame)
+def cur_data(_data: DataFrame) -> int:
     """gives the current data for the current group
     (excluding grouping variables)."""
-    return Series(
-        _data.obj.loc[index].drop(columns=_data.grouper.names)
-        for index in _data.grouper.groups.values()
-    )
+    grouper = getattr(_data.flags, 'grouper', None)
+    if not grouper:
+        raise ValueError(
+            'To get current group data, a dataframe must be grouped '
+            'using `datar.dplyr.group_by`'
+        )
 
-@register_func(DataFrameGroupBy)
-def cur_data_all(_data: DataFrameGroupBy) -> int:
+    return _data.drop(columns=grouper.names)
+
+@register_func(DataFrame)
+def cur_data_all(_data: DataFrame) -> int:
     """gives the current data for the current group
     (including grouping variables)"""
-    return Series(
-        _data.obj.loc[index]
-        for index in _data.grouper.groups.values()
-    )
+    return _data.copy()
 
 def cur_column() -> CurColumn:
     """Used in the functions of across. So we don't have to register it."""
     return CurColumn()
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cummean(series: Iterable[NumericType]) -> Iterable[float]:
     """Get cumulative means"""
     if not isinstance(series, Series):
         series = Series(series)
     return series.cumsum(skipna=False) / (Series(range(len(series))) + 1.0)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cumall(series: Iterable[NumericType]) -> Iterable[float]:
     """Get cumulative bool. All cases after first False"""
     if not isinstance(series, Series):
         series = Series(series)
     return series.cummin(skipna=False).astype(bool)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def cumany(series: Iterable[NumericType]) -> Iterable[float]:
     """Get cumulative bool. All cases after first True"""
     if not isinstance(series, Series):
         series = Series(series)
     return series.cummax(skipna=False).astype(bool)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def lead(
         series: Iterable[Any],
         n: bool = 1,
@@ -615,7 +634,7 @@ def lead(
         return ret.loc[index]
     return Series(ret, index=index)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def lag(
         series: Iterable[Any],
         n: bool = 1,
@@ -834,7 +853,7 @@ def near(x: Iterable[Any], y: Any) -> Iterable[Any]:
 
     return numpy.isclose(x, y)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def nth(
         x: Iterable[Any],
         n: int,
@@ -851,7 +870,7 @@ def nth(
     except IndexError:
         return default
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def first(
         x: Iterable[Any],
         order_by: Optional[Iterable[Any]] = None,
@@ -867,7 +886,7 @@ def first(
     except IndexError:
         return default
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def last(
         x: Iterable[Any],
         order_by: Optional[Iterable[Any]] = None,

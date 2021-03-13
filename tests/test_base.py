@@ -222,7 +222,7 @@ def test_diag():
     x = diag(TRUE, 3)
     assert sum(x.values.flatten()) == 3
     x = diag(c(2,1), 4)
-    assert_equal(diag(x).flatten(), [2,1,2,1])
+    assert_equal(diag(x).values.flatten(), [2,1,2,1])
 
 def test_sample():
     x = sample(range(1, 13))

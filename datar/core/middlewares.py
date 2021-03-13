@@ -6,7 +6,6 @@ from threading import Lock
 
 from pandas import DataFrame
 from pandas.core.series import Series
-from pandas.core.groupby import DataFrameGroupBy
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
 from pipda.utils import DataContext
@@ -15,7 +14,7 @@ from .utils import (
     objectize, expand_collections, list_diff, sanitize_slice, select_columns
 )
 from .contexts import ContextSelectSlice
-from .types import is_scalar
+from .types import DataFrameType, is_scalar
 
 LOCK = Lock()
 
@@ -43,7 +42,7 @@ class Inverted:
     def __init__(
             self,
             elems: Any,
-            data: Union[DataFrame, DataFrameGroupBy],
+            data: DataFrameType,
             context: ContextBase = Context.SELECT.value
     ) -> None:
         self.data = objectize(data)
@@ -164,7 +163,7 @@ class Across:
     def evaluate(
             self,
             context: Union[Context, ContextBase],
-            data: Optional[Union[DataFrame, DataFrameGroupBy]] = None
+            data: Optional[DataFrameType] = None
     ) -> Any:
         if data is None:
             data = self.data
@@ -334,8 +333,8 @@ class RowwiseDataFrame(DataFrame):
             rowwise: Optional[Iterable[str]] = None,
             **kwargs: Any
     ) -> None:
-        self.__dict__['rowwise'] = rowwise or True
         super().__init__(*args, **kwargs)
+        self.flags.rowwise = rowwise or True
 
 class ContextWithData:
 

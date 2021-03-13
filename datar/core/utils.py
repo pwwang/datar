@@ -7,8 +7,10 @@ from typing import Any, Callable, Iterable, List, Optional, Union
 
 import numpy
 from pandas import DataFrame
+import pandas
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.ops import BaseGrouper
 import pipda
 from pipda.context import Context, ContextBase
 from pipda.function import register_func
@@ -16,12 +18,12 @@ from pipda.symbolic import DirectRefAttr
 from pipda.utils import evaluate_args, evaluate_expr, evaluate_kwargs
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
-from .types import is_scalar
+from .types import DataFrameType, StringOrIter, is_scalar
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
+logger.setLevel(logging.INFO)
 stream_handler = logging.StreamHandler() # pylint: disable=invalid-name
-stream_handler.setLevel(logging.INFO)
 stream_handler.setFormatter(logging.Formatter(
     '[%(asctime)s][%(name)s][%(levelname)7s] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
@@ -279,7 +281,7 @@ def series_expand(series: Union[DataFrame, Series], df: DataFrame):
 
 def align_value(
         value: Any,
-        data: Union[DataFrame, DataFrameGroupBy]
+        data: DataFrameType
 ) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
@@ -309,15 +311,19 @@ def align_value(
     return value
 
 def copy_df(
-        df: Union[DataFrame, DataFrameGroupBy]
-) -> Union[DataFrame, DataFrameGroupBy]:
+        df: DataFrameType
+) -> DataFrameType:
     if isinstance(df, DataFrame):
-        return df.copy()
-    obj = df.obj.copy()
-    return obj.groupby(df.grouper, dropna=False)
+        ret = df.copy()
+        ret.flags.grouper = getattr(df.flags, 'grouper', None)
+        ret.flags.rowwise = getattr(df.flags, 'rowwise', None)
+        return ret
+
+    copied = copy_df(df.obj)
+    return group_df(copied, df.grouper)
 
 def df_assign_item(
-        df: Union[DataFrame, DataFrameGroupBy],
+        df: DataFrameType,
         item: str,
         value: Any
 ) -> None:
@@ -491,3 +497,29 @@ def register_grouped(
         return _register_grouped_col0(func, context=context)
 
     raise ValueError("Expect columns to be either 0 or 1.")
+
+def group_df(
+        df: DataFrame,
+        grouper: Union[BaseGrouper, StringOrIter]
+) -> DataFrameGroupBy:
+    return df.groupby(
+        grouper,
+        as_index=True,
+        sort=False,
+        dropna=False,
+        group_keys=True
+    )
+
+def groupby_apply(
+        df: DataFrameGroupBy,
+        func: Callable,
+        groupdata: bool = False
+) -> DataFrame:
+    ret = df.apply(func)
+    if groupdata:
+        try:
+            ret = ret.reset_index(level=df.grouper.names)
+        except KeyError:
+            pass
+        return ret.reset_index(drop=True)
+    return ret.reset_index(drop=True)
