@@ -184,7 +184,7 @@ Multiple variables are sometimes pasted together into a single column, and these
 - [x] [`extract()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fextract.ipynb): Extract a character column into multiple columns using regular expression groups
 - [x] [`separate()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fseparate.ipynb): Separate a character column into multiple columns with a regular expression or numeric locations
 - [x] [`separate_rows()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fseparate.ipynb): Separate a collapsed column into multiple rows
-- [ ] [`unite()`](htts://pwwang.github.io/datar/reference/unite.ipynb): Unite multiple columns into one by pasting strings together
+- [x] [`unite()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Funite.ipynb): Unite multiple columns into one by pasting strings together
 
 ### tidyr - Missing values
 

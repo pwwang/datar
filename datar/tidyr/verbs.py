@@ -1,4 +1,5 @@
 """Verbs from R-tidyr"""
+from datar.dplyr.verbs import select
 import re
 import itertools
 from functools import singledispatch
@@ -11,7 +12,7 @@ from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
 from pipda import register_verb, Context
 
-from ..core.utils import objectize, select_columns, list_diff, logger
+from ..core.utils import copy_df, group_df, objectize, select_columns, list_diff, logger
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
     is_scalar
@@ -460,7 +461,7 @@ def separate( # pylint: disable=too-many-branches
         _data: DataFrameType,
         col: str,
         into: StringOrIter,
-        sep: Union[int, str] = r'[^\w]+',
+        sep: Union[int, str] = r'[^0-9A-Za-z]+',
         remove: bool = True,
         convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False,
         extra: str = "warn",
@@ -567,7 +568,7 @@ def separate( # pylint: disable=too-many-branches
 def separate_rows(
         _data: DataFrame,
         *columns: str,
-        sep: str = r'[^\w]+',
+        sep: str = r'[^0-9A-Za-z]+',
         convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False,
 ) -> DataFrame:
     """Separates the values and places each one in its own row.
@@ -611,3 +612,44 @@ def separate_rows(
         for key, conv in convert.items():
             ret[key] = ret[key].astype(conv)
     return ret
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def unite(
+        _data: DataFrameType,
+        col: str,
+        *columns: str,
+        sep: str = '_',
+        remove: bool = True,
+        na_rm: bool = False
+) -> DataFrameType:
+    """Unite multiple columns into one by pasting strings together
+
+    Args:
+        data: A data frame.
+        col: The name of the new column, as a string or symbol.
+        *columns: Columns to unite
+        sep: Separator to use between values.
+        remove: If True, remove input columns from output data frame.
+        na_rm: If True, missing values will be remove prior to uniting
+            each value.
+
+    Returns:
+        The dataframe with selected columns united
+    """
+    grouper = getattr(_data, 'grouper', None)
+    columns = select_columns(_data.columns, *columns)
+    data = objectize(_data)
+    data = copy_df(data)
+
+    def unite_cols(row):
+        if na_rm:
+            row = [elem for elem in row if elem is not NA]
+        return sep.join(str(elem) for elem in row)
+
+    data[col] = data[columns].agg(unite_cols, axis=1)
+    if remove:
+        data = data.drop(columns=columns)
+
+    if grouper is not None:
+        return group_df(data, grouper)
+    return data
