@@ -192,7 +192,7 @@ Multiple variables are sometimes pasted together into a single column, and these
 Tools for converting between implicit (absent rows) and explicit (`NA`) missing values, and for handling explicit `NA`s.
 
 - [ ] [`complete()`](htts://pwwang.github.io/datar/reference/complete.ipynb): Complete a data frame with missing combinations of data
-- [ ] [`drop_na()`](htts://pwwang.github.io/datar/reference/drop_na.ipynb): Drop rows containing missing values
+- [x] [`drop_na()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fdrop_na.ipynb): Drop rows containing missing values
 - [ ] [`expand()`, `crossing()`, `nesting()`](htts://pwwang.github.io/datar/reference/nesting.ipynb): Expand data frame to include all possible combinations of values
 - [x] [`expand_grid()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fexpand_grid.ipynb): Create a tibble from all combinations of inputs
 - [x] [`fill()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffill.ipynb): Fill in missing values with previous or next value

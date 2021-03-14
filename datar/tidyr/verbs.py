@@ -653,3 +653,24 @@ def unite(
     if grouper is not None:
         return group_df(data, grouper)
     return data
+
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+def drop_na(
+        _data: DataFrameType,
+        *columns: str
+) -> DataFrameType:
+    """Drop rows containing missing values
+
+    Args:
+        data: A data frame.
+        *columns: Columns to inspect for missing values.
+
+    Returns:
+        Dataframe with rows with NAs dropped
+    """
+    grouper = getattr(_data, 'grouper', None)
+    columns = select_columns(_data.columns, *columns) if columns else None
+    ret = _data.dropna(subset=columns)
+    if grouper is not None:
+        return group_df(ret, grouper.names)
+    return ret
