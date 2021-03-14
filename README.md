@@ -163,18 +163,6 @@ Experimental functions in dplyr.
 - [x] [`pivot_longer()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpivot_longer.ipynb): Pivot data from wide to long
 - [x] [`pivot_wider()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fpivot_wider.ipynb): Pivot data from long to wide
 
-### tidyr - Rectangling
-
-**Rectangling** turns deeply nested lists into tidy tibbles.
-
-- [ ] [`hoist()`, `unnest_longer()`, `unnest_wider()`, `unnest_auto()`](htts://pwwang.github.io/datar/reference/unnest_auto.ipynb): Rectangle a nested list into a tidy tibble
-
-### tidyr - Nesting
-
-
-**Nesting** uses alternative representation of grouped data where a group becomes a single row containing a nested data frame.
-
-- [ ] [`nest()`, `unnest()`](htts://pwwang.github.io/datar/reference/unnest.ipynb): Nest and unnest
 
 ### tidyr - Character vectors
 
