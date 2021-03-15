@@ -843,7 +843,7 @@ def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
     return x['x']
 
 @register_func(None, context=Context.EVAL)
-def near(x: Iterable[Any], y: Any) -> Iterable[Any]:
+def near(x: Iterable[Any], y: Any, tol: float = 1e-8) -> Iterable[Any]:
     """Compare numbers with tolerance"""
     x = objectize(x)
     if is_scalar(x):
@@ -851,7 +851,7 @@ def near(x: Iterable[Any], y: Any) -> Iterable[Any]:
 
     y = objectize(y)
 
-    return numpy.isclose(x, y)
+    return numpy.isclose(x, y, atol=tol)
 
 @register_func(None, context=Context.EVAL)
 def nth(
