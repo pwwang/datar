@@ -288,10 +288,8 @@ def align_value(
     if is_scalar(value):
         return value
 
-    if isinstance(data, DataFrameGroupBy):
-        data = data.obj
-    if isinstance(value, (DataFrameGroupBy, SeriesGroupBy)):
-        value = value.obj
+    data = objectize(data)
+    value = objectize(value)
 
     if series_expandable(value, data):
         return series_expand(value, data)
@@ -504,10 +502,10 @@ def group_df(
 ) -> DataFrameGroupBy:
     return df.groupby(
         grouper,
-        as_index=True,
+        as_index=False,
         sort=False,
         dropna=False,
-        group_keys=True
+        group_keys=False
     )
 
 def groupby_apply(
@@ -515,11 +513,14 @@ def groupby_apply(
         func: Callable,
         groupdata: bool = False
 ) -> DataFrame:
-    ret = df.apply(func)
+
     if groupdata:
-        try:
-            ret = ret.reset_index(level=df.grouper.names)
-        except KeyError:
-            pass
-        return ret.reset_index(drop=True)
-    return ret.reset_index(drop=True)
+        # df.groupby(group_keys=True).apply does not always add group as index
+        g_keys = df.grouper.names
+        def apply_func(subdf):
+            ret = func(subdf)
+            ret[g_keys] = df.obj[g_keys]
+            return ret[list_union(g_keys, ret.columns)]
+        return df.apply(apply_func).reset_index(drop=True)
+
+    return df.apply(func).reset_index(drop=True)

@@ -77,7 +77,7 @@ def arrange(
     if isinstance(_data, DataFrameGroupBy):
         for key in _data.grouper.names:
             if key not in sorting_df:
-                sorting_df[key] = _data[key].obj.values
+                sorting_df[key] = _data.obj[key].values
         if _by_group:
             by = list_union(_data.grouper.names, by)
 
@@ -581,7 +581,9 @@ def _(
 
     def apply_func(df):
         df.flags.grouper = _data.grouper
-        return df >> summarise(*acrosses, _groups=_groups, **kwargs)
+        return df[
+            list_diff(df.columns.tolist(), _data.grouper.names)
+        ] >> summarise(*acrosses, _groups=_groups, **kwargs)
 
     ret = groupby_apply(_data, apply_func, groupdata=True)
 

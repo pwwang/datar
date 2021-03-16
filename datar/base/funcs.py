@@ -116,6 +116,11 @@ def mean(series: Iterable[NumericType], na_rm: bool = False) -> NumericType:
     return numpy.nanmean(series) if na_rm else numpy.mean(series)
 
 @register_func(None, context=Context.EVAL)
+def median(series: Iterable[NumericType], na_rm: bool = False) -> NumericType:
+    """Get the median of input"""
+    return numpy.nanmedian(series) if na_rm else numpy.median(series)
+
+@register_func(None, context=Context.EVAL)
 def min(series: Iterable[Any], na_rm: bool = False) -> float:
     """Get the min of input"""
     return numpy.nanmin(series) if na_rm else numpy.min(series)
@@ -293,6 +298,13 @@ def as_integer(x: Any) -> Union[numpy.int64, Iterable[numpy.int64]]:
     return _as_type(x, numpy.int64)
 
 as_int64 = as_integer
+
+@register_func(None, context=Context.EVAL)
+def as_numeric(x: Any) -> NumericOrIter:
+    try:
+        return as_integer(x)
+    except (ValueError, TypeError):
+        return as_double(x)
 
 @register_func(None, context=Context.EVAL)
 def as_logical(x: Any) -> BoolOrIter:
@@ -794,6 +806,23 @@ def droplevels(x: Categorical) -> Categorical:
         The categorical data with unused categories dropped.
     """
     return categorize(x).remove_unused_categories()
+
+@register_func(None, context=Context.EVAL)
+def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
+    """Get levels from a factor
+
+    Args:
+        x: The categorical data
+
+    Returns:
+        levels of the categorical data
+    """
+    if isinstance(x, Categorical):
+        return x.categories
+    if is_categorical_dtype(x):
+        return x.cat.categories
+
+    return None
 
 # ---------------------------------
 # Plain functions

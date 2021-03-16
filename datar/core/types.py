@@ -37,7 +37,7 @@ def is_scalar(x: Any) -> bool:
 
     None will be counted as scalar
     """
-    if x is None:
+    if x is None or isinstance(x, type) or isinstance(x, numpy.dtype):
         return True
     return numpy.isscalar(x)
 

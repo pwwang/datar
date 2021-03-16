@@ -1,5 +1,4 @@
 """Verbs from R-tidyr"""
-from datar.dplyr.verbs import select
 import re
 import itertools
 from functools import singledispatch
@@ -8,16 +7,22 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 import numpy
 import pandas
 from pandas import DataFrame
+from pandas.core.dtypes.common import is_categorical_dtype
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
 from pipda import register_verb, Context
 
-from ..core.utils import copy_df, group_df, objectize, select_columns, list_diff, logger
+from ..core.utils import (
+    copy_df, group_df, objectize, select_columns, list_diff, logger
+)
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
     is_scalar
 )
+from ..core.middlewares import Nesting
 from ..base.constants import NA
+from ..base.funcs import levels
+from ..dplyr.verbs import distinct
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -674,3 +679,49 @@ def drop_na(
     if grouper is not None:
         return group_df(ret, grouper.names)
     return ret
+
+@register_verb(DataFrame, context=Context.EVAL)
+def expand(
+        _data: DataFrame,
+        *columns: Union[str, Nesting],
+        # _name_repair: Union[str, Callable] = None # todo
+        **kwargs: Iterable[Any]
+) -> DataFrame:
+    """"""
+    iterables = []
+    names = []
+    for i, column in enumerate(columns):
+        if isinstance(column, Nesting):
+            iterables.append(zip(*column.columns))
+            names.extend(column.names)
+        else:
+            cats = levels(column)
+            iterables.append(zip(
+                column if cats is None else cats
+            ))
+
+            try:
+                name = column.name
+            except AttributeError:
+                name = f'_tmp{hex(id(column))[2:6]}_{i}'
+                logger.warning(
+                    'Temporary name used. Use keyword argument to '
+                    'specify the key as column name.'
+                )
+            names.append(name)
+
+    for key, val in kwargs.items():
+        if isinstance(val, Nesting):
+            iterables.append(zip(*val.columns))
+            names.extend(f'{key}_{name}' for name in val.names)
+        else:
+            cats = levels(val)
+            iterables.append(zip(
+                val if cats is None else cats
+            ))
+            names.append(key)
+
+    return DataFrame((
+        itertools.chain.from_iterable(row)
+        for row in itertools.product(*iterables)
+    ), columns=names) >> distinct()

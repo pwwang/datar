@@ -92,11 +92,6 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 
 ## Examples
 
-To compare with `dplyr`'s and `tidyr`'s APIs, see:
-
-- https://dplyr.tidyverse.org/reference/index.html and
-- https://tidyr.tidyverse.org/reference/index.html
-
 ### dplyr - One table verbs
 
 - [x] [`arrange()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Farrange.ipynb): Arrange rows by column values
@@ -181,7 +176,7 @@ Tools for converting between implicit (absent rows) and explicit (`NA`) missing 
 
 - [ ] [`complete()`](htts://pwwang.github.io/datar/reference/complete.ipynb): Complete a data frame with missing combinations of data
 - [x] [`drop_na()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fdrop_na.ipynb): Drop rows containing missing values
-- [ ] [`expand()`, `crossing()`, `nesting()`](htts://pwwang.github.io/datar/reference/nesting.ipynb): Expand data frame to include all possible combinations of values
+- [ ] [`expand()`, `crossing()`, `nesting()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fexpand.ipynb): Expand data frame to include all possible combinations of values
 - [x] [`expand_grid()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Fexpand_grid.ipynb): Create a tibble from all combinations of inputs
 - [x] [`fill()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffill.ipynb): Fill in missing values with previous or next value
 - [x] [`full_seq()`](https://mybinder.org/v2/gh/pwwang/datar/HEAD?filepath=examples%2Ffull_seq.ipynb): Create the full sequence of values in a vector

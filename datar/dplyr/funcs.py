@@ -36,7 +36,7 @@ def desc(
         The DescSeries object
     """
     if isinstance(_data, DataFrameGroupBy):
-        series = DescSeries(_data[col].obj.values, name=col)
+        series = DescSeries(_data.obj[col].values, name=col)
         return series.groupby(_data.grouper, dropna=False)
     return DescSeries(_data[col].values, name=col)
 
@@ -212,7 +212,7 @@ def matches(
     )
 
 @register_func
-def everything(_data: DataFrameType) -> List[str]:
+def everything(_data: DataFrame) -> List[str]:
     """Matches all columns.
 
     Args:
@@ -221,8 +221,9 @@ def everything(_data: DataFrameType) -> List[str]:
     Returns:
         All column names of _data
     """
-    if isinstance(_data, DataFrameGroupBy):
-        return list_diff(_data.obj.columns.tolist(), _data.grouper.names)
+    grouper = getattr(_data.flags, 'grouper', None)
+    if grouper is not None:
+        return list_diff(_data.columns.tolist(), grouper.names)
     return _data.columns.to_list()
 
 @register_func

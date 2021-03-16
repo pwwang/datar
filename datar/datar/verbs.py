@@ -123,3 +123,7 @@ def _(_data: RowwiseDataFrame) -> DataFrame:
         _data.flags.rowwise,
     )
     return _data.obj
+
+@register_verb(DataFrame)
+def drop_index(_data: DataFrame) -> DataFrame:
+    return _data.reset_index(drop=True)

@@ -1,7 +1,9 @@
 """Functions from tidyr"""
 
+from pandas.core.series import Series
+from datar.core.middlewares import Nesting
 from datar.dplyr.funcs import last
-from typing import Iterable
+from typing import Any, Iterable
 
 import numpy
 from pipda import register_func, Context
@@ -25,9 +27,9 @@ def full_seq(
     Returns:
         The full sequence
     """
-    x = sorted(x)
+    data = sorted(x)
     ret = []
-    for elem in x:
+    for elem in data:
         if not ret:
             ret.append(elem)
             continue
@@ -36,4 +38,10 @@ def full_seq(
         if not numpy.isclose(n, float(round(n)), atol=tol):
             raise ValueError('`x` is not a regular sequence.')
         ret.extend((i+1) * period + last_elem for i in range(int(round(n))))
+    if isinstance(x, Series):
+        return Series(x, name=x.name)
     return ret
+
+@register_func(None, context=None)
+def nesting(*cols: Any, **kwargs: Any) -> Nesting:
+    return Nesting(*cols, **kwargs)

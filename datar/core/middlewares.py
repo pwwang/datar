@@ -6,12 +6,14 @@ from threading import Lock
 
 from pandas import DataFrame
 from pandas.core.series import Series
+import pipda
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
 from pipda.utils import DataContext
 
 from .utils import (
-    objectize, expand_collections, list_diff, sanitize_slice, select_columns
+    objectize, expand_collections, list_diff, sanitize_slice, select_columns,
+    logger
 )
 from .contexts import ContextSelectSlice
 from .types import DataFrameType, is_scalar
@@ -123,7 +125,8 @@ class CurColumn:
 class Across:
 
     def __init__(self, data, cols, fns, names, args, kwargs):
-        cols = cols or objectize(data).columns
+        from ..dplyr.funcs import everything
+        cols = everything(data) if cols is None else cols
         if not isinstance(cols, (list, tuple)):
             cols = [cols]
         cols = select_columns(objectize(data).columns, *cols)
@@ -168,13 +171,12 @@ class Across:
         if data is None:
             data = self.data
 
-        if not self.fns:
-            return self.cols
-
         if isinstance(context, Context):
             context = context.value
 
         if isinstance(context, ContextSelect):
+            if not self.fns:
+                return self.cols
             fn = self.fns[0]['fn']
             # todo: check # fns
             pipda_type = getattr(fn, '__pipda__', None)
@@ -188,6 +190,9 @@ class Across:
                 ).evaluate(data)
                 for col in self.cols
             ]
+
+        if not self.fns:
+            self.fns = [{'fn': lambda x: x}]
 
         ret = {}
         # Todo: groupby
@@ -346,3 +351,33 @@ class ContextWithData:
 
     def __exit__(self, *exc_info) -> None:
         self.data.delete()
+
+class Nesting:
+
+    def __init__(self, *columns: Any, **kwargs: Any) -> None:
+        self.columns = []
+        self.names = []
+
+        id_prefix = hex(id(self))[2:6]
+        for i, column in enumerate(columns):
+            self.columns.append(column)
+            if isinstance(column, str):
+                self.names.append(column)
+                continue
+            try:
+                # series
+                name = column.name
+            except AttributeError:
+                name = f'_tmp{id_prefix}_{i}'
+                logger.warning(
+                    'Temporary name used for a nesting column, use '
+                    'keyword argument instead to specify the key as name.'
+                )
+            self.names.append(name)
+
+        for key, val in kwargs.items():
+            self.columns.append(val)
+            self.names.append(key)
+
+    def __len__(self):
+        return len(self.columns)
