@@ -131,4 +131,7 @@ def test_works_sequentially():
     expect = tibble(a="x", y=0)
     assert out.equals(expect)
 
-# https://github.com/tidyverse/dplyr/blob/3cde48e1d4499bb860689ef02f12c04011100b4a/tests/testthat/test-across.R#L105
+def test_original_ordering():
+    df = tibble(a=1, b=2)
+    out = df >> mutate(a=2, x=across())
+    assert out.columns.tolist() == ['a', 'b', 'x$a', 'x$b']

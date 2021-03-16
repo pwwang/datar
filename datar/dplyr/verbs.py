@@ -172,7 +172,11 @@ def mutate(
             val = DataFrame(val.evaluate(context, data))
 
         value = align_value(val, data)
-        df_assign_item(data, key, value)
+        if isinstance(value, DataFrame):
+            for col in value.columns:
+                df_assign_item(data, f'{key}${col}', value[col])
+        else:
+            df_assign_item(data, key, value)
 
     outcols = list(kwargs)
     # do the relocate first
