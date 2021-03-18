@@ -31,6 +31,8 @@ def test_minimal(names, expect):
     (["__20", "a__1", "b", "", "a__2"], ["__0", "a__1", "b", "__3", "a__4"]),
     (repair_names(["__20", "a__1", "b", "", "a__2"], repair="unique"),
      ["__0", "a__1", "b", "__3", "a__4"]),
+    (["", "x", "", "y", "x", "_2", "__"],
+     ["__0", "x__1", "__2", "y", "x__4", "__5", "__6"]),
 ])
 def test_unique(names, expect):
     assert repair_names(names, repair="unique") == expect
