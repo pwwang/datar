@@ -34,8 +34,13 @@ def tibble(
     Returns:
         A dataframe
     """
+    if not args and not kwargs:
+        df = DataFrame()
+        df.__dfname__ = varname(raise_exc=False)
+        return df
+
     # .rows not supported
-    argnames = argname(args, vars_only=False)
+    argnames = argname(args, vars_only=False, pos_only=True)
     df = None
 
     raw_names = []

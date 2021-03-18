@@ -9,7 +9,7 @@ from .funcs import (
     is_categorical, is_character, is_double, is_factor, is_float,
     is_int, is_na, is_numeric, sum, mean, median, min, max, as_int64,
     seq_along, seq_len, seq, abs, pmax, pmin, round, sqrt,
-    droplevels, sin, cos
+    droplevels, sin, cos, identity, expandgrid
 )
 # plain functions
 from .funcs import factor, rep, context

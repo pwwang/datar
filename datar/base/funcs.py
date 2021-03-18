@@ -6,6 +6,7 @@ registered by `register_verb` and should be placed in `./verbs.py`
 import builtins
 import math
 import datetime
+import itertools
 import functools
 from typing import Any, Iterable, List, Optional, Type, Union
 
@@ -921,3 +922,24 @@ def context(data: DataFrameType) -> Any:
         The original or modified data
     """
     return ContextWithData(data)
+
+@register_func(None, context=None)
+def identity(x: Any) -> Any:
+    """Return whatever passed in
+
+    Expression objects are evaluated using parent context
+    """
+    return x
+
+@register_func(None)
+def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
+    """Expand all combinations into a dataframe"""
+    iters = {}
+    for i, arg in enumerate(args):
+        iters[f'Var{i}'] = arg
+    iters.update(kwargs)
+
+    return DataFrame(
+        list(itertools.product(*iters.values())),
+        columns=iters.keys()
+    )

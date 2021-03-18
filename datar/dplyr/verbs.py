@@ -3,8 +3,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
 import pandas
-from pandas.core.indexes.multi import MultiIndex
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, RangeIndex
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 
 from pipda import register_verb, Context, evaluate_expr, evaluate_args
@@ -50,6 +49,8 @@ def arrange(
             Groups are not modified.
             Data frame attributes are preserved.
     """
+    if not series:
+        return _data
     data = objectize(_data)
     sorting_df = (
         data.index.to_frame(name='__index__').drop(columns=['__index__'])
@@ -91,7 +92,7 @@ def arrange(
     return data
 
 
-@register_verb(DataFrame, context=None)
+@register_verb(DataFrame, context=Context.PENDING)
 def mutate(
         _data: DataFrame,
         *acrosses: Across,
@@ -148,7 +149,7 @@ def mutate(
     for acrs in acrosses:
         acrs = evaluate_expr(acrs, _data, context)
         across.update(
-            acrs.evaluate(context)
+            acrs.evaluate(_data, context).to_dict('series')
             if isinstance(acrs, Across) else acrs
         )
 
@@ -169,12 +170,20 @@ def mutate(
         if isinstance(val, CAcross):
             val.names = key
         if isinstance(val, Across):
-            val = DataFrame(val.evaluate(context, data))
+            val = DataFrame(val.evaluate(data, context))
 
         value = align_value(val, data)
         if isinstance(value, DataFrame):
-            for col in value.columns:
-                df_assign_item(data, f'{key}${col}', value[col])
+            if value.shape[1] == 1:
+                df_assign_item(
+                    data,
+                    key if isinstance(value.columns, RangeIndex)
+                    else value.columns[0],
+                    value.iloc[:, 0]
+                )
+            else:
+                for col in value.columns:
+                    df_assign_item(data, f'{key}${col}', value[col])
         else:
             df_assign_item(data, key, value)
 
@@ -337,7 +346,7 @@ def rowwise(_data: DataFrameType, *columns: str) -> RowwiseDataFrame:
     columns = select_columns(_data.columns, columns)
     return RowwiseDataFrame(_data, rowwise=columns)
 
-@register_verb(DataFrame, context=None)
+@register_verb(DataFrame, context=Context.PENDING)
 def group_by(
         _data: DataFrame,
         *columns: str,
@@ -521,7 +530,7 @@ def with_groups(
 
     return _func(_data, *args, **kwargs)
 
-@register_verb(DataFrame, context=Context.MIXED)
+@register_verb(DataFrame, context=Context.EVAL)
 def summarise(
         _data: DataFrame,
         *acrosses: Across,
@@ -546,11 +555,10 @@ def summarise(
     """
     across = {} # no need OrderedDict in python3.7+ anymore
     for acrs in acrosses:
-        across.update(
-            acrs.evaluate(Context.EVAL, _data)
-            if isinstance(acrs, Across)
-            else acrs
-        )
+        if isinstance(acrs, Across):
+            across.update(acrs.evaluate(_data, Context.EVAL).to_dict('series'))
+        else:
+            across.update(acrs) # dict
 
     across.update(kwargs)
     kwargs = across
@@ -563,12 +571,12 @@ def summarise(
         if isinstance(val, CAcross):
             val.names = key
         if isinstance(val, Across):
-            val = DataFrame(val.evaluate(Context.EVAL, _data))
+            val = val.evaluate(_data, Context.EVAL)
 
         if ret is None:
             ret = to_df(val, key)
         else:
-            ret[key] = align_value(val, ret)
+            df_assign_item(ret, key, val)
 
     if _groups == 'rowwise':
         return RowwiseDataFrame(ret)
@@ -655,7 +663,7 @@ def filter(
         The subset dataframe
     """
     if isinstance(condition, IfCross):
-        condition = condition.evaluate(Context.EVAL, _data)
+        condition = condition.evaluate(_data, Context.EVAL)
 
     # check condition, conditions
     for cond in conditions:

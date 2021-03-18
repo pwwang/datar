@@ -9,7 +9,7 @@ from pandas.core.dtypes.common import is_categorical_dtype
 from pandas import DataFrame, Series
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 
-from pipda import register_func, Context
+from pipda import register_func, Context, evaluate_expr
 
 from ..core.middlewares import (
     Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
@@ -40,7 +40,7 @@ def desc(
         return series.groupby(_data.grouper, dropna=False)
     return DescSeries(_data[col].values, name=col)
 
-@register_func(context=Context.SELECT)
+@register_func(context=Context.PENDING)
 def across(
         _data: DataFrameType,
         _cols: Optional[Iterable[str]] = None,
@@ -72,6 +72,7 @@ def across(
         A dataframe with one column for each column in _cols and
         each function in _fns.
     """
+    _cols = evaluate_expr(_cols, _data, Context.SELECT)
     return Across(_data, _cols, _fns, _names, (), kwargs)
 
 
@@ -211,7 +212,7 @@ def matches(
         re.search,
     )
 
-@register_func
+@register_func(DataFrame)
 def everything(_data: DataFrame) -> List[str]:
     """Matches all columns.
 
@@ -224,7 +225,12 @@ def everything(_data: DataFrame) -> List[str]:
     grouper = getattr(_data.flags, 'grouper', None)
     if grouper is not None:
         return list_diff(_data.columns.tolist(), grouper.names)
-    return _data.columns.to_list()
+    return _data.columns.tolist()
+
+@everything.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy) -> List[str]:
+    """All columns for a grouped dataframe"""
+    return list_diff(_data.obj.columns.tolist(), _data.grouper.names)
 
 @register_func
 def last_col(
@@ -312,11 +318,11 @@ def where(_data: DataFrameType, fn: Callable) -> List[str]:
     Returns:
         The matched columns
     """
+    columns = everything(_data)
     _data = objectize(_data)
     retcols = []
-
     pipda_type = getattr(fn, '__pipda__', None)
-    for col in _data.columns:
+    for col in columns:
         if not pipda_type:
             conditions = fn(_data[col])
         else:

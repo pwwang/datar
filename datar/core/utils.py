@@ -7,7 +7,6 @@ from typing import Any, Callable, Iterable, List, Optional, Union
 
 import numpy
 from pandas import DataFrame
-import pandas
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
@@ -285,6 +284,8 @@ def align_value(
 ) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
+    from ..base.constants import NA
+
     if is_scalar(value):
         return value
 
@@ -301,6 +302,9 @@ def align_value(
 
     if len_series == data.shape[0]:
         return value
+    if len_series == 0:
+        return NA
+
     if data.shape[0] % len_series == 0:
         nrepeat = data.shape[0] // len_series
         if isinstance(value, (list, tuple)):
@@ -321,16 +325,21 @@ def copy_df(
     return group_df(copied, df.grouper)
 
 def df_assign_item(
-        df: DataFrameType,
+        df: DataFrame,
         item: str,
         value: Any
 ) -> None:
-    if isinstance(df, DataFrameGroupBy):
-        df = df.obj
+    value = align_value(value, df)
     try:
         value = value.values
     except AttributeError:
         ...
+
+    lenval = 1 if is_scalar(value) else len(value)
+    if df.shape[0] == 1 and lenval > 1:
+        # add rows inplace
+        for i in range(lenval - 1):
+            df.loc[i+1] = df.iloc[0, :]
 
     df[item] = value
 
