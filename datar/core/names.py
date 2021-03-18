@@ -93,7 +93,10 @@ BUILTIN_REPAIR_METHODS = dict(
     check_unique=_repair_names_check_unique,
 )
 
-def repair_names(names: Iterable[str], repair: Union[str, Callable]) -> List[str]:
+def repair_names(
+        names: Iterable[str],
+        repair: Union[str, Callable]
+) -> List[str]:
     """Repair names based on the method
 
     Args:
@@ -144,3 +147,15 @@ def repair_names(names: Iterable[str], repair: Union[str, Callable]) -> List[str
         return [repair(name) for name in names]
 
     return repair(names)
+
+def name_placeholders(size: int) -> List[str]:
+    """Generate a set of valid name placeholders waiting for
+    the real names to be repaired
+
+    Args:
+        size: The number of name placeholders
+
+    Returns:
+        The name placeholders
+    """
+    return _repair_names_universal(["X"] * size)

@@ -860,7 +860,7 @@ def pull(
         name: Optional[StringOrIter] = None,
         to: str = 'series'
 ) -> SeriesLikeType:
-    """Pull a series from a dataframe
+    """Pull a series or a dataframe from a dataframe
 
     Args:
         _data: The dataframe
@@ -868,8 +868,11 @@ def pull(
         name: If specified, a zip object will be return with the name-value
             pairs. It can be a column name or a list of strs with the same
             length as the series
+            Only works when pulling `a` for name `a$b`
         to: Type of data to return.
+            Only works when pulling `a` for name `a$b`
             - series: Return a pandas Series object
+              Group information will be lost
             - array: Return a numpy.ndarray object
             - list: Return a python list
 
@@ -880,16 +883,24 @@ def pull(
     if isinstance(var, int):
         var = _data.columns[var]
 
-    if name is not None and is_scalar(name):
-        return zip(_data[name].values, _data[var].values)
-    if name is not None:
-        return zip(name, _data[var].values)
+    # check if var is a dataframe
+    if var not in _data:
+        cols = [col for col in _data.columns if col.startswith(f'{var}$')]
+        ret = _data.loc[:, cols]
+        ret.columns = [col[(len(var)+1):] for col in cols]
+        return ret
 
+    value = _data[var]
     if to == 'list':
-        return _data[var].values.tolist()
+        value = value.values.tolist()
     if to == 'array':
-        return _data[var].values
-    return _data[var]
+        value = value.values
+
+    if name is not None and is_scalar(name):
+        return zip(_data[name].values, value)
+    if name is not None:
+        return zip(name, value)
+    return value
 
 @register_verb(DataFrame, context=Context.SELECT)
 def rename(
