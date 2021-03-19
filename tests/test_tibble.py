@@ -232,3 +232,13 @@ def test_names_not_stripped():
     df = tribble(f.x, dict(a=1))
     out = df >> pull(f.x, to='list')
     assert out == [dict(a=1)]
+
+def test_dup_cols():
+    df = tribble(f.x, f.x, 1, 2)
+    assert df.columns.tolist() == ['x', 'x']
+
+    x = 1
+    df = tibble(x, x, _name_repair='minimal')
+    assert df.columns.tolist() == ['x', 'x']
+
+

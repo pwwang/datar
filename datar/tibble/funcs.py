@@ -1,4 +1,5 @@
 """Functions ported from tidyverse-tibble"""
+import itertools
 from typing import Any, Callable, Union
 
 from pandas import DataFrame
@@ -8,7 +9,7 @@ from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 
 from ..core.utils import copy_df, df_assign_item, to_df
-from ..core.names import repair_names
+from ..core.names import name_placeholders, repair_names
 
 def tibble(
         *args: Any,
@@ -36,14 +37,20 @@ def tibble(
         df.__dfname__ = varname(raise_exc=False)
         return df
 
-    # .rows not supported
     argnames = argname(args, vars_only=False, pos_only=True)
-    name_values = dict(zip(argnames, args))
-    name_values.update(kwargs)
-    names = repair_names(list(name_values), repair=_name_repair)
+    name_values = zip(argnames, args)
+    name_values = itertools.chain(name_values, kwargs.items())
+    # cannot do it with Mappings, same keys will be lost
+    names = []
+    values = []
+    for name, value in name_values:
+        names.append(name)
+        values.append(value)
+
+    names = repair_names(names, repair=_name_repair)
     df = None
 
-    for name, arg in zip(names, name_values.values()):
+    for name, arg in zip(names, values):
         if arg is None:
             continue
         if isinstance(arg, Expression):
@@ -57,6 +64,7 @@ def tibble(
                 df = copy_df(arg)
                 if name not in argnames:
                     df.columns = [f'{name}${col}' for col in df.columns]
+
             else:
                 df = to_df(arg, name)
         elif isinstance(arg, DataFrame):
@@ -64,10 +72,11 @@ def tibble(
                 df_assign_item(
                     df,
                     f'{name}${col}' if name not in argnames else col,
-                    arg[col]
+                    arg[col],
+                    allow_dups=True
                 )
         else:
-            df_assign_item(df, name, arg)
+            df_assign_item(df, name, arg, allow_dups=True)
 
     if df is None:
         df = DataFrame()

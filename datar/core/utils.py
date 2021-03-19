@@ -327,7 +327,8 @@ def copy_df(
 def df_assign_item(
         df: DataFrame,
         item: str,
-        value: Any
+        value: Any,
+        allow_dups: bool = False
 ) -> None:
     value = align_value(value, df)
     try:
@@ -341,7 +342,10 @@ def df_assign_item(
         for i in range(lenval - 1):
             df.loc[i+1] = df.iloc[0, :]
 
-    df[item] = value
+    if not allow_dups:
+        df[item] = value
+    else:
+        df.insert(df.shape[1], item, value, allow_duplicates=True)
 
 def objectize(data: Any) -> Any:
     if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):

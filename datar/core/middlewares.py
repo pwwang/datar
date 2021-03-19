@@ -152,7 +152,7 @@ class Across(MiddleWare):
             fns_list.append({'fn': fns})
         elif isinstance(fns, (list, tuple)):
             fns_list.extend(
-                {'fn': fn, '_fn': i+1, '_fn0': i}
+                {'fn': fn, '_fn': i, '_fn1': i+1}
                 for i, fn in enumerate(fns)
             )
         elif isinstance(fns, dict):

@@ -22,15 +22,16 @@ from ..core.utils import (
     group_df, groupby_apply, list_diff, list_intersect, list_union,
     objectize, select_columns, to_df, logger
 )
+from ..core.names import NameNonUniqueError, repair_names
 
-# pylint: disable=redefined-builtin
+# pylint: disable=redefined-builtin,no-value-for-parameter
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL)
 def arrange(
-        _data: DataFrameType,
+        _data: DataFrame,
         *series: Union[Series, SeriesGroupBy, Across],
         _by_group: bool = False
-) -> DataFrameType:
+) -> DataFrame:
     """orders the rows of a data frame by the values of selected columns.
 
     Args:
@@ -51,9 +52,17 @@ def arrange(
     """
     if not series:
         return _data
-    data = objectize(_data)
+
+    # check name uniqueness
+    try:
+        repair_names(_data.columns.tolist(), repair="check_unique")
+    except NameNonUniqueError:
+        raise ValueError(
+            'Cannot arrange a data frame with duplicate names.'
+        ) from None
+
     sorting_df = (
-        data.index.to_frame(name='__index__').drop(columns=['__index__'])
+        _data.index.to_frame(name='__index__').drop(columns=['__index__'])
     )
     desc_cols = set()
     acrosses = []
@@ -63,34 +72,37 @@ def arrange(
             desc_cols |= ser.desc_cols()
             if ser.fns:
                 acrosses.append(ser)
-            else:
-                for col in ser.cols:
-                    kwargs[col] = data[col].values
+            for col in ser.cols:
+                sorting_df[col] = _data[col]
         else:
             ser = objectize(ser)
             if isinstance(ser, DescSeries):
                 desc_cols.add(ser.name)
             kwargs[ser.name] = ser.values
 
-    sorting_df = mutate(sorting_df, *acrosses, **kwargs)
+    sorting_df = sorting_df >> mutate(*acrosses, **kwargs)
 
     by = sorting_df.columns.to_list()
-    if isinstance(_data, DataFrameGroupBy):
-        for key in _data.grouper.names:
-            if key not in sorting_df:
-                sorting_df[key] = _data.obj[key].values
-        if _by_group:
-            by = list_union(_data.grouper.names, by)
 
     ascending = [col not in desc_cols for col in by]
     sorting_df.sort_values(by=by, ascending=ascending, inplace=True)
-    data = data.loc[sorting_df.index, :]
+    return _data.loc[sorting_df.index, :]
 
-    if isinstance(_data, DataFrameGroupBy):
-        return group_df(data, _data.grouper)
-
-    return data
-
+@arrange.register(DataFrameGroupBy, context=Context.PENDING)
+def _(
+        _data: DataFrameGroupBy,
+        *series: Union[SeriesGroupBy, Across],
+        _by_group: bool = False
+) -> DataFrameGroupBy:
+    """Arrange grouped dataframe"""
+    if not _by_group:
+        ret = _data.obj >> arrange(*series)
+    else:
+        ret = _data.obj >> arrange(
+            *(_data.obj[col] for col in _data.grouper.names),
+            *series
+        )
+    return group_df(ret, _data.grouper.names)
 
 @register_verb(DataFrame, context=Context.PENDING)
 def mutate(

@@ -825,43 +825,7 @@ def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
 
     return None
 
-# ---------------------------------
-# Plain functions
-# ---------------------------------
-
-def factor(
-        x: Iterable[Any],
-        levels: Optional[Iterable[Any]] = None,
-        exclude: Any = NA,
-        ordered: bool = False
-) -> Categorical:
-    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
-    are also used for factors).
-
-    If argument ordered is TRUE, the factor levels are assumed to be ordered
-
-    Args:
-        x: a vector of data
-        levels: an optional vector of the unique values (as character strings)
-            that x might have taken.
-        exclude: a vector of values to be excluded when forming the set of
-            levels. This may be factor with the same level set as x or
-            should be a character
-        ordered: logical flag to determine if the levels should be regarded
-            as ordered (in the order given).
-    """
-    if is_categorical_dtype(x):
-        x = x.to_numpy()
-    ret = Categorical(
-        objectize(x),
-        categories=levels,
-        ordered=ordered
-    )
-    if is_scalar(exclude):
-        exclude = [exclude]
-
-    return ret.remove_categories(exclude)
-
+@register_func(None, context=Context.EVAL)
 def rep(
         x: Any,
         times: Union[int, Iterable[int]] = 1,
@@ -902,6 +866,44 @@ def rep(
     repeats = length // len(x) + 1
     x = x * repeats
     return x[:length]
+
+# ---------------------------------
+# Plain functions
+# ---------------------------------
+
+def factor(
+        x: Iterable[Any],
+        # pylint: disable=redefined-outer-name
+        levels: Optional[Iterable[Any]] = None,
+        exclude: Any = NA,
+        ordered: bool = False
+) -> Categorical:
+    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+    are also used for factors).
+
+    If argument ordered is TRUE, the factor levels are assumed to be ordered
+
+    Args:
+        x: a vector of data
+        levels: an optional vector of the unique values (as character strings)
+            that x might have taken.
+        exclude: a vector of values to be excluded when forming the set of
+            levels. This may be factor with the same level set as x or
+            should be a character
+        ordered: logical flag to determine if the levels should be regarded
+            as ordered (in the order given).
+    """
+    if is_categorical_dtype(x):
+        x = x.to_numpy()
+    ret = Categorical(
+        objectize(x),
+        categories=levels,
+        ordered=ordered
+    )
+    if is_scalar(exclude):
+        exclude = [exclude]
+
+    return ret.remove_categories(exclude)
 
 def context(data: DataFrameType) -> Any:
     """Evaluate verbs, functions in the
