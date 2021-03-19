@@ -447,6 +447,7 @@ def case_when(
     """Vectorise multiple if_else() statements.
 
     Args:
+        _data: The data frame.
         *when_cases: A even-size sequence, with 2n-th element values to match,
             and 2(n+1)-th element the values to replace.
             When matching value is True, then next value will be default to
@@ -465,9 +466,30 @@ def case_when(
         if case is True:
             df['x'] = ret
         else:
-            df.loc[case, 'x'] = ret
+            df.loc[case.reset_index(drop=True), 'x'] = ret
 
     return df.x
+
+@case_when.register((list, tuple, numpy.ndarray))
+def _(
+        _data: Union[list, tuple, numpy.ndarray],
+        *when_cases: Any
+) -> numpy.ndarray:
+    """case_when on lists/tuples"""
+    if len(when_cases) % 2 != 0:
+        raise ValueError('Number of arguments of case_when should be even.')
+
+    array = numpy.array(_data)
+    nrow = len(array)
+    ret = numpy.array([NA] * nrow)
+    when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
+    for case, val in when_cases:
+        if case is True:
+            ret[numpy.isnan(ret)] = val
+        else:
+            ret[case] = val
+
+    return ret
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def if_else(
