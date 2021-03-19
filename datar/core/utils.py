@@ -532,7 +532,9 @@ def groupby_apply(
         g_keys = df.grouper.names
         def apply_func(subdf):
             ret = func(subdf)
-            ret[g_keys] = df.obj[g_keys]
+            for key in g_keys:
+                if key not in ret:
+                    df_assign_item(ret, key, subdf[key].values[0])
             return ret[list_union(g_keys, ret.columns)]
         return df.apply(apply_func).reset_index(drop=True)
 

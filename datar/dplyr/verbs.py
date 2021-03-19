@@ -238,7 +238,8 @@ def _(
         df.flags.grouper = _data.grouper
         return df >> mutate(*args, **kwargs)
 
-    return group_df(groupby_apply(_data, apply_func), _data.grouper)
+    applied = groupby_apply(_data, apply_func) # index reset
+    return group_df(applied, _data.grouper)
 
 # Forward pipda.Expression for mutate to evaluate
 @register_verb((DataFrame, DataFrameGroupBy), context=None)
@@ -600,7 +601,7 @@ def summarise(
 
     return ret
 
-@summarise.register(DataFrameGroupBy, context=None)
+@summarise.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         *acrosses: Across,
@@ -609,16 +610,16 @@ def _(
 ) -> DataFrameType:
 
     def apply_func(df):
-        df.flags.grouper = _data.grouper
-        return df[
-            list_diff(df.columns.tolist(), _data.grouper.names)
-        ] >> summarise(*acrosses, _groups=_groups, **kwargs)
+        mydf = df[list_diff(df.columns.tolist(), _data.grouper.names)]
+        mydf.flags.grouper = _data.grouper
+        ret = mydf >> summarise(*acrosses, _groups=_groups, **kwargs)
+        return ret
 
     ret = groupby_apply(_data, apply_func, groupdata=True)
 
     g_keys = _data.grouper.names
     if _groups is None:
-        gsize = group_df(ret, _data.grouper.names).grouper.size().tolist()
+        gsize = _data.grouper.size().tolist()
         if gsize == [1] * len(gsize):
             _groups = 'drop_last'
             if len(g_keys) == 1 and summarise.inform:

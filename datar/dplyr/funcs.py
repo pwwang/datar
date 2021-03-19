@@ -16,7 +16,7 @@ from ..core.middlewares import (
 )
 from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_iterable, is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import copy_df, filter_columns, objectize, list_diff
+from ..core.utils import copy_df, filter_columns, list_union, objectize, list_diff
 from ..base.constants import NA
 
 # pylint: disable=redefined-outer-name
@@ -566,10 +566,10 @@ def cur_group_id(_data: DataFrame) -> int:
 @register_func(DataFrame)
 def cur_group_rows(_data: DataFrame) -> int:
     """gives the row indices for the current group."""
-    return _data.index
+    return _data.index.tolist()
 
 @register_func(DataFrame)
-def cur_group(_data: DataFrame) -> Series:
+def cur_group(_data: DataFrame) -> DataFrame:
     """gives the group keys, a tibble with one row and one column for
     each grouping variable."""
     grouper = getattr(_data.flags, 'grouper', None)
@@ -578,8 +578,10 @@ def cur_group(_data: DataFrame) -> Series:
             'To get current group, a dataframe must be grouped '
             'using `datar.dplyr.group_by`'
         )
-
-    return _data[grouper.names]
+    group_id = cur_group_id(_data)
+    levels = grouper.get_group_levels()
+    group = list(zip(*levels))[group_id]
+    return DataFrame(group, columns=grouper.names).reset_index(drop=True)
 
 @register_func(DataFrame)
 def cur_data(_data: DataFrame) -> int:
@@ -591,14 +593,18 @@ def cur_data(_data: DataFrame) -> int:
             'To get current group data, a dataframe must be grouped '
             'using `datar.dplyr.group_by`'
         )
-
-    return _data.drop(columns=grouper.names)
+    return copy_df(_data).reset_index(drop=True)
 
 @register_func(DataFrame)
 def cur_data_all(_data: DataFrame) -> int:
     """gives the current data for the current group
     (including grouping variables)"""
-    return _data.copy()
+    level = cur_group(_data)
+    for group in level.columns:
+        _data[group] = level[group].values[0]
+    return _data[
+        list_union(level.columns.tolist(), _data.columns)
+    ].reset_index(drop=True)
 
 def cur_column() -> CurColumn:
     """Used in the functions of across. So we don't have to register it."""
