@@ -30,7 +30,8 @@ def get(
         A single element when both rows and cols are scalar, otherwise
         a subset of _data
     """
-    _data = objectize(_data)
+    _data = objectize(_data).reset_index(drop=True)
+
     # getting single element
     if (
             rows is not None and

@@ -13,7 +13,7 @@ from typing import Any, Iterable, List, Optional, Type, Union
 import numpy
 import pandas
 from pandas.core.dtypes.common import (
-    is_categorical_dtype, is_float_dtype, is_numeric_dtype, is_string_dtype
+    is_categorical_dtype, is_float_dtype, is_int64_dtype, is_integer_dtype, is_numeric_dtype, is_string_dtype
 )
 from pandas import Series, Categorical, DataFrame
 from pandas.core.groupby.generic import SeriesGroupBy
@@ -24,7 +24,7 @@ from ..core.utils import categorize, objectize
 from ..core.middlewares import Collection, ContextWithData
 from ..core.types import (
     BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
-    NumericType, SeriesLikeType, StringOrIter, is_int, IntType,
+    NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
     is_iterable, is_series_like, is_scalar
 )
 
@@ -51,7 +51,7 @@ def _(
         tz: Union[int, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
-    if is_int(tz):
+    if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return x + tz
@@ -65,7 +65,7 @@ def _(
         tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ):
-    if is_int(tz):
+    if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return (x + tz).date()
@@ -79,7 +79,7 @@ def _(
         tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
-    if is_int(tz):
+    if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     try_formats = try_formats or [
@@ -354,6 +354,24 @@ def is_categorical(x: Any) -> bool:
     return is_categorical_dtype(x)
 
 is_factor = is_categorical
+
+@register_func(None, context=Context.EVAL)
+def is_int64(x: Any) -> BoolOrIter:
+    """Check if x is double/float data"""
+    x = objectize(x)
+    if is_scalar(x):
+        return isinstance(x, (int, numpy.int64))
+    return is_int64_dtype(x)
+
+@register_func(None, context=Context.EVAL)
+def is_integer(x: Any) -> BoolOrIter:
+    """Check if x is double/float data"""
+    x = objectize(x)
+    if is_scalar(x):
+        return is_scalar_int(x)
+    return is_integer_dtype(x)
+
+is_int = is_integer
 
 @register_func(None, context=Context.EVAL)
 def is_double(x: Any) -> BoolOrIter:
@@ -857,7 +875,7 @@ def rep(
                 "Unexpected each argument when times is an iterable."
             )
 
-    if is_int(times):
+    if is_scalar_int(times):
         x = [elem for elem in x for _ in range(each)] * int(times)
     else:
         x = [elem for n, elem in zip(times, x) for _ in range(n)]

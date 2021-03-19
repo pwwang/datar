@@ -1,9 +1,13 @@
 """Verbs ported from R-dplyr"""
+from numpy.lib.arraysetops import isin
+from pandas.core.arrays.categorical import Categorical
+from datar.base.funcs import is_categorical
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
 import pandas
 from pandas import DataFrame, Series, RangeIndex
+from pandas.api.types import union_categoricals
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 
 from pipda import register_verb, Context, evaluate_expr, evaluate_args
@@ -23,6 +27,7 @@ from ..core.utils import (
     objectize, select_columns, to_df, logger
 )
 from ..core.names import NameNonUniqueError, repair_names
+from ..tibble.funcs import tibble
 
 # pylint: disable=redefined-builtin,no-value-for-parameter
 
@@ -1182,25 +1187,89 @@ def _(
 # Two table verbs
 # ---------------
 
-@register_verb(DataFrame)
+@register_verb((DataFrame, list, dict))
 def bind_rows(
-        _data: DataFrame,
-        *datas: DataFrame
+        _data: Union[DataFrame, list, dict],
+        *datas: Union[DataFrame, dict],
+        _id: Optional[str] = None,
+        **kwargs: Union[DataFrame, dict]
 ) -> DataFrame:
     """Bind rows of give dataframes
 
     Args:
-        _data, *datas: Dataframes to combine
+        _data: The seed dataframe to bind others
+            Could be a dict or a list, keys/indexes will be used for _id col
+        *datas: Other dataframes to combine
+        _id: The name of the id columns
+        **kwargs: A mapping of dataframe, keys will be used as _id col.
 
     Returns:
         The combined dataframe
     """
-    return pandas.concat([_data, *datas])
+    if _id is not None and not isinstance(_id, str):
+        raise ValueError("`_id` must be a scalar string.")
 
-@register_verb(DataFrame)
+    def data_to_df(data):
+        """Make a copy of dataframe or convert dict to a dataframe"""
+        if isinstance(data, DataFrame):
+            return data.copy()
+        ret = tibble(**data) # avoid varname error
+        return ret
+
+    key_data = {}
+    if isinstance(_data, list):
+        for i, dat in enumerate(_data):
+            if dat is not None:
+                key_data[i] = data_to_df(dat)
+    elif _data is not None:
+        key_data[0] = data_to_df(_data)
+
+    for i, dat in enumerate(datas):
+        if dat is not None:
+            key_data[len(key_data)] = data_to_df(dat)
+
+    for key, val in kwargs.items():
+        if val is not None:
+            key_data[key] = data_to_df(val)
+
+    if not key_data:
+        return DataFrame()
+
+    # handle categorical data
+    for col in list(key_data.values())[0].columns:
+        all_series = [
+            dat[col] for dat in key_data.values()
+            if col in dat and not dat[col].isna().all()
+        ]
+        all_categorical = [
+            is_categorical(ser) for ser in all_series
+        ]
+        if all(all_categorical):
+            union_cat = union_categoricals(all_series)
+            for data in key_data.values():
+                if col not in data: # in case it is 0-column df
+                    continue
+                data[col] = Categorical(
+                    data[col],
+                    categories=union_cat.categories,
+                    ordered=is_categorical(data[col]) and data[col].cat.ordered
+                )
+        elif any(all_categorical):
+            logger.warning("Factor information lost during rows binding.")
+
+    if _id is not None:
+        return pandas.concat(
+            key_data.values(),
+            keys=key_data.keys(),
+            names=[_id, None]
+        ).reset_index(level=0).reset_index(drop=True)
+    return pandas.concat(key_data.values()).reset_index(drop=True)
+
+@register_verb((DataFrame, dict))
 def bind_cols(
-        _data: DataFrame,
-        *datas: DataFrame
+        _data: Union[DataFrame, dict],
+        *datas: Union[DataFrame, dict],
+        _name_repair: Union[str, Callable] = "unique"
 ) -> DataFrame:
     """Bind columns of give dataframes
 
@@ -1210,7 +1279,21 @@ def bind_cols(
     Returns:
         The combined dataframe
     """
-    return pandas.concat([_data, *datas], axis=1)
+    if isinstance(_data, dict):
+        _data = tibble(**_data)
+    more_data = []
+    for data in datas:
+        if isinstance(data, dict):
+            more_data.append(tibble(**data))
+        else:
+            more_data.append(data)
+    if _data is not None:
+        more_data.insert(0, _data)
+    if not more_data:
+        return DataFrame()
+    ret = pandas.concat(more_data, axis=1)
+    ret.columns = repair_names(ret.columns.tolist(), repair=_name_repair)
+    return ret
 
 @register_verb(DataFrame)
 def intersect(
