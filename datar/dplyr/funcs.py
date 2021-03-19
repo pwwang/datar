@@ -14,9 +14,9 @@ from pipda import register_func, Context, evaluate_expr
 from ..core.middlewares import (
     Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
 )
-from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_scalar
+from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_iterable, is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import filter_columns, objectize, list_diff
+from ..core.utils import copy_df, filter_columns, objectize, list_diff
 from ..base.constants import NA
 
 # pylint: disable=redefined-outer-name
@@ -815,7 +815,7 @@ def recode_factor(
 recode_categorical = recode_factor # pylint: disable=invalid-name
 
 @register_func(None, context=Context.EVAL)
-def coalesce(x: Any, replace: Any) -> Any:
+def coalesce(x: Any, *replace: Any) -> Any:
     """Replace missing values
 
     https://dplyr.tidyverse.org/reference/coalesce.html
@@ -828,21 +828,25 @@ def coalesce(x: Any, replace: Any) -> Any:
         A vector the same length as the first argument with missing values
         replaced by the first non-missing value.
     """
-    x = objectize(x)
-    if isinstance(x, Iterable):
-        if not isinstance(replace, Iterable):
-            replace = [replace] * len(x)
-        elif len(replace) != len(x):
-            raise ValueError(
-                f"Expect length {len(x)} for coalesce replacement, "
-                f"got {len(replace)}"
-            )
-        return [
-            rep if numpy.isnan(elem) else elem
-            for elem, rep in zip(x, replace)
-        ]
+    if not replace:
+        return x
 
-    return replace if numpy.isnan(x) else x
+    x = objectize(x)
+    if isinstance(x, DataFrame):
+        x = copy_df(x)
+        for repl in replace:
+            x = x.combine_first(repl)
+        return x
+
+    if is_iterable(x):
+        x = Series(x)
+        for repl in replace:
+            x = x.combine_first(
+                Series(repl if is_iterable(repl) else [repl] * len(x))
+            )
+        return x.values
+
+    return replace[0] if numpy.isnan(x) else x
 
 @register_func(None, context=Context.EVAL)
 def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
