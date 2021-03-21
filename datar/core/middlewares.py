@@ -205,7 +205,7 @@ class Across(MiddleWare):
                     col,
                     *CurColumn.replace_args(self.args, col),
                     **CurColumn.replace_kwargs(self.kwargs, col),
-                    _calling_type='piping'
+                    _env='piping'
                 ).evaluate(data)
                 for col in self.cols
             ]
@@ -239,7 +239,7 @@ class Across(MiddleWare):
                         DirectRefAttr(data, column),
                         *CurColumn.replace_args(self.args, column),
                         **CurColumn.replace_kwargs(self.kwargs, column),
-                        _calling_type='piping'
+                        _env='piping'
                     ).evaluate(data)
                 if ret is None:
                     ret = to_df(value, name)

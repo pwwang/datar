@@ -511,14 +511,16 @@ def register_grouped(
 
 def group_df(
         df: DataFrame,
-        grouper: Union[BaseGrouper, StringOrIter]
+        grouper: Union[BaseGrouper, StringOrIter],
+        drop: bool = True
 ) -> DataFrameGroupBy:
     return df.groupby(
         grouper,
         as_index=False,
-        sort=False,
+        sort=True,
         dropna=False,
-        group_keys=False
+        group_keys=False,
+        observed=not drop
     )
 
 def groupby_apply(

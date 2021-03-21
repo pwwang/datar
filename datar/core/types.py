@@ -21,6 +21,7 @@ BoolOrIter = Union[bool, Iterable[bool]]
 FloatOrIter = Union[FloatType, Iterable[FloatType]]
 NumericOrIter = Union[NumericType, Iterable[NumericType]]
 
+NoneType = type(None)
 # used for type checks
 def is_scalar_int(x: Any) -> bool:
     """Check if a value is an integer"""

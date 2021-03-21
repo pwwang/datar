@@ -22,12 +22,12 @@ def test_cur_group_id():
 
     out = gf >> summarise(id=cur_group_id())
     # group_by not sorted
-    expect = tibble(x = c("b", "a"), id = [0,1])
+    expect = tibble(x = c("a", "b"), id = [0,1])
     assert out.obj.equals(expect)
 
     out = gf >> mutate(id=cur_group_id())
     # note the order has changed
-    expect = tibble(x=["b","b","a"], id=[0,0,1])
+    expect = tibble(x=["a", "b","b"], id=[0,1,1])
     assert out.obj.equals(expect)
 
 def test_cur_data_all():
@@ -38,19 +38,19 @@ def test_cur_data_all():
         df >> summarise(x=[cur_data()])
 
     out = gf >> summarise(x=[cur_data()]) >> pull()
-    assert out.values[0].values.flatten().tolist() == [1,3]
-    assert out.values[1].values.flatten().tolist() == [2]
+    assert out.values[0].values.flatten().tolist() == [2]
+    assert out.values[1].values.flatten().tolist() == [1,3]
 
     out = gf >> summarise(x=[cur_data_all()]) >> pull()
-    assert out.values[0].values.flatten().tolist() == ["b", 1, "b", 3]
-    assert out.values[1].values.flatten().tolist() == ["a", 2]
+    assert out.values[0].values.flatten().tolist() == ["a", 2]
+    assert out.values[1].values.flatten().tolist() == ["b", 1, "b", 3]
 
 def test_cur_group_rows():
     df = tibble(x = c("b", "a", "b"), y = [1,2,3])
     gf = df >> group_by(f.x)
 
     out = gf >> summarise(x=[cur_group_rows()]) >> pull()
-    assert out.values.tolist() == [[0,2], 1]
+    assert out.values.tolist() == [1, [0,2]]
 
 def test_cur_data_all_sequentially():
     df = tibble(a=1) >> group_by(f.a)

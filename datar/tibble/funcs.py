@@ -3,12 +3,13 @@ import itertools
 from typing import Any, Callable, Union
 
 from pandas import DataFrame
+from pandas.core.groupby.generic import DataFrameGroupBy
 from varname import argname, varname
 from pipda import Context
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 
-from ..core.utils import copy_df, df_assign_item, to_df
+from ..core.utils import copy_df, df_assign_item, objectize, to_df
 from ..core.names import name_placeholders, repair_names
 
 def tibble(
@@ -60,14 +61,15 @@ def tibble(
             arg = tibble(**arg)
 
         if df is None:
-            if isinstance(arg, DataFrame):
-                df = copy_df(arg)
+            if isinstance(arg, (DataFrame, DataFrameGroupBy)):
+                df = copy_df(objectize(arg))
                 if name not in argnames:
                     df.columns = [f'{name}${col}' for col in df.columns]
 
             else:
                 df = to_df(arg, name)
-        elif isinstance(arg, DataFrame):
+        elif isinstance(arg, (DataFrame, DataFrameGroupBy)):
+            arg = objectize(arg)
             for col in arg.columns:
                 df_assign_item(
                     df,

@@ -1,7 +1,5 @@
 """Verbs ported from R-dplyr"""
-from numpy.lib.arraysetops import isin
 from pandas.core.arrays.categorical import Categorical
-from datar.base.funcs import is_categorical
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
@@ -17,7 +15,7 @@ from ..core.middlewares import (
     DescSeries, IfCross, Inverted, RowwiseDataFrame
 )
 from ..core.types import (
-    DataFrameType, SeriesLikeType, StringOrIter, is_scalar
+    DataFrameType, NoneType, SeriesLikeType, StringOrIter, is_scalar
 )
 from ..core.contexts import ContextEvalWithUsedRefs, ContextSelectSlice
 from ..core.exceptions import ColumnNameInvalidError
@@ -28,6 +26,7 @@ from ..core.utils import (
 )
 from ..core.names import NameNonUniqueError, repair_names
 from ..tibble.funcs import tibble
+from ..base.funcs import is_categorical
 
 # pylint: disable=redefined-builtin,no-value-for-parameter
 
@@ -234,11 +233,16 @@ def _(
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Mutate on DataFrameGroupBy object"""
-    def apply_func(df):
-        df.flags.grouper = _data.grouper
-        return df >> mutate(*args, **kwargs)
+    if _data.obj.shape[0] > 0:
+        def apply_func(df):
+            df.flags.grouper = _data.grouper
+            return df >> mutate(*args, **kwargs)
 
-    applied = groupby_apply(_data, apply_func) # index reset
+        applied = groupby_apply(_data, apply_func) # index reset
+    else:
+        applied = DataFrame(
+            columns=list_union(_data.obj.columns.tolist(), kwargs.keys())
+        )
     return group_df(applied, _data.grouper)
 
 # Forward pipda.Expression for mutate to evaluate
@@ -328,14 +332,22 @@ def select(
     Returns:
         The dataframe with select columns
     """
+    if isinstance(_data, DataFrameGroupBy):
+        data = _data.obj
+        groups = _data.grouper.names
+    else:
+        data = _data
+        groups = []
+
     selected = select_columns(
-        _data.columns,
+        data.columns,
         *columns,
         *renamings.values()
     )
+    selected = list_union(groups, selected)
     # old -> new
     new_names = {val: key for key, val in renamings.items() if val in selected}
-    data = objectize(_data)[selected]
+    data = data[selected]
     if new_names:
         data = data.rename(columns=new_names)
 
@@ -369,6 +381,7 @@ def group_by(
         _data: DataFrame,
         *columns: str,
         _add: bool = False, # not working, since _data is not grouped
+        _drop: bool = True,
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Takes an existing tbl and converts it into a grouped tbl where
@@ -383,17 +396,17 @@ def group_by(
         A DataFrameGroupBy object
     """
     if kwargs:
-        _data = mutate(_data, **kwargs)
+        _data = _data >> mutate(**kwargs)
 
     columns = evaluate_args(columns, _data, Context.SELECT)
     columns = select_columns(_data.columns, *columns, *kwargs.keys())
     # requires pandas 1.2+
     # eariler versions have bugs with apply/transform
     # GH35889
-    return group_df(_data, columns)
+    return group_df(_data, columns, drop=_drop)
 
 
-@group_by.register(DataFrameGroupBy)
+@group_by.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         *columns: str,
@@ -410,7 +423,7 @@ def _(
         use _add = TRUE.
     """
     if kwargs:
-        _data = mutate(_data, **kwargs)
+        _data = _data >> mutate(**kwargs)
 
     columns = evaluate_args(columns, _data, Context.SELECT)
     columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
@@ -609,18 +622,21 @@ def _(
         **kwargs: Any
 ) -> DataFrameType:
 
-    def apply_func(df):
-        mydf = df[list_diff(df.columns.tolist(), _data.grouper.names)]
-        mydf.flags.grouper = _data.grouper
-        ret = mydf >> summarise(*acrosses, _groups=_groups, **kwargs)
-        return ret
+    if _data.obj.shape[0] > 0:
+        def apply_func(df):
+            mydf = df[list_diff(df.columns.tolist(), _data.grouper.names)]
+            mydf.flags.grouper = _data.grouper
+            ret = mydf >> summarise(*acrosses, _groups=_groups, **kwargs)
+            return ret
 
-    ret = groupby_apply(_data, apply_func, groupdata=True)
+        ret = groupby_apply(_data, apply_func, groupdata=True)
+    else: # 0-row dataframe
+        ret = DataFrame(columns=list_union(_data.grouper.names, kwargs.keys()))
 
     g_keys = _data.grouper.names
     if _groups is None:
         gsize = _data.grouper.size().tolist()
-        if gsize == [1] * len(gsize):
+        if not gsize or gsize == [1] * len(gsize):
             _groups = 'drop_last'
             if len(g_keys) == 1 and summarise.inform:
                 logger.info(
@@ -706,12 +722,14 @@ def _(
         *conditions: Iterable[bool],
         _preserve: bool = False
 ) -> DataFrameGroupBy:
+    if _data.obj.shape[0] > 0:
+        def apply_func(df):
+            df.flags.grouper = _data.grouper
+            return df >> filter(condition, *conditions, _preserve=_preserve)
 
-    def apply_func(df):
-        df.flags.grouper = _data.grouper
-        return df >> filter(condition, *conditions, _preserve=_preserve)
-
-    ret = groupby_apply(_data, apply_func)
+        ret = groupby_apply(_data, apply_func)
+    else:
+        ret = DataFrame(columns=_data.obj.columns)
     if _preserve:
         return group_df(ret, _data.grouper)
     return group_df(ret, _data.grouper.names)
@@ -719,13 +737,14 @@ def _(
 # ------------------------------
 # count
 
-@register_verb((DataFrame, DataFrameGroupBy), context=None)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
 def count(
         _data: DataFrameType,
         *columns: Any,
         wt: Optional[str] = None,
         sort: bool = False,
-        name: str = 'n',
+        name: Optional[str] = None,
+        _drop: bool = True,
         **mutates: Any
 ) -> DataFrame:
     """Count observations by group
@@ -744,20 +763,47 @@ def count(
     Returns:
         DataFrame object with the count column
     """
-    _data = objectize(_data)
-    columns = evaluate_args(columns, _data, Context.SELECT)
-    columns = select_columns(_data.columns, *columns)
+    data = objectize(_data)
+    columns = evaluate_args(columns, data, Context.SELECT)
+    columns = select_columns(data.columns, *columns)
 
-    wt = evaluate_expr(wt, _data, Context.SELECT)
-    _data = mutate(_data, **mutates)
+    wt = evaluate_expr(wt, data, Context.SELECT)
+    data = data >> mutate(**mutates)
 
     columns = columns + list(mutates)
-    grouped = group_df(_data, columns)
+    if not columns and not isinstance(_data, DataFrameGroupBy):
+        raise ValueError("No columns to count and data is not grouped.")
+    if not columns:
+        columns = _data.grouper.names
+
+    if _drop:
+        for col in columns:
+            if is_categorical(data[col]):
+                data[col] = data[col].cat.remove_unused_categories()
+
+    grouped = group_df(data, columns)
+
+    # check if name in columns
+    if name is None:
+        name = 'n'
+        while name in columns:
+            name += 'n'
+        if name != 'n':
+            logger.warning(
+                'Storing counts in `%s`, as `n` already present in input. '
+                'Use `name="new_name"` to pick a new name.',
+                name
+            )
+    elif isinstance(name, str):
+        columns = [col for col in columns if col != name]
+    else:
+        raise ValueError("`name` must be a single string.")
 
     if not wt:
-        count_frame = grouped[columns].size().to_frame(name=name)
+        count_frame = grouped[columns].grouper.size().to_frame(name=name)
     else:
         count_frame = grouped[wt].sum().to_frame(name=name)
+
 
     ret = count_frame.reset_index(level=columns)
     if sort:
@@ -1188,10 +1234,10 @@ def _(
 # Two table verbs
 # ---------------
 
-@register_verb((DataFrame, list, dict))
+@register_verb((DataFrame, list, dict, NoneType))
 def bind_rows(
-        _data: Union[DataFrame, list, dict],
-        *datas: Union[DataFrame, dict],
+        _data: Optional[Union[DataFrame, list, dict]],
+        *datas: Optional[Union[DataFrame, dict]],
         _id: Optional[str] = None,
         **kwargs: Union[DataFrame, dict]
 ) -> DataFrame:
@@ -1266,10 +1312,10 @@ def bind_rows(
         ).reset_index(level=0).reset_index(drop=True)
     return pandas.concat(key_data.values()).reset_index(drop=True)
 
-@register_verb((DataFrame, dict))
+@register_verb((DataFrame, dict, NoneType))
 def bind_cols(
-        _data: Union[DataFrame, dict],
-        *datas: Union[DataFrame, dict],
+        _data: Optional[Union[DataFrame, dict]],
+        *datas: Optional[Union[DataFrame, dict]],
         _name_repair: Union[str, Callable] = "unique"
 ) -> DataFrame:
     """Bind columns of give dataframes

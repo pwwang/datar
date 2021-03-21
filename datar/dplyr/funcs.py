@@ -327,12 +327,12 @@ def where(_data: DataFrameType, fn: Callable) -> List[str]:
             conditions = fn(_data[col])
         else:
             conditions = (
-                fn(_data[col], _calling_type='piping').evaluate(_data)
+                fn(_data[col], _env='piping').evaluate(_data)
                 if pipda_type == 'PlainFunction'
                 else fn(
                     _data,
                     _data[col],
-                    _calling_type='piping'
+                    _env='piping'
                 ).evaluate(_data)
             )
         if isinstance(conditions, bool):
