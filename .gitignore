@@ -108,6 +108,8 @@ poetry.lock
 
 docs/index.md
 docs/logo.png
+docs/example.png
+docs/example2.png
 docs/api/
 
 # vscode's local history extension

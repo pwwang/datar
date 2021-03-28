@@ -6,9 +6,10 @@ from datar.dplyr.funcs import last
 from typing import Any, Iterable
 
 import numpy
-from pipda import register_func, Context
+from pipda import register_func
 
 from ..core.types import NumericType
+from ..core.contexts import Context
 
 @register_func(None, context=Context.EVAL)
 def full_seq(

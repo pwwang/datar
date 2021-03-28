@@ -11,13 +11,14 @@ from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
 import pipda
-from pipda.context import Context, ContextBase
+from pipda.context import ContextBase
 from pipda.function import register_func
 from pipda.symbolic import DirectRefAttr
 from pipda.utils import evaluate_args, evaluate_expr, evaluate_kwargs
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
 from .types import DataFrameType, StringOrIter, is_scalar
+from .contexts import Context
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
@@ -317,8 +318,10 @@ def copy_df(
 ) -> DataFrameType:
     if isinstance(df, DataFrame):
         ret = df.copy()
-        ret.flags.grouper = getattr(df.flags, 'grouper', None)
-        ret.flags.rowwise = getattr(df.flags, 'rowwise', None)
+        for key in dir(df.flags):
+            if key.startswith('_'):
+                continue
+            setattr(ret.flags, key, getattr(df.flags, key))
         return ret
 
     copied = copy_df(df.obj)
@@ -337,10 +340,17 @@ def df_assign_item(
         ...
 
     lenval = 1 if is_scalar(value) else len(value)
+
     if df.shape[0] == 1 and lenval > 1:
+        if df.shape[1] == 0: # 0-column df
+            # Otherwise, cannot set a frame with no defined columns
+            df['__assign_placeholder__'] = 1
         # add rows inplace
         for i in range(lenval - 1):
             df.loc[i+1] = df.iloc[0, :]
+
+        if '__assign_placeholder__' in df:
+            df.drop(columns=['__assign_placeholder__'], inplace=True)
 
     if not allow_dups:
         df[item] = value

@@ -17,9 +17,15 @@ markdown_extensions:
 plugins:
     - search # necessary for search to work
     - mkapi
+    - mkdocs-jupyter:
+        execute: True
 extra_css:
     - style.css
 nav:
     - 'Home': 'index.md'
     - 'API': 'mkapi/api/datar'
+    - 'Examples':
+        'across': 'notebooks/across.ipynb'
+        'arrange': 'notebooks/arrange.ipynb'
+        'desc': 'notebooks/desc.ipynb'
     - 'Change Log': CHANGELOG.md

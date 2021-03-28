@@ -7,10 +7,9 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 import numpy
 import pandas
 from pandas import DataFrame
-from pandas.core.dtypes.common import is_categorical_dtype
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
-from pipda import register_verb, Context
+from pipda import register_verb
 
 from ..core.utils import (
     copy_df, group_df, objectize, select_columns, list_diff, logger
@@ -20,6 +19,7 @@ from ..core.types import (
     is_scalar
 )
 from ..core.middlewares import Nesting
+from ..core.contexts import Context
 from ..base.constants import NA
 from ..base.funcs import levels
 from ..dplyr.verbs import distinct

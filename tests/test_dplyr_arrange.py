@@ -23,6 +23,8 @@ def test_na_end():
     df = tibble(x=c(2,1,NA)) # NA makes it float
     out = df >> arrange(f.x) >> pull()
     assert out.fillna(0.0).eq([1.0,2.0,0.0]).all()
+    out = df >> arrange(desc(f.x)) >> pull()
+    assert out.fillna(0.0).eq([2.0,1.0,0.0]).all()
 
 def test_errors():
     x = 1
@@ -32,10 +34,10 @@ def test_errors():
         df >> arrange(f.x)
 
     df = tibble(x=x)
-    with pytest.raises(AttributeError):
+    with pytest.raises(KeyError):
         df >> arrange(f.y)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(KeyError):
         # rep(f.x, 2) is a list
         df >> arrange(rep(f.x, 2))
 

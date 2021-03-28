@@ -21,12 +21,13 @@ from pipda import Context, register_func
 
 from .constants import NA
 from ..core.utils import categorize, objectize
-from ..core.middlewares import Collection, ContextWithData
+from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
     BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
     NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
     is_iterable, is_series_like, is_scalar
 )
+from ..core.contexts import Context
 
 # pylint: disable=redefined-builtin,invalid-name
 
@@ -941,7 +942,7 @@ def context(data: DataFrameType) -> Any:
     Returns:
         The original or modified data
     """
-    return ContextWithData(data)
+    return WithDataEnv(data)
 
 @register_func(None, context=None)
 def identity(x: Any) -> Any:

@@ -2,10 +2,11 @@
 from typing import Any, Iterable, List
 
 import numpy
-from pipda import Context
+from pipda import register_func
 
 from ..core.utils import register_grouped
 from ..core.types import FloatOrIter, SeriesLikeType
+from ..core.contexts import Context
 
 # pylint: disable=redefined-builtin, redefined-outer-name
 
@@ -73,7 +74,7 @@ def quantile(
         else numpy.quantile(series, probs)
     )
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def sd(
         series: Iterable[Any],
         na_rm: bool = False,

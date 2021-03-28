@@ -8,16 +8,17 @@ from pandas import DataFrame, Series, RangeIndex
 from pandas.api.types import union_categoricals
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 
-from pipda import register_verb, Context, evaluate_expr, evaluate_args
+from pipda import register_verb, evaluate_expr, evaluate_args
+from pipda.utils import Expression
 
 from ..core.middlewares import (
     Across, CAcross, Collection,
-    DescSeries, IfCross, Inverted, RowwiseDataFrame
+    Inverted, RowwiseDataFrame
 )
 from ..core.types import (
     DataFrameType, NoneType, SeriesLikeType, StringOrIter, is_scalar
 )
-from ..core.contexts import ContextEvalWithUsedRefs, ContextSelectSlice
+from ..core.contexts import ContextEval, ContextSelectSlice
 from ..core.exceptions import ColumnNameInvalidError
 from ..core.utils import (
     align_value, copy_df, df_assign_item, expand_slice, get_n_from_prop,
@@ -25,15 +26,17 @@ from ..core.utils import (
     objectize, select_columns, to_df, logger
 )
 from ..core.names import NameNonUniqueError, repair_names
+from ..core.contexts import Context
 from ..tibble.funcs import tibble
 from ..base.funcs import is_categorical
+from .funcs import group_by_drop_default
 
 # pylint: disable=redefined-builtin,no-value-for-parameter
 
 @register_verb(DataFrame, context=Context.EVAL)
 def arrange(
         _data: DataFrame,
-        *series: Union[Series, SeriesGroupBy, Across],
+        *series: Iterable[Any],
         _by_group: bool = False
 ) -> DataFrame:
     """orders the rows of a data frame by the values of selected columns.
@@ -65,31 +68,10 @@ def arrange(
             'Cannot arrange a data frame with duplicate names.'
         ) from None
 
-    sorting_df = (
-        _data.index.to_frame(name='__index__').drop(columns=['__index__'])
-    )
-    desc_cols = set()
-    acrosses = []
-    kwargs = {}
-    for ser in series:
-        if isinstance(ser, Across):
-            desc_cols |= ser.desc_cols()
-            if ser.fns:
-                acrosses.append(ser)
-            for col in ser.cols:
-                sorting_df[col] = _data[col]
-        else:
-            ser = objectize(ser)
-            if isinstance(ser, DescSeries):
-                desc_cols.add(ser.name)
-            kwargs[ser.name] = ser.values
+    sorting_df = DataFrame(index=_data.index) >> mutate(*series)
+    by = sorting_df.columns.tolist()
+    sorting_df.sort_values(by=by, inplace=True)
 
-    sorting_df = sorting_df >> mutate(*acrosses, **kwargs)
-
-    by = sorting_df.columns.to_list()
-
-    ascending = [col not in desc_cols for col in by]
-    sorting_df.sort_values(by=by, ascending=ascending, inplace=True)
     return _data.loc[sorting_df.index, :]
 
 @arrange.register(DataFrameGroupBy, context=Context.PENDING)
@@ -111,7 +93,7 @@ def _(
 @register_verb(DataFrame, context=Context.PENDING)
 def mutate(
         _data: DataFrame,
-        *acrosses: Across,
+        *series: Iterable[Any],
         _keep: str = 'all',
         _before: Optional[str] = None,
         _after: Optional[str] = None,
@@ -121,7 +103,7 @@ def mutate(
 
     Args:
         _data: A data frame
-        *acrosses: Values from across function
+        *series: Values from across function
         _keep: allows you to control which columns from _data are retained
             in the output:
             - "all", the default, retains all variables.
@@ -155,39 +137,32 @@ def mutate(
             - Groups will be recomputed if a grouping variable is mutated.
             - Data frame attributes are preserved.
     """
-    context = ContextEvalWithUsedRefs()
+    context = ContextEval()
     if _before is not None:
         _before = evaluate_expr(_before, _data, Context.SELECT)
     if _after is not None:
         _after = evaluate_expr(_after, _data, Context.SELECT)
 
-    across = {} # no need OrderedDict in python3.7+ anymore
-    for acrs in acrosses:
-        acrs = evaluate_expr(acrs, _data, context)
-        across.update(
-            acrs.evaluate(_data, context).to_dict('series')
-            if isinstance(acrs, Across) else acrs
-        )
-
-    across.update(kwargs)
-    kwargs = across
-
     data = copy_df(_data)
-    if isinstance(_data, RowwiseDataFrame):
-        data = RowwiseDataFrame(data, rowwise=_data.flags.rowwise)
 
-    for key, val in kwargs.items():
+    serieses = {} # no need OrderedDict in python3.7+ anymore
+    for i, ser in enumerate(series):
+        ser = evaluate_expr(ser, data, context)
+        if isinstance(ser, Series):
+            serieses[ser.name] = ser.values
+        elif isinstance(ser, DataFrame):
+            serieses.update(ser.to_dict('series'))
+        else:
+            serieses[f'V{i}'] = ser
+
+    serieses.update(kwargs)
+
+    for key, val in serieses.items():
         if val is None:
             data.drop(columns=[key], inplace=True)
             continue
 
         val = evaluate_expr(val, data, context)
-
-        if isinstance(val, CAcross):
-            val.names = key
-        if isinstance(val, Across):
-            val = DataFrame(val.evaluate(data, context))
-
         value = align_value(val, data)
         if isinstance(value, DataFrame):
             if value.shape[1] == 1:
@@ -203,7 +178,7 @@ def mutate(
         else:
             df_assign_item(data, key, value)
 
-    outcols = list(kwargs)
+    outcols = list(serieses)
     # do the relocate first
     if _before is not None or _after is not None:
         # pylint: disable=no-value-for-parameter
@@ -226,7 +201,7 @@ def mutate(
 
     return data
 
-@mutate.register(DataFrameGroupBy, context=None)
+@mutate.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         *args: Any,
@@ -244,6 +219,25 @@ def _(
             columns=list_union(_data.obj.columns.tolist(), kwargs.keys())
         )
     return group_df(applied, _data.grouper)
+
+@mutate.register(RowwiseDataFrame, context=None)
+def _(
+        _data: RowwiseDataFrame,
+        *args: Any,
+        **kwargs: Any
+) -> RowwiseDataFrame:
+    """Mutate on RowwiseDataFrame object"""
+    if _data.shape[0] > 0:
+        def apply_func(df):
+            df.flags.rowwise = _data.flags.rowwise
+            return df >> mutate(*args, **kwargs)
+
+        applied = _data.apply(apply_func, axis=1).reset_index(drop=True)
+    else:
+        applied = DataFrame(
+            columns=list_union(_data.columns.tolist(), kwargs.keys())
+        )
+    return RowwiseDataFrame(applied, rowwise=_data.flags.rowwise)
 
 # Forward pipda.Expression for mutate to evaluate
 @register_verb((DataFrame, DataFrameGroupBy), context=None)
@@ -317,7 +311,7 @@ def relocate(
     return ret
 
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def select(
         _data: DataFrameType,
         *columns: Union[StringOrIter, Inverted],
@@ -381,7 +375,7 @@ def group_by(
         _data: DataFrame,
         *columns: str,
         _add: bool = False, # not working, since _data is not grouped
-        _drop: bool = True,
+        _drop: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Takes an existing tbl and converts it into a grouped tbl where
@@ -403,6 +397,10 @@ def group_by(
     # requires pandas 1.2+
     # eariler versions have bugs with apply/transform
     # GH35889
+    _data.flags.group_drop = (
+        group_by_drop_default(_data)
+        if _drop is None else _drop
+    )
     return group_df(_data, columns, drop=_drop)
 
 
@@ -433,7 +431,7 @@ def _(
     return group_df(_data.obj, columns)
 
 
-@register_verb(DataFrameGroupBy)
+@register_verb(DataFrameGroupBy, context=Context.EVAL)
 def ungroup(_data: DataFrameGroupBy) -> DataFrame:
     """Ungroup a grouped dataframe
 
@@ -448,7 +446,7 @@ def ungroup(_data: DataFrameGroupBy) -> DataFrame:
 # ------------------------------
 # group data
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def group_keys(
         _data: DataFrameType,
         *cols: str,
@@ -460,19 +458,19 @@ def group_keys(
     group_levels = list(_data.groups.keys())
     return DataFrame(group_levels, columns=_data.grouper.names)
 
-@register_verb(DataFrameGroupBy)
+@register_verb(DataFrameGroupBy, context=Context.EVAL)
 def group_rows(_data: DataFrameGroupBy) -> List[str]:
     """Returns the rows which each group contains"""
     return _data.grouper.groups
 
-@register_verb(DataFrameGroupBy)
+@register_verb(DataFrameGroupBy, context=Context.EVAL)
 def group_vars(_data: DataFrameGroupBy) -> List[str]:
     """gives names of grouping variables as character vector"""
     return _data.grouper.names
 
 group_cols = group_vars # pylint: disable=invalid-name
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def group_map(
         _data: DataFrameType,
         func: Callable[[DataFrame], Any]
@@ -484,7 +482,7 @@ def group_map(
         func(_data.obj.loc[index]) for index in _data.grouper.groups.values()
     ]
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def group_modify(
         _data: DataFrameType,
         func: Callable[[DataFrame], DataFrame]
@@ -494,7 +492,7 @@ def group_modify(
         return func(_data)
     return _data.apply(func).reset_index(drop=True, level=0)
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def group_walk(
         _data: DataFrameType,
         func: Callable[[DataFrame], None]
@@ -504,14 +502,14 @@ def group_walk(
         func(_data)
     _data.apply(func)
 
-@register_verb(DataFrameGroupBy)
+@register_verb(DataFrameGroupBy, context=Context.EVAL)
 def group_trim(
         _data: DataFrameGroupBy
 ) -> DataFrameGroupBy:
     """Trim the unused group levels"""
     return group_df(_data.obj, _data.grouper.names)
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def group_split(
         _data: DataFrameType,
         *cols: str,
@@ -564,7 +562,7 @@ def with_groups(
 @register_verb(DataFrame, context=Context.EVAL)
 def summarise(
         _data: DataFrame,
-        *acrosses: Across,
+        *dfs: Union[DataFrame, Mapping[str, Iterable[Any]]],
         _groups: Optional[str] = None,
         **kwargs: Any
 ) -> DataFrame:
@@ -578,21 +576,25 @@ def summarise(
             - "drop": All levels of grouping are dropped.
             - "keep": Same grouping structure as _data.
             - "rowwise": Each row is its own group.
-        *acrosses, **kwargs: Name-value pairs, where value is the summarized
+        *dfs, **kwargs: Name-value pairs, where value is the summarized
             data for each group
 
     Returns:
         The summary dataframe.
     """
-    across = {} # no need OrderedDict in python3.7+ anymore
-    for acrs in acrosses:
-        if isinstance(acrs, Across):
-            across.update(acrs.evaluate(_data, Context.EVAL).to_dict('series'))
+    serieses = {}
+    for ser in dfs:
+        if isinstance(ser, Series):
+            serieses[ser.name] = ser.values
+        elif isinstance(ser, DataFrame):
+            serieses.update(ser.to_dict('series'))
+        elif isinstance(ser, dict):
+            serieses.update(ser)
         else:
-            across.update(acrs) # dict
+            raise ValueError('Only series, dataframe or dict should be used.')
 
-    across.update(kwargs)
-    kwargs = across
+    serieses.update(kwargs)
+    kwargs = serieses
 
     ret = None
     if isinstance(_data, RowwiseDataFrame) and _data.flags.rowwise is not True:
@@ -617,7 +619,7 @@ def summarise(
 @summarise.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
-        *acrosses: Across,
+        *dfs: Union[DataFrame, Mapping[str, Iterable[Any]]],
         _groups: Optional[str] = None,
         **kwargs: Any
 ) -> DataFrameType:
@@ -626,7 +628,7 @@ def _(
         def apply_func(df):
             mydf = df[list_diff(df.columns.tolist(), _data.grouper.names)]
             mydf.flags.grouper = _data.grouper
-            ret = mydf >> summarise(*acrosses, _groups=_groups, **kwargs)
+            ret = mydf >> summarise(*dfs, _groups=_groups, **kwargs)
             return ret
 
         ret = groupby_apply(_data, apply_func, groupdata=True)
@@ -696,36 +698,29 @@ def filter(
     Returns:
         The subset dataframe
     """
-    if isinstance(condition, IfCross):
-        condition = condition.evaluate(_data, Context.EVAL)
-
     # check condition, conditions
     for cond in conditions:
-        if isinstance(cond, IfCross):
-            cond = cond.evaluate(Context.EVAL, _data)
         condition = condition & cond
     try:
         condition = objectize(condition).values.flatten()
     except AttributeError:
         ...
 
-    ret = objectize(_data)[condition]
-    if isinstance(_data, DataFrameGroupBy):
-        grouper = _data.grouper if _preserve else _data.grouper.names
-        return group_df(ret, grouper)
+    ret = _data[condition]
     return ret
 
-@filter.register(DataFrameGroupBy, context=None)
+@filter.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
-        condition: Iterable[bool],
-        *conditions: Iterable[bool],
+        condition: Expression,
+        *conditions: Expression,
         _preserve: bool = False
 ) -> DataFrameGroupBy:
+    """Filter on DataFrameGroupBy object"""
     if _data.obj.shape[0] > 0:
         def apply_func(df):
             df.flags.grouper = _data.grouper
-            return df >> filter(condition, *conditions, _preserve=_preserve)
+            return df >> filter(condition, *conditions)
 
         ret = groupby_apply(_data, apply_func)
     else:
@@ -1027,7 +1022,7 @@ def slice(
     rows = expand_slice(rows, _data.shape[0])
     return _data.iloc[rows, :]
 
-@slice.register(DataFrameGroupBy)
+@slice.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         rows: Any,
@@ -1042,7 +1037,7 @@ def _(
         return group_df(ret, grouper.names)
     return group_df(ret, grouper)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_head(
         _data: DataFrame,
         n: Optional[int] = None,
@@ -1067,7 +1062,7 @@ def slice_head(
     rows = list(range(n))
     return _data.iloc[rows, :]
 
-@slice_head.register(DataFrameGroupBy)
+@slice_head.register(DataFrameGroupBy, context=Context.EVAL)
 def _(
         _data: DataFrameGroupBy,
         n: Optional[Union[int, Iterable[int]]] = None,
@@ -1087,7 +1082,7 @@ def _(
     indexes = numpy.concatenate(indexes.values)
     return group_df(_data.obj.iloc[indexes, :], _data.grouper)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_tail(
         _data: DataFrame,
         n: Optional[int] = 1,
@@ -1101,7 +1096,7 @@ def slice_tail(
     rows = [-(elem+1) for elem in range(n)]
     return _data.iloc[rows, :]
 
-@slice_tail.register(DataFrameGroupBy)
+@slice_tail.register(DataFrameGroupBy, context=Context.EVAL)
 def _(
         _data: DataFrameGroupBy,
         n: Optional[Union[int, Iterable[int]]] = None,
@@ -1141,7 +1136,7 @@ def slice_min(
         columns=['__slice_order__']
     )
 
-@slice_min.register(DataFrameGroupBy, context=None)
+@slice_min.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         order_by: Series,
@@ -1176,7 +1171,7 @@ def slice_max(
         columns=['__slice_order__']
     )
 
-@slice_max.register(DataFrameGroupBy, context=None)
+@slice_max.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         order_by: Series,
@@ -1214,7 +1209,7 @@ def slice_sample(
         axis=0
     )
 
-@slice_sample.register(DataFrameGroupBy, context=None)
+@slice_sample.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         n: Optional[int] = 1,
@@ -1234,7 +1229,7 @@ def _(
 # Two table verbs
 # ---------------
 
-@register_verb((DataFrame, list, dict, NoneType))
+@register_verb((DataFrame, list, dict, NoneType), context=Context.EVAL)
 def bind_rows(
         _data: Optional[Union[DataFrame, list, dict]],
         *datas: Optional[Union[DataFrame, dict]],
@@ -1312,7 +1307,7 @@ def bind_rows(
         ).reset_index(level=0).reset_index(drop=True)
     return pandas.concat(key_data.values()).reset_index(drop=True)
 
-@register_verb((DataFrame, dict, NoneType))
+@register_verb((DataFrame, dict, NoneType), context=Context.EVAL)
 def bind_cols(
         _data: Optional[Union[DataFrame, dict]],
         *datas: Optional[Union[DataFrame, dict]],
@@ -1342,7 +1337,7 @@ def bind_cols(
     ret.columns = repair_names(ret.columns.tolist(), repair=_name_repair)
     return ret
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def intersect(
         _data: DataFrame,
         data2: DataFrame,
@@ -1369,7 +1364,7 @@ def intersect(
         how='inner'
     ) >> distinct(*on)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def union(
         _data: DataFrame,
         data2: DataFrame,
@@ -1396,7 +1391,7 @@ def union(
         how='outer'
     ) >> distinct(*on)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def setdiff(
         _data: DataFrame,
         data2: DataFrame,
@@ -1423,7 +1418,7 @@ def setdiff(
         lambda x: x['_merge'] == 'left_only'
     ].drop(columns=['_merge']) >> distinct(*on)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def union_all(
         _data: DataFrame,
         data2: DataFrame
@@ -1439,7 +1434,7 @@ def union_all(
     """
     return bind_rows(_data, data2)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def setequal(
         _data: DataFrame,
         data2: DataFrame
@@ -1457,7 +1452,7 @@ def setequal(
     data2 = data2.sort_values(by=data2.columns.to_list()).reset_index(drop=True)
     return data1.equals(data2)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def inner_join(
         x: DataFrame,
         y: DataFrame,
@@ -1498,7 +1493,7 @@ def inner_join(
         return ret
     return pandas.merge(x, y, on=by, how='inner', copy=copy, suffixes=suffix)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def left_join(
         x: DataFrame,
         y: DataFrame,
@@ -1526,7 +1521,7 @@ def left_join(
         return ret
     return pandas.merge(x, y, on=by, how='left', copy=copy, suffixes=suffix)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def right_join(
         x: DataFrame,
         y: DataFrame,
@@ -1554,7 +1549,7 @@ def right_join(
         return ret
     return pandas.merge(x, y, on=by, how='right', copy=copy, suffixes=suffix)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def full_join(
         x: DataFrame,
         y: DataFrame,
@@ -1582,7 +1577,7 @@ def full_join(
         return ret
     return pandas.merge(x, y, on=by, how='outer', copy=copy, suffixes=suffix)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def nest_join(
         x: DataFrame,
         y: DataFrame,
@@ -1631,7 +1626,7 @@ def nest_join(
         y_matched = y_matched.to_frame(name=y_name)
     return pandas.concat([x, y_matched], axis=1)
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def semi_join(
         x: DataFrame,
         y: DataFrame,
@@ -1645,7 +1640,7 @@ def semi_join(
     ret = pandas.merge(x, y, on=by, how='left', copy=copy, indicator=True)
     return ret[ret._merge == 'both'].loc[:, x.columns.tolist()]
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def anti_join(
         x: DataFrame,
         y: DataFrame,

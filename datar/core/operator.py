@@ -6,11 +6,11 @@ from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.groupby import GroupBy
 from pandas.core.series import Series
-from pipda import register_operator, Operator, Context
-from pipda.context import ContextSelect
+from pipda import register_operator, Operator
 
 from .utils import align_value, objectize, list_intersect, list_union
 from .middlewares import Collection, Inverted, Negated
+from .contexts import Context
 
 @register_operator
 class DatarOperator(Operator):
@@ -18,19 +18,13 @@ class DatarOperator(Operator):
     def _arithmetize1(self, operand: Any, op: str) -> Any:
         op_func = getattr(operator, op)
         operand = align_value(operand, self.data)
-        ret = op_func(operand)
-        if isinstance(self.data, DataFrameGroupBy):
-            return ret.groupby(self.data.grouper, dropna=False)
-        return ret
+        return op_func(operand)
 
     def _arithmetize2(self, left: Any, right: Any, op: str) -> Any:
         op_func = getattr(operator, op)
         left = align_value(left, self.data)
         right = align_value(right, self.data)
-        ret = op_func(left, right)
-        if isinstance(self.data, DataFrameGroupBy):
-            return ret.groupby(self.data.grouper, dropna=False)
-        return ret
+        return op_func(left, right)
 
     def invert(self, operand: Any) -> Any:
         if isinstance(operand, (slice, str, list)):

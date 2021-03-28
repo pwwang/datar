@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pandas.core.series import Series
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
-from pipda.utils import DataContext, Expression, functype
+from pipda.utils import DataEnv, Expression, functype
 
 from .utils import (
     align_value, df_assign_item, objectize, expand_collections, list_diff, sanitize_slice, select_columns,
@@ -206,7 +206,7 @@ class Across(MiddleWare):
                     *CurColumn.replace_args(self.args, col),
                     **CurColumn.replace_kwargs(self.kwargs, col),
                     _env='piping'
-                ).evaluate(data)
+                )(data)
                 for col in self.cols
             ]
 
@@ -240,7 +240,7 @@ class Across(MiddleWare):
                         *CurColumn.replace_args(self.args, column),
                         **CurColumn.replace_kwargs(self.kwargs, column),
                         _env='piping'
-                    ).evaluate(data)
+                    )(data)
                 if ret is None:
                     ret = to_df(value, name)
                 else:
@@ -388,10 +388,10 @@ class RowwiseDataFrame(DataFrame):
         super().__init__(*args, **kwargs)
         self.flags.rowwise = rowwise or True
 
-class ContextWithData:
+class WithDataEnv:
 
     def __init__(self, data: Any) -> None:
-        self.data = DataContext(data)
+        self.data = DataEnv(data)
 
     def __enter__(self) -> Any:
         return self.data

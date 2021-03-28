@@ -1,16 +1,11 @@
 """Grabbed from
 https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-across.R"""
 import numpy
-from pipda import register_func, Context
+from pipda import register_func
 import pytest
-from varname.helpers import register
 
 from datar.all import *
-
-@register_func
-def n_col(data, acr):
-    """ncol of an across"""
-    return acr.evaluate(data, Context.EVAL) >> ncol()
+from datar.core.contexts import Context
 
 def test_on_one_column():
     df = tibble(x=1)
@@ -121,19 +116,18 @@ def test_works_sequentially():
     from pipda import register_func, Context
 
     df = tibble(a = 1)
-    # out = df >> mutate(
-    #     x = n_col(across(where(is_numeric))),
-    #     y = n_col(across(where(is_numeric)))
-    # )
-    # expect = tibble(a=1, x=1, y=2)
-    # assert out.equals(expect)
+    out = df >> mutate(
+        x = ncol(across(where(is_numeric))),
+        y = ncol(across(where(is_numeric)))
+    )
+    expect = tibble(a=1, x=1, y=2)
+    assert out.equals(expect)
 
     out = df >> mutate(
         a = "x",
-        y = n_col(across(where(is_numeric)))
+        y = ncol(across(where(is_numeric)))
     )
     expect = tibble(a="x", y=0)
-    print(out)
     assert out.equals(expect)
 
 def test_original_ordering():
@@ -144,20 +138,20 @@ def test_original_ordering():
 def test_error_messages():
     with pytest.raises(ValueError, match='Argument `_fns` of across must be'):
         tibble(x = 1) >> summarise(res=across(where(is_numeric), 42))
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError, match="must only be used inside verbs"):
         across()
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError, match="must only be used inside verbs"):
         c_across()
 
 def test_used_twice():
     df = tibble(a = 1, b = 2)
-    out = df >> mutate(x = n_col(across(where(is_numeric))) + n_col(across(f.a)))
+    out = df >> mutate(x = ncol(across(where(is_numeric))) + ncol(across(f.a)))
     expect = tibble(a=1, b=2, x=3)
     assert out.equals(expect)
 
 def test_used_separately():
     df = tibble(a = 1, b = 2)
-    out = df >> mutate(x=n_col(across(where(is_numeric))), y=n_col(across(f.a)))
+    out = df >> mutate(x=ncol(across(where(is_numeric))), y=ncol(across(f.a)))
     expect = tibble(a=1, b=2, x=2, y=1)
     assert out.equals(expect)
 
@@ -166,8 +160,6 @@ def test_with_group_id():
 
     @register_func(context=None)
     def switcher(data, group_id, across_a, across_b):
-        across_a = across_a.evaluate(data, Context.EVAL)
-        across_b = across_b.evaluate(data, Context.EVAL)
         return across_a.a if group_id == 0 else across_b.b
 
     expect = df >> ungroup() >> mutate(x=[1,4])
@@ -178,9 +170,9 @@ def test_cache_key():
     df = tibble(g=rep([1,2], each=2), a=range(1,5)) >> group_by(f.g)
     tibble2 = register_func(None)(tibble)
 
-    @register_func
+    @register_func(context=Context.EVAL)
     def across_col(data, acr, col):
-        return acr.evaluate(data, Context.EVAL)[col]
+        return acr[col]
 
     out = df >> mutate(
         tibble2(
@@ -284,24 +276,15 @@ def test_if_any_all_in_mutate():
     assert res['all'].eq([False, False, False, True]).all()
 
 def test_caching_not_confused():
-    @register_func(context=None)
-    def add_ifacross(data, acr1, acr2):
-        return (
-            acr1.evaluate(data, Context.EVAL) |
-            acr2.evaluate(data, Context.EVAL)
-        )
 
     df = tibble(x=[1,2,3])
     res = df >> mutate(
-        any = add_ifacross(
-            if_any(f.x, lambda x: x >= 2),
-            if_any(f.x, lambda x: x >= 3)
-        ),
-        all = add_ifacross(
-            if_all(f.x, lambda x: x >= 2),
-            if_all(f.x, lambda x: x >= 3)
-        ),
+        # evaluating in Python space because the '+' operator is not supported
+        # by numexpr for the bool dtype, use '|' instead
+        any = if_any(f.x, lambda x: x >= 2) | if_any(f.x, lambda x: x >= 3),
+        all = if_all(f.x, lambda x: x >= 2) | if_all(f.x, lambda x: x >= 3)
     )
+    # dtypes not changed
     assert res['any'].eq([False, True, True]).all()
     assert res['all'].eq([False, True, True]).all()
 
@@ -326,11 +309,6 @@ def test_if_any_all_na_handling():
 
 def test_c_across():
     df = tibble(x=[1,2], y=[3,4])
-    # 1. c_across has to be used with rowwise()
-    #    otherwise it is the save as across
-    # 2. c_across accepts a function, instead of
-    #    sum(c_across(x:y)), one should use
-    #    c_across(f[f.x:f.y], sum) instead
-    out = df >> rowwise() >> summarise(z=c_across([f.x, f.y], list)) >> pull(f.z)
-    assert out[0] == [1,3]
-    assert out[1] == [2,4]
+
+    out = df >> summarise(z=[c_across([f.x, f.y])]) >> pull(f.z, to='list')
+    assert out[0].tolist() == [1,2,3,4]

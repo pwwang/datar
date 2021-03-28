@@ -173,4 +173,10 @@ def test_drop():
     out = res >> count() >> nrow()
     assert out == 1
 
-# https://github.com/tidyverse/dplyr/blob/3cde48e1d4499bb860689ef02f12c04011100b4a/tests/testthat/test-group-by.r#L362
+def test_remember_drop_true():
+    res = iris >>  group_by(
+        f.Species,
+        _drop=True
+    )
+    res2 = res >> filter(f.Sepal_Length > 5)
+    assert group_by_drop_default(res2)

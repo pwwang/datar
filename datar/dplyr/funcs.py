@@ -7,40 +7,49 @@ import pandas
 from pandas.core.arrays.categorical import Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
 from pandas import DataFrame, Series
-from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.generic import DataFrameGroupBy
 
-from pipda import register_func, Context, evaluate_expr
+from pipda import register_func
+from pipda.context import ContextBase
+from pipda.utils import functype
 
 from ..core.middlewares import (
     Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
 )
 from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_iterable, is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import copy_df, filter_columns, list_union, objectize, list_diff
+from ..core.utils import copy_df, filter_columns, list_union, objectize, list_diff, select_columns
+from ..core.contexts import Context
 from ..base.constants import NA
 
 # pylint: disable=redefined-outer-name
 
-@register_func((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def desc(
-        _data: DataFrameType,
-        col: str
-) -> Union[DescSeries, SeriesGroupBy]:
-    """Returns a DescSeries object, which can be used in arrange or other
-    environments that need a descending ordered series
+@register_func(None, context=Context.EVAL)
+def desc(x: Iterable[Any]) -> Series:
+    """Transform a vector into a format that will be sorted in descending order
+
+    This is useful within arrange().
 
     Args:
-        col: The column
+        x: vector to transform
 
     Returns:
-        The DescSeries object
+        The descending order of x
     """
-    if isinstance(_data, DataFrameGroupBy):
-        series = DescSeries(_data.obj[col].values, name=col)
-        return series.groupby(_data.grouper, dropna=False)
-    return DescSeries(_data[col].values, name=col)
+    x = Series(x)
+    try:
+        return -x
+    except TypeError:
+        cat = Categorical(x)
+        code = Series(cat.codes).astype(float)
+        code[code == -1.] = NA
+        return -code
 
-@register_func(context=Context.PENDING)
+@register_func(
+    context=None,
+    extra_contexts={'_cols': Context.SELECT},
+    verb_arg_only=True
+)
 def across(
         _data: DataFrameType,
         _cols: Optional[Iterable[str]] = None,
@@ -50,8 +59,9 @@ def across(
             Mapping[str, Callable]
         ]] = None,
         _names: Optional[str] = None,
+        _context: Optional[ContextBase] = None,
         **kwargs: Any
-) -> Across:
+) -> DataFrame:
     """Apply the same transformation to multiple columns
 
     Args:
@@ -72,42 +82,38 @@ def across(
         A dataframe with one column for each column in _cols and
         each function in _fns.
     """
-    _cols = evaluate_expr(_cols, _data, Context.SELECT)
-    return Across(_data, _cols, _fns, _names, (), kwargs)
+    return Across(
+        _data,
+        _cols,
+        _fns,
+        _names,
+        (),
+        kwargs
+    ).evaluate(_data, _context)
 
 
-@register_func(context=Context.SELECT)
+@register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
         _data: DataFrame,
-        _cols: Optional[Iterable[str]] = None,
-        _fns: Optional[Union[Mapping[str, Callable]]] = None,
-        _names: Optional[str] = None,
-        **kwargs: Any
-) -> CAcross:
+        _cols: Optional[Iterable[str]] = None
+) -> Series:
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
         _data: The dataframe
         _cols: The columns
-        _fns: Functions to apply to each of the selected columns.
-        _names: A glue specification that describes how to name
-            the output columns. This can use `{_col}` to stand for the
-            selected column name, and `{_fn}` to stand for the name of
-            the function being applied.
-            The default (None) is equivalent to `{_col}` for the
-            single function case and `{_col}_{_fn}` for the case where
-            a list is used for _fns. In such a case, `{_fn}` is 1-based.
-            To use 1-based index, use `{_fn0}`
-        *args, **kwargs: Arguments for the functions
 
     Returns:
-        A dataframe with one column for each column in _cols and
-        each function in _fns.
+        A series
     """
-    return CAcross(_data, _cols, _fns, _names, (), kwargs)
+    if not _cols:
+        _cols = _data.columns
+    _cols = select_columns(_data.columns.tolist(), _cols)
 
+    series = [_data[col] for col in _cols]
+    return numpy.concatenate(series)
 
-@register_func
+@register_func(context=Context.SELECT)
 def starts_with(
         _data: DataFrameType,
         match: Union[Iterable[str], str],
@@ -133,7 +139,7 @@ def starts_with(
         lambda mat, cname: cname.startswith(mat),
     )
 
-@register_func
+@register_func(context=Context.SELECT)
 def ends_with(
         _data: DataFrameType,
         match: str,
@@ -160,7 +166,7 @@ def ends_with(
     )
 
 
-@register_func
+@register_func(context=Context.SELECT)
 def contains(
         _data: DataFrameType,
         match: str,
@@ -186,7 +192,7 @@ def contains(
         lambda mat, cname: mat in cname,
     )
 
-@register_func
+@register_func(context=Context.SELECT)
 def matches(
         _data: DataFrameType,
         match: str,
@@ -232,7 +238,7 @@ def _(_data: DataFrameGroupBy) -> List[str]:
     """All columns for a grouped dataframe"""
     return list_diff(_data.obj.columns.tolist(), _data.grouper.names)
 
-@register_func
+@register_func(context=Context.SELECT)
 def last_col(
         _data: DataFrameType,
         offset: int = 0,
@@ -253,7 +259,7 @@ def last_col(
     vars = vars or _data.columns
     return vars[-(offset+1)]
 
-@register_func
+@register_func(context=Context.EVAL)
 def all_of(
         _data: DataFrameType,
         x: Iterable[Union[int, str]]
@@ -284,7 +290,7 @@ def all_of(
 
     return list(x)
 
-@register_func
+@register_func(context=Context.SELECT)
 def any_of(
         _data: DataFrameType,
         x: Iterable[Union[int, str]],
@@ -305,7 +311,7 @@ def any_of(
     vars = vars or objectize(_data).columns
     return [elem for elem in x if elem in vars]
 
-@register_func((DataFrame, DataFrameGroupBy))
+@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def where(_data: DataFrameType, fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
@@ -321,20 +327,15 @@ def where(_data: DataFrameType, fn: Callable) -> List[str]:
     columns = everything(_data)
     _data = objectize(_data)
     retcols = []
-    pipda_type = getattr(fn, '__pipda__', None)
+    pipda_type = functype(fn)
     for col in columns:
-        if not pipda_type:
+        if pipda_type == 'plain':
             conditions = fn(_data[col])
+        elif pipda_type == 'plain-func':
+            conditions = fn(_data[col], _env=_data)
         else:
-            conditions = (
-                fn(_data[col], _env='piping').evaluate(_data)
-                if pipda_type == 'PlainFunction'
-                else fn(
-                    _data,
-                    _data[col],
-                    _env='piping'
-                ).evaluate(_data)
-            )
+            conditions = fn(_data, _data[col], _env=_data)
+
         if isinstance(conditions, bool):
             if conditions:
                 retcols.append(col)
@@ -345,28 +346,40 @@ def where(_data: DataFrameType, fn: Callable) -> List[str]:
 
     return retcols
 
-@register_func(context=Context.SELECT)
+@register_func(
+    context=None,
+    extra_contexts={'_cols': Context.SELECT},
+    verb_arg_only=True
+)
 def if_any(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
+        _context: Optional[ContextBase] = None,
         **kwargs: Any
-) -> Across:
+) -> DataFrame:
     """apply the same predicate function to a selection of columns and combine
     the results True if any element is True.
 
     See across().
     """
-    return IfAny(_data, _cols, _fns, _names, (), kwargs)
+    return IfAny(_data, _cols, _fns, _names, (), kwargs).evaluate(
+        _data, _context
+    )
 
 
-@register_func(context=Context.SELECT)
+@register_func(
+    context=None,
+    extra_contexts={'_cols': Context.SELECT},
+    verb_arg_only=True
+)
 def if_all(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
+        _context: Optional[ContextBase] = None,
         **kwargs: Any
 ) -> Across:
     """apply the same predicate function to a selection of columns and combine
@@ -374,7 +387,9 @@ def if_all(
 
     See across().
     """
-    return IfAll(_data, _cols, _fns, _names, (), kwargs)
+    return IfAll(_data, _cols, _fns, _names, (), kwargs).evaluate(
+        _data, _context
+    )
 
 def _ranking(
         data: Iterable[Any],
@@ -940,3 +955,6 @@ def last(
         return x[-1]
     except IndexError:
         return default
+
+def group_by_drop_default(data: DataFrameType) -> bool:
+    return getattr(objectize(data).flags, 'groupby_drop', False)

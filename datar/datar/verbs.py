@@ -5,10 +5,11 @@ from typing import Any, List, Union
 
 from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
-from pipda import register_verb, Context, evaluate_expr
+from pipda import register_verb, evaluate_expr
 
 from ..core.utils import objectize, logger
 from ..core.types import DataFrameType
+from ..core.contexts import Context
 from ..dplyr import select, slice # pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
@@ -125,6 +126,6 @@ def _(_data: RowwiseDataFrame) -> DataFrame:
     )
     return _data.obj
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def drop_index(_data: DataFrame) -> DataFrame:
     return _data.reset_index(drop=True)
