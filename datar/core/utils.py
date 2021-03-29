@@ -75,12 +75,12 @@ def check_column(column: Any) -> None:
     Raises:
         ColumnNameInvalidError: When the column name is invalid
     """
-    from .middlewares import Inverted, Across
+    from .middlewares import Inverted
     if not isinstance(column, (
-            (int, str, list, set, tuple, Inverted, Across, slice)
+            (int, str, list, set, tuple, Inverted, slice)
     )):
         raise ColumnNameInvalidError(
-            'Invalid column, expected int, str, list, tuple, c(), across(), '
+            'Invalid column, expected int, str, list, tuple, c(), '
             f'f.column, ~c() or ~f.column, got {type(column)}'
         )
 
@@ -214,7 +214,7 @@ def select_columns(
         ColumnNameInvalidError: When the column is invalid to select
         ColumnNotExistingError: When the column does not exist in the pool
     """
-    from .middlewares import Inverted, Across
+    from .middlewares import Inverted
     if not isinstance(all_columns, list):
         all_columns = list(all_columns)
 
@@ -237,8 +237,6 @@ def select_columns(
             selected.extend(column.elems)
         elif isinstance(column, slice):
             selected.extend(all_columns[sanitize_slice(column, all_columns)])
-        elif isinstance(column, Across):
-            selected.extend(column.evaluate(Context.SELECT))
         else:
             selected.append(column)
 
@@ -522,15 +520,18 @@ def register_grouped(
 def group_df(
         df: DataFrame,
         grouper: Union[BaseGrouper, StringOrIter],
-        drop: bool = True
+        drop: Optional[bool] = None
 ) -> DataFrameGroupBy:
+    from ..dplyr import group_by_drop_default
+    if drop is None:
+        drop = group_by_drop_default(df)
     return df.groupby(
         grouper,
         as_index=False,
         sort=True,
         dropna=False,
         group_keys=False,
-        observed=not drop
+        observed=drop
     )
 
 def groupby_apply(

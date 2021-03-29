@@ -1,6 +1,6 @@
 """Verbs ported from R-dplyr"""
 from pandas.core.arrays.categorical import Categorical
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
 
 import numpy
 import pandas
@@ -77,7 +77,7 @@ def arrange(
 @arrange.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
-        *series: Union[SeriesGroupBy, Across],
+        *series: Any,
         _by_group: bool = False
 ) -> DataFrameGroupBy:
     """Arrange grouped dataframe"""
@@ -370,10 +370,48 @@ def rowwise(_data: DataFrameType, *columns: str) -> RowwiseDataFrame:
     columns = select_columns(_data.columns, columns)
     return RowwiseDataFrame(_data, rowwise=columns)
 
+def _prepare_group_by_df(
+        _data: DataFrame,
+        *args: Union[str, Expression],
+        _drop: Optional[bool] = None,
+        **kwargs: Any
+) -> Tuple[DataFrame, List[str]]:
+    data = copy_df(_data)
+
+    args = evaluate_args(args, data, Context.SELECT)
+    columns = []
+    mutates = []
+    for arg in args:
+        if isinstance(arg, (DataFrame, DataFrameGroupBy, dict, Series)):
+            mutates.append(objectize(arg))
+        else:
+            columns.append(arg)
+
+    extra_cols = []
+    if mutates or kwargs:
+        for mut in mutates:
+            if isinstance(mut, (DataFrame, DataFrameGroupBy)):
+                extra_cols = list_union(extra_cols, objectize(mut).columns)
+            elif isinstance(mut, Series):
+                extra_cols = list_union(extra_cols, [mut.name])
+            else: # dict
+                extra_cols = list_union(extra_cols, mut.keys())
+
+        data = data >> mutate(*mutates, **kwargs)
+
+    columns = select_columns(data.columns, *columns, *kwargs.keys())
+    columns = list_union(columns, extra_cols)
+
+    data.flags.groupby_drop = (
+        group_by_drop_default(_data)
+        if _drop is None else _drop
+    )
+    return data, columns
+
 @register_verb(DataFrame, context=Context.PENDING)
 def group_by(
         _data: DataFrame,
-        *columns: str,
+        *args: Union[str, Expression],
         _add: bool = False, # not working, since _data is not grouped
         _drop: Optional[bool] = None,
         **kwargs: Any
@@ -383,32 +421,25 @@ def group_by(
 
     Args:
         _data: The dataframe
-        *columns: variables or computations to group by.
+        *args: variables or computations to group by.
         **kwargs: Extra variables to group the dataframe
 
     Return:
         A DataFrameGroupBy object
     """
-    if kwargs:
-        _data = _data >> mutate(**kwargs)
-
-    columns = evaluate_args(columns, _data, Context.SELECT)
-    columns = select_columns(_data.columns, *columns, *kwargs.keys())
+    data, columns = _prepare_group_by_df(_data, *args, _drop=_drop, **kwargs)
     # requires pandas 1.2+
     # eariler versions have bugs with apply/transform
     # GH35889
-    _data.flags.group_drop = (
-        group_by_drop_default(_data)
-        if _drop is None else _drop
-    )
-    return group_df(_data, columns, drop=_drop)
+    return group_df(data, columns, drop=_drop)
 
 
 @group_by.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
-        *columns: str,
+        *args: Union[str, Expression],
         _add: bool = False,
+        _drop: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Group by on a DataFrameGroupBy object
@@ -420,28 +451,39 @@ def _(
         override existing groups. To add to the existing groups,
         use _add = TRUE.
     """
-    if kwargs:
-        _data = _data >> mutate(**kwargs)
+    data, columns = _prepare_group_by_df(
+        _data.obj,
+        *args,
+        _drop=_drop,
+        **kwargs
+    )
 
-    columns = evaluate_args(columns, _data, Context.SELECT)
-    columns = select_columns(_data.obj.columns, *columns, *kwargs.keys())
     if _add:
-        groups = Collection(*_data.grouper.names) + columns
-        return group_df(_data.obj, groups)
-    return group_df(_data.obj, columns)
+        columns = list_union(_data.grouper.names, columns)
 
+    return group_df(data, columns, drop=_drop)
 
-@register_verb(DataFrameGroupBy, context=Context.EVAL)
-def ungroup(_data: DataFrameGroupBy) -> DataFrame:
+@register_verb(DataFrameGroupBy, context=Context.SELECT)
+def ungroup(_data: DataFrameGroupBy, *cols: str) -> DataFrameType:
     """Ungroup a grouped dataframe
 
     Args:
         _data: The grouped dataframe
+        *cols: Columns to remove from grouping
 
     Returns:
-        The ungrouped dataframe
+        The ungrouped dataframe or DataFrameGroupBy object with remaining
+        grouping variables.
     """
-    return _data.obj
+    if not cols:
+        return _data.obj
+
+    gvars = _data.grouper.names
+    for col in cols:
+        if col not in gvars:
+            raise ValueError(f'Not a grouping variable: {col!r}')
+    new_vars = list_diff(gvars, cols)
+    return group_df(_data, new_vars)
 
 # ------------------------------
 # group data
@@ -661,6 +703,9 @@ def _(
                         g_keys
                     )
 
+    if not group_by_drop_default(_data):
+        ret.flags.groupby_drop = False
+
     if _groups == 'drop':
         return ret
 
@@ -725,6 +770,10 @@ def _(
         ret = groupby_apply(_data, apply_func)
     else:
         ret = DataFrame(columns=_data.obj.columns)
+
+    if not group_by_drop_default(_data):
+        ret.flags.groupby_drop = False
+
     if _preserve:
         return group_df(ret, _data.grouper)
     return group_df(ret, _data.grouper.names)

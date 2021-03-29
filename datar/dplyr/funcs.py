@@ -11,6 +11,7 @@ from pandas.core.groupby.generic import DataFrameGroupBy
 
 from pipda import register_func
 from pipda.context import ContextBase
+from pipda.symbolic import DirectRefAttr
 from pipda.utils import functype
 
 from ..core.middlewares import (
@@ -18,7 +19,7 @@ from ..core.middlewares import (
 )
 from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_iterable, is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import copy_df, filter_columns, list_union, objectize, list_diff, select_columns
+from ..core.utils import copy_df, df_assign_item, filter_columns, list_union, objectize, list_diff, select_columns, to_df
 from ..core.contexts import Context
 from ..base.constants import NA
 
@@ -45,11 +46,7 @@ def desc(x: Iterable[Any]) -> Series:
         code[code == -1.] = NA
         return -code
 
-@register_func(
-    context=None,
-    extra_contexts={'_cols': Context.SELECT},
-    verb_arg_only=True
-)
+@register_func(context=Context.SELECT, verb_arg_only=True)
 def across(
         _data: DataFrameType,
         _cols: Optional[Iterable[str]] = None,
@@ -59,7 +56,6 @@ def across(
             Mapping[str, Callable]
         ]] = None,
         _names: Optional[str] = None,
-        _context: Optional[ContextBase] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Apply the same transformation to multiple columns
@@ -82,14 +78,70 @@ def across(
         A dataframe with one column for each column in _cols and
         each function in _fns.
     """
-    return Across(
-        _data,
-        _cols,
-        _fns,
-        _names,
-        (),
-        kwargs
-    ).evaluate(_data, _context)
+    if _cols is None:
+        _cols = everything(_data)
+
+    if is_scalar(_cols):
+        _cols = [_cols]
+
+    _cols = select_columns(objectize(_data).columns, *_cols)
+
+    fns_list = []
+    if callable(_fns):
+        fns_list.append({'fn': _fns})
+    elif isinstance(_fns, (list, tuple)):
+        fns_list.extend(
+            {'fn': fn, '_fn': i, '_fn1': i+1}
+            for i, fn in enumerate(_fns)
+        )
+    elif isinstance(_fns, dict):
+        fns_list.extend(
+            {'fn': value, '_fn': key}
+            for key, value in _fns.items()
+        )
+    elif _fns is not None:
+        raise ValueError(
+            'Argument `_fns` of across must be None, a function, '
+            'a formula, or a dict of functions.'
+        )
+    if not fns_list:
+        fns_list = [{'fn': lambda x: x}]
+
+    ret = None
+    for column in _cols:
+        for fn_info in fns_list:
+            render_data = fn_info.copy()
+            render_data['_col'] = column
+            fn = render_data.pop('fn')
+            name_format = _names
+            if not name_format:
+                name_format = (
+                    '{_col}_{_fn}' if '_fn' in render_data
+                    else '{_col}'
+                )
+
+            name = name_format.format(**render_data)
+            if functype(fn) == 'plain':
+                value = fn(
+                    _data[column],
+                    **CurColumn.replace_kwargs(kwargs, column)
+                )
+            else:
+                # use fn's own context
+                value = fn(
+                    DirectRefAttr(_data, column),
+                    **CurColumn.replace_kwargs(kwargs, column),
+                    _env='piping'
+                )(_data)
+
+            # todo: check if it is proper
+            #       group information lost
+            value = objectize(value)
+            if ret is None:
+                ret = to_df(value, name)
+            else:
+                df_assign_item(ret, name, value)
+    return DataFrame() if ret is None else ret
 
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
@@ -957,4 +1009,10 @@ def last(
         return default
 
 def group_by_drop_default(data: DataFrameType) -> bool:
-    return getattr(objectize(data).flags, 'groupby_drop', False)
+    return getattr(objectize(data).flags, 'groupby_drop', True)
+
+def n_groups(data: DataFrameType) -> int:
+    if isinstance(data, DataFrame):
+        return 1
+
+    return len(data)

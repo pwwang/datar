@@ -1,9 +1,11 @@
 #https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-group-by.r
 
+from pandas.core import groupby
 import pytest
 
 from datar.all import *
 from datar.datasets import mtcars, iris
+from datar.core.exceptions import ColumnNotExistingError
 
 @pytest.fixture
 def df():
@@ -178,5 +180,138 @@ def test_remember_drop_true():
         f.Species,
         _drop=True
     )
+    assert group_by_drop_default(res)
+
     res2 = res >> filter(f.Sepal_Length > 5)
     assert group_by_drop_default(res2)
+
+    res3 = res >> filter(f.Sepal_Length > 5, _preserve = FALSE)
+    assert group_by_drop_default(res3)
+
+    res4 = res3 >> group_by(f.Species)
+    assert group_by_drop_default(res4)
+
+    # group_data to be implemented
+
+def test_remember_drop_false():
+    res = iris >> filter(
+        f.Species == "setosa"
+    ) >> group_by(f.Species, _drop = FALSE)
+    assert not group_by_drop_default(res)
+
+    res2 = res >> group_by(f.Species)
+    assert not group_by_drop_default(res2)
+
+# todo
+# def test_drop_false_preserve_ordered_factors():
+#     ...
+
+def test_summarise_maintains_drop():
+    df = tibble(
+        f1 = factor("a", levels = c("a", "b", "c")),
+        f2 = factor("d", levels = c("d", "e", "f", "g")),
+        x  = 42
+    )
+    res = df >> group_by(f.f1, f.f2, _drop = TRUE)
+    ng = n_groups(res)
+    assert ng == 1
+    assert group_by_drop_default(res)
+
+    # DataFrame.groupby(..., observed=False) doesn't support multiple categoricals
+    # res1 = df >> group_by(f.f1, f.f2, _drop=False)
+    # ng = n_groups(res1)
+    # assert ng == 12
+
+    res1 = df >> group_by(f.f1, _drop = TRUE)
+    ng = n_groups(res1)
+    assert ng == 1
+
+    res1 = df >> group_by(f.f1, _drop = FALSE)
+    ng = n_groups(res1)
+    assert ng == 3
+
+    res1 = df >> group_by(f.f2, _drop = FALSE)
+    ng = n_groups(res1)
+    assert ng == 4
+
+    res2 = res >> summarise(x=sum(f.x), _groups="drop_last")
+    ng = n_groups(res2)
+    assert ng == 1
+    assert group_by_drop_default(res2)
+
+# todo
+# joins maintains _drop
+
+def test_add_passes_drop():
+    d = tibble(
+        f1 = factor("b", levels = c("a", "b", "c")),
+        f2 = factor("g", levels = c("e", "f", "g")),
+        x  = 48
+    )
+
+    res = group_by(group_by(d, f.f1, _drop = TRUE), f.f2, _add = TRUE)
+    ng = n_groups(res)
+    assert ng == 1
+    assert group_by_drop_default(res)
+
+def test_na_last():
+    # this is a pandas bug when try to retrieve groupby groups with NAs
+    # https://github.com/pandas-dev/pandas/issues/35202
+    res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> group_by(f.x)
+    # ret = res >> group_rows()
+    ret = res >> summarise(n=n())
+    assert ret.fillna('NA').x.tolist() == ['apple', 'banana', 'NA']
+
+def test_auto_splicing():
+    df1 = iris >> group_by(f.Species)
+    df2 = iris >> group_by(tibble(Species=iris.Species))
+    assert df1.obj.equals(df2.obj)
+
+    df1 = iris >> group_by(f.Species)
+    df2 = iris >> group_by(across(f.Species))
+    assert df1.obj.equals(df2.obj)
+
+    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+        f.Sepal_Length, f.Sepal_Width)
+    df2 = iris >> group_by(across(starts_with("Sepal"), round))
+    assert df1.obj.equals(df2.obj)
+
+    # across(character()), across(NULL) not supported
+
+    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+        f.Sepal_Length, f.Sepal_Width, f.Species)
+    df2 = iris >> group_by(across(starts_with("Sepal"), round), f.Species)
+    assert df1.obj.equals(df2.obj)
+
+    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+        f.Species, f.Sepal_Length, f.Sepal_Width)
+    df2 = iris >> group_by(f.Species, across(starts_with("Sepal"), round))
+    assert df1.obj.equals(df2.obj)
+
+def test_mutate_semantics():
+    df1 = tibble(a = 1, b = 2) >> group_by(c = f.a * f.b, d = f.c + 1)
+    df2 = tibble(a = 1, b = 2) >> mutate(
+        c = f.a * f.b, d = f.c + 1
+    ) >> group_by(f.c, f.d)
+    assert df1.obj.equals(df2.obj)
+
+def test_implicit_mutate_operates_on_ungrouped_data():
+    vars = tibble(x = c(1,2), y = c(3,4), z = c(5,6)) >> group_by(f.y)
+    vars >>= group_by(across(any_of(c('y','z'))))
+    gv = group_vars(vars)
+    assert gv == ['y', 'z']
+
+def test_errors():
+    df = tibble(x=1, y=2)
+
+    with pytest.raises(ColumnNotExistingError):
+        df >> group_by(f.unknown)
+
+    with pytest.raises(NotImplementedError):
+        df >> ungroup(f.x)
+
+    with pytest.raises(ValueError):
+        df >> group_by(f.x, f.y) >> ungroup(f.z)
+
+    with pytest.raises(KeyError):
+        df >> group_by(z=f.a+1)
