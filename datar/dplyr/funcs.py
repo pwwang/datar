@@ -37,6 +37,9 @@ def desc(x: Iterable[Any]) -> Series:
 
     This is useful within arrange().
 
+    The original API:
+    https://dplyr.tidyverse.org/reference/desc.html
+
     Args:
         x: vector to transform
 
@@ -325,6 +328,9 @@ def across(
 ) -> DataFrame:
     """Apply the same transformation to multiple columns
 
+    The original API:
+    https://dplyr.tidyverse.org/reference/across.html
+
     Args:
         _data: The dataframe
         _cols: The columns
@@ -335,8 +341,8 @@ def across(
             the function being applied.
             The default (None) is equivalent to `{_col}` for the
             single function case and `{_col}_{_fn}` for the case where
-            a list is used for _fns. In such a case, `{_fn}` is 1-based.
-            To use 1-based index, use `{_fn0}`
+            a list is used for _fns. In such a case, `{_fn}` is 0-based.
+            To use 1-based index, use `{_fn1}`
         **kwargs: Arguments for the functions
 
     Returns:

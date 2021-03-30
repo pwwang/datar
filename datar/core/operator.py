@@ -1,12 +1,13 @@
 from functools import partial
 import operator
 
-from typing import Any
+from typing import Any, Optional
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.groupby import GroupBy
 from pandas.core.series import Series
 from pipda import register_operator, Operator
+from pipda.context import ContextBase
 
 from .utils import align_value, objectize, list_intersect, list_union
 from .middlewares import Collection, Inverted, Negated
@@ -26,9 +27,9 @@ class DatarOperator(Operator):
         right = align_value(right, self.data)
         return op_func(left, right)
 
-    def invert(self, operand: Any) -> Any:
+    def invert(self, operand: Any, _context: Optional[ContextBase]) -> Any:
         if isinstance(operand, (slice, str, list)):
-            return Inverted(operand, self.data, self.context).complements
+            return Inverted(operand, self.data, _context).complements
         return self._arithmetize1(operand, 'invert')
 
     def neg(self, operand: Any) -> Any:

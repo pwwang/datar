@@ -43,6 +43,9 @@ def arrange(
 ) -> DataFrame:
     """orders the rows of a data frame by the values of selected columns.
 
+    The original API:
+    https://dplyr.tidyverse.org/reference/arrange.html
+
     Args:
         _data: A data frame
         *series: Variables, or functions of variables.
@@ -197,10 +200,6 @@ def mutate(
         data = data[outcols]
     # else:
     # raise
-    if (isinstance(_data, RowwiseDataFrame) and
-            not isinstance(data, RowwiseDataFrame)):
-        return RowwiseDataFrame(data, rowwise=_data.flags.rowwise)
-
     return data
 
 @mutate.register(DataFrameGroupBy, context=Context.PENDING)
@@ -222,7 +221,7 @@ def _(
         )
     return group_df(applied, _data.grouper)
 
-@mutate.register(RowwiseDataFrame, context=None)
+@mutate.register(RowwiseDataFrame, context=Context.PENDING)
 def _(
         _data: RowwiseDataFrame,
         *args: Any,
@@ -230,11 +229,13 @@ def _(
 ) -> RowwiseDataFrame:
     """Mutate on RowwiseDataFrame object"""
     if _data.shape[0] > 0:
-        def apply_func(df):
-            df.flags.rowwise = _data.flags.rowwise
-            return df >> mutate(*args, **kwargs)
+        def apply_func(ser):
+            return (ser.to_frame().T >> mutate(*args, **kwargs)).iloc[0, :]
 
-        applied = _data.apply(apply_func, axis=1).reset_index(drop=True)
+        applied = _data.apply(
+            apply_func,
+            axis=1
+        ).reset_index(drop=True)
     else:
         applied = DataFrame(
             columns=list_union(_data.columns.tolist(), kwargs.keys())
@@ -351,7 +352,7 @@ def select(
     return data
 
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def rowwise(_data: DataFrameType, *columns: str) -> RowwiseDataFrame:
     """Compute on a data frame a row-at-a-time
 
