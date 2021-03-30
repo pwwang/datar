@@ -58,16 +58,16 @@ def test_mutate_does_not_loose_variables():
 def test_orders_by_groups():
     df = tibble(a = sample(range(1,11), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.a.tolist() == list(range(1,11))
+    assert out.obj.a.tolist() == list(range(1,11))
 
     df = tibble(a = sample(letters[:10], 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.a.tolist() == letters[:10]
+    assert out.obj.a.tolist() == letters[:10]
 
     df = tibble(a = sample(sqrt(range(1,11)), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
     expect = list(sqrt(range(1,11)))
-    assert out.a.tolist() == expect
+    assert out.obj.a.tolist() == expect
 
 def test_by_tuple_values():
     df = tibble(
@@ -75,8 +75,8 @@ def test_by_tuple_values():
         y=[(1,2), (1,2,3), (1,2)]
     ) >> group_by(f.y)
     out = df >> count()
-    assert out.y.tolist() == [(1,2), (1,2,3)]
-    assert out.n.tolist() == [2, 1]
+    assert out.obj.y.tolist() == [(1,2), (1,2,3)]
+    assert out.obj.n.tolist() == [2, 1]
 
 def test_select_add_group_vars():
     res = mtcars >> group_by(f.vs) >> select(f.mpg)

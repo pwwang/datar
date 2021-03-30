@@ -36,9 +36,24 @@ def test_name_must_be_string():
 
 def test_drop():
     df = tibble(f = factor("b", levels = c("a", "b", "c")))
-    out = df >> count(f.f)
-    assert out.n.tolist() == [1]
+    # out = df >> count(f.f)
+    # assert out.n.tolist() == [1]
 
-    out = df >> count(f.f, _drop = False)
-    # note the order
-    assert out.n.tolist() == [0,1,0]
+    # out = df >> count(f.f, _drop = False)
+    # # note the order
+    # assert out.n.tolist() == [0,1,0]
+
+    out = count(group_by(df, f.f, _drop = FALSE))
+    # print(out.obj)
+    assert out.obj.n.tolist() == [0,1,0]
+
+def test_preserve_grouping():
+    df = tibble(g = c(1, 2, 2, 2))
+    exp = tibble(g = c(1, 2), n = c(1, 3))
+
+    out = df >> count(f.g)
+    assert out.equals(exp)
+
+    df1 = df >> group_by(f.g) >> count()
+    df2 = exp >> group_by(f.g)
+    assert df1.obj.equals(df2.obj)

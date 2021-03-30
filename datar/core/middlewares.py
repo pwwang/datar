@@ -21,9 +21,6 @@ from .types import DataFrameType, is_scalar
 
 LOCK = Lock()
 
-class MiddleWare(ABC):
-    ...
-
 class Collection(list):
     """Mimic the c function in R
 
@@ -126,7 +123,7 @@ class CurColumn:
             for key, val in kwargs.items()
         }
 
-class Across(MiddleWare):
+class Across:
 
     def __init__(
             self,
@@ -138,7 +135,6 @@ class Across(MiddleWare):
                 Mapping[str, Callable]
             ]] = None,
             names: Optional[str] = None,
-            args: Tuple[Any] = (),
             kwargs: Optional[Mapping[str, Any]] = None
     ) -> None:
         from ..dplyr.funcs import everything
@@ -170,37 +166,9 @@ class Across(MiddleWare):
         self.cols = cols
         self.fns = fns_list
         self.names = names
-        self.args = args
         self.kwargs = kwargs or {}
-        self.context = None
 
-    def evaluate(
-            self,
-            data: Optional[DataFrameType] = None,
-            context: Optional[Union[Context, ContextBase]] = None
-    ) -> Union[List[str], DataFrame]:
-        if data is None:
-            data = self.data
-
-        if isinstance(context, Context):
-            context = context.value
-
-        if context.name == 'select':
-            if not self.fns:
-                return self.cols
-            fn = self.fns[0]['fn']
-            # todo: check # fns
-            pipda_type = functype(fn)
-            return [
-                fn(col, *self.args, **self.kwargs) if pipda_type == 'plain'
-                else fn(
-                    col,
-                    *CurColumn.replace_args(self.args, col),
-                    **CurColumn.replace_kwargs(self.kwargs, col),
-                    _env='piping'
-                )(data)
-                for col in self.cols
-            ]
+    def evaluate(self, context: Optional[ContextBase] = None) -> DataFrame:
 
         if not self.fns:
             self.fns = [{'fn': lambda x: x}]
@@ -221,145 +189,38 @@ class Across(MiddleWare):
                 name = name_format.format(**render_data)
                 if functype(fn) == 'plain':
                     value = fn(
-                        context.getattr(data, column),
-                        *CurColumn.replace_args(self.args, column),
+                        self.data[column],
                         **CurColumn.replace_kwargs(self.kwargs, column)
                     )
                 else:
                     # use fn's own context
                     value = fn(
-                        DirectRefAttr(data, column),
-                        *CurColumn.replace_args(self.args, column),
+                        DirectRefAttr(self.data, column),
                         **CurColumn.replace_kwargs(self.kwargs, column),
                         _env='piping'
-                    )(data)
+                    )(self.data, context)
+
+                # todo: check if it is proper
+                #       group information lost
+                value = objectize(value)
                 if ret is None:
                     ret = to_df(value, name)
                 else:
                     df_assign_item(ret, name, value)
         return DataFrame() if ret is None else ret
 
-class CAcross(Across):
-
-    def __init__(
-            self,
-            data: DataFrameType,
-            cols: Optional[Iterable[str]] = None,
-            fns: Optional[Union[
-                Callable,
-                Iterable[Callable],
-                Mapping[str, Callable]
-            ]] = None,
-            names: Optional[str] = None,
-            args: Tuple[Any] = (),
-            kwargs: Optional[Mapping[str, Any]] = None
-    ) -> None:
-        super().__init__(data, cols, fns, names, args, kwargs)
-
-        if not self.fns:
-            raise ValueError(
-                "No functions specified for c_across. "
-                "Note that the usage of c_across is different from R's. "
-                "You have to specify the function inside c_across, instead of "
-                "calling it with c_across(...) as arguments."
-            )
-
-        if len(self.fns) > 1:
-            raise ValueError("Only a single function is allowed in c_across.")
-
-        self.fn = self.fns[0]['fn']
-
-    def evaluate(
-            self,
-            data: Optional[DataFrameType] = None,
-            context: Optional[Union[Context, ContextBase]] = None
-    ) -> Union[List[str], DataFrame]:
-        if isinstance(context, Context):
-            context = context.value
-
-        if data is None:
-            data = self.data
-
-        if not isinstance(data, RowwiseDataFrame):
-            return super().evaluate(data, context)
-
-        return DataFrame(
-            data[self.cols].apply(
-                self.fn,
-                axis=1,
-                args=self.args,
-                **self.kwargs
-            ),
-            columns=[self.names] if isinstance(self.names, str) else self.names
-        )
-
 class IfCross(Across, ABC):
 
     if_type = None
 
-    def __init__(
-            self,
-            data: DataFrameType,
-            cols: Optional[Iterable[str]] = None,
-            fns: Optional[Union[
-                Callable,
-                Iterable[Callable],
-                Mapping[str, Callable]
-            ]] = None,
-            names: Optional[str] = None,
-            args: Tuple[Any] = (),
-            kwargs: Optional[Mapping[str, Any]] = None
-    ) -> None:
-        super().__init__(data, cols, fns, names, args, kwargs)
-
-        func_name = f"if_{self.__class__.if_type}"
-        if not self.fns:
-            raise ValueError(f"No functions specified for {func_name!r}.")
-
-        if len(self.fns) > 1:
-            raise ValueError(
-                f"Only a single function is allowed in {func_name!r}."
-            )
-
-        self.fn = self.fns[0]['fn']
-
-    def evaluate(
-            self,
-            data: Optional[DataFrameType] = None,
-            context: Optional[Union[Context, ContextBase]] = None
-    ) -> Union[List[str], DataFrame]:
-        if not self.fns:
-            raise ValueError("No functions specified for if_any.")
-
-        if isinstance(context, Context):
-            context = context.value
-
-        if data is None:
-            data = self.data
+    def evaluate(self, context: Optional[ContextBase] = None) -> DataFrame:
 
         agg_func = getattr(builtins, self.__class__.if_type)
-
-        pipda_type = getattr(self.fn, '__pipda__', None)
-        if pipda_type not in (None, 'PlainFunction'):
-            def transform_fn(*args, **kwargs):
-                return self.fn(data, *args, **kwargs)
-            transform_fn = lambda *args, **kwargs: self.fn(
-                data, *args, **kwargs
-            )
-        else:
-            transform_fn = self.fn
-
-        def if_fn(_series, *args, **kwargs):
-            return agg_func(
-                _series.transform(transform_fn, *args, **kwargs
-            ).fillna(False).astype('boolean'))
-
-        return data[self.cols].apply(
-            if_fn,
-            axis=1,
-            args=self.args,
-            **self.kwargs
-        )
+        return super().evaluate(context).fillna(
+            False
+        ).astype(
+            'boolean'
+        ).apply(agg_func, axis=1)
 
 class IfAny(IfCross):
 

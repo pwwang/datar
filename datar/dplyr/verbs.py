@@ -1,18 +1,19 @@
 """Verbs ported from R-dplyr"""
 from pandas.core.arrays.categorical import Categorical
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import (
+    Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+)
 
 import numpy
 import pandas
 from pandas import DataFrame, Series, RangeIndex
 from pandas.api.types import union_categoricals
-from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.generic import DataFrameGroupBy
 
 from pipda import register_verb, evaluate_expr, evaluate_args
 from pipda.utils import Expression
 
 from ..core.middlewares import (
-    Across, CAcross, Collection,
     Inverted, RowwiseDataFrame
 )
 from ..core.types import (
@@ -27,6 +28,7 @@ from ..core.utils import (
 )
 from ..core.names import NameNonUniqueError, repair_names
 from ..core.contexts import Context
+from ..base.constants import NA
 from ..tibble.funcs import tibble
 from ..base.funcs import is_categorical
 from .funcs import group_by_drop_default
@@ -240,21 +242,20 @@ def _(
     return RowwiseDataFrame(applied, rowwise=_data.flags.rowwise)
 
 # Forward pipda.Expression for mutate to evaluate
-@register_verb((DataFrame, DataFrameGroupBy), context=None)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
 def transmutate(
         _data: DataFrameType,
-        *acrosses: Across,
+        *series: Iterable[Any],
         _before: Optional[str] = None,
         _after: Optional[str] = None,
         **kwargs: Any
-) -> DataFrame:
+) -> DataFrameType:
     """Mutate with _keep='none'
 
     See mutate().
     """
-    return mutate(
-        _data,
-        *acrosses,
+    return _data >> mutate(
+        *series,
         _keep='none',
         _before=_before,
         _after=_after,
@@ -643,11 +644,6 @@ def summarise(
         ret = _data.loc[:, _data.flags.rowwise]
 
     for key, val in kwargs.items():
-        if isinstance(val, CAcross):
-            val.names = key
-        if isinstance(val, Across):
-            val = val.evaluate(_data, Context.EVAL)
-
         if ret is None:
             ret = to_df(val, key)
         else:
@@ -781,14 +777,14 @@ def _(
 # ------------------------------
 # count
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
+@register_verb(DataFrame, context=Context.PENDING)
 def count(
-        _data: DataFrameType,
+        _data: DataFrame,
         *columns: Any,
         wt: Optional[str] = None,
         sort: bool = False,
         name: Optional[str] = None,
-        _drop: bool = True,
+        _drop: Optional[bool] = None,
         **mutates: Any
 ) -> DataFrame:
     """Count observations by group
@@ -807,25 +803,20 @@ def count(
     Returns:
         DataFrame object with the count column
     """
-    data = objectize(_data)
-    columns = evaluate_args(columns, data, Context.SELECT)
-    columns = select_columns(data.columns, *columns)
+    if _drop is None:
+        _drop = group_by_drop_default(_data)
 
-    wt = evaluate_expr(wt, data, Context.SELECT)
-    data = data >> mutate(**mutates)
+    columns = evaluate_args(columns, _data, Context.SELECT)
+    columns = select_columns(_data.columns, *columns)
+
+    wt = evaluate_expr(wt, _data, Context.SELECT)
+    _data = _data >> mutate(**mutates)
 
     columns = columns + list(mutates)
-    if not columns and not isinstance(_data, DataFrameGroupBy):
-        raise ValueError("No columns to count and data is not grouped.")
     if not columns:
-        columns = _data.grouper.names
+        raise ValueError("No columns to count.")
 
-    if _drop:
-        for col in columns:
-            if is_categorical(data[col]):
-                data[col] = data[col].cat.remove_unused_categories()
-
-    grouped = group_df(data, columns)
+    grouped = group_df(_data, columns, drop=_drop)
 
     # check if name in columns
     if name is None:
@@ -848,11 +839,56 @@ def count(
     else:
         count_frame = grouped[wt].sum().to_frame(name=name)
 
+    # print(count_frame)
 
     ret = count_frame.reset_index(level=columns)
     if sort:
         ret = ret.sort_values([name], ascending=[False])
     return ret
+
+@count.register(DataFrameGroupBy, context=Context.PENDING)
+def _(
+        _data: DataFrameGroupBy,
+        *columns: Any,
+        wt: Optional[str] = None,
+        sort: bool = False,
+        name: Optional[str] = None,
+        _drop: Optional[bool] = None,
+        **mutates: Any
+):
+    if _drop is None:
+        _drop = group_by_drop_default(_data)
+
+    gkeys = _data.grouper.names
+
+    def apply_func(df):
+
+        return df >> count(
+            *list_union(gkeys, columns),
+            wt=wt,
+            sort=sort,
+            name=name,
+            _drop=True,
+            **mutates
+        )
+
+    applied = groupby_apply(_data, apply_func, groupdata=True)# index reset
+
+    if not _drop:
+        if len(gkeys) > 1 or not is_categorical(_data.obj[gkeys[0]]):
+            logger.warning(
+                'Currently, _drop=False of count on grouped dataframe '
+                'only works when dataframe is grouped by a single '
+                'categorical column.'
+            )
+        else:
+            applied = applied.set_index(gkeys).reindex(
+                _data.obj[gkeys[0]].cat.categories,
+                fill_value=0
+            ).reset_index(level=gkeys)
+
+    # not dropping anything
+    return group_df(applied, gkeys)
 
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
