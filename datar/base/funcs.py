@@ -886,6 +886,10 @@ def rep(
     x = x * repeats
     return x[:length]
 
+@register_func(None, context=Context.EVAL)
+def unique(x: Iterable[Any]) -> numpy.ndarray:
+    return numpy.unique(x)
+
 # ---------------------------------
 # Plain functions
 # ---------------------------------

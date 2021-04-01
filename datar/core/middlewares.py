@@ -7,13 +7,14 @@ from abc import ABC
 from threading import Lock
 
 from pandas import DataFrame
+from pandas.core.flags import Flags
 from pandas.core.series import Series
 from pipda.symbolic import DirectRefAttr
 from pipda.context import Context, ContextBase, ContextSelect
 from pipda.utils import DataEnv, Expression, functype
 
 from .utils import (
-    align_value, df_assign_item, objectize, expand_collections, list_diff, sanitize_slice, select_columns,
+    align_value, copy_flags, df_assign_item, objectize, expand_collections, list_diff, sanitize_slice, select_columns,
     logger, to_df
 )
 from .contexts import ContextSelectSlice
@@ -236,9 +237,11 @@ class RowwiseDataFrame(DataFrame):
             self,
             *args: Any,
             rowwise: Optional[Iterable[str]] = None,
+            flags: Optional[Flags] = None,
             **kwargs: Any
     ) -> None:
         super().__init__(*args, **kwargs)
+        copy_flags(self, flags)
         self.flags.rowwise = rowwise or True
 
 class WithDataEnv:

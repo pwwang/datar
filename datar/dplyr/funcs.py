@@ -23,8 +23,8 @@ from ..core.types import (
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.utils import (
-    copy_df, df_assign_item, filter_columns, list_union,
-    objectize, list_diff, select_columns, to_df
+    copy_flags, filter_columns, list_union,
+    objectize, list_diff, select_columns
 )
 from ..core.contexts import Context
 from ..base.constants import NA
@@ -609,7 +609,9 @@ def cur_data(_data: DataFrame) -> int:
             'To get current group data, a dataframe must be grouped '
             'using `datar.dplyr.group_by`'
         )
-    return copy_df(_data).reset_index(drop=True)
+    copied = _data.copy()
+    copy_flags(copied, _data)
+    return copied.reset_index(drop=True)
 
 @register_func(DataFrame)
 def cur_data_all(_data: DataFrame) -> int:
@@ -855,10 +857,13 @@ def coalesce(x: Any, *replace: Any) -> Any:
 
     x = objectize(x)
     if isinstance(x, DataFrame):
-        x = copy_df(x)
+        y = x.copy()
+        copy_flags(y, x)
         for repl in replace:
-            x = x.combine_first(repl)
-        return x
+            x = y.combine_first(repl)
+            copy_flags(x, y)
+            y = x
+        return y
 
     if is_iterable(x):
         x = Series(x)
@@ -964,4 +969,15 @@ def n_groups(data: DataFrameType) -> int:
     if isinstance(data, DataFrame):
         return 1
 
-    return len(data)
+    # when dropna=False with NAs
+    # https://github.com/pandas-dev/pandas/issues/35202
+    # return len(data)
+    return len(data.size())
+
+def group_size(data: DataFrameType) -> List[int]:
+    if isinstance(data, DataFrame):
+        return data.shape[0]
+    gsize = data.size()
+    if isinstance(gsize, Series):
+        return gsize.tolist()
+    return gsize['size'].tolist()

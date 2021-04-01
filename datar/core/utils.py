@@ -1,15 +1,18 @@
 """Core utilities"""
+from pandas.core.arrays.categorical import Categorical
 import sys
 import inspect
 import logging
 from functools import singledispatch, wraps
-from typing import Any, Callable, Iterable, List, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
 
 import numpy
 from pandas import DataFrame
+from pandas.core.flags import Flags
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
+from pandas.core.dtypes.common import is_categorical_dtype
 import pipda
 from pipda.context import ContextBase
 from pipda.function import register_func
@@ -311,19 +314,23 @@ def align_value(
         return value.append([value] * (nrepeat - 1))
     return value
 
-def copy_df(
-        df: DataFrameType
-) -> DataFrameType:
-    if isinstance(df, DataFrame):
-        ret = df.copy()
-        for key in dir(df.flags):
-            if key.startswith('_'):
-                continue
-            setattr(ret.flags, key, getattr(df.flags, key))
-        return ret
+def update_df(df: DataFrame, df2: DataFrame) -> None:
+    # DataFrame.update ignores nonexisting columns
+    # and not keeps categories
+    for col in df2.columns:
+        df[col] = df2[col]
 
-    copied = copy_df(df.obj)
-    return group_df(copied, df.grouper)
+def copy_flags(df1: DataFrame, flags: Union[DataFrameType, Flags]) -> None:
+    if isinstance(flags, DataFrame):
+        flags = flags.flags
+    elif isinstance(flags, DataFrameGroupBy):
+        flags = flags.obj.flags
+
+    for key in dir(flags):
+        if key.startswith('_'):
+            continue
+
+        setattr(df1.flags, key, getattr(flags, key))
 
 def df_assign_item(
         df: DataFrame,
@@ -525,6 +532,7 @@ def group_df(
     from ..dplyr import group_by_drop_default
     if drop is None:
         drop = group_by_drop_default(df)
+
     return df.groupby(
         grouper,
         as_index=False,
@@ -544,11 +552,26 @@ def groupby_apply(
         # df.groupby(group_keys=True).apply does not always add group as index
         g_keys = df.grouper.names
         def apply_func(subdf):
+            if subdf is None or subdf.shape[0] == 0:
+                return None
             ret = func(subdf)
             for key in g_keys:
                 if key not in ret:
                     df_assign_item(ret, key, subdf[key].values[0])
-            return ret[list_union(g_keys, ret.columns)]
-        return df.apply(apply_func).reset_index(drop=True)
+                    if is_categorical_dtype(subdf[key]):
+                        ret[key] = Categorical(
+                            ret[key],
+                            categories=subdf[key].cat.categories
+                        )
+            columns = list_union(g_keys, ret.columns)
+            # keep the original order
+            columns = [col for col in df.obj.columns if col in columns]
+            # make sure columns are included
+            columns = list_union(list_diff(g_keys, columns), columns)
+            return ret[columns]
+        ret = df.apply(apply_func).reset_index(drop=True)
+    else:
+        ret = df.apply(func).reset_index(drop=True)
 
-    return df.apply(func).reset_index(drop=True)
+    copy_flags(ret, df)
+    return ret

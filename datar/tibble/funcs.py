@@ -9,7 +9,7 @@ from pipda import Context
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 
-from ..core.utils import copy_df, df_assign_item, objectize, to_df
+from ..core.utils import copy_flags, df_assign_item, objectize, to_df
 from ..core.names import name_placeholders, repair_names
 
 def tibble(
@@ -55,14 +55,16 @@ def tibble(
         if arg is None:
             continue
         if isinstance(arg, Expression):
-            arg = arg.evaluate(df, Context.EVAL.value)
+            arg = arg(df, Context.EVAL.value)
 
         if isinstance(arg, dict):
             arg = tibble(**arg)
 
         if df is None:
             if isinstance(arg, (DataFrame, DataFrameGroupBy)):
-                df = copy_df(objectize(arg))
+                arg = objectize(arg)
+                df = arg.copy()
+                copy_flags(df, arg)
                 if name not in argnames:
                     df.columns = [f'{name}${col}' for col in df.columns]
 

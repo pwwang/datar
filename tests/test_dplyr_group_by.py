@@ -259,8 +259,9 @@ def test_na_last():
     # https://github.com/pandas-dev/pandas/issues/35202
     res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> group_by(f.x)
     # ret = res >> group_rows()
-    ret = res >> summarise(n=n())
-    assert ret.fillna('NA').x.tolist() == ['apple', 'banana', 'NA']
+
+    lvls = res.grouper.levels[0].fillna('NA')
+    assert lvls.tolist() == ['apple', 'banana', 'NA']
 
 def test_auto_splicing():
     df1 = iris >> group_by(f.Species)
@@ -304,7 +305,7 @@ def test_implicit_mutate_operates_on_ungrouped_data():
 def test_errors():
     df = tibble(x=1, y=2)
 
-    with pytest.raises(ColumnNotExistingError):
+    with pytest.raises(KeyError):
         df >> group_by(f.unknown)
 
     with pytest.raises(NotImplementedError):

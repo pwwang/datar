@@ -20,5 +20,5 @@ from .funcs import (
     cur_group, cur_data, cur_data_all, cur_column, cummean, cumall,
     cumany, lead, lag, num_range, recode, recode_factor, recode_categorical,
     coalesce, na_if, near, nth, first, last, between, group_by_drop_default,
-    n_groups
+    n_groups, group_size
 )

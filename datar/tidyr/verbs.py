@@ -12,7 +12,7 @@ from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    copy_df, group_df, objectize, select_columns, list_diff, logger
+    copy_flags, group_df, objectize, select_columns, list_diff, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
@@ -643,8 +643,9 @@ def unite(
     """
     grouper = getattr(_data, 'grouper', None)
     columns = select_columns(_data.columns, *columns)
-    data = objectize(_data)
-    data = copy_df(data)
+    _data = objectize(_data)
+    data = _data.copy()
+    copy_flags(data, _data)
 
     def unite_cols(row):
         if na_rm:
@@ -653,7 +654,7 @@ def unite(
 
     data[col] = data[columns].agg(unite_cols, axis=1)
     if remove:
-        data = data.drop(columns=columns)
+        data.drop(columns=columns, inplace=True)
 
     if grouper is not None:
         return group_df(data, grouper)
