@@ -29,7 +29,7 @@ from ..core.utils import (
 from ..core.names import NameNonUniqueError, repair_names
 from ..core.contexts import Context
 from ..tibble.funcs import tibble
-from ..base.funcs import is_categorical
+from ..base.funcs import context, is_categorical
 from .funcs import group_by_drop_default
 
 # pylint: disable=redefined-builtin,no-value-for-parameter
@@ -463,6 +463,12 @@ def ungroup(_data: DataFrameGroupBy, *cols: str) -> DataFrameType:
     new_vars = list_diff(gvars, cols)
     return group_df(_data, new_vars)
 
+@ungroup.register(DataFrame, context=Context.EVAL)
+def _(_data: DataFrame, *cols: str) -> DataFrame:
+    if cols:
+        raise ValueError(f'Dataframe is not grouped by {cols}')
+    return _data
+
 # ------------------------------
 # group data
 
@@ -641,13 +647,12 @@ def _(
 
     if _data.obj.shape[0] > 0:
         def apply_func(df):
-            mydf = df[list_diff(df.columns.tolist(), _data.grouper.names)]
-            mydf.flags.grouper = _data.grouper
-            ret = mydf >> summarise(*dfs, _groups=_groups, **kwargs)
-            return ret
+            df.flags.grouper = _data.grouper
+            return df >> summarise(*dfs, _groups=_groups, **kwargs)
 
         ret = groupby_apply(_data, apply_func, groupdata=True)
     else: # 0-row dataframe
+        # check cols in *dfs
         ret = DataFrame(columns=list_union(_data.grouper.names, kwargs.keys()))
 
     g_keys = _data.grouper.names
@@ -714,6 +719,8 @@ def filter(
     Returns:
         The subset dataframe
     """
+    if _data.shape[0] == 0:
+        return _data
     # check condition, conditions
     condition = numpy.array([True] * _data.shape[0])
     for cond in conditions:
@@ -725,7 +732,7 @@ def filter(
     except AttributeError:
         ...
 
-    ret = _data[condition]
+    ret = _data[condition].reset_index(drop=True)
     copy_flags(ret, _data)
     return ret
 
@@ -744,7 +751,6 @@ def _(
         ret = groupby_apply(_data, apply_func, groupdata=True)
     else:
         ret = DataFrame(columns=_data.obj.columns)
-
     copy_flags(ret, _data)
 
     if _preserve:
@@ -847,7 +853,7 @@ def _(
             **mutates
         )
 
-    applied = groupby_apply(_data, apply_func, groupdata=True)# index reset
+    applied = groupby_apply(_data, apply_func)# index reset
 
     if not _drop:
         if len(gkeys) > 1 or not is_categorical(_data.obj[gkeys[0]]):

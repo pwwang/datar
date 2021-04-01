@@ -968,3 +968,23 @@ def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
         list(itertools.product(*iters.values())),
         columns=iters.keys()
     )
+
+@register_func(None)
+def Re(numbers: NumericOrIter) -> numpy.ndarray:
+    if is_scalar(numbers):
+        return numbers.real
+    return numpy.real(numbers)
+
+@register_func(None)
+def Im(numbers: NumericOrIter) -> numpy.ndarray:
+    if is_scalar(numbers):
+        return numbers.imag
+    return numpy.imag(numbers)
+
+@register_func(None)
+def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
+    if is_scalar(elem):
+        return elem in elems
+    return numpy.isin(elem, elems)
+
+is_in = is_element

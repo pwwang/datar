@@ -308,7 +308,7 @@ def test_errors():
     with pytest.raises(KeyError):
         df >> group_by(f.unknown)
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(ValueError):
         df >> ungroup(f.x)
 
     with pytest.raises(ValueError):

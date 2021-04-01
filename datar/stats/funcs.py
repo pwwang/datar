@@ -4,7 +4,6 @@ from typing import Any, Iterable, List
 import numpy
 from pipda import register_func
 
-from ..core.utils import register_grouped
 from ..core.types import FloatOrIter, SeriesLikeType
 from ..core.contexts import Context
 
@@ -52,7 +51,7 @@ def rpois(n: int, lambda_: float) -> List[float]:
     """
     return numpy.random.poisson(lam=lambda_, size=n)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def quantile(
         series: Iterable[Any],
         probs: FloatOrIter = (0.0, 0.25, 0.5, 0.75, 1.0),

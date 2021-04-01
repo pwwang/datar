@@ -21,7 +21,6 @@ from pipda.utils import evaluate_args, evaluate_expr, evaluate_kwargs
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
 from .types import DataFrameType, StringOrIter, is_scalar
-from .contexts import Context
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
@@ -500,29 +499,29 @@ def _register_grouped_col1(
 
     return wrapper
 
-def register_grouped(
-        func: Optional[Callable] = None,
-        context: Optional[Union[Context, ContextBase]] = None,
-        columns: Union[str, int] = 1
-) -> Callable:
-    """Register a function as a group-by-aware function"""
-    if func is None:
-        return lambda fun: register_grouped(
-            fun,
-            context=context,
-            columns=columns
-        )
+# def register_grouped(
+#         func: Optional[Callable] = None,
+#         context: Optional[Union[Context, ContextBase]] = None,
+#         columns: Union[str, int] = 1
+# ) -> Callable:
+#     """Register a function as a group-by-aware function"""
+#     if func is None:
+#         return lambda fun: register_grouped(
+#             fun,
+#             context=context,
+#             columns=columns
+#         )
 
-    if isinstance(context, Context):
-        context = context.value
+#     if isinstance(context, Context):
+#         context = context.value
 
-    if columns == 1:
-        return _register_grouped_col1(func, context=context)
+#     if columns == 1:
+#         return _register_grouped_col1(func, context=context)
 
-    if columns == 0:
-        return _register_grouped_col0(func, context=context)
+#     if columns == 0:
+#         return _register_grouped_col0(func, context=context)
 
-    raise ValueError("Expect columns to be either 0 or 1.")
+#     raise ValueError("Expect columns to be either 0 or 1.")
 
 def group_df(
         df: DataFrame,
@@ -565,9 +564,9 @@ def groupby_apply(
                         )
             columns = list_union(g_keys, ret.columns)
             # keep the original order
-            columns = [col for col in df.obj.columns if col in columns]
+            commcols = [col for col in df.obj.columns if col in columns]
             # make sure columns are included
-            columns = list_union(list_diff(g_keys, columns), columns)
+            columns = list_union(commcols, list_diff(columns, commcols))
             return ret[columns]
         ret = df.apply(apply_func).reset_index(drop=True)
     else:

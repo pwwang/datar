@@ -1,12 +1,14 @@
 from collections import defaultdict
 from enum import Enum
 from typing import ClassVar
+from pandas.core.frame import DataFrame
 from pipda.context import (
     ContextEval as ContextEvalPipda,
     ContextMixed,
     ContextPending,
     ContextSelect
 )
+from .utils import copy_flags
 
 class ContextEval(ContextEvalPipda):
     name: ClassVar[str] = 'eval'
@@ -16,6 +18,14 @@ class ContextEval(ContextEvalPipda):
 
     def getitem(self, data, ref):
         self.used_refs[ref] += 1
+        if isinstance(data, DataFrame) and ref not in data:
+            cols = [col for col in data.columns if col.startswith(f'{ref}$')]
+            if not cols:
+                raise KeyError(ref)
+            ret = data.loc[: cols]
+            ret.columns = [col[(len(ref)+1):] for col in cols]
+            copy_flags(ret, data)
+            return ret
         return super().getitem(data, ref)
 
     getattr = getitem # make sure f.size gets f['size']
