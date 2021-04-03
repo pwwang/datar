@@ -160,6 +160,8 @@ def mutate(
             serieses[ser.name] = ser.values
         elif isinstance(ser, DataFrame):
             serieses.update(ser.to_dict('series'))
+        elif isinstance(ser, dict):
+            serieses.update(ser)
         else:
             serieses[f'V{i}'] = ser
 

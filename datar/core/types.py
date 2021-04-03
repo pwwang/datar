@@ -1,5 +1,4 @@
 """Types for convenience"""
-from types import FunctionType
 from typing import Any, Iterable, Union
 
 # pylint: disable=unused-import
@@ -44,7 +43,7 @@ def is_scalar(x: Any) -> bool:
             x is None or
             isinstance(x, type) or
             isinstance(x, numpy.dtype) or
-            isinstance(x, FunctionType)
+            callable(x)
     ):
         return True
     return numpy.isscalar(x)

@@ -4,6 +4,7 @@ import pytest
 
 from pipda import Symbolic
 from datar.dplyr import *
+from datar.base import *
 from datar.tibble import tibble
 
 from .conftest import assert_equal
@@ -48,7 +49,7 @@ def test_mutate():
     assert_equal(df.values.flatten(), ['a', 0, 2, 'b', 1, 3, 'c', 2, 4])
 
     # df is still rowwise
-    df = df >> mutate(z=c_across([f.y, f.z], lambda row: str(row.y+row.z)))
+    df = df >> mutate(z=as_character(f.y+f.z))
     assert_equal(df.values.flatten(), ['a', 0, '2', 'b', 1, '4', 'c', 2, '6'])
 
     df = df >> mutate(z=None)
