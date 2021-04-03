@@ -183,7 +183,6 @@ def _expand_slice_dummy(
             []
         )
         return list_diff(all_indexes, selected_indexes)
-
     raise TypeError(f'Unsupported type for slice expansion: {type(elems)!r}.')
 
 def expand_slice(
@@ -289,6 +288,9 @@ def align_value(
 
     if is_scalar(value):
         return value
+
+    if isinstance(value, numpy.ndarray):
+        value = value.tolist()
 
     data = objectize(data)
     value = objectize(value)
@@ -418,110 +420,6 @@ def get_n_from_prop(
     if prop is not None:
         return int(float(total) * min(prop, 1.0))
     return min(n, total)
-
-
-def _register_grouped_col0(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of no column as groupby aware"""
-
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            _data: DataFrame,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        _column = DirectRefAttr(_data, _data.columns[0])
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
-
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        _column = DirectRefAttr(_data, _data.obj.columns[0])
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return series.apply(func, *args, **kwargs)
-
-    return wrapper
-
-def _register_grouped_col1(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of single column as groupby aware"""
-
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            # in case this is called directly (not in a piping env)
-            # we should not have the _data argument
-            # _data: DataFrame,
-            # _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        # Let's if the function is called in a piping env
-        # If so, the previous frame should be in functools
-        # Otherwise, it should be pipda.function, where the wrapped
-        # function should be called directly, instead of generating an
-        # Expression object
-
-        if inspect.getmodule(sys._getframe(1)) is pipda.function:
-            # called directly
-            return func(*args, **kwargs)
-        _data, _column, *args = args
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
-
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        # Todo: check if we have SeriesGroupby in args/kwargs
-        return series.apply(func, *args, **kwargs)
-
-    return wrapper
-
-# def register_grouped(
-#         func: Optional[Callable] = None,
-#         context: Optional[Union[Context, ContextBase]] = None,
-#         columns: Union[str, int] = 1
-# ) -> Callable:
-#     """Register a function as a group-by-aware function"""
-#     if func is None:
-#         return lambda fun: register_grouped(
-#             fun,
-#             context=context,
-#             columns=columns
-#         )
-
-#     if isinstance(context, Context):
-#         context = context.value
-
-#     if columns == 1:
-#         return _register_grouped_col1(func, context=context)
-
-#     if columns == 0:
-#         return _register_grouped_col0(func, context=context)
-
-#     raise ValueError("Expect columns to be either 0 or 1.")
 
 def group_df(
         df: DataFrame,

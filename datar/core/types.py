@@ -1,4 +1,5 @@
 """Types for convenience"""
+from types import FunctionType
 from typing import Any, Iterable, Union
 
 # pylint: disable=unused-import
@@ -6,6 +7,7 @@ import numpy
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
+from pipda.function import Function
 
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
@@ -38,7 +40,12 @@ def is_scalar(x: Any) -> bool:
 
     None will be counted as scalar
     """
-    if x is None or isinstance(x, type) or isinstance(x, numpy.dtype):
+    if (
+            x is None or
+            isinstance(x, type) or
+            isinstance(x, numpy.dtype) or
+            isinstance(x, FunctionType)
+    ):
         return True
     return numpy.isscalar(x)
 

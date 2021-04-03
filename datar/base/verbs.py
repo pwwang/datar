@@ -164,7 +164,7 @@ def _(
     return x
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def t(_data: DataFrame, copy: bool = False) -> DataFrame:
     """Get the transposed dataframe
 

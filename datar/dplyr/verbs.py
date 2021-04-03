@@ -17,7 +17,7 @@ from ..core.middlewares import (
     Inverted, RowwiseDataFrame
 )
 from ..core.types import (
-    DataFrameType, NoneType, SeriesLikeType, StringOrIter, is_scalar
+    DataFrameType, NoneType, NumericOrIter, SeriesLikeType, StringOrIter, is_scalar
 )
 from ..core.contexts import ContextEval, ContextSelectSlice
 from ..core.exceptions import ColumnNameInvalidError
@@ -555,7 +555,7 @@ def group_split(
     _data = group_by(_data, *cols, **kwargs)
     return group_split(_data)
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.UNSET)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
 def with_groups(
         _data: DataFrameType,
         _groups: Optional[StringOrIter],
@@ -764,7 +764,7 @@ def _(
 def count(
         _data: DataFrame,
         *columns: Any,
-        wt: Optional[str] = None,
+        wt: Optional[NumericOrIter] = None,
         sort: bool = False,
         name: Optional[str] = None,
         _drop: Optional[bool] = None,
@@ -798,7 +798,7 @@ def count(
     if not columns:
         raise ValueError("No columns to count.")
 
-    grouped = group_df(_data, columns, drop=_drop)
+    grouped = group_df(data, columns, drop=_drop)
     # check if name in columns
     if name is None:
         name = 'n'
@@ -815,10 +815,12 @@ def count(
     else:
         raise ValueError("`name` must be a single string.")
 
-    if not wt:
+    if wt is None:
         count_frame = grouped[columns].grouper.size().to_frame(name=name)
     else:
-        count_frame = wt.sum().to_frame(name=name)
+        count_frame = Series(wt).groupby(
+            grouped.grouper
+        ).sum().to_frame(name=name)
 
     ret = count_frame.reset_index(level=columns)
     if sort:
@@ -829,7 +831,7 @@ def count(
 def _(
         _data: DataFrameGroupBy,
         *columns: Any,
-        wt: Optional[str] = None,
+        wt: Optional[NumericOrIter] = None,
         sort: bool = False,
         name: Optional[str] = None,
         _drop: Optional[bool] = None,
@@ -872,25 +874,36 @@ def _(
     return group_df(applied, gkeys)
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+@register_verb(DataFrameGroupBy, context=Context.PENDING)
 def tally(
-        _data: DataFrameType,
-        wt: str = None,
+        _data: DataFrameGroupBy,
+        wt: Optional[NumericOrIter] = None,
         sort: bool = False,
-        name: str = 'n'
+        name: Optional[str] = None
 ) -> DataFrame:
     """A ower-level function for count that assumes you've done the grouping
 
     See count()
     """
-    if isinstance(_data, DataFrameGroupBy):
-        return count(_data, *_data.grouper.names, wt=wt, sort=sort, name=name)
+    ret = _data >> count(wt=wt, sort=sort, name=name)
+    return ret.obj if isinstance(ret, DataFrameGroupBy) else ret
 
-    return DataFrame({
-        name: [_data.shape[0] if wt is None else _data[wt].sum()]
-    })
+@tally.register(DataFrame, context=Context.EVAL)
+def _(
+        _data: DataFrame,
+        wt: Optional[NumericOrIter] = None,
+        sort: bool = False,
+        name: Optional[str] = None
+) -> DataFrame:
+    """tally for DataFrame object"""
+    name = name or 'n'
+    if wt is None:
+        wt = _data.shape[0]
+    else:
+        wt = wt.sum()
+    return DataFrame({name: [wt]})
 
-@register_verb((DataFrame, DataFrameGroupBy), context=None)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
 def add_count(
         _data: DataFrameType,
         *columns: Any,
@@ -912,14 +925,15 @@ def add_count(
     if sort:
         ret = ret.sort_values([name], ascending=[False])
 
+    copy_flags(ret, _data)
     if isinstance(_data, DataFrameGroupBy):
         return group_df(ret, _data.grouper)
     return ret
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
 def add_tally(
         _data: DataFrameType,
-        wt: str = None,
+        wt: Optional[str] = None,
         sort: bool = False,
         name: str = 'n'
 ) -> DataFrameType:
@@ -936,6 +950,7 @@ def add_tally(
     if sort:
         ret = ret.sort_values([name], ascending=[False])
 
+    copy_flags(ret, _data)
     if isinstance(_data, DataFrameGroupBy):
         return group_df(ret, _data.grouper)
 
@@ -1157,25 +1172,18 @@ def slice_head(
     rows = list(range(n))
     return _data.iloc[rows, :]
 
-@slice_head.register(DataFrameGroupBy, context=Context.EVAL)
+@slice_head.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         n: Optional[Union[int, Iterable[int]]] = None,
         prop: Optional[Union[float, Iterable[float]]] = None
 ) -> DataFrame:
     """slice_head on grouped dataframe"""
-    # any other better way?
-    total = _data.size().to_frame(name='size')
-    total['n'] = n
-    total['prop'] = prop
-    indexes = total.apply(
-        lambda row: _data.groups[row.name][
-            :get_n_from_prop(row.size, row.n, row.prop)
-        ],
-        axis=1
-    )
-    indexes = numpy.concatenate(indexes.values)
-    return group_df(_data.obj.iloc[indexes, :], _data.grouper)
+    def apply_func(df):
+        return df >> slice_head(n=n, prop=prop)
+
+    applied = groupby_apply(_data, apply_func, groupdata=True)
+    return group_df(applied, _data.grouper.names)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def slice_tail(
@@ -1191,25 +1199,18 @@ def slice_tail(
     rows = [-(elem+1) for elem in range(n)]
     return _data.iloc[rows, :]
 
-@slice_tail.register(DataFrameGroupBy, context=Context.EVAL)
+@slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
         _data: DataFrameGroupBy,
         n: Optional[Union[int, Iterable[int]]] = None,
         prop: Optional[Union[float, Iterable[float]]] = None
 ) -> DataFrame:
     """slice_tail on grouped dataframe"""
-    # any other better way?
-    total = _data.size().to_frame(name='size')
-    total['n'] = n
-    total['prop'] = prop
-    indexes = total.apply(
-        lambda row: _data.groups[row.name][
-            -get_n_from_prop(row.size, row.n, row.prop):
-        ],
-        axis=1
-    )
-    indexes = numpy.concatenate(indexes.values)
-    return group_df(_data.obj.iloc[indexes, :], _data.grouper)
+    def apply_func(df):
+        return df >> slice_tail(n=n, prop=prop)
+
+    applied = groupby_apply(_data, apply_func, groupdata=True)
+    return group_df(applied, _data.grouper.names)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def slice_min(

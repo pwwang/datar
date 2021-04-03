@@ -99,12 +99,12 @@ def debug(
             print_msg("## Evaluated")
             print_msg(evaluate_expr(val, _data, context))
 
-@register_verb(DataFrame)
-def showme(_data: DataFrame) -> DataFrame:
+@register_verb(DataFrame, context=Context.EVAL)
+def display(_data: DataFrame) -> DataFrame:
     """Let jupyter notebook show the (grouped) dataframe"""
     return _data
 
-@showme.register(DataFrameGroupBy)
+@display.register(DataFrameGroupBy, context=Context.EVAL)
 def _(_data: DataFrameGroupBy) -> DataFrame:
     """Show the groups for grouped dataframe
     pandas only just shows repr.
@@ -116,7 +116,7 @@ def _(_data: DataFrameGroupBy) -> DataFrame:
     )
     return _data.obj
 
-@showme.register(RowwiseDataFrame)
+@display.register(RowwiseDataFrame, context=Context.EVAL)
 def _(_data: RowwiseDataFrame) -> DataFrame:
     """Show the groups for rowwise dataframe
     """

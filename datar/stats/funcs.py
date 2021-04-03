@@ -9,6 +9,7 @@ from ..core.contexts import Context
 
 # pylint: disable=redefined-builtin, redefined-outer-name
 
+@register_func(None, context=Context.EVAL)
 def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
     """random generation for the normal distribution with mean equal to mean
     and standard deviation equal to sd.

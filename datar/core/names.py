@@ -1,4 +1,5 @@
 """Name repairing"""
+from datar.core.types import is_iterable
 import inspect
 import re
 import keyword
@@ -6,8 +7,7 @@ from typing import Callable, List, Optional, Union, Iterable
 
 import numpy
 
-class NameNonUniqueError(Exception):
-    """When check_unique fails"""
+from .exceptions import NameNonUniqueError
 
 def _log_changed_names(changed_names: Iterable[str]) -> None:
     """Log the changed names"""
@@ -135,6 +135,8 @@ def repair_names(
     """
     if isinstance(repair, str):
         repair = BUILTIN_REPAIR_METHODS[repair]
+    elif is_iterable(repair) and all(isinstance(elem, str) for elem in repair):
+        return repair
     elif not callable(repair):
         raise ValueError('Expect a function for name repairing.')
 

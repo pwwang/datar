@@ -30,7 +30,7 @@ class ContextEval(ContextEvalPipda):
 
     getattr = getitem # make sure f.size gets f['size']
 
-class ContextSelectSlice(ContextEvalPipda):
+class ContextSelectSlice(ContextSelect):
     """Mark the context to interpret slice
 
     Whether turn f[:3] to first 3 columns or just the slice itself.

@@ -1,4 +1,5 @@
 """Verbs from R-tidyr"""
+from datar.core.names import repair_names
 import re
 import itertools
 from functools import singledispatch
@@ -339,6 +340,8 @@ def fill(
     """Fills missing values in selected columns using the next or
     previous entry.
 
+    See: https://tidyr.tidyverse.org/reference/fill.html
+
     Args:
         _data: A dataframe
         *columns: Columns to fill
@@ -370,13 +373,14 @@ def fill(
         lambda df: fill(df, *columns, _direction=_direction)
     ).groupby(grouper, dropna=False)
 
-@register_verb(context=Context.EVAL)
 def expand_grid(
         _data: Iterable[Any] = None,
-        #_name_repair: str = "check_unique", # todo
+        _name_repair: str = "check_unique",
         **kwargs: Iterable[Any]
 ) -> DataFrame:
     """Expand elements into a new dataframe
+
+    See: https://tidyr.tidyverse.org/reference/expand_grid.html
 
     Args:
         _data, **kwargs: Name-value pairs. The name will become the column
@@ -406,7 +410,7 @@ def expand_grid(
     return DataFrame(
         (itertools.chain.from_iterable(row)
          for row in itertools.product(*product_args)),
-        columns=names
+        columns=repair_names(names, _name_repair)
     )
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
@@ -421,6 +425,8 @@ def extract(
     """Given a regular expression with capturing groups, extract() turns each
     group into a new column. If the groups don't match, or the input is NA,
     the output will be NA.
+
+    See: https://tidyr.tidyverse.org/reference/extract.html
 
     Args:
         _data: The dataframe
@@ -667,6 +673,8 @@ def drop_na(
 ) -> DataFrameType:
     """Drop rows containing missing values
 
+    See: https://tidyr.tidyverse.org/reference/drop_na.html
+
     Args:
         data: A data frame.
         *columns: Columns to inspect for missing values.
@@ -688,7 +696,7 @@ def expand(
         # _name_repair: Union[str, Callable] = None # todo
         **kwargs: Iterable[Any]
 ) -> DataFrame:
-    """"""
+    """See: https://tidyr.tidyverse.org/reference/expand.html"""
     iterables = []
     names = []
     for i, column in enumerate(columns):
