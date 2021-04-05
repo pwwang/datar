@@ -93,5 +93,3 @@ def test_group():
     f = Symbolic()
     df = tibble(x=list('abc'), y=range(3))
     df = df >> group_by(f.x)
-
-

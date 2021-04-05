@@ -559,7 +559,7 @@ def n(series: Iterable[Any]) -> int:
 @register_func(context=Context.EVAL)
 def row_number(_data: Iterable[Any]) -> Series:
     """Gives the row number, 0-based."""
-    return Series(range(len(_data)))
+    return Series(range(len(_data)), dtype='int')
 
 @register_func(DataFrame)
 def cur_group_id(_data: DataFrame) -> int:

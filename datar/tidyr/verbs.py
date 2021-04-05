@@ -1,5 +1,4 @@
 """Verbs from R-tidyr"""
-from datar.core.names import repair_names
 import re
 import itertools
 from functools import singledispatch
@@ -21,6 +20,7 @@ from ..core.types import (
 )
 from ..core.middlewares import Nesting
 from ..core.contexts import Context
+from ..core.names import repair_names
 from ..base.constants import NA
 from ..base.funcs import levels
 from ..dplyr.verbs import distinct

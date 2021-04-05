@@ -973,7 +973,8 @@ def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
 def Re(numbers: NumericOrIter) -> numpy.ndarray:
     if is_scalar(numbers):
         return numbers.real
-    return numpy.real(numbers)
+    ret = numpy.real(numbers)
+    return ret
 
 @register_func(None)
 def Im(numbers: NumericOrIter) -> numpy.ndarray:

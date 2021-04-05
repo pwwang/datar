@@ -277,15 +277,3 @@ def test_works_with_if_any_if_all():
     df1 = df >> filter(if_any(starts_with("x"), lambda x: x>6))
     df2 = df >> filter((f.x1 > 6) | (f.x2 > 6))
     assert df1.equals(df2)
-
-
-
-
-
-
-
-
-
-
-
-

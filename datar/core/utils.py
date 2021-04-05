@@ -289,9 +289,6 @@ def align_value(
     if is_scalar(value):
         return value
 
-    if isinstance(value, numpy.ndarray):
-        value = value.tolist()
-
     data = objectize(data)
     value = objectize(value)
 
@@ -312,7 +309,8 @@ def align_value(
         nrepeat = data.shape[0] // len_series
         if isinstance(value, (list, tuple)):
             return value * nrepeat
-        return value.append([value] * (nrepeat - 1))
+        # numpy.ndarray
+        return value.repeat(nrepeat)
     return value
 
 def update_df(df: DataFrame, df2: DataFrame) -> None:

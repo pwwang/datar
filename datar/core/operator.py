@@ -75,4 +75,6 @@ class DatarOperator(Operator):
     def __getattr__(self, name: str) -> Any:
         if not hasattr(operator, name):
             raise AttributeError
-        return partial(self._arithmetize2, op=name)
+        attr = partial(self._arithmetize2, op=name)
+        attr.__qualname__ = self._arithmetize2.__qualname__
+        return attr

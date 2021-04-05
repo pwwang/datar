@@ -96,18 +96,18 @@ def test_f_pronoun():
     bar = tibble(a=1, b=1)
     assert foo.equals(bar)
 
-# def test_mutate_semantics():
-#     foo = tibble(a=[1,2], b=1, c=f.b / sum(f.b))
-#     bar = tibble(a=[1,2], b=[1,1], c=[.5,.5])
-#     assert foo.equals(bar)
+def test_mutate_semantics():
+    foo = tibble(a=[1,2], b=1, c=f.b / sum(f.b))
+    bar = tibble(a=[1,2], b=[1,1], c=[.5,.5])
+    assert foo.equals(bar)
 
-#     foo = tibble(b=1, a=[1,2], c=f.b / sum(f.b))
-#     bar = tibble(b=[1,1], a=[1,2], c=[.5,.5])
-#     assert foo.equals(bar)
+    foo = tibble(b=1, a=[1,2], c=f.b / sum(f.b))
+    bar = tibble(b=[1,1], a=[1,2], c=[.5,.5])
+    assert foo.equals(bar)
 
-#     foo = tibble(b=1.0, c=f.b / sum(f.b), a=[1,2])
-#     bar = tibble(b=[1.0,1.0], c=[1.0,1.0], a=[1,2])
-#     assert foo.equals(bar)
+    foo = tibble(b=1.0, c=f.b / sum(f.b), a=[1,2])
+    bar = tibble(b=[1.0,1.0], c=[1.0,1.0], a=[1,2])
+    assert foo.equals(bar)
 
 # TODO: units preseved when recycled
 
@@ -240,5 +240,3 @@ def test_dup_cols():
     x = 1
     df = tibble(x, x, _name_repair='minimal')
     assert df.columns.tolist() == ['x', 'x']
-
-
