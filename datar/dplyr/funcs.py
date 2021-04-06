@@ -605,10 +605,7 @@ def cur_data(_data: DataFrame) -> int:
     (excluding grouping variables)."""
     grouper = getattr(_data.flags, 'grouper', None)
     if not grouper:
-        raise ValueError(
-            'To get current group data, a dataframe must be grouped '
-            'using `datar.dplyr.group_by`'
-        )
+        return _data
     copied = _data.copy()
     copy_flags(copied, _data)
     return copied.reset_index(drop=True)

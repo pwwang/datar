@@ -10,7 +10,7 @@ from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 
 from ..core.utils import copy_flags, df_assign_item, objectize, to_df
-from ..core.names import name_placeholders, repair_names
+from ..core.names import repair_names
 
 def tibble(
         *args: Any,

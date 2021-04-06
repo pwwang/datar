@@ -34,10 +34,10 @@ def test_cur_data_all():
     df = tibble(x = c("b", "a", "b"), y = [1,2,3])
     gf = df >> group_by(f.x)
 
-    with pytest.raises(ValueError):
-        df >> summarise(x=[cur_data()])
+    out = df >> summarise(x=[cur_data()]) >> pull(f.x, to='list')
+    assert out[0].equals(df)
 
-    # todo
+    # todo: go back to this after tests for summarise
     # out = gf >> summarise(x=[cur_data()]) >> pull(f.x)
     # assert out.values[0].values.flatten().tolist() == [2]
     # assert out.values[1].values.flatten().tolist() == [1,3]

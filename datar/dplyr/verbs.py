@@ -10,17 +10,16 @@ from pandas import DataFrame, Series, RangeIndex
 from pandas.api.types import union_categoricals
 from pandas.core.groupby.generic import DataFrameGroupBy
 
-from pipda import register_verb, evaluate_expr, evaluate_args
+from pipda import register_verb, evaluate_expr
 from pipda.utils import Expression
 
-from ..core.middlewares import (
-    Inverted, RowwiseDataFrame
-)
+from ..core.middlewares import Inverted
 from ..core.types import (
-    DataFrameType, NoneType, NumericOrIter, SeriesLikeType, StringOrIter, is_scalar
+    DataFrameType, NoneType, NumericOrIter, SeriesLikeType, StringOrIter,
+    is_scalar
 )
 from ..core.contexts import ContextEval, ContextSelectSlice
-from ..core.exceptions import ColumnNameInvalidError
+from ..core.exceptions import ColumnNameInvalidError, ColumnNotExistingError
 from ..core.utils import (
     align_value, copy_flags, df_assign_item, expand_slice, get_n_from_prop,
     group_df, groupby_apply, list_diff, list_intersect, list_union,
@@ -29,7 +28,7 @@ from ..core.utils import (
 from ..core.names import NameNonUniqueError, repair_names
 from ..core.contexts import Context
 from ..tibble.funcs import tibble
-from ..base.funcs import context, is_categorical
+from ..base.funcs import is_categorical
 from .funcs import group_by_drop_default
 
 # pylint: disable=redefined-builtin,no-value-for-parameter
@@ -76,7 +75,9 @@ def arrange(
     by = sorting_df.columns.tolist()
     sorting_df.sort_values(by=by, inplace=True)
 
-    return _data.loc[sorting_df.index, :]
+    ret = _data.loc[sorting_df.index, :]
+    copy_flags(ret, _data)
+    return ret
 
 @arrange.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
@@ -95,6 +96,23 @@ def _(
     copy_flags(ret, _data)
     return group_df(ret, _data.grouper.names)
 
+def _mutate_rowwise(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
+    """Mutate on rowwise data frame"""
+    if _data.shape[0] > 0:
+        def apply_func(ser):
+            return (ser.to_frame().T >> mutate(*args, **kwargs)).iloc[0, :]
+
+        applied = _data.apply(
+            apply_func,
+            axis=1
+        ).reset_index(drop=True)
+    else:
+        applied = DataFrame(
+            columns=list_union(_data.columns.tolist(), kwargs.keys())
+        )
+    copy_flags(applied, _data) # rowwise copied
+    return applied
+
 @register_verb(DataFrame, context=Context.PENDING)
 def mutate(
         _data: DataFrame,
@@ -107,7 +125,7 @@ def mutate(
     """Adds new variables and preserves existing ones
 
     The original API:
-    https://dplyr.tidyverse.org/reference/summarise.html
+    https://dplyr.tidyverse.org/reference/mutate.html
 
     Args:
         _data: A data frame
@@ -144,7 +162,18 @@ def mutate(
             - Groups will be recomputed if a grouping variable is mutated.
             - Data frame attributes are preserved.
     """
+    if getattr(_data.flags, 'rowwise', False):
+        return _mutate_rowwise(
+            _data,
+            *args,
+            _keep=_keep,
+            _before=_before,
+            _after=_after,
+            **kwargs
+        )
+
     context = ContextEval()
+
     if _before is not None:
         _before = evaluate_expr(_before, _data, Context.SELECT)
     if _after is not None:
@@ -227,27 +256,6 @@ def _(
             columns=list_union(_data.obj.columns.tolist(), kwargs.keys())
         )
     return group_df(applied, _data.grouper)
-
-@mutate.register(RowwiseDataFrame, context=Context.PENDING)
-def _(
-        _data: RowwiseDataFrame,
-        *args: Any,
-        **kwargs: Any
-) -> RowwiseDataFrame:
-    """Mutate on RowwiseDataFrame object"""
-    if _data.shape[0] > 0:
-        def apply_func(ser):
-            return (ser.to_frame().T >> mutate(*args, **kwargs)).iloc[0, :]
-
-        applied = _data.apply(
-            apply_func,
-            axis=1
-        ).reset_index(drop=True)
-    else:
-        applied = DataFrame(
-            columns=list_union(_data.columns.tolist(), kwargs.keys())
-        )
-    return RowwiseDataFrame(applied, rowwise=_data.flags.rowwise)
 
 # Forward pipda.Expression for mutate to evaluate
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
@@ -354,17 +362,15 @@ def select(
     if new_names:
         data = data.rename(columns=new_names)
 
+    copy_flags(data, _data)
     if isinstance(_data, DataFrameGroupBy):
         return group_df(data, _data.grouper)
     return data
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def rowwise(_data: DataFrameType, *columns: str) -> RowwiseDataFrame:
+@register_verb(DataFrame, context=Context.SELECT)
+def rowwise(_data: DataFrame, *columns: str) -> DataFrame:
     """Compute on a data frame a row-at-a-time
-
-    Note:
-        If the dataframe is grouped, the group information will be lost
 
     Args:
         _data: The dataframe
@@ -373,11 +379,27 @@ def rowwise(_data: DataFrameType, *columns: str) -> RowwiseDataFrame:
             uniquely identify each row.
 
     Returns:
-        A row-wise data frame with class RowwiseDataFrame
+        A row-wise data frame
     """
-    _data = objectize(_data)
-    columns = select_columns(_data.columns, columns)
-    return RowwiseDataFrame(_data, rowwise=columns)
+    data = _data.copy()
+    copy_flags(data, _data)
+    if not columns:
+        columns = True
+    else:
+        columns = select_columns(_data.columns, columns)
+    data.flags.rowwise = columns
+    return data
+
+@rowwise.register(DataFrameGroupBy, context=Context.SELECT)
+def _(_data: DataFrameGroupBy, *columns: str) -> DataFrame:
+    if columns:
+        raise ValueError(
+            "Can't re-group when creating rowwise data."
+        )
+    data = _data.obj.copy()
+    copy_flags(data, _data)
+    data.flags.rowwise = _data.grouper.names
+    return data
 
 @register_verb(DataFrame, context=Context.PENDING)
 def group_by(
@@ -496,6 +518,11 @@ def group_vars(_data: DataFrameGroupBy) -> List[str]:
     """gives names of grouping variables as character vector"""
     return _data.grouper.names
 
+@group_vars.register(DataFrame, context=Context.EVAL)
+def _(_data: DataFrame) -> List[str]:
+    """Group vars of DataFrame"""
+    return getattr(_data.flags, 'rowwise', None) or []
+
 group_cols = group_vars # pylint: disable=invalid-name
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
@@ -545,8 +572,7 @@ def group_split(
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Get a list of data in each group"""
-    if isinstance(_data, RowwiseDataFrame):
-        _data = objectize(_data)
+    if getattr(_data.flags, 'rowwise'):
         return [_data.iloc[[i], :] for i in range(_data.shape[0])]
 
     if isinstance(_data, DataFrameGroupBy):
@@ -587,13 +613,13 @@ def with_groups(
 
     return _func(_data, *args, **kwargs)
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.PENDING)
 def summarise(
         _data: DataFrame,
         *dfs: Union[DataFrame, Mapping[str, Iterable[Any]]],
         _groups: Optional[str] = None,
         **kwargs: Any
-) -> DataFrame:
+) -> DataFrameType:
     """Summarise each group to fewer rows
 
     See: https://dplyr.tidyverse.org/reference/summarise.html
@@ -610,8 +636,10 @@ def summarise(
     Returns:
         The summary dataframe.
     """
+    context = Context.EVAL.value
+
     serieses = {}
-    for ser in dfs:
+    for i, ser in enumerate(dfs):
         if isinstance(ser, Series):
             serieses[ser.name] = ser.values
         elif isinstance(ser, DataFrame):
@@ -619,23 +647,49 @@ def summarise(
         elif isinstance(ser, dict):
             serieses.update(ser)
         else:
-            raise ValueError('Only series, dataframe or dict should be used.')
+            serieses[f"V{i}"] = ser
 
     serieses.update(kwargs)
     kwargs = serieses
 
     ret = None
-    if isinstance(_data, RowwiseDataFrame) and _data.flags.rowwise is not True:
-        ret = _data.loc[:, _data.flags.rowwise]
+    rowwise_vars = getattr(_data.flags, 'rowwise', False)
+    if rowwise_vars and rowwise_vars is not True:
+        ret = _data.loc[:, rowwise_vars]
 
     for key, val in kwargs.items():
         if ret is None:
+            val = evaluate_expr(val, _data, context)
             ret = to_df(val, key)
-        else:
-            df_assign_item(ret, key, val)
+            continue
+        try:
+            val = evaluate_expr(val, ret, context)
+        except ColumnNotExistingError:
+            val = evaluate_expr(val, _data, context)
+
+        value = align_value(val, ret)
+        df_assign_item(ret, key, value)
+
+    if ret is None:
+        ret = _data.copy()
+        copy_flags(ret, _data)
+
+    if rowwise_vars is True:
+        logger.info(
+            '`summarise()` has ungrouped output. '
+            'You can override using the `_groups` argument.'
+        )
+        return ret
+    if rowwise_vars:
+        logger.info(
+            '`summarise()` has grouped output by %s. '
+            'You can override using the `_groups` argument.',
+            rowwise_vars
+        )
+        return group_df(ret, rowwise_vars)
 
     if _groups == 'rowwise':
-        return RowwiseDataFrame(ret)
+        ret.flags.rowwise = True
 
     return ret
 
@@ -997,8 +1051,7 @@ def distinct(
         data2 = data[columns]
         copy_flags(data2, data)
         data = data2
-    if isinstance(_data, RowwiseDataFrame):
-        return RowwiseDataFrame(data, rowwise=_data.flags.rowwise)
+
     return data
 
 @distinct.register(DataFrameGroupBy, context=Context.PENDING)
@@ -1081,7 +1134,17 @@ def rename(
     Returns:
         The dataframe with new names
     """
-    return _data.rename(columns={val: key for key, val in kwargs.items()})
+    names = {val: key for key, val in kwargs.items()}
+    ret = _data.rename(columns=names)
+    copy_flags(ret, _data)
+    row_wise = getattr(ret.flags, 'rowwise', None)
+    if is_scalar(row_wise):
+        return ret
+
+    for i, var in enumerate(row_wise):
+        if var in names:
+            row_wise[i] = names[var]
+    return ret
 
 @register_verb(DataFrame, context=Context.SELECT)
 def rename_with(
@@ -1126,9 +1189,12 @@ def slice(
     """
     rows = expand_slice(rows, _data.shape[0])
     try:
-        return _data.iloc[rows, :]
+        ret = _data.iloc[rows, :]
     except IndexError:
-        return _data.iloc[[], :]
+        ret = _data.iloc[[], :]
+
+    copy_flags(ret, _data)
+    return ret
 
 @slice.register(DataFrameGroupBy, context=Context.PENDING)
 def _(

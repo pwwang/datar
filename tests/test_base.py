@@ -244,8 +244,8 @@ def test_table():
     from datar import f
     from datar.datasets import warpbreaks, state_division, state_region, airquality
     z = stats.rpois(100, 5)
-    # x = table(z)
-    # assert sum(x.values.flatten()) == 100
+    x = table(z)
+    assert sum(x.values.flatten()) == 100
 
     #-----------------
     with context(warpbreaks) as _:

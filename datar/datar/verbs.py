@@ -1,5 +1,4 @@
 """Specific verbs from this package"""
-from datar.core.middlewares import RowwiseDataFrame
 import sys
 from typing import Any, List, Union
 
@@ -102,6 +101,9 @@ def debug(
 @register_verb(DataFrame, context=Context.EVAL)
 def display(_data: DataFrame) -> DataFrame:
     """Let jupyter notebook show the (grouped) dataframe"""
+    rowwise_vars = getattr(_data.flags, 'rowwise', False)
+    if rowwise_vars:
+        logger.info('# [DataFrame] Rowwise: %s', rowwise_vars)
     return _data
 
 @display.register(DataFrameGroupBy, context=Context.EVAL)
@@ -113,16 +115,6 @@ def _(_data: DataFrameGroupBy) -> DataFrame:
         '# [DataFrameGroupBy] Groups: %s (%s)',
         _data.grouper.names,
         _data.grouper.ngroups
-    )
-    return _data.obj
-
-@display.register(RowwiseDataFrame, context=Context.EVAL)
-def _(_data: RowwiseDataFrame) -> DataFrame:
-    """Show the groups for rowwise dataframe
-    """
-    logger.info(
-        '# [RowwiseDataFrame] Rowwise: %s',
-        _data.flags.rowwise,
     )
     return _data.obj
 

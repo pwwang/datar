@@ -231,19 +231,6 @@ class IfAll(IfCross):
 
     if_type = 'all'
 
-class RowwiseDataFrame(DataFrame):
-
-    def __init__(
-            self,
-            *args: Any,
-            rowwise: Optional[Iterable[str]] = None,
-            flags: Optional[Flags] = None,
-            **kwargs: Any
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        copy_flags(self, flags)
-        self.flags.rowwise = rowwise or True
-
 class WithDataEnv:
 
     def __init__(self, data: Any) -> None:

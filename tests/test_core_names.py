@@ -120,3 +120,6 @@ def test_custom_repair():
 
     out = repair_names(['a', 'b', 'c'], repair=str.upper)
     assert out == ['A', 'B', 'C']
+
+    out = repair_names(['a', 'b', 'c'], repair=['x', 'y', 'z'])
+    assert out == ['x', 'y', 'z']

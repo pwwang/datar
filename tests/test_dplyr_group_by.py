@@ -42,8 +42,8 @@ def test_add(df):
 def test_tibble_lose_grouping(df):
     g = df >> group_by(f.x)
     tbl = tibble(g)
-    with pytest.raises(NotImplementedError):
-        group_vars(tbl)
+    # with pytest.raises(NotImplementedError):
+    assert group_vars(tbl) == []
 
 # group by a string is also referring to the column
 
@@ -101,8 +101,8 @@ def test_zero_row_dfs():
     x = dfg >> summarise(n=n())
     d = x >> dim()
     assert d == (0, 2)
-    with pytest.raises(NotImplementedError):
-        group_vars(x)
+    # with pytest.raises(NotImplementedError):
+    assert group_vars(x) == []
 
     x = dfg >> mutate(c = f.b+1)
     d = x >> dim()
@@ -305,7 +305,7 @@ def test_implicit_mutate_operates_on_ungrouped_data():
 def test_errors():
     df = tibble(x=1, y=2)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         df >> group_by(f.unknown)
 
     with pytest.raises(ValueError):
@@ -314,5 +314,5 @@ def test_errors():
     with pytest.raises(ValueError):
         df >> group_by(f.x, f.y) >> ungroup(f.z)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         df >> group_by(z=f.a+1)

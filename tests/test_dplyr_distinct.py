@@ -131,9 +131,9 @@ def test_errors():
 
     df = tibble(g = c(1, 2), x = c(1, 2))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         df >> distinct(f.aa, f.x)
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         df >> distinct(f.aa, f.bb)
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         df >> distinct(y=f.a+1)

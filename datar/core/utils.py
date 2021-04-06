@@ -1,23 +1,17 @@
 """Core utilities"""
-from pandas.core.arrays.categorical import Categorical
-import sys
-import inspect
+
 import logging
-from functools import singledispatch, wraps
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+from functools import singledispatch
+from copy import deepcopy
+from typing import Any, Callable, Iterable, List, Optional, Union
 
 import numpy
-from pandas import DataFrame
+from pandas import DataFrame, Categorical
 from pandas.core.flags import Flags
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
 from pandas.core.dtypes.common import is_categorical_dtype
-import pipda
-from pipda.context import ContextBase
-from pipda.function import register_func
-from pipda.symbolic import DirectRefAttr
-from pipda.utils import evaluate_args, evaluate_expr, evaluate_kwargs
 
 from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
 from .types import DataFrameType, StringOrIter, is_scalar
@@ -329,7 +323,7 @@ def copy_flags(df1: DataFrame, flags: Union[DataFrameType, Flags]) -> None:
         if key.startswith('_'):
             continue
 
-        setattr(df1.flags, key, getattr(flags, key))
+        setattr(df1.flags, key, deepcopy(getattr(flags, key)))
 
 def df_assign_item(
         df: DataFrame,

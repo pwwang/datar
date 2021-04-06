@@ -1,5 +1,6 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-arrange.r
 
+from datar.core.exceptions import ColumnNotExistingError
 from pandas.core.groupby.generic import DataFrameGroupBy
 import pytest
 from datar.all import *
@@ -34,7 +35,7 @@ def test_errors():
         df >> arrange(f.x)
 
     df = tibble(x=x)
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         df >> arrange(f.y)
 
     with pytest.raises(KeyError):

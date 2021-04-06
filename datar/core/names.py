@@ -149,15 +149,3 @@ def repair_names(
         return [repair(name) for name in names]
 
     return repair(names)
-
-def name_placeholders(size: int) -> List[str]:
-    """Generate a set of valid name placeholders waiting for
-    the real names to be repaired
-
-    Args:
-        size: The number of name placeholders
-
-    Returns:
-        The name placeholders
-    """
-    return _repair_names_universal(["X"] * size)

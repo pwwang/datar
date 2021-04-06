@@ -1,6 +1,5 @@
 """Grabbed from
 https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-across.R"""
-from datar.core.middlewares import RowwiseDataFrame
 import numpy
 from pipda import register_func
 import pytest
@@ -339,6 +338,6 @@ def test_nb_fail_c_across():
         sd = sd(c_across(f[f.w:f.z]))
     )
 
-    assert isinstance(out, RowwiseDataFrame)
+    assert out.flags.rowwise
     rows = nrow(out)
     assert rows == 4
