@@ -13,14 +13,15 @@ from typing import Any, Iterable, List, Optional, Type, Union
 import numpy
 import pandas
 from pandas.core.dtypes.common import (
-    is_categorical_dtype, is_float_dtype, is_int64_dtype, is_integer_dtype, is_numeric_dtype, is_string_dtype
+    is_categorical_dtype, is_float_dtype, is_int64_dtype, is_integer_dtype,
+    is_numeric_dtype, is_string_dtype
 )
 from pandas import Series, Categorical, DataFrame
 from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, objectize
+from ..core.utils import categorize, objectize, logger
 from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
     BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
@@ -404,15 +405,24 @@ def c(*elems: Any) -> Collection:
     """
     return Collection(*elems)
 
-@register_func(None)
+@register_func(None, context=Context.EVAL)
 def seq_along(along_with: Iterable[Any]) -> SeriesLikeType:
     """Generate sequences along an iterable"""
     return numpy.array(range(len(along_with)))
 
-@register_func(None)
-def seq_len(length_out: int) -> SeriesLikeType:
+@register_func(None, context=Context.EVAL)
+def seq_len(length_out: IntOrIter) -> SeriesLikeType:
     """Generate sequences with the length"""
+    if is_scalar(length_out):
+        return numpy.array(range(int(length_out)))
+    if len(length_out) > 1:
+        logger.warning(
+            "In seq_len(%r) : first element used of 'length_out' argument",
+            length_out
+        )
+    length_out = int(list(length_out)[0])
     return numpy.array(range(length_out))
+
 
 @register_func(None, context=Context.EVAL)
 def seq(
@@ -889,6 +899,12 @@ def rep(
 @register_func(None, context=Context.EVAL)
 def unique(x: Iterable[Any]) -> numpy.ndarray:
     return numpy.unique(x)
+
+@register_func(None, context=Context.EVAL)
+def length(x: Any) -> int:
+    if is_scalar(x):
+        return 1
+    return len(x)
 
 # ---------------------------------
 # Plain functions

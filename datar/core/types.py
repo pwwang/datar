@@ -39,14 +39,14 @@ def is_scalar(x: Any) -> bool:
 
     None will be counted as scalar
     """
-    if (
-            x is None or
-            isinstance(x, type) or
-            isinstance(x, numpy.dtype) or
-            callable(x)
-    ):
+    ret = numpy.isscalar(x)
+    if ret:
+        return ret
+    try:
+        iter(x)
+    except TypeError:
         return True
-    return numpy.isscalar(x)
+    return False
 
 def is_iterable(x: Any) -> bool:
     """Check if a value is iterable, which is not a scalar"""

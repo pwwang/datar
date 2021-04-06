@@ -1,4 +1,5 @@
 """Verbs ported from R-dplyr"""
+import builtins
 from pandas.core.arrays.categorical import Categorical
 from typing import (
     Any, Callable, Iterable, List, Mapping, Optional, Union
@@ -21,9 +22,10 @@ from ..core.types import (
 from ..core.contexts import ContextEval, ContextSelectSlice
 from ..core.exceptions import ColumnNameInvalidError, ColumnNotExistingError
 from ..core.utils import (
-    align_value, copy_flags, df_assign_item, expand_slice, get_n_from_prop,
-    group_df, groupby_apply, list_diff, list_intersect, list_union,
-    objectize, select_columns, to_df, logger, update_df
+    align_value, check_column_uniqueness, copy_flags, df_assign_item,
+    expand_slice, get_n_from_prop, group_df, groupby_apply, list_diff,
+    list_intersect, list_union, objectize, select_columns, to_df,
+    logger, update_df
 )
 from ..core.names import NameNonUniqueError, repair_names
 from ..core.contexts import Context
@@ -63,13 +65,10 @@ def arrange(
     if not series:
         return _data
 
-    # check name uniqueness
-    try:
-        repair_names(_data.columns.tolist(), repair="check_unique")
-    except NameNonUniqueError:
-        raise ValueError(
-            'Cannot arrange a data frame with duplicate names.'
-        ) from None
+    check_column_uniqueness(
+        _data,
+        "Cannot arrange a data frame with duplicate names."
+    )
 
     sorting_df = DataFrame(index=_data.index) >> mutate(*series)
     by = sorting_df.columns.tolist()
@@ -381,6 +380,7 @@ def rowwise(_data: DataFrame, *columns: str) -> DataFrame:
     Returns:
         A row-wise data frame
     """
+    check_column_uniqueness(_data)
     data = _data.copy()
     copy_flags(data, _data)
     if not columns:
@@ -572,13 +572,13 @@ def group_split(
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Get a list of data in each group"""
-    if getattr(_data.flags, 'rowwise'):
-        return [_data.iloc[[i], :] for i in range(_data.shape[0])]
-
     if isinstance(_data, DataFrameGroupBy):
         return [
             _data.obj.loc[index] for index in _data.grouper.groups.values()
         ]
+
+    if getattr(_data.flags, 'rowwise'):
+        return [_data.iloc[[i], :] for i in range(_data.shape[0])]
 
     _data = group_by(_data, *cols, **kwargs)
     return group_split(_data)
@@ -636,9 +636,14 @@ def summarise(
     Returns:
         The summary dataframe.
     """
+    check_column_uniqueness(
+        _data,
+        "Can't transform a data frame with duplicate names."
+    )
     context = Context.EVAL.value
 
     serieses = {}
+    new_names = []
     for i, ser in enumerate(dfs):
         if isinstance(ser, Series):
             serieses[ser.name] = ser.values
@@ -648,6 +653,7 @@ def summarise(
             serieses.update(ser)
         else:
             serieses[f"V{i}"] = ser
+            new_names.append(f"V{i}")
 
     serieses.update(kwargs)
     kwargs = serieses
@@ -658,8 +664,12 @@ def summarise(
         ret = _data.loc[:, rowwise_vars]
 
     for key, val in kwargs.items():
+        if val is None:
+            continue
         if ret is None:
             val = evaluate_expr(val, _data, context)
+            if key in new_names and isinstance(val, DataFrame):
+                key = None
             ret = to_df(val, key)
             continue
         try:
@@ -671,22 +681,42 @@ def summarise(
         df_assign_item(ret, key, value)
 
     if ret is None:
-        ret = _data.copy()
-        copy_flags(ret, _data)
+        ret = DataFrame(index=[0])
+
+    copy_flags(ret, _data)
+    ret.flags.rowwise = False
 
     if rowwise_vars is True:
-        logger.info(
-            '`summarise()` has ungrouped output. '
-            'You can override using the `_groups` argument.'
-        )
+        if _groups == 'rowwise':
+            ret.flags.rowwise = True
+            return ret
+
+        if _groups is None and summarise.inform:
+            logger.info(
+                '`summarise()` has ungrouped output. '
+                'You can override using the `_groups` argument.'
+            )
+
         return ret
+
     if rowwise_vars:
-        logger.info(
-            '`summarise()` has grouped output by %s. '
-            'You can override using the `_groups` argument.',
-            rowwise_vars
-        )
-        return group_df(ret, rowwise_vars)
+        if _groups == 'rowwise':
+            ret.flags.rowwise = True
+            return ret
+
+        if _groups is None and summarise.inform:
+            logger.info(
+                '`summarise()` has grouped output by %s. '
+                'You can override using the `_groups` argument.',
+                rowwise_vars
+            )
+            _groups = 'keep'
+
+        if _groups == 'keep':
+            return group_df(ret, rowwise_vars)
+
+        return ret
+
 
     if _groups == 'rowwise':
         ret.flags.rowwise = True
@@ -701,20 +731,27 @@ def _(
         **kwargs: Any
 ) -> DataFrameType:
 
+    gsizes = []
     if _data.obj.shape[0] > 0:
         def apply_func(df):
             df.flags.grouper = _data.grouper
-            return df >> summarise(*dfs, _groups=_groups, **kwargs)
+            ret = df >> summarise(*dfs, _groups=_groups, **kwargs)
+            gsizes.append(0 if df.shape[0] == 0 else ret.shape[0])
+            return ret
 
-        ret = groupby_apply(_data, apply_func, groupdata=True)
+        applied = groupby_apply(_data, apply_func, groupdata=True)
     else: # 0-row dataframe
         # check cols in *dfs
-        ret = DataFrame(columns=list_union(_data.grouper.names, kwargs.keys()))
+        applied = DataFrame(
+            columns=list_union(_data.grouper.names, kwargs.keys())
+        )
 
     g_keys = _data.grouper.names
     if _groups is None:
-        gsize = _data.grouper.size().tolist()
-        if not gsize or gsize == [1] * len(gsize):
+        has_args = len(kwargs) > 0 or len(dfs) > 0
+        all_ones = all(gsize <= 1 for gsize in gsizes)
+
+        if applied.shape[0] <= 1 or all_ones or not has_args:
             _groups = 'drop_last'
             if len(g_keys) == 1 and summarise.inform:
                 logger.info(
@@ -723,35 +760,34 @@ def _(
                 )
             elif summarise.inform:
                 logger.info(
-                    '`summarise()` regrouping output by '
+                    '`summarise()` has grouped output by '
                     '%s (override with `_groups` argument)',
                     g_keys[:-1]
                 )
         else:
-            if gsize != [gsize[0]] * len(gsize):
-                _groups = 'keep'
-                if summarise.inform:
-                    logger.info(
-                        '`summarise()` regrouping output by %s. '
-                        'You can override using the `.groups` argument.',
-                        g_keys
-                    )
+            _groups = 'keep'
+            if summarise.inform:
+                logger.info(
+                    '`summarise()` has grouped output by %s. '
+                    'You can override using the `_groups` argument.',
+                    g_keys
+                )
 
-    copy_flags(ret, _data)
+    copy_flags(applied, _data)
 
     if _groups == 'drop':
-        return ret
+        return applied
 
     if _groups == 'drop_last':
-        return group_df(ret, g_keys[:-1]) if g_keys[:-1] else ret
+        return group_df(applied, g_keys[:-1]) if g_keys[:-1] else applied
 
     if _groups == 'keep':
         # even keep the unexisting levels
-        return group_df(ret, g_keys)
+        return group_df(applied, g_keys)
 
     # else:
     # todo: raise
-    return ret
+    return applied
 
 summarise.inform = True
 summarize = summarise # pylint: disable=invalid-name

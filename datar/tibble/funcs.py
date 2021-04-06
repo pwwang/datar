@@ -1,6 +1,6 @@
 """Functions ported from tidyverse-tibble"""
 import itertools
-from typing import Any, Callable, Union
+from typing import Any, Callable, Union, Optional
 
 from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
@@ -15,6 +15,7 @@ from ..core.names import repair_names
 def tibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
+        _rows: Optional[int] = None,
         **kwargs: Any
 ) -> DataFrame:
     # pylint: disable=too-many-statements
@@ -29,12 +30,14 @@ def tibble(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
+        _rows: Number of rows of a 0-col dataframe when args and kwargs are
+            not provided. When args or kwargs are provided, this is ignored.
 
     Returns:
         A dataframe
     """
     if not args and not kwargs:
-        df = DataFrame()
+        df = DataFrame() if not _rows else DataFrame(index=range(_rows))
         df.__dfname__ = varname(raise_exc=False)
         return df
 

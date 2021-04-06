@@ -114,4 +114,4 @@ def test_summarise_respect_zero_len_groups():
     out = df >> group_by(f.x, _drop=False) >> summarise(n=n())
     # assert out.obj.n.tolist() == [10,10,10,0]
     # not supported when dataframe is empty
-    assert out.obj.n.tolist() == [10,10,10]
+    assert out.n.tolist() == [10,10,10]

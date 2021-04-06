@@ -14,9 +14,9 @@ def test_on_one_column():
 
 def test_not_selecting_grouping_var():
     df = tibble(g = 1, x = 1)
-    out = df >> group_by(f.g) >> summarise(x = across(everything())) >> pull()
+    out = df >> group_by(f.g) >> summarise(x = across(everything())) >> pull(f.x)
     expected = tibble(x=1)
-    assert out.to_frame().equals(expected)
+    assert out.equals(expected)
 
 def test_names_output():
     gf = tibble(x = 1, y = 2, z = 3, s = "") >> group_by(f.x)

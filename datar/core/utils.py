@@ -13,8 +13,11 @@ from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
 from pandas.core.dtypes.common import is_categorical_dtype
 
-from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
+from .exceptions import (
+    ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
+)
 from .types import DataFrameType, StringOrIter, is_scalar
+from .names import repair_names
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
@@ -368,12 +371,13 @@ def categorize(data: Any) -> Any:
 
 @singledispatch
 def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
-    try:
-        df = DataFrame(data, columns=[name]) if name else DataFrame(data)
-    except ValueError:
-        df = DataFrame([data], columns=[name]) if name else DataFrame([data])
+    if is_scalar(data):
+        data = [data]
 
-    return df
+    if name is None:
+        return DataFrame(data)
+
+    return DataFrame({name: data})
 
 @to_df.register(numpy.ndarray)
 def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
@@ -390,7 +394,9 @@ def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
 
 @to_df.register(DataFrame)
 def _(data: DataFrame, name: Optional[str] = None) -> DataFrame:
-    return data
+    if name is None:
+        return data
+    return DataFrame({f"{name}${col}": data[col] for col in data.columns})
 
 @to_df.register(Series)
 def _(data: Series, name: Optional[str] = None) -> DataFrame:
@@ -458,9 +464,17 @@ def groupby_apply(
             # make sure columns are included
             columns = list_union(commcols, list_diff(columns, commcols))
             return ret[columns]
+
         ret = df.apply(apply_func).reset_index(drop=True)
     else:
         ret = df.apply(func).reset_index(drop=True)
 
     copy_flags(ret, df)
     return ret
+
+def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
+    """Check if column names are unique of a dataframe"""
+    try:
+        repair_names(df.columns.tolist(), repair="check_unique")
+    except NameNonUniqueError as error:
+        raise ValueError(msg or str(error)) from None
