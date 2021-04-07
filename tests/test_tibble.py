@@ -1,66 +1,242 @@
+# https://github.com/tidyverse/tibble/blob/master/tests/testthat/test-tibble.R
 import pytest
 
-from pandas import DataFrame
-from pipda import Symbolic
-from datar.tibble import *
+from datar import f
+from datar.tibble import tibble, tribble
+from datar.base import nrow, rep, dim, sum, diag, NA, letters, LETTERS, NULL
+from datar.dplyr import pull
 
-from .conftest import assert_equal
+def test_correct_rows():
+    out = tibble(value=range(1,11)) >> nrow()
+    assert out == 10
+    out = tibble(value=range(1,11), name="recycle_me") >> nrow()
+    assert out == 10
+    out = tibble(name="recycle_me", value=range(1,11)) >> nrow()
+    assert out == 10
+    out = tibble(name="recycle_me", value=range(1,11), value2=range(11,21)) >> nrow()
+    assert out == 10
+    out = tibble(value=range(1,11), name="recycle_me", value2=range(11,21)) >> nrow()
+    assert out == 10
 
-def test_tibble():
-    f = Symbolic()
+def test_null_none_ignored():
+    out = tibble(a=None)
+    expect = tibble()
+    assert out.equals(expect)
 
-    df1 = tibble(x=1, y=2)
-    df2 = DataFrame(dict(x=[1], y=[2]))
-    assert df1.equals(df2)
-    assert_equal(df1.columns.tolist(), df2.columns.tolist())
+    out = tibble(a_=None, a=1)
+    expect = tibble(a=1)
+    assert out.equals(expect)
 
-    df1 = tibble(x=1, y=2, _name_repair=str.upper)
-    assert_equal(df1.columns.tolist(), ['X', 'Y'])
+    out = tibble(a=None, b=1, c=[2,3])
+    expect = tibble(b=1, c=[2,3])
+    assert out.equals(expect)
 
-    df1 = tibble(x=1, y=2, _name_repair=['X', 'Y'])
-    assert_equal(df1.columns.tolist(), ['X', 'Y'])
+    out = tibble(None, b=1, c=[2,3])
+    expect = tibble(b=1, c=[2,3])
+    assert out.equals(expect)
+
+def test_recycle_scalar_or_len1_vec():
+    out = tibble(value=range(1,11)) >> nrow()
+    assert out == 10
+    out = tibble(value=range(1,11), y=1) >> nrow()
+    assert out == 10
+    out = tibble(value=range(1,11), y=[1]) >> nrow()
+    assert out == 10
+    with pytest.raises(ValueError):
+        tibble(value=range(1,11), y=[1,2,3])
+
+def test_recycle_nrow1_df():
+    out = tibble(x=range(1,11), y=tibble(z=1))
+    expect = tibble(x=range(1,11), y=tibble(z=rep(1,10)))
+    assert out.equals(expect)
+
+    out = tibble(y=tibble(z=1), x=range(1,11))
+    expect = tibble(y=tibble(z=rep(1,10)), x=range(1,11))
+    assert out.equals(expect)
+
+    out = tibble(x=1, y=tibble(z=range(1,11)))
+    expect = tibble(x=rep(1,10), y=tibble(z=range(1,11)))
+    assert out.equals(expect)
+
+    out = tibble(y=tibble(z=range(1,11)), x=1)
+    expect = tibble(y=tibble(z=range(1,11)), x=rep(1,10))
+    assert out.equals(expect)
+
+def test_missing_names():
+    x = range(1,11)
+    df = tibble(x, y=x)
+    assert df.columns.tolist() == ['x', 'y']
+
+def test_empty():
+    zero = tibble()
+    d = zero >> dim()
+    assert d == (0, 0)
+    assert zero.columns.tolist() == []
+
+def test_hierachical_names():
+    foo = tibble(x=tibble(y=1,z=2))
+    assert foo.columns.tolist() == ['x$y', 'x$z']
+    pulled = foo >> pull(f.x)
+    assert pulled.columns.tolist() == ['y', 'z']
+
+    foo = tibble(x=dict(y=1,z=2))
+    assert foo.columns.tolist() == ['x$y', 'x$z']
+    pulled = foo >> pull(f.x)
+    assert pulled.columns.tolist() == ['y', 'z']
 
 
-    x = 1
-    df = tibble(x, x, x, _name_repair="unique")
-    assert_equal(df.columns.tolist(), ["x_1", "x_2", "x_3"])
+def test_meta_flags_preserved():
+    foo = tibble(x=1)
+    foo.flags.rowwise = True
+    bar = tibble(foo)
+    assert bar.flags.rowwise == True
 
-    df = tibble(x, f.x*2)
-    assert_equal(df.values.flatten(), [1,2])
-    df = tibble(x, y=f.x*2)
-    assert_equal(df.values.flatten(), [1,2])
+def test_f_pronoun():
+    foo = tibble(a=1, b=f.a)
+    bar = tibble(a=1, b=1)
+    assert foo.equals(bar)
 
-    df = tibble(x, df, _name_repair="unique")
-    assert_equal(df.values.flatten(), [1,1,2])
-    df = tibble(x, z=df, _name_repair="unique")
-    assert_equal(df.values.flatten(), [1,1,1,2])
+def test_mutate_semantics():
+    foo = tibble(a=[1,2], b=1, c=f.b / sum(f.b))
+    bar = tibble(a=[1,2], b=[1,1], c=[.5,.5])
+    assert foo.equals(bar)
 
+    foo = tibble(b=1, a=[1,2], c=f.b / sum(f.b))
+    bar = tibble(b=[1,1], a=[1,2], c=[.5,.5])
+    assert foo.equals(bar)
 
-    def name_repair(name, raw_names, new_names):
-        if name not in new_names:
-            return name
-        return f'{name}_1'
+    foo = tibble(b=1.0, c=f.b / sum(f.b), a=[1,2])
+    bar = tibble(b=[1.0,1.0], c=[1.0,1.0], a=[1,2])
+    assert foo.equals(bar)
 
-    df = tibble(x, x, _name_repair=name_repair)
-    assert_equal(df.columns.tolist(), ["x", "x_1"])
+# TODO: units preseved when recycled
 
-    with pytest.raises(ValueError, match="duplicated"):
-        tibble(x, x)
+def test_auto_splicing_anonymous_tibbles():
+    df = tibble(a=1, b=2)
+    out = tibble(df)
+    assert out.equals(df)
 
-    x = {'a': 1}
-    df = tibble(x['a'], x['a'], x['a'], _name_repair="universal")
-    assert_equal(df.columns.tolist(), ["x_a_1", "x_a_2", "x_a_3"])
+    out = tibble(df, c=f.b)
+    expect = tibble(a=1,b=2,c=2)
+    assert out.equals(expect)
 
-    with pytest.raises(ValueError, match='_name_repair'):
-        tibble(x['a'], _name_repair=True)
+def test_coerce_dict_of_df():
+    df = tibble(x=range(1,11))
+    out = tibble(dict(x=df)) >> nrow()
+    assert out == 10
+
+    out = tibble(dict(x=diag(5))) >> nrow()
+    assert out == 5
+
+def test_subsetting_correct_nrow():
+    df = tibble(x=range(1,11))
+    out = tibble(x=df).loc[:4,:]
+    expect = tibble(x=df.loc[:4,:])
+    assert out.equals(expect)
+
+def test_one_row_retains_column():
+    out = tibble(y=diag(5)).loc[0, :]
+    expect = tibble(y=diag(5).loc[0, :].values)
+    assert (out.values.flatten() == expect.values.flatten()).all()
+
+# tribble
 
 def test_tribble():
-    f = Symbolic()
-    df = tribble(
+    out = tribble(
         f.colA, f.colB,
         "a",    1,
-        "b",    2,
-        "c",    3,
+        "b",    2
     )
-    assert_equal(df.columns.tolist(), ['colA', 'colB'])
-    assert_equal(df.values.flatten(), ['a', 1, 'b', 2, 'c', 3])
+    expect = tibble(colA=["a", "b"], colB=[1,2])
+    assert out.equals(expect)
+
+    out = tribble(
+        f.colA, f.colB, f.colC, f.colD,
+        1,2,3,4,
+        5,6,7,8
+    )
+    expect = tibble(
+        colA=[1,5],
+        colB=[2,6],
+        colC=[3,7],
+        colD=[4,8],
+    )
+    assert out.equals(expect)
+
+    out = tribble(
+        f.colA, f.colB,
+        1,6,
+        2,7,
+        3,8,
+        4,9,
+        5,10
+    )
+    expect = tibble(
+        colA=[1,2,3,4,5],
+        colB=[6,7,8,9,10]
+    )
+    assert out.equals(expect)
+
+# trailing comma is a python feature
+def test_trailing_comma():
+    out = tribble(
+        f.colA, f.colB,
+        "a",    1,
+        "b",    2, # <--
+    )
+    expect = tibble(colA=["a", "b"], colB=[1,2])
+    assert out.equals(expect)
+
+# todo: handle column as class
+
+def test_non_atomic_value():
+    out = tribble(f.a, f.b, NA, "A", letters, LETTERS[1:])
+    expect = tibble(a=[NA, letters], b=["A", LETTERS[1:]])
+    assert out.equals(expect)
+
+    out = tribble(f.a, f.b, NA, NULL, 1, 2)
+    expect = tibble(a=[NA, 1], b=[NULL, 2])
+    assert out.equals(expect)
+
+def test_errors():
+    with pytest.raises(ValueError):
+        tribble(1, 2, 3)
+    with pytest.raises(ValueError):
+        tribble("a", "b", 1, 2)
+
+    out = tribble(f.a, f.b, f.c, 1,2,3,4,5)
+    # missing values filled with NA, unlike R
+    expect = tibble(a=[1,4], b=[2,5], c=[3,NA])
+    assert out.fillna(0).equals(expect.fillna(0))
+
+def test_dict_value():
+    out = tribble(f.x, f.y, 1, dict(a=1), 2, dict(b=2))
+    assert out.x.values.tolist() == [1,2]
+    assert out.y.values.tolist() == [dict(a=1), dict(b=2)]
+
+def test_empty_df():
+    out = tribble(f.x, f.y)
+    expect = tibble(x=[], y=[])
+    assert out.columns.tolist() == ['x', 'y']
+    assert out.shape == (0, 2)
+    assert expect.columns.tolist() == ['x', 'y']
+    assert expect.shape == (0, 2)
+
+def test_0x0():
+    df = tibble()
+    expect = tibble()
+    assert df.equals(expect)
+
+def test_names_not_stripped():
+    # different from R
+    df = tribble(f.x, dict(a=1))
+    out = df >> pull(f.x, to='list')
+    assert out == [dict(a=1)]
+
+def test_dup_cols():
+    df = tribble(f.x, f.x, 1, 2)
+    assert df.columns.tolist() == ['x', 'x']
+
+    x = 1
+    df = tibble(x, x, _name_repair='minimal')
+    assert df.columns.tolist() == ['x', 'x']

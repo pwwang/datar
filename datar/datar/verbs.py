@@ -1,14 +1,14 @@
 """Specific verbs from this package"""
-from datar.core.middlewares import RowwiseDataFrame
 import sys
 from typing import Any, List, Union
 
 from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
-from pipda import register_verb, Context, evaluate_expr
+from pipda import register_verb, evaluate_expr
 
 from ..core.utils import objectize, logger
 from ..core.types import DataFrameType
+from ..core.contexts import Context
 from ..dplyr import select, slice # pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
@@ -30,7 +30,8 @@ def get(
         A single element when both rows and cols are scalar, otherwise
         a subset of _data
     """
-    _data = objectize(_data)
+    _data = objectize(_data).reset_index(drop=True)
+
     # getting single element
     if (
             rows is not None and
@@ -97,12 +98,15 @@ def debug(
             print_msg("## Evaluated")
             print_msg(evaluate_expr(val, _data, context))
 
-@register_verb(DataFrame)
-def showme(_data: DataFrame) -> DataFrame:
+@register_verb(DataFrame, context=Context.EVAL)
+def display(_data: DataFrame) -> DataFrame:
     """Let jupyter notebook show the (grouped) dataframe"""
+    rowwise_vars = getattr(_data.flags, 'rowwise', False)
+    if rowwise_vars:
+        logger.info('# [DataFrame] Rowwise: %s', rowwise_vars)
     return _data
 
-@showme.register(DataFrameGroupBy)
+@display.register(DataFrameGroupBy, context=Context.EVAL)
 def _(_data: DataFrameGroupBy) -> DataFrame:
     """Show the groups for grouped dataframe
     pandas only just shows repr.
@@ -114,16 +118,7 @@ def _(_data: DataFrameGroupBy) -> DataFrame:
     )
     return _data.obj
 
-@showme.register(RowwiseDataFrame)
-def _(_data: RowwiseDataFrame) -> DataFrame:
-    """Show the groups for rowwise dataframe
-    """
-    logger.info(
-        '# [RowwiseDataFrame] Rowwise: %s',
-        _data.flags.rowwise,
-    )
-    return _data.obj
-
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def drop_index(_data: DataFrame) -> DataFrame:
+    """Drop the index of a dataframe, works as a verb"""
     return _data.reset_index(drop=True)

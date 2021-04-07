@@ -1,4 +1,6 @@
+"""Exceptions for datar"""
 class DatarException(Exception):
+    """Base exectpion for datar"""
     ...
 
 class ColumnNotExistingError(DatarException):
@@ -9,3 +11,6 @@ class ColumnNameInvalidError(DatarException):
 
 class DataUnalignableError(DatarException):
     """When two data cannot be aligned to each other"""
+
+class NameNonUniqueError(DatarException):
+    """When check_unique fails"""

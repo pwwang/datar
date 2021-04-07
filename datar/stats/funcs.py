@@ -2,13 +2,14 @@
 from typing import Any, Iterable, List
 
 import numpy
-from pipda import Context
+from pipda import register_func
 
-from ..core.utils import register_grouped
 from ..core.types import FloatOrIter, SeriesLikeType
+from ..core.contexts import Context
 
 # pylint: disable=redefined-builtin, redefined-outer-name
 
+@register_func(None, context=Context.EVAL)
 def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
     """random generation for the normal distribution with mean equal to mean
     and standard deviation equal to sd.
@@ -51,7 +52,7 @@ def rpois(n: int, lambda_: float) -> List[float]:
     """
     return numpy.random.poisson(lam=lambda_, size=n)
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def quantile(
         series: Iterable[Any],
         probs: FloatOrIter = (0.0, 0.25, 0.5, 0.75, 1.0),
@@ -73,7 +74,7 @@ def quantile(
         else numpy.quantile(series, probs)
     )
 
-@register_grouped(context=Context.EVAL)
+@register_func(None, context=Context.EVAL)
 def sd(
         series: Iterable[Any],
         na_rm: bool = False,

@@ -7,19 +7,20 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 import numpy
 import pandas
 from pandas import DataFrame
-from pandas.core.dtypes.common import is_categorical_dtype
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
-from pipda import register_verb, Context
+from pipda import register_verb
 
 from ..core.utils import (
-    copy_df, group_df, objectize, select_columns, list_diff, logger
+    copy_flags, group_df, objectize, select_columns, list_diff, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
     is_scalar
 )
 from ..core.middlewares import Nesting
+from ..core.contexts import Context
+from ..core.names import repair_names
 from ..base.constants import NA
 from ..base.funcs import levels
 from ..dplyr.verbs import distinct
@@ -339,6 +340,8 @@ def fill(
     """Fills missing values in selected columns using the next or
     previous entry.
 
+    See: https://tidyr.tidyverse.org/reference/fill.html
+
     Args:
         _data: A dataframe
         *columns: Columns to fill
@@ -370,13 +373,14 @@ def fill(
         lambda df: fill(df, *columns, _direction=_direction)
     ).groupby(grouper, dropna=False)
 
-@register_verb(context=Context.EVAL)
 def expand_grid(
         _data: Iterable[Any] = None,
-        #_name_repair: str = "check_unique", # todo
+        _name_repair: str = "check_unique",
         **kwargs: Iterable[Any]
 ) -> DataFrame:
     """Expand elements into a new dataframe
+
+    See: https://tidyr.tidyverse.org/reference/expand_grid.html
 
     Args:
         _data, **kwargs: Name-value pairs. The name will become the column
@@ -406,7 +410,7 @@ def expand_grid(
     return DataFrame(
         (itertools.chain.from_iterable(row)
          for row in itertools.product(*product_args)),
-        columns=names
+        columns=repair_names(names, _name_repair)
     )
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
@@ -421,6 +425,8 @@ def extract(
     """Given a regular expression with capturing groups, extract() turns each
     group into a new column. If the groups don't match, or the input is NA,
     the output will be NA.
+
+    See: https://tidyr.tidyverse.org/reference/extract.html
 
     Args:
         _data: The dataframe
@@ -516,22 +522,23 @@ def separate( # pylint: disable=too-many-branches
         for i, elem in enumerate(_data[col]):
             if elem in (NA, None):
                 row = [NA] * nout
-            else:
-                row = re.split(sep, str(elem), nout - 1)
-                if len(row) < nout:
-                    if fill == 'warn':
-                        missing_warns.append(i)
-                    if fill in ('warn', 'right'):
-                        row += [NA] * (nout - len(row))
-                    else:
-                        row = [NA] * (nout - len(row)) + row
+                continue
+
+            row = re.split(sep, str(elem), nout - 1)
+            if len(row) < nout:
+                if fill == 'warn':
+                    missing_warns.append(i)
+                if fill in ('warn', 'right'):
+                    row += [NA] * (nout - len(row))
                 else:
-                    more_splits = re.split(sep, row[-1], 1)
-                    if len(more_splits) > 1:
-                        if extra == 'warn':
-                            extra_warns.append(i)
-                        if extra in ('warn', 'drop'):
-                            row[-1] = more_splits[0]
+                    row = [NA] * (nout - len(row)) + row
+            else:
+                more_splits = re.split(sep, row[-1], 1)
+                if len(more_splits) > 1:
+                    if extra == 'warn':
+                        extra_warns.append(i)
+                    if extra in ('warn', 'drop'):
+                        row[-1] = more_splits[0]
 
             outdata.append(non_na_elems(row))
 
@@ -643,8 +650,9 @@ def unite(
     """
     grouper = getattr(_data, 'grouper', None)
     columns = select_columns(_data.columns, *columns)
-    data = objectize(_data)
-    data = copy_df(data)
+    _data = objectize(_data)
+    data = _data.copy()
+    copy_flags(data, _data)
 
     def unite_cols(row):
         if na_rm:
@@ -653,7 +661,7 @@ def unite(
 
     data[col] = data[columns].agg(unite_cols, axis=1)
     if remove:
-        data = data.drop(columns=columns)
+        data.drop(columns=columns, inplace=True)
 
     if grouper is not None:
         return group_df(data, grouper)
@@ -665,6 +673,8 @@ def drop_na(
         *columns: str
 ) -> DataFrameType:
     """Drop rows containing missing values
+
+    See: https://tidyr.tidyverse.org/reference/drop_na.html
 
     Args:
         data: A data frame.
@@ -682,12 +692,12 @@ def drop_na(
 
 @register_verb(DataFrame, context=Context.EVAL)
 def expand(
-        _data: DataFrame,
+        _data: DataFrame, # pylint: disable=no-value-for-parameter
         *columns: Union[str, Nesting],
         # _name_repair: Union[str, Callable] = None # todo
         **kwargs: Iterable[Any]
 ) -> DataFrame:
-    """"""
+    """See: https://tidyr.tidyverse.org/reference/expand.html"""
     iterables = []
     names = []
     for i, column in enumerate(columns):
@@ -724,4 +734,4 @@ def expand(
     return DataFrame((
         itertools.chain.from_iterable(row)
         for row in itertools.product(*iterables)
-    ), columns=names) >> distinct()
+    ), columns=names) >> distinct() # pylint: disable=no-value-for-parameter

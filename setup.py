@@ -21,7 +21,7 @@ setup(
     author='pwwang',
     author_email='pwwang@pwwang.com',
     license='MIT',
-    packages=['datar', 'datar.base', 'datar.datar', 'datar.datasets',
+    packages=['datar', 'datar.base', 'datar.core', 'datar.datar', 'datar.datasets',
               'datar.dplyr', 'datar.stats', 'datar.tibble', 'datar.tidyr', 'datar.utils'],
     package_dir={"": "."},
     package_data={"datar.datasets": ["*.gz"]},

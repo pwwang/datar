@@ -1,24 +1,23 @@
 """Core utilities"""
-import sys
-import inspect
+
 import logging
-from functools import singledispatch, wraps
+from functools import singledispatch
+from copy import deepcopy
 from typing import Any, Callable, Iterable, List, Optional, Union
 
 import numpy
-from pandas import DataFrame
-import pandas
+from pandas import DataFrame, Categorical
+from pandas.core.flags import Flags
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
-import pipda
-from pipda.context import Context, ContextBase
-from pipda.function import register_func
-from pipda.symbolic import DirectRefAttr
-from pipda.utils import evaluate_args, evaluate_expr, evaluate_kwargs
+from pandas.core.dtypes.common import is_categorical_dtype
 
-from .exceptions import ColumnNameInvalidError, ColumnNotExistingError
+from .exceptions import (
+    ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
+)
 from .types import DataFrameType, StringOrIter, is_scalar
+from .names import repair_names
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
@@ -64,7 +63,7 @@ def list_union(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
     Returns:
         The elements with elements in either list1 or list2
     """
-    return list1 + list_diff(list2, list1)
+    return list1 + list_diff(list1=list2, list2=list1)
 
 def check_column(column: Any) -> None:
     """Check if a column is valid
@@ -75,12 +74,12 @@ def check_column(column: Any) -> None:
     Raises:
         ColumnNameInvalidError: When the column name is invalid
     """
-    from .middlewares import Inverted, Across
+    from .middlewares import Inverted
     if not isinstance(column, (
-            (int, str, list, set, tuple, Inverted, Across, slice)
+            (int, str, list, set, tuple, Inverted, slice)
     )):
         raise ColumnNameInvalidError(
-            'Invalid column, expected int, str, list, tuple, c(), across(), '
+            'Invalid column, expected int, str, list, tuple, c(), '
             f'f.column, ~c() or ~f.column, got {type(column)}'
         )
 
@@ -133,6 +132,7 @@ def filter_columns(
     return ret
 
 def sanitize_slice(slc: slice, all_columns: List[str]) -> slice:
+    """Sanitize slice objects"""
     int_start, int_stop, step = slc.start, slc.stop, slc.step
     if isinstance(int_start, str):
         int_start = all_columns.index(int_start)
@@ -150,6 +150,7 @@ def _expand_slice_dummy(
         total: int,
         from_negated: bool = False
 ) -> List[int]:
+    """Expand a dummy slice object"""
     from .middlewares import Negated, Inverted
     all_indexes = list(range(total))
     if isinstance(elems, int):
@@ -181,7 +182,6 @@ def _expand_slice_dummy(
             []
         )
         return list_diff(all_indexes, selected_indexes)
-
     raise TypeError(f'Unsupported type for slice expansion: {type(elems)!r}.')
 
 def expand_slice(
@@ -189,10 +189,7 @@ def expand_slice(
         total: Union[int, Iterable[int]]
 ) -> Union[List[int], List[List[int]]]:
     """Expand the slide in an iterable, in a groupby-aware way"""
-    from .middlewares import Negated, Inverted, Collection
-    if isinstance(total, int):
-        return _expand_slice_dummy(elems, total)
-    # return _expand_slice_grouped(elems, total)
+    return _expand_slice_dummy(elems, total)
 
 def select_columns(
         all_columns: Iterable[str],
@@ -214,7 +211,7 @@ def select_columns(
         ColumnNameInvalidError: When the column is invalid to select
         ColumnNotExistingError: When the column does not exist in the pool
     """
-    from .middlewares import Inverted, Across
+    from .middlewares import Inverted
     if not isinstance(all_columns, list):
         all_columns = list(all_columns)
 
@@ -237,8 +234,6 @@ def select_columns(
             selected.extend(column.elems)
         elif isinstance(column, slice):
             selected.extend(all_columns[sanitize_slice(column, all_columns)])
-        elif isinstance(column, Across):
-            selected.extend(column.evaluate(Context.SELECT))
         else:
             selected.append(column)
 
@@ -257,6 +252,7 @@ def series_expandable(
         df_or_series: Union[DataFrame, Series],
         series_or_df: Union[DataFrame, Series]
 ) -> bool:
+    """Check if a series is expandable"""
     if (not isinstance(df_or_series, (Series, DataFrame)) or
             not isinstance(series_or_df, (Series, DataFrame))):
         return False
@@ -274,6 +270,7 @@ def series_expandable(
     return series.index.name in df.columns
 
 def series_expand(series: Union[DataFrame, Series], df: DataFrame):
+    """Expand the series to the scale of a dataframe"""
     if isinstance(series, DataFrame):
         #assert series.shape[1] == 1
         series = series.iloc[:, 0]
@@ -285,6 +282,8 @@ def align_value(
 ) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
+    from ..base.constants import NA
+
     if is_scalar(value):
         return value
 
@@ -301,45 +300,77 @@ def align_value(
 
     if len_series == data.shape[0]:
         return value
+    if len_series == 0:
+        return NA
+
     if data.shape[0] % len_series == 0:
         nrepeat = data.shape[0] // len_series
         if isinstance(value, (list, tuple)):
             return value * nrepeat
-        return value.append([value] * (nrepeat - 1))
+        # numpy.ndarray
+        return value.repeat(nrepeat)
     return value
 
-def copy_df(
-        df: DataFrameType
-) -> DataFrameType:
-    if isinstance(df, DataFrame):
-        ret = df.copy()
-        ret.flags.grouper = getattr(df.flags, 'grouper', None)
-        ret.flags.rowwise = getattr(df.flags, 'rowwise', None)
-        return ret
+def update_df(df: DataFrame, df2: DataFrame) -> None:
+    """Update the dataframe"""
+    # DataFrame.update ignores nonexisting columns
+    # and not keeps categories
 
-    copied = copy_df(df.obj)
-    return group_df(copied, df.grouper)
+    for col in df2.columns:
+        df[col] = df2[col]
+
+def copy_flags(df1: DataFrame, flags: Union[DataFrameType, Flags]) -> None:
+    """Deep copy the flags from one dataframe to another"""
+    if isinstance(flags, DataFrame):
+        flags = flags.flags
+    elif isinstance(flags, DataFrameGroupBy):
+        flags = flags.obj.flags
+
+    for key in dir(flags):
+        if key.startswith('_'):
+            continue
+
+        setattr(df1.flags, key, deepcopy(getattr(flags, key)))
 
 def df_assign_item(
-        df: DataFrameType,
+        df: DataFrame,
         item: str,
-        value: Any
+        value: Any,
+        allow_dups: bool = False
 ) -> None:
-    if isinstance(df, DataFrameGroupBy):
-        df = df.obj
+    """Assign an item to a dataframe"""
+    value = align_value(value, df)
     try:
         value = value.values
     except AttributeError:
         ...
 
-    df[item] = value
+    lenval = 1 if is_scalar(value) else len(value)
+
+    if df.shape[0] == 1 and lenval > 1:
+        if df.shape[1] == 0: # 0-column df
+            # Otherwise, cannot set a frame with no defined columns
+            df['__assign_placeholder__'] = 1
+        # add rows inplace
+        for i in range(lenval - 1):
+            df.loc[i+1] = df.iloc[0, :]
+
+        if '__assign_placeholder__' in df:
+            df.drop(columns=['__assign_placeholder__'], inplace=True)
+
+    if not allow_dups:
+        df[item] = value
+    else:
+        df.insert(df.shape[1], item, value, allow_duplicates=True)
 
 def objectize(data: Any) -> Any:
+    """Get the object instead of the GroupBy object"""
     if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
         return data.obj
     return data
 
 def categorize(data: Any) -> Any:
+    """Get the Categorical object"""
     try:
         return data.cat
     except AttributeError:
@@ -347,12 +378,14 @@ def categorize(data: Any) -> Any:
 
 @singledispatch
 def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
-    try:
-        df = DataFrame(data, columns=[name]) if name else DataFrame(data)
-    except ValueError:
-        df = DataFrame([data], columns=[name]) if name else DataFrame([data])
+    """Convert an object to a data frame"""
+    if is_scalar(data):
+        data = [data]
 
-    return df
+    if name is None:
+        return DataFrame(data)
+
+    return DataFrame({name: data})
 
 @to_df.register(numpy.ndarray)
 def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
@@ -369,7 +402,9 @@ def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
 
 @to_df.register(DataFrame)
 def _(data: DataFrame, name: Optional[str] = None) -> DataFrame:
-    return data
+    if name is None:
+        return data
+    return DataFrame({f"{name}${col}": data[col] for col in data.columns})
 
 @to_df.register(Series)
 def _(data: Series, name: Optional[str] = None) -> DataFrame:
@@ -386,126 +421,30 @@ def get_n_from_prop(
         n: Optional[int] = None,
         prop: Optional[float] = None
 ) -> int:
+    """Get n from a proportion"""
     if n is None and prop is None:
         return 1
     if prop is not None:
         return int(float(total) * min(prop, 1.0))
     return min(n, total)
 
-
-def _register_grouped_col0(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of no column as groupby aware"""
-
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            _data: DataFrame,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        _column = DirectRefAttr(_data, _data.columns[0])
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
-
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        _column = DirectRefAttr(_data, _data.obj.columns[0])
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return series.apply(func, *args, **kwargs)
-
-    return wrapper
-
-def _register_grouped_col1(
-        func: Callable,
-        context: ContextBase
-) -> Callable:
-    """Register a function with argument of single column as groupby aware"""
-
-    @register_func(DataFrame, context=None)
-    @wraps(func)
-    def wrapper(
-            # in case this is called directly (not in a piping env)
-            # we should not have the _data argument
-            # _data: DataFrame,
-            # _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        # Let's if the function is called in a piping env
-        # If so, the previous frame should be in functools
-        # Otherwise, it should be pipda.function, where the wrapped
-        # function should be called directly, instead of generating an
-        # Expression object
-
-        if inspect.getmodule(sys._getframe(1)) is pipda.function:
-            # called directly
-            return func(*args, **kwargs)
-        _data, _column, *args = args
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        return func(series, *args, **kwargs)
-
-    @wrapper.register(DataFrameGroupBy)
-    def _(
-            _data: DataFrameGroupBy,
-            _column: Any,
-            *args: Any,
-            **kwargs: Any
-    ) -> Any:
-        series = evaluate_expr(_column, _data, context)
-        args = evaluate_args(args, _data, context.args)
-        kwargs = evaluate_kwargs(kwargs, _data, context.kwargs)
-        # Todo: check if we have SeriesGroupby in args/kwargs
-        return series.apply(func, *args, **kwargs)
-
-    return wrapper
-
-def register_grouped(
-        func: Optional[Callable] = None,
-        context: Optional[Union[Context, ContextBase]] = None,
-        columns: Union[str, int] = 1
-) -> Callable:
-    """Register a function as a group-by-aware function"""
-    if func is None:
-        return lambda fun: register_grouped(
-            fun,
-            context=context,
-            columns=columns
-        )
-
-    if isinstance(context, Context):
-        context = context.value
-
-    if columns == 1:
-        return _register_grouped_col1(func, context=context)
-
-    if columns == 0:
-        return _register_grouped_col0(func, context=context)
-
-    raise ValueError("Expect columns to be either 0 or 1.")
-
 def group_df(
         df: DataFrame,
-        grouper: Union[BaseGrouper, StringOrIter]
+        grouper: Union[BaseGrouper, StringOrIter],
+        drop: Optional[bool] = None
 ) -> DataFrameGroupBy:
+    """Group a dataframe"""
+    from ..dplyr import group_by_drop_default
+    if drop is None:
+        drop = group_by_drop_default(df)
+
     return df.groupby(
         grouper,
         as_index=False,
-        sort=False,
+        sort=True,
         dropna=False,
-        group_keys=False
+        group_keys=False,
+        observed=drop
     )
 
 def groupby_apply(
@@ -513,14 +452,39 @@ def groupby_apply(
         func: Callable,
         groupdata: bool = False
 ) -> DataFrame:
-
+    """Apply a function to DataFrameGroupBy object"""
     if groupdata:
         # df.groupby(group_keys=True).apply does not always add group as index
         g_keys = df.grouper.names
         def apply_func(subdf):
+            if subdf is None or subdf.shape[0] == 0:
+                return None
             ret = func(subdf)
-            ret[g_keys] = df.obj[g_keys]
-            return ret[list_union(g_keys, ret.columns)]
-        return df.apply(apply_func).reset_index(drop=True)
+            for key in g_keys:
+                if key not in ret:
+                    df_assign_item(ret, key, subdf[key].values[0])
+                    if is_categorical_dtype(subdf[key]):
+                        ret[key] = Categorical(
+                            ret[key],
+                            categories=subdf[key].cat.categories
+                        )
+            columns = list_union(g_keys, ret.columns)
+            # keep the original order
+            commcols = [col for col in df.obj.columns if col in columns]
+            # make sure columns are included
+            columns = list_union(commcols, list_diff(columns, commcols))
+            return ret[columns]
 
-    return df.apply(func).reset_index(drop=True)
+        ret = df.apply(apply_func).reset_index(drop=True)
+    else:
+        ret = df.apply(func).reset_index(drop=True)
+
+    copy_flags(ret, df)
+    return ret
+
+def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
+    """Check if column names are unique of a dataframe"""
+    try:
+        repair_names(df.columns.tolist(), repair="check_unique")
+    except NameNonUniqueError as error:
+        raise ValueError(msg or str(error)) from None

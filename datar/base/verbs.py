@@ -4,12 +4,13 @@ from typing import Any, Iterable, List, Optional, Tuple, Union
 import numpy
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
-from pipda import register_verb, Context
+from pipda import register_verb
 
 from ..core.utils import objectize
 from ..core.types import IntType, is_scalar, DataFrameType
+from ..core.contexts import Context
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def colnames(
         df: DataFrameType,
         names: Optional[Iterable[str]] = None,
@@ -39,7 +40,7 @@ def colnames(
         return ret.groupby(grouper, dropna=False)
     return ret
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def rownames(
         df: DataFrameType,
         names: Optional[Iterable[str]] = None,
@@ -69,7 +70,7 @@ def rownames(
         return ret.groupby(grouper, dropna=False)
     return ret
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def dim(x: DataFrameType) -> Tuple[int]:
     """Retrieve the dimension of a dataframe.
 
@@ -81,7 +82,7 @@ def dim(x: DataFrameType) -> Tuple[int]:
     """
     return objectize(x).shape
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def nrow(_data: DataFrameType) -> int:
     """Get the number of rows in a dataframe
 
@@ -93,7 +94,7 @@ def nrow(_data: DataFrameType) -> int:
     """
     return dim(_data)[0]
 
-@register_verb((DataFrame, DataFrameGroupBy))
+@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def ncol(_data: DataFrameType):
     """Get the number of columns in a dataframe
 
@@ -105,7 +106,7 @@ def ncol(_data: DataFrameType):
     """
     return dim(_data)[1]
 
-@register_verb
+@register_verb(context=Context.EVAL)
 def diag(
         x: Any = 1,
         nrow: Optional[IntType] = None, # pylint: disable=redefined-outer-name
@@ -163,7 +164,7 @@ def _(
     return x
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def t(_data: DataFrame, copy: bool = False) -> DataFrame:
     """Get the transposed dataframe
 

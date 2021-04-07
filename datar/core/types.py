@@ -6,11 +6,12 @@ import numpy
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
+from pipda.function import Function
 
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
 IntType = Union[int, numpy.integer]
-FloatType = Union[float, numpy.float]
+FloatType = Union[float, numpy.float64]
 DataFrameType = Union[DataFrame, DataFrameGroupBy]
 SeriesType = Union[Series, SeriesGroupBy]
 SeriesLikeType = Union[Series, SeriesGroupBy, numpy.ndarray]
@@ -21,8 +22,9 @@ BoolOrIter = Union[bool, Iterable[bool]]
 FloatOrIter = Union[FloatType, Iterable[FloatType]]
 NumericOrIter = Union[NumericType, Iterable[NumericType]]
 
+NoneType = type(None)
 # used for type checks
-def is_int(x: Any) -> bool:
+def is_scalar_int(x: Any) -> bool:
     """Check if a value is an integer"""
     return isinstance(x, (int, numpy.integer))
 
@@ -37,9 +39,14 @@ def is_scalar(x: Any) -> bool:
 
     None will be counted as scalar
     """
-    if x is None or isinstance(x, type) or isinstance(x, numpy.dtype):
+    ret = numpy.isscalar(x)
+    if ret:
+        return ret
+    try:
+        iter(x)
+    except TypeError:
         return True
-    return numpy.isscalar(x)
+    return False
 
 def is_iterable(x: Any) -> bool:
     """Check if a value is iterable, which is not a scalar"""

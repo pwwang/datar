@@ -42,4 +42,11 @@ repos:
         language: system
         args: [tests/]
         pass_filenames: false
-        files: ^tests/.+$|^pipda/.+$
+        files: ^tests/.+$|^datar/.+$
+    -   id: mkdocs
+        name: Compile docs
+        entry: mkdocs
+        language: system
+        args: [build]
+        pass_filenames: false
+        files: ^datar/.+$

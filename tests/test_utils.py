@@ -22,5 +22,3 @@ def test_head_tail():
     assert len(z) == 6
     with pytest.raises(TypeError):
         tail(3)
-
-

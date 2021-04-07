@@ -6,8 +6,9 @@ from pipda import register_verb
 
 from ..core.types import is_iterable
 from ..core.utils import objectize
+from ..core.contexts import Context
 
-@register_verb
+@register_verb(context=Context.EVAL)
 def head(_data: Any, n: int = 6) -> DataFrame:
     """Get the first n rows of the dataframe or a vector
 
@@ -24,7 +25,7 @@ def head(_data: Any, n: int = 6) -> DataFrame:
         return _data.head(n)
     return _data[:n]
 
-@register_verb
+@register_verb(context=Context.EVAL)
 def tail(_data: Any, n: int = 6) -> DataFrame:
     """Get the last n rows of the dataframe or a vector
 

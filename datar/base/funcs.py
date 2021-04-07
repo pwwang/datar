@@ -6,26 +6,29 @@ registered by `register_verb` and should be placed in `./verbs.py`
 import builtins
 import math
 import datetime
+import itertools
 import functools
 from typing import Any, Iterable, List, Optional, Type, Union
 
 import numpy
 import pandas
 from pandas.core.dtypes.common import (
-    is_categorical_dtype, is_float_dtype, is_numeric_dtype, is_string_dtype
+    is_categorical_dtype, is_float_dtype, is_int64_dtype, is_integer_dtype,
+    is_numeric_dtype, is_string_dtype
 )
 from pandas import Series, Categorical, DataFrame
 from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, objectize
-from ..core.middlewares import Collection, ContextWithData
+from ..core.utils import categorize, objectize, logger
+from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
     BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
-    NumericType, SeriesLikeType, StringOrIter, is_int, IntType,
+    NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
     is_iterable, is_series_like, is_scalar
 )
+from ..core.contexts import Context
 
 # pylint: disable=redefined-builtin,invalid-name
 
@@ -50,7 +53,7 @@ def _(
         tz: Union[int, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
-    if is_int(tz):
+    if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return x + tz
@@ -64,7 +67,7 @@ def _(
         tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ):
-    if is_int(tz):
+    if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return (x + tz).date()
@@ -78,7 +81,7 @@ def _(
         tz: Union[IntType, datetime.timedelta] = 0,
         origin: Any = None
 ) -> datetime.date:
-    if is_int(tz):
+    if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     try_formats = try_formats or [
@@ -301,6 +304,7 @@ as_int64 = as_integer
 
 @register_func(None, context=Context.EVAL)
 def as_numeric(x: Any) -> NumericOrIter:
+    """Make elements numeric"""
     try:
         return as_integer(x)
     except (ValueError, TypeError):
@@ -355,6 +359,24 @@ def is_categorical(x: Any) -> bool:
 is_factor = is_categorical
 
 @register_func(None, context=Context.EVAL)
+def is_int64(x: Any) -> BoolOrIter:
+    """Check if x is double/float data"""
+    x = objectize(x)
+    if is_scalar(x):
+        return isinstance(x, (int, numpy.int64))
+    return is_int64_dtype(x)
+
+@register_func(None, context=Context.EVAL)
+def is_integer(x: Any) -> BoolOrIter:
+    """Check if x is double/float data"""
+    x = objectize(x)
+    if is_scalar(x):
+        return is_scalar_int(x)
+    return is_integer_dtype(x)
+
+is_int = is_integer
+
+@register_func(None, context=Context.EVAL)
 def is_double(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
     x = objectize(x)
@@ -384,15 +406,24 @@ def c(*elems: Any) -> Collection:
     """
     return Collection(*elems)
 
-@register_func(None)
+@register_func(None, context=Context.EVAL)
 def seq_along(along_with: Iterable[Any]) -> SeriesLikeType:
     """Generate sequences along an iterable"""
     return numpy.array(range(len(along_with)))
 
-@register_func(None)
-def seq_len(length_out: int) -> SeriesLikeType:
+@register_func(None, context=Context.EVAL)
+def seq_len(length_out: IntOrIter) -> SeriesLikeType:
     """Generate sequences with the length"""
+    if is_scalar(length_out):
+        return numpy.array(range(int(length_out)))
+    if len(length_out) > 1:
+        logger.warning(
+            "In seq_len(%r) : first element used of 'length_out' argument",
+            length_out
+        )
+    length_out = int(list(length_out)[0])
     return numpy.array(range(length_out))
+
 
 @register_func(None, context=Context.EVAL)
 def seq(
@@ -824,12 +855,67 @@ def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
 
     return None
 
+@register_func(None, context=Context.EVAL)
+def rep(
+        x: Any,
+        times: Union[int, Iterable[int]] = 1,
+        length: Optional[int] = None, # pylint: disable=redefined-outer-name
+        each: int = 1
+) -> Iterable[Any]:
+    """replicates the values in x
+
+    Args:
+        x: a vector or scaler
+        times: number of times to repeat each element if of length len(x),
+            or to repeat the whole vector if of length 1
+        length: non-negative integer. The desired length of the output vector
+        each: non-negative integer. Each element of x is repeated each times.
+
+    Returns:
+        A list of repeated elements in x.
+    """
+    if is_scalar(x):
+        x = [x]
+    if is_iterable(times):
+        if len(times) != len(x):
+            raise ValueError(
+                "Invalid times argument, expect length "
+                f"{len(times)}, got {len(x)}"
+            )
+        if each != 1:
+            raise ValueError(
+                "Unexpected each argument when times is an iterable."
+            )
+
+    if is_scalar_int(times):
+        x = [elem for elem in x for _ in range(each)] * int(times)
+    else:
+        x = [elem for n, elem in zip(times, x) for _ in range(n)]
+    if length is None:
+        return x
+    repeats = length // len(x) + 1
+    x = x * repeats
+    return x[:length]
+
+@register_func(None, context=Context.EVAL)
+def unique(x: Iterable[Any]) -> numpy.ndarray:
+    """Get unique elements"""
+    return numpy.unique(x)
+
+@register_func(None, context=Context.EVAL)
+def length(x: Any) -> int:
+    """Length of an object"""
+    if is_scalar(x):
+        return 1
+    return len(x)
+
 # ---------------------------------
 # Plain functions
 # ---------------------------------
 
 def factor(
         x: Iterable[Any],
+        # pylint: disable=redefined-outer-name
         levels: Optional[Iterable[Any]] = None,
         exclude: Any = NA,
         ordered: bool = False
@@ -861,47 +947,6 @@ def factor(
 
     return ret.remove_categories(exclude)
 
-def rep(
-        x: Any,
-        times: Union[int, Iterable[int]] = 1,
-        length: Optional[int] = None,
-        each: int = 1
-) -> Iterable[Any]:
-    """replicates the values in x
-
-    Args:
-        x: a vector or scaler
-        times: number of times to repeat each element if of length len(x),
-            or to repeat the whole vector if of length 1
-        length: non-negative integer. The desired length of the output vector
-        each: non-negative integer. Each element of x is repeated each times.
-
-    Returns:
-        A list of repeated elements in x.
-    """
-    if is_scalar(x):
-        x = [x]
-    if is_iterable(times):
-        if len(times) != len(x):
-            raise ValueError(
-                "Invalid times argument, expect length "
-                f"{len(times)}, got {len(x)}"
-            )
-        if each != 1:
-            raise ValueError(
-                "Unexpected each argument when times is an iterable."
-            )
-
-    if is_int(times):
-        x = [elem for elem in x for _ in range(each)] * int(times)
-    else:
-        x = [elem for n, elem in zip(times, x) for _ in range(n)]
-    if length is None:
-        return x
-    repeats = length // len(x) + 1
-    x = x * repeats
-    return x[:length]
-
 def context(data: DataFrameType) -> Any:
     """Evaluate verbs, functions in the
     possibly modifying (a copy of) the original data.
@@ -920,4 +965,53 @@ def context(data: DataFrameType) -> Any:
     Returns:
         The original or modified data
     """
-    return ContextWithData(data)
+    return WithDataEnv(data)
+
+@register_func(None, context=None)
+def identity(x: Any) -> Any:
+    """Return whatever passed in
+
+    Expression objects are evaluated using parent context
+    """
+    return x
+
+@register_func(None)
+def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
+    """Expand all combinations into a dataframe"""
+    iters = {}
+    for i, arg in enumerate(args):
+        iters[f'Var{i}'] = arg
+    iters.update(kwargs)
+
+    return DataFrame(
+        list(itertools.product(*iters.values())),
+        columns=iters.keys()
+    )
+
+@register_func(None)
+def Re(numbers: NumericOrIter) -> numpy.ndarray:
+    """Real part of complex numbers"""
+    if is_scalar(numbers):
+        return numbers.real
+    ret = numpy.real(numbers)
+    return ret
+
+@register_func(None)
+def Im(numbers: NumericOrIter) -> numpy.ndarray:
+    """Imaginary part of complex numbers"""
+    if is_scalar(numbers):
+        return numbers.imag
+    return numpy.imag(numbers)
+
+@register_func(None)
+def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
+    """Alias for R's is.element.
+
+    We can't do `a %in% b` in python (in behaves differently), so
+    use this function instead
+    """
+    if is_scalar(elem):
+        return elem in elems
+    return numpy.isin(elem, elems)
+
+is_in = is_element

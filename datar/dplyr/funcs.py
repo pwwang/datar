@@ -7,106 +7,75 @@ import pandas
 from pandas.core.arrays.categorical import Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
 from pandas import DataFrame, Series
-from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.generic import DataFrameGroupBy
 
-from pipda import register_func, Context
+from pipda import register_func
+from pipda.context import ContextBase
+from pipda.utils import functype
 
 from ..core.middlewares import (
-    Across, CAcross, CurColumn, DescSeries, IfAll, IfAny
+    Across, CurColumn, DescSeries, IfAll, IfAny
 )
-from ..core.types import BoolOrIter, DataFrameType, NumericOrIter, NumericType, is_scalar
+from ..core.types import (
+    BoolOrIter, DataFrameType, NumericOrIter, NumericType,
+    is_iterable, is_scalar
+)
 from ..core.exceptions import ColumnNotExistingError
-from ..core.utils import filter_columns, objectize, list_diff
+from ..core.utils import (
+    copy_flags, filter_columns, list_union,
+    objectize, list_diff, select_columns
+)
+from ..core.contexts import Context
 from ..base.constants import NA
 
 # pylint: disable=redefined-outer-name
 
-@register_func((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def desc(
-        _data: DataFrameType,
-        col: str
-) -> Union[DescSeries, SeriesGroupBy]:
-    """Returns a DescSeries object, which can be used in arrange or other
-    environments that need a descending ordered series
+@register_func(None, context=Context.EVAL)
+def desc(x: Iterable[Any]) -> Series:
+    """Transform a vector into a format that will be sorted in descending order
+
+    This is useful within arrange().
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/desc.html
 
     Args:
-        col: The column
+        x: vector to transform
 
     Returns:
-        The DescSeries object
+        The descending order of x
     """
-    if isinstance(_data, DataFrameGroupBy):
-        series = DescSeries(_data.obj[col].values, name=col)
-        return series.groupby(_data.grouper, dropna=False)
-    return DescSeries(_data[col].values, name=col)
+    x = Series(x)
+    try:
+        return -x
+    except TypeError:
+        cat = Categorical(x)
+        code = Series(cat.codes).astype(float)
+        code[code == -1.] = NA
+        return -code
 
-@register_func(context=Context.SELECT)
-def across(
-        _data: DataFrameType,
-        _cols: Optional[Iterable[str]] = None,
-        _fns: Optional[Union[
-            Callable,
-            Iterable[Callable],
-            Mapping[str, Callable]
-        ]] = None,
-        _names: Optional[str] = None,
-        **kwargs: Any
-) -> Across:
-    """Apply the same transformation to multiple columns
-
-    Args:
-        _data: The dataframe
-        _cols: The columns
-        _fns: Functions to apply to each of the selected columns.
-        _names: A glue specification that describes how to name
-            the output columns. This can use `{_col}` to stand for the
-            selected column name, and `{_fn}` to stand for the name of
-            the function being applied.
-            The default (None) is equivalent to `{_col}` for the
-            single function case and `{_col}_{_fn}` for the case where
-            a list is used for _fns. In such a case, `{_fn}` is 1-based.
-            To use 1-based index, use `{_fn0}`
-        *args, **kwargs: Arguments for the functions
-
-    Returns:
-        A dataframe with one column for each column in _cols and
-        each function in _fns.
-    """
-    return Across(_data, _cols, _fns, _names, (), kwargs)
-
-
-@register_func(context=Context.SELECT)
+@register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
         _data: DataFrame,
-        _cols: Optional[Iterable[str]] = None,
-        _fns: Optional[Union[Mapping[str, Callable]]] = None,
-        _names: Optional[str] = None,
-        **kwargs: Any
-) -> CAcross:
+        _cols: Optional[Iterable[str]] = None
+) -> Series:
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
         _data: The dataframe
         _cols: The columns
-        _fns: Functions to apply to each of the selected columns.
-        _names: A glue specification that describes how to name
-            the output columns. This can use `{_col}` to stand for the
-            selected column name, and `{_fn}` to stand for the name of
-            the function being applied.
-            The default (None) is equivalent to `{_col}` for the
-            single function case and `{_col}_{_fn}` for the case where
-            a list is used for _fns. In such a case, `{_fn}` is 1-based.
-            To use 1-based index, use `{_fn0}`
-        *args, **kwargs: Arguments for the functions
 
     Returns:
-        A dataframe with one column for each column in _cols and
-        each function in _fns.
+        A series
     """
-    return CAcross(_data, _cols, _fns, _names, (), kwargs)
+    if not _cols:
+        _cols = _data.columns
+    _cols = select_columns(_data.columns.tolist(), _cols)
 
+    series = [_data[col] for col in _cols]
+    return numpy.concatenate(series)
 
-@register_func
+@register_func(context=Context.SELECT)
 def starts_with(
         _data: DataFrameType,
         match: Union[Iterable[str], str],
@@ -132,7 +101,7 @@ def starts_with(
         lambda mat, cname: cname.startswith(mat),
     )
 
-@register_func
+@register_func(context=Context.SELECT)
 def ends_with(
         _data: DataFrameType,
         match: str,
@@ -159,7 +128,7 @@ def ends_with(
     )
 
 
-@register_func
+@register_func(context=Context.SELECT)
 def contains(
         _data: DataFrameType,
         match: str,
@@ -185,7 +154,7 @@ def contains(
         lambda mat, cname: mat in cname,
     )
 
-@register_func
+@register_func(context=Context.SELECT)
 def matches(
         _data: DataFrameType,
         match: str,
@@ -211,7 +180,7 @@ def matches(
         re.search,
     )
 
-@register_func
+@register_func(DataFrame)
 def everything(_data: DataFrame) -> List[str]:
     """Matches all columns.
 
@@ -224,9 +193,14 @@ def everything(_data: DataFrame) -> List[str]:
     grouper = getattr(_data.flags, 'grouper', None)
     if grouper is not None:
         return list_diff(_data.columns.tolist(), grouper.names)
-    return _data.columns.to_list()
+    return _data.columns.tolist()
 
-@register_func
+@everything.register(DataFrameGroupBy)
+def _(_data: DataFrameGroupBy) -> List[str]:
+    """All columns for a grouped dataframe"""
+    return list_diff(_data.obj.columns.tolist(), _data.grouper.names)
+
+@register_func(context=Context.SELECT)
 def last_col(
         _data: DataFrameType,
         offset: int = 0,
@@ -247,7 +221,7 @@ def last_col(
     vars = vars or _data.columns
     return vars[-(offset+1)]
 
-@register_func
+@register_func(context=Context.EVAL)
 def all_of(
         _data: DataFrameType,
         x: Iterable[Union[int, str]]
@@ -278,7 +252,7 @@ def all_of(
 
     return list(x)
 
-@register_func
+@register_func(context=Context.SELECT)
 def any_of(
         _data: DataFrameType,
         x: Iterable[Union[int, str]],
@@ -299,7 +273,7 @@ def any_of(
     vars = vars or objectize(_data).columns
     return [elem for elem in x if elem in vars]
 
-@register_func((DataFrame, DataFrameGroupBy))
+@register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def where(_data: DataFrameType, fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
@@ -312,23 +286,18 @@ def where(_data: DataFrameType, fn: Callable) -> List[str]:
     Returns:
         The matched columns
     """
+    columns = everything(_data)
     _data = objectize(_data)
     retcols = []
-
-    pipda_type = getattr(fn, '__pipda__', None)
-    for col in _data.columns:
-        if not pipda_type:
+    pipda_type = functype(fn)
+    for col in columns:
+        if pipda_type == 'plain':
             conditions = fn(_data[col])
+        elif pipda_type == 'plain-func':
+            conditions = fn(_data[col], _env=_data)
         else:
-            conditions = (
-                fn(_data[col], _calling_type='piping').evaluate(_data)
-                if pipda_type == 'PlainFunction'
-                else fn(
-                    _data,
-                    _data[col],
-                    _calling_type='piping'
-                ).evaluate(_data)
-            )
+            conditions = fn(_data, _data[col], _env=_data)
+
         if isinstance(conditions, bool):
             if conditions:
                 retcols.append(col)
@@ -339,36 +308,88 @@ def where(_data: DataFrameType, fn: Callable) -> List[str]:
 
     return retcols
 
-@register_func(context=Context.SELECT)
+@register_func(
+    context=None,
+    extra_contexts={'_cols': Context.SELECT},
+    verb_arg_only=True
+)
+def across(
+        _data: DataFrameType,
+        _cols: Optional[Iterable[str]] = None,
+        _fns: Optional[Union[
+            Callable,
+            Iterable[Callable],
+            Mapping[str, Callable]
+        ]] = None,
+        _names: Optional[str] = None,
+        _context: Optional[ContextBase] = None,
+        **kwargs: Any
+) -> DataFrame:
+    """Apply the same transformation to multiple columns
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/across.html
+
+    Args:
+        _data: The dataframe
+        _cols: The columns
+        _fns: Functions to apply to each of the selected columns.
+        _names: A glue specification that describes how to name
+            the output columns. This can use `{_col}` to stand for the
+            selected column name, and `{_fn}` to stand for the name of
+            the function being applied.
+            The default (None) is equivalent to `{_col}` for the
+            single function case and `{_col}_{_fn}` for the case where
+            a list is used for _fns. In such a case, `{_fn}` is 0-based.
+            To use 1-based index, use `{_fn1}`
+        **kwargs: Arguments for the functions
+
+    Returns:
+        A dataframe with one column for each column in _cols and
+        each function in _fns.
+    """
+    return Across(_data, _cols, _fns, _names, kwargs).evaluate(_context)
+
+@register_func(
+    context=None,
+    extra_contexts={'_cols': Context.SELECT},
+    verb_arg_only=True
+)
 def if_any(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
+        _context: Optional[ContextBase] = None,
         **kwargs: Any
-) -> Across:
+) -> Iterable[bool]:
     """apply the same predicate function to a selection of columns and combine
     the results True if any element is True.
 
     See across().
     """
-    return IfAny(_data, _cols, _fns, _names, (), kwargs)
+    return IfAny(_data, _cols, _fns, _names, kwargs).evaluate(_context)
 
 
-@register_func(context=Context.SELECT)
+@register_func(
+    context=None,
+    extra_contexts={'_cols': Context.SELECT},
+    verb_arg_only=True
+)
 def if_all(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
         _fns: Optional[Union[Mapping[str, Callable]]] = None,
         _names: Optional[str] = None,
+        _context: Optional[ContextBase] = None,
         **kwargs: Any
-) -> Across:
+) -> Iterable[bool]:
     """apply the same predicate function to a selection of columns and combine
     the results True if all elements are True.
 
     See across().
     """
-    return IfAll(_data, _cols, _fns, _names, (), kwargs)
+    return IfAll(_data, _cols, _fns, _names, kwargs).evaluate(_context)
 
 def _ranking(
         data: Iterable[Any],
@@ -441,6 +462,7 @@ def case_when(
     """Vectorise multiple if_else() statements.
 
     Args:
+        _data: The data frame.
         *when_cases: A even-size sequence, with 2n-th element values to match,
             and 2(n+1)-th element the values to replace.
             When matching value is True, then next value will be default to
@@ -459,9 +481,30 @@ def case_when(
         if case is True:
             df['x'] = ret
         else:
-            df.loc[case, 'x'] = ret
+            df.loc[case.reset_index(drop=True), 'x'] = ret
 
     return df.x
+
+@case_when.register((list, tuple, numpy.ndarray))
+def _(
+        _data: Union[list, tuple, numpy.ndarray],
+        *when_cases: Any
+) -> numpy.ndarray:
+    """case_when on lists/tuples"""
+    if len(when_cases) % 2 != 0:
+        raise ValueError('Number of arguments of case_when should be even.')
+
+    array = numpy.array(_data)
+    nrow = len(array)
+    ret = numpy.array([NA] * nrow)
+    when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
+    for case, val in when_cases:
+        if case is True:
+            ret[numpy.isnan(ret)] = val
+        else:
+            ret[case] = val
+
+    return ret
 
 @register_func((DataFrame, DataFrameGroupBy), context=Context.EVAL)
 def if_else(
@@ -515,7 +558,7 @@ def n(series: Iterable[Any]) -> int:
 @register_func(context=Context.EVAL)
 def row_number(_data: Iterable[Any]) -> Series:
     """Gives the row number, 0-based."""
-    return Series(range(len(_data)))
+    return Series(range(len(_data)), dtype='int')
 
 @register_func(DataFrame)
 def cur_group_id(_data: DataFrame) -> int:
@@ -538,10 +581,10 @@ def cur_group_id(_data: DataFrame) -> int:
 @register_func(DataFrame)
 def cur_group_rows(_data: DataFrame) -> int:
     """gives the row indices for the current group."""
-    return _data.index
+    return _data.index.tolist()
 
 @register_func(DataFrame)
-def cur_group(_data: DataFrame) -> Series:
+def cur_group(_data: DataFrame) -> DataFrame:
     """gives the group keys, a tibble with one row and one column for
     each grouping variable."""
     grouper = getattr(_data.flags, 'grouper', None)
@@ -550,8 +593,10 @@ def cur_group(_data: DataFrame) -> Series:
             'To get current group, a dataframe must be grouped '
             'using `datar.dplyr.group_by`'
         )
-
-    return _data[grouper.names]
+    group_id = cur_group_id(_data)
+    levels = grouper.get_group_levels()
+    group = list(zip(*levels))[group_id]
+    return DataFrame(group, columns=grouper.names).reset_index(drop=True)
 
 @register_func(DataFrame)
 def cur_data(_data: DataFrame) -> int:
@@ -559,18 +604,25 @@ def cur_data(_data: DataFrame) -> int:
     (excluding grouping variables)."""
     grouper = getattr(_data.flags, 'grouper', None)
     if not grouper:
-        raise ValueError(
-            'To get current group data, a dataframe must be grouped '
-            'using `datar.dplyr.group_by`'
-        )
+        return _data
 
-    return _data.drop(columns=grouper.names)
+    copied = _data.copy()[[
+        col for col in _data.columns if col not in grouper.names
+    ]]
+
+    copy_flags(copied, _data)
+    return copied.reset_index(drop=True)
 
 @register_func(DataFrame)
 def cur_data_all(_data: DataFrame) -> int:
     """gives the current data for the current group
     (including grouping variables)"""
-    return _data.copy()
+    level = cur_group(_data)
+    for group in level.columns:
+        _data[group] = level[group].values[0]
+    return _data[
+        list_union(level.columns.tolist(), _data.columns)
+    ].reset_index(drop=True)
 
 def cur_column() -> CurColumn:
     """Used in the functions of across. So we don't have to register it."""
@@ -787,7 +839,7 @@ def recode_factor(
 recode_categorical = recode_factor # pylint: disable=invalid-name
 
 @register_func(None, context=Context.EVAL)
-def coalesce(x: Any, replace: Any) -> Any:
+def coalesce(x: Any, *replace: Any) -> Any:
     """Replace missing values
 
     https://dplyr.tidyverse.org/reference/coalesce.html
@@ -800,21 +852,28 @@ def coalesce(x: Any, replace: Any) -> Any:
         A vector the same length as the first argument with missing values
         replaced by the first non-missing value.
     """
-    x = objectize(x)
-    if isinstance(x, Iterable):
-        if not isinstance(replace, Iterable):
-            replace = [replace] * len(x)
-        elif len(replace) != len(x):
-            raise ValueError(
-                f"Expect length {len(x)} for coalesce replacement, "
-                f"got {len(replace)}"
-            )
-        return [
-            rep if numpy.isnan(elem) else elem
-            for elem, rep in zip(x, replace)
-        ]
+    if not replace:
+        return x
 
-    return replace if numpy.isnan(x) else x
+    x = objectize(x)
+    if isinstance(x, DataFrame):
+        y = x.copy()
+        copy_flags(y, x)
+        for repl in replace:
+            x = y.combine_first(repl)
+            copy_flags(x, y)
+            y = x
+        return y
+
+    if is_iterable(x):
+        x = Series(x)
+        for repl in replace:
+            x = x.combine_first(
+                Series(repl if is_iterable(repl) else [repl] * len(x))
+            )
+        return x.values
+
+    return replace[0] if numpy.isnan(x) else x
 
 @register_func(None, context=Context.EVAL)
 def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
@@ -902,3 +961,26 @@ def last(
         return x[-1]
     except IndexError:
         return default
+
+def group_by_drop_default(data: DataFrameType) -> bool:
+    """Get the groupby _drop attribute of dataframe"""
+    return getattr(objectize(data).flags, 'groupby_drop', True)
+
+def n_groups(data: DataFrameType) -> int:
+    """Get the number of groups"""
+    if isinstance(data, DataFrame):
+        return 1
+
+    # when dropna=False with NAs
+    # https://github.com/pandas-dev/pandas/issues/35202
+    # return len(data)
+    return len(data.size())
+
+def group_size(data: DataFrameType) -> List[int]:
+    """Get the group sizes as a list of integers"""
+    if isinstance(data, DataFrame):
+        return data.shape[0]
+    gsize = data.size()
+    if isinstance(gsize, Series):
+        return gsize.tolist()
+    return gsize['size'].tolist()
