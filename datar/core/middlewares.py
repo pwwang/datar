@@ -1,26 +1,23 @@
+"""Middlewares for datar"""
 import builtins
 
 from typing import (
-    Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple, Union
+    Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
 )
 from abc import ABC
-from threading import Lock
 
 from pandas import DataFrame
-from pandas.core.flags import Flags
 from pandas.core.series import Series
 from pipda.symbolic import DirectRefAttr
-from pipda.context import Context, ContextBase, ContextSelect
-from pipda.utils import DataEnv, Expression, functype
+from pipda.context import Context, ContextBase
+from pipda.utils import DataEnv, functype
 
 from .utils import (
-    align_value, copy_flags, df_assign_item, objectize, expand_collections, list_diff, sanitize_slice, select_columns,
-    logger, to_df
+    df_assign_item, objectize, expand_collections, list_diff, sanitize_slice,
+    select_columns, logger, to_df
 )
 from .contexts import ContextSelectSlice
 from .types import DataFrameType, is_scalar
-
-LOCK = Lock()
 
 class Collection(list):
     """Mimic the c function in R
@@ -82,6 +79,7 @@ class Inverted:
 
     @property
     def complements(self):
+        """Complements of inverted columns"""
         if isinstance(self.context, ContextSelectSlice):
             # slice literal not being expanded
             return self
@@ -93,7 +91,7 @@ class Inverted:
         return f"Inverted({self.elems})"
 
 class Negated:
-
+    """Negated object"""
     def __init__(self, elems: Union[slice, list]) -> None:
         """In case of -[1,2,3] or -c(1,2,3) or -f[1:3]"""
         self.elems = [elems] if isinstance(elems, slice) else elems
@@ -101,16 +99,17 @@ class Negated:
     def __repr__(self) -> str:
         return f"Negated({self.elems})"
 
-class DescSeries(Series):
-
+class DescSeries(Series): # pylint: disable=too-many-ancestors
+    """Marking a series as descending"""
     @property
     def _constructor(self):
         return DescSeries
 
 class CurColumn:
-
+    """Current column in across"""
     @classmethod
     def replace_args(cls, args: Tuple[Any], column: str) -> Tuple[Any]:
+        """Replace self with the real column in args"""
         return tuple(column if isinstance(arg, cls) else arg for arg in args)
 
     @classmethod
@@ -119,13 +118,14 @@ class CurColumn:
             kwargs: Mapping[str, Any],
             column: str
     ) -> Mapping[str, Any]:
+        """Replace self with the real column in kwargs"""
         return {
             key: column if isinstance(val, cls) else val
             for key, val in kwargs.items()
         }
 
 class Across:
-
+    """Across object"""
     def __init__(
             self,
             data: DataFrameType,
@@ -170,7 +170,7 @@ class Across:
         self.kwargs = kwargs or {}
 
     def evaluate(self, context: Optional[ContextBase] = None) -> DataFrame:
-
+        """Evaluate object with context"""
         if not self.fns:
             self.fns = [{'fn': lambda x: x}]
 
@@ -211,11 +211,11 @@ class Across:
         return DataFrame() if ret is None else ret
 
 class IfCross(Across, ABC):
-
+    """Base class for IfAny and IfAll"""
     if_type = None
 
     def evaluate(self, context: Optional[ContextBase] = None) -> DataFrame:
-
+        """Evaluate the object with context"""
         agg_func = getattr(builtins, self.__class__.if_type)
         return super().evaluate(context).fillna(
             False
@@ -224,15 +224,15 @@ class IfCross(Across, ABC):
         ).apply(agg_func, axis=1)
 
 class IfAny(IfCross):
-
+    """For calls from dplyr's if_any"""
     if_type = 'any'
 
 class IfAll(IfCross):
-
+    """For calls from dplyr's if_all"""
     if_type = 'all'
 
 class WithDataEnv:
-
+    """Implements `with data` to mimic R's `with(data, ...)`"""
     def __init__(self, data: Any) -> None:
         self.data = DataEnv(data)
 
@@ -243,7 +243,7 @@ class WithDataEnv:
         self.data.delete()
 
 class Nesting:
-
+    """Nesting objects for calls from tidyr.nesting"""
     def __init__(self, *columns: Any, **kwargs: Any) -> None:
         self.columns = []
         self.names = []

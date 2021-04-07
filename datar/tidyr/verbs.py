@@ -522,22 +522,23 @@ def separate( # pylint: disable=too-many-branches
         for i, elem in enumerate(_data[col]):
             if elem in (NA, None):
                 row = [NA] * nout
-            else:
-                row = re.split(sep, str(elem), nout - 1)
-                if len(row) < nout:
-                    if fill == 'warn':
-                        missing_warns.append(i)
-                    if fill in ('warn', 'right'):
-                        row += [NA] * (nout - len(row))
-                    else:
-                        row = [NA] * (nout - len(row)) + row
+                continue
+
+            row = re.split(sep, str(elem), nout - 1)
+            if len(row) < nout:
+                if fill == 'warn':
+                    missing_warns.append(i)
+                if fill in ('warn', 'right'):
+                    row += [NA] * (nout - len(row))
                 else:
-                    more_splits = re.split(sep, row[-1], 1)
-                    if len(more_splits) > 1:
-                        if extra == 'warn':
-                            extra_warns.append(i)
-                        if extra in ('warn', 'drop'):
-                            row[-1] = more_splits[0]
+                    row = [NA] * (nout - len(row)) + row
+            else:
+                more_splits = re.split(sep, row[-1], 1)
+                if len(more_splits) > 1:
+                    if extra == 'warn':
+                        extra_warns.append(i)
+                    if extra in ('warn', 'drop'):
+                        row[-1] = more_splits[0]
 
             outdata.append(non_na_elems(row))
 
@@ -691,7 +692,7 @@ def drop_na(
 
 @register_verb(DataFrame, context=Context.EVAL)
 def expand(
-        _data: DataFrame,
+        _data: DataFrame, # pylint: disable=no-value-for-parameter
         *columns: Union[str, Nesting],
         # _name_repair: Union[str, Callable] = None # todo
         **kwargs: Iterable[Any]
@@ -733,4 +734,4 @@ def expand(
     return DataFrame((
         itertools.chain.from_iterable(row)
         for row in itertools.product(*iterables)
-    ), columns=names) >> distinct()
+    ), columns=names) >> distinct() # pylint: disable=no-value-for-parameter

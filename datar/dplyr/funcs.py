@@ -11,7 +11,6 @@ from pandas.core.groupby.generic import DataFrameGroupBy
 
 from pipda import register_func
 from pipda.context import ContextBase
-from pipda.symbolic import DirectRefAttr
 from pipda.utils import functype
 
 from ..core.middlewares import (
@@ -964,9 +963,11 @@ def last(
         return default
 
 def group_by_drop_default(data: DataFrameType) -> bool:
+    """Get the groupby _drop attribute of dataframe"""
     return getattr(objectize(data).flags, 'groupby_drop', True)
 
 def n_groups(data: DataFrameType) -> int:
+    """Get the number of groups"""
     if isinstance(data, DataFrame):
         return 1
 
@@ -976,6 +977,7 @@ def n_groups(data: DataFrameType) -> int:
     return len(data.size())
 
 def group_size(data: DataFrameType) -> List[int]:
+    """Get the group sizes as a list of integers"""
     if isinstance(data, DataFrame):
         return data.shape[0]
     gsize = data.size()

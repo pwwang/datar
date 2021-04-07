@@ -120,4 +120,5 @@ def _(_data: DataFrameGroupBy) -> DataFrame:
 
 @register_verb(DataFrame, context=Context.EVAL)
 def drop_index(_data: DataFrame) -> DataFrame:
+    """Drop the index of a dataframe, works as a verb"""
     return _data.reset_index(drop=True)

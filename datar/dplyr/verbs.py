@@ -1,13 +1,12 @@
+# pylint: disable=too-many-lines
 """Verbs ported from R-dplyr"""
-import builtins
-from pandas.core.arrays.categorical import Categorical
 from typing import (
     Any, Callable, Iterable, List, Mapping, Optional, Union
 )
 
 import numpy
 import pandas
-from pandas import DataFrame, Series, RangeIndex
+from pandas import DataFrame, Series, RangeIndex, Categorical
 from pandas.api.types import union_categoricals
 from pandas.core.groupby.generic import DataFrameGroupBy
 
@@ -27,7 +26,7 @@ from ..core.utils import (
     list_intersect, list_union, objectize, select_columns, to_df,
     logger, update_df
 )
-from ..core.names import NameNonUniqueError, repair_names
+from ..core.names import repair_names
 from ..core.contexts import Context
 from ..tibble.funcs import tibble
 from ..base.funcs import is_categorical
@@ -121,6 +120,7 @@ def mutate(
         _after: Optional[str] = None,
         **kwargs: Any
 ) -> DataFrame:
+    # pylint: disable=too-many-branches
     """Adds new variables and preserves existing ones
 
     The original API:
@@ -1022,7 +1022,7 @@ def tally(
 def _(
         _data: DataFrame,
         wt: Optional[NumericOrIter] = None,
-        sort: bool = False,
+        sort: bool = False, # pylint: disable=unused-argument
         name: Optional[str] = None
 ) -> DataFrame:
     """tally for DataFrame object"""
@@ -1477,6 +1477,7 @@ def bind_rows(
         _id: Optional[str] = None,
         **kwargs: Union[DataFrame, dict]
 ) -> DataFrame:
+    # pylint: disable=too-many-branches
     """Bind rows of give dataframes
 
     Args:
@@ -1494,10 +1495,9 @@ def bind_rows(
 
     def data_to_df(data):
         """Make a copy of dataframe or convert dict to a dataframe"""
-        if isinstance(data, DataFrame):
-            return data.copy()
-        if isinstance(data, DataFrameGroupBy):
-            return data.obj.copy()
+        if isinstance(data, (DataFrame, DataFrameGroupBy)):
+            return objectize(data).copy()
+
         ret = tibble(**data) # avoid varname error
         return ret
 

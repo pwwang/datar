@@ -304,6 +304,7 @@ as_int64 = as_integer
 
 @register_func(None, context=Context.EVAL)
 def as_numeric(x: Any) -> NumericOrIter:
+    """Make elements numeric"""
     try:
         return as_integer(x)
     except (ValueError, TypeError):
@@ -858,7 +859,7 @@ def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
 def rep(
         x: Any,
         times: Union[int, Iterable[int]] = 1,
-        length: Optional[int] = None,
+        length: Optional[int] = None, # pylint: disable=redefined-outer-name
         each: int = 1
 ) -> Iterable[Any]:
     """replicates the values in x
@@ -898,10 +899,12 @@ def rep(
 
 @register_func(None, context=Context.EVAL)
 def unique(x: Iterable[Any]) -> numpy.ndarray:
+    """Get unique elements"""
     return numpy.unique(x)
 
 @register_func(None, context=Context.EVAL)
 def length(x: Any) -> int:
+    """Length of an object"""
     if is_scalar(x):
         return 1
     return len(x)
@@ -987,6 +990,7 @@ def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
 
 @register_func(None)
 def Re(numbers: NumericOrIter) -> numpy.ndarray:
+    """Real part of complex numbers"""
     if is_scalar(numbers):
         return numbers.real
     ret = numpy.real(numbers)
@@ -994,12 +998,18 @@ def Re(numbers: NumericOrIter) -> numpy.ndarray:
 
 @register_func(None)
 def Im(numbers: NumericOrIter) -> numpy.ndarray:
+    """Imaginary part of complex numbers"""
     if is_scalar(numbers):
         return numbers.imag
     return numpy.imag(numbers)
 
 @register_func(None)
 def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
+    """Alias for R's is.element.
+
+    We can't do `a %in% b` in python (in behaves differently), so
+    use this function instead
+    """
     if is_scalar(elem):
         return elem in elems
     return numpy.isin(elem, elems)

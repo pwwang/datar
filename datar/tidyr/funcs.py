@@ -1,15 +1,14 @@
 """Functions from tidyr"""
 
-from pandas.core.series import Series
-from datar.core.middlewares import Nesting
-from datar.dplyr.funcs import last
 from typing import Any, Iterable
 
 import numpy
+from pandas.core.series import Series
 from pipda import register_func
 
 from ..core.types import NumericType
 from ..core.contexts import Context
+from ..core.middlewares import Nesting
 
 @register_func(None, context=Context.EVAL)
 def full_seq(
@@ -45,4 +44,5 @@ def full_seq(
 
 @register_func(None, context=None)
 def nesting(*cols: Any, **kwargs: Any) -> Nesting:
+    """Nesting"""
     return Nesting(*cols, **kwargs)

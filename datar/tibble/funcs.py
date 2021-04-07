@@ -127,7 +127,7 @@ def tribble(*dummies: Any) -> DataFrame:
             else:
                 data.append([dummy])
 
-    ret =(
+    ret = (
         DataFrame(data, columns=columns) if data
         else DataFrame(columns=columns)
     )

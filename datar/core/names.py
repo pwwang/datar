@@ -1,5 +1,4 @@
 """Name repairing"""
-from datar.core.types import is_iterable
 import inspect
 import re
 import keyword
@@ -8,6 +7,7 @@ from typing import Callable, List, Optional, Union, Iterable
 import numpy
 
 from .exceptions import NameNonUniqueError
+from .types import is_iterable
 
 def _log_changed_names(changed_names: Iterable[str]) -> None:
     """Log the changed names"""

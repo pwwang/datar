@@ -63,7 +63,7 @@ def list_union(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
     Returns:
         The elements with elements in either list1 or list2
     """
-    return list1 + list_diff(list2, list1)
+    return list1 + list_diff(list1=list2, list2=list1)
 
 def check_column(column: Any) -> None:
     """Check if a column is valid
@@ -132,6 +132,7 @@ def filter_columns(
     return ret
 
 def sanitize_slice(slc: slice, all_columns: List[str]) -> slice:
+    """Sanitize slice objects"""
     int_start, int_stop, step = slc.start, slc.stop, slc.step
     if isinstance(int_start, str):
         int_start = all_columns.index(int_start)
@@ -149,6 +150,7 @@ def _expand_slice_dummy(
         total: int,
         from_negated: bool = False
 ) -> List[int]:
+    """Expand a dummy slice object"""
     from .middlewares import Negated, Inverted
     all_indexes = list(range(total))
     if isinstance(elems, int):
@@ -187,10 +189,7 @@ def expand_slice(
         total: Union[int, Iterable[int]]
 ) -> Union[List[int], List[List[int]]]:
     """Expand the slide in an iterable, in a groupby-aware way"""
-    from .middlewares import Negated, Inverted, Collection
-    if isinstance(total, int):
-        return _expand_slice_dummy(elems, total)
-    # return _expand_slice_grouped(elems, total)
+    return _expand_slice_dummy(elems, total)
 
 def select_columns(
         all_columns: Iterable[str],
@@ -253,6 +252,7 @@ def series_expandable(
         df_or_series: Union[DataFrame, Series],
         series_or_df: Union[DataFrame, Series]
 ) -> bool:
+    """Check if a series is expandable"""
     if (not isinstance(df_or_series, (Series, DataFrame)) or
             not isinstance(series_or_df, (Series, DataFrame))):
         return False
@@ -270,6 +270,7 @@ def series_expandable(
     return series.index.name in df.columns
 
 def series_expand(series: Union[DataFrame, Series], df: DataFrame):
+    """Expand the series to the scale of a dataframe"""
     if isinstance(series, DataFrame):
         #assert series.shape[1] == 1
         series = series.iloc[:, 0]
@@ -311,12 +312,15 @@ def align_value(
     return value
 
 def update_df(df: DataFrame, df2: DataFrame) -> None:
+    """Update the dataframe"""
     # DataFrame.update ignores nonexisting columns
     # and not keeps categories
+
     for col in df2.columns:
         df[col] = df2[col]
 
 def copy_flags(df1: DataFrame, flags: Union[DataFrameType, Flags]) -> None:
+    """Deep copy the flags from one dataframe to another"""
     if isinstance(flags, DataFrame):
         flags = flags.flags
     elif isinstance(flags, DataFrameGroupBy):
@@ -334,6 +338,7 @@ def df_assign_item(
         value: Any,
         allow_dups: bool = False
 ) -> None:
+    """Assign an item to a dataframe"""
     value = align_value(value, df)
     try:
         value = value.values
@@ -359,11 +364,13 @@ def df_assign_item(
         df.insert(df.shape[1], item, value, allow_duplicates=True)
 
 def objectize(data: Any) -> Any:
+    """Get the object instead of the GroupBy object"""
     if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
         return data.obj
     return data
 
 def categorize(data: Any) -> Any:
+    """Get the Categorical object"""
     try:
         return data.cat
     except AttributeError:
@@ -371,6 +378,7 @@ def categorize(data: Any) -> Any:
 
 @singledispatch
 def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
+    """Convert an object to a data frame"""
     if is_scalar(data):
         data = [data]
 
@@ -413,6 +421,7 @@ def get_n_from_prop(
         n: Optional[int] = None,
         prop: Optional[float] = None
 ) -> int:
+    """Get n from a proportion"""
     if n is None and prop is None:
         return 1
     if prop is not None:
@@ -424,6 +433,7 @@ def group_df(
         grouper: Union[BaseGrouper, StringOrIter],
         drop: Optional[bool] = None
 ) -> DataFrameGroupBy:
+    """Group a dataframe"""
     from ..dplyr import group_by_drop_default
     if drop is None:
         drop = group_by_drop_default(df)
@@ -442,7 +452,7 @@ def groupby_apply(
         func: Callable,
         groupdata: bool = False
 ) -> DataFrame:
-
+    """Apply a function to DataFrameGroupBy object"""
     if groupdata:
         # df.groupby(group_keys=True).apply does not always add group as index
         g_keys = df.grouper.names
