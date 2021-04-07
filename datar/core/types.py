@@ -11,7 +11,7 @@ from pipda.function import Function
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
 IntType = Union[int, numpy.integer]
-FloatType = Union[float, numpy.float]
+FloatType = Union[float, numpy.float64]
 DataFrameType = Union[DataFrame, DataFrameGroupBy]
 SeriesType = Union[Series, SeriesGroupBy]
 SeriesLikeType = Union[Series, SeriesGroupBy, numpy.ndarray]
