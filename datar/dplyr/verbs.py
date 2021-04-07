@@ -577,7 +577,7 @@ def group_split(
             _data.obj.loc[index] for index in _data.grouper.groups.values()
         ]
 
-    if getattr(_data.flags, 'rowwise'):
+    if getattr(_data.flags, 'rowwise', None):
         return [_data.iloc[[i], :] for i in range(_data.shape[0])]
 
     _data = group_by(_data, *cols, **kwargs)
@@ -613,6 +613,71 @@ def with_groups(
 
     return _func(_data, *args, **kwargs)
 
+def _summarise_rowwise(
+        _data: DataFrame,
+        *dfs: Union[DataFrame, Mapping[str, Iterable[Any]]],
+        _groups: Optional[str] = None,
+        **kwargs: Any
+) -> DataFrameType:
+    """Summarise on rowwise dataframe"""
+    rowwise_vars = _data.flags.rowwise
+
+    def apply_func(ser):
+        row = ser.to_frame().T.reset_index(drop=True)
+        summarised = row >> summarise(*dfs, **kwargs)
+        summarised.reset_index(drop=True, inplace=True)
+        if rowwise_vars and rowwise_vars is not True:
+            ret = row[rowwise_vars].iloc[range(summarised.shape[0]), :]
+            ret[summarised.columns.tolist()] = summarised
+            return ret
+
+        return summarised
+
+    if _data.shape[0] == 0:
+        columns = list(kwargs)
+        if rowwise_vars and rowwise_vars is not True:
+            columns = list_union(rowwise_vars, columns)
+        applied = DataFrame(columns=columns)
+    else:
+        applied = pandas.concat(
+            (apply_func(row[1]) for row in _data.iterrows()),
+            axis=0
+        )
+    copy_flags(applied, _data)
+    applied.flags.rowwise = False
+
+    if rowwise_vars is True:
+        if _groups == 'rowwise':
+            applied.flags.rowwise = True
+            return applied
+
+        if _groups is None and summarise.inform:
+            logger.info(
+                '`summarise()` has ungrouped output. '
+                'You can override using the `_groups` argument.'
+            )
+
+        return applied
+
+    # rowwise vars set
+    if _groups == 'rowwise':
+        applied.flags.rowwise = True
+        return applied
+
+    if _groups is None and summarise.inform:
+        logger.info(
+            '`summarise()` has grouped output by %s. '
+            'You can override using the `_groups` argument.',
+            rowwise_vars
+        )
+        _groups = 'keep'
+
+    if _groups == 'keep':
+        return group_df(applied, rowwise_vars)
+
+    return applied
+
+
 @register_verb(DataFrame, context=Context.PENDING)
 def summarise(
         _data: DataFrame,
@@ -640,6 +705,14 @@ def summarise(
         _data,
         "Can't transform a data frame with duplicate names."
     )
+    if getattr(_data.flags, 'rowwise', False):
+        return _summarise_rowwise(
+            _data,
+            *dfs,
+            _groups=_groups,
+            **kwargs
+        )
+
     context = Context.EVAL.value
 
     serieses = {}
@@ -659,9 +732,6 @@ def summarise(
     kwargs = serieses
 
     ret = None
-    rowwise_vars = getattr(_data.flags, 'rowwise', False)
-    if rowwise_vars and rowwise_vars is not True:
-        ret = _data.loc[:, rowwise_vars]
 
     for key, val in kwargs.items():
         if val is None:
@@ -685,38 +755,6 @@ def summarise(
 
     copy_flags(ret, _data)
     ret.flags.rowwise = False
-
-    if rowwise_vars is True:
-        if _groups == 'rowwise':
-            ret.flags.rowwise = True
-            return ret
-
-        if _groups is None and summarise.inform:
-            logger.info(
-                '`summarise()` has ungrouped output. '
-                'You can override using the `_groups` argument.'
-            )
-
-        return ret
-
-    if rowwise_vars:
-        if _groups == 'rowwise':
-            ret.flags.rowwise = True
-            return ret
-
-        if _groups is None and summarise.inform:
-            logger.info(
-                '`summarise()` has grouped output by %s. '
-                'You can override using the `_groups` argument.',
-                rowwise_vars
-            )
-            _groups = 'keep'
-
-        if _groups == 'keep':
-            return group_df(ret, rowwise_vars)
-
-        return ret
-
 
     if _groups == 'rowwise':
         ret.flags.rowwise = True
