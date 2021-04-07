@@ -1707,7 +1707,50 @@ def setequal(
     data2 = data2.sort_values(by=data2.columns.to_list()).reset_index(drop=True)
     return data1.equals(data2)
 
-@register_verb(DataFrame, context=Context.EVAL)
+def _join(
+        x: DataFrameType,
+        y: DataFrameType,
+        how: str,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False,
+        suffix: Iterable[str] = ("_x", "_y"),
+        keep: bool = False
+) -> DataFrameType:
+    """General join"""
+    xobj = objectize(x)
+    y = objectize(y)
+    if isinstance(by, dict):
+        right_on = list(by.values())
+        ret = pandas.merge(
+            xobj, y,
+            left_on=list(by.keys()),
+            right_on=right_on,
+            how=how,
+            copy=copy,
+            suffixes=suffix
+        )
+        if not keep:
+            ret.drop(columns=right_on, inplace=True)
+    else:
+        ret = pandas.merge(
+            xobj, y,
+            on=by,
+            how=how,
+            copy=copy,
+            suffixes=suffix
+        )
+
+    copy_flags(ret, x)
+    if isinstance(x, DataFrameGroupBy):
+        return group_df(ret, x.grouper.names)
+
+    return ret
+
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def inner_join(
         x: DataFrame,
         y: DataFrame,
@@ -1733,104 +1776,92 @@ def inner_join(
     Returns:
         The joined dataframe
     """
-    if isinstance(by, dict):
-        right_on = list(by.values())
-        ret = pandas.merge(
-            x, y,
-            left_on=list(by.keys()),
-            right_on=right_on,
-            how='inner',
-            copy=copy,
-            suffixes=suffix
-        )
-        if not keep:
-            return ret.drop(columns=right_on)
-        return ret
-    return pandas.merge(x, y, on=by, how='inner', copy=copy, suffixes=suffix)
+    return _join(
+        x, y,
+        how='inner',
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep
+    )
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def left_join(
-        x: DataFrame,
-        y: DataFrame,
+        x: DataFrameType,
+        y: DataFrameType,
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False,
         suffix: Iterable[str] = ("_x", "_y"),
         keep: bool = False
-) -> DataFrame:
+) -> DataFrameType:
     """Mutating joins including all rows in x.
 
     See inner_join()
     """
-    if isinstance(by, dict):
-        right_on = list(by.values())
-        ret = pandas.merge(
-            x, y,
-            left_on=list(by.keys()),
-            right_on=right_on,
-            how='left',
-            copy=copy,
-            suffixes=suffix
-        )
-        if not keep:
-            return ret.drop(columns=right_on)
-        return ret
-    return pandas.merge(x, y, on=by, how='left', copy=copy, suffixes=suffix)
+    return _join(
+        x, y,
+        how='left',
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep
+    )
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def right_join(
-        x: DataFrame,
-        y: DataFrame,
+        x: DataFrameType,
+        y: DataFrameType,
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False,
         suffix: Iterable[str] = ("_x", "_y"),
         keep: bool = False
-) -> DataFrame:
+) -> DataFrameType:
     """Mutating joins including all rows in y.
 
     See inner_join()
     """
-    if isinstance(by, dict):
-        right_on = list(by.values())
-        ret = pandas.merge(
-            x, y,
-            left_on=list(by.keys()),
-            right_on=right_on,
-            how='right',
-            copy=copy,
-            suffixes=suffix
-        )
-        if not keep:
-            return ret.drop(columns=right_on)
-        return ret
-    return pandas.merge(x, y, on=by, how='right', copy=copy, suffixes=suffix)
+    return _join(
+        x, y,
+        how='right',
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep
+    )
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def full_join(
-        x: DataFrame,
-        y: DataFrame,
+        x: DataFrameType,
+        y: DataFrameType,
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False,
         suffix: Iterable[str] = ("_x", "_y"),
         keep: bool = False
-) -> DataFrame:
+) -> DataFrameType:
     """Mutating joins including all rows in x or y.
 
     See inner_join()
     """
-    if isinstance(by, dict):
-        right_on = list(by.values())
-        ret = pandas.merge(
-            x, y,
-            left_on=list(by.keys()),
-            right_on=right_on,
-            how='outer',
-            copy=copy,
-            suffixes=suffix
-        )
-        if not keep:
-            return ret.drop(columns=right_on)
-        return ret
-    return pandas.merge(x, y, on=by, how='outer', copy=copy, suffixes=suffix)
+    return _join(
+        x, y,
+        how='outer',
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep
+    )
 
 @register_verb(DataFrame, context=Context.EVAL)
 def nest_join(
@@ -1881,30 +1912,68 @@ def nest_join(
         y_matched = y_matched.to_frame(name=y_name)
     return pandas.concat([x, y_matched], axis=1)
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def semi_join(
-        x: DataFrame,
-        y: DataFrame,
+        x: DataFrameType,
+        y: DataFrameType,
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False
-) -> DataFrame:
+) -> DataFrameType:
     """Returns all rows from x with a match in y.
 
     See inner_join()
     """
-    ret = pandas.merge(x, y, on=by, how='left', copy=copy, indicator=True)
-    return ret[ret._merge == 'both'].loc[:, x.columns.tolist()]
+    xobj = objectize(x)
+    y = objectize(y)
+    ret = pandas.merge(
+        xobj, y,
+        on=by,
+        how='left',
+        copy=copy,
+        suffixes=['', '_y'],
+        indicator=True
+    )
+    ret = ret.loc[ret._merge == 'both', xobj.columns.tolist()]
 
-@register_verb(DataFrame, context=Context.EVAL)
+    copy_flags(ret, x)
+    if isinstance(x, DataFrameGroupBy):
+        return group_df(ret, x.grouper.names)
+
+    return ret
+
+@register_verb(
+    (DataFrame, DataFrameGroupBy),
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def anti_join(
-        x: DataFrame,
-        y: DataFrame,
+        x: DataFrameType,
+        y: DataFrameType,
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False
-) -> DataFrame:
+) -> DataFrameType:
     """Returns all rows from x without a match in y.
 
     See inner_join()
     """
-    ret = pandas.merge(x, y, on=by, how='left', copy=copy, indicator=True)
-    return ret[ret._merge != 'both'].loc[:, x.columns.tolist()]
+    xobj = objectize(x)
+    y = objectize(y)
+    ret = pandas.merge(
+        xobj, y,
+        on=by,
+        how='left',
+        copy=copy,
+        suffixes=['', '_y'],
+        indicator=True
+    )
+    ret = ret.loc[ret._merge != 'both', xobj.columns.tolist()]
+
+    copy_flags(ret, x)
+    if isinstance(x, DataFrameGroupBy):
+        return group_df(ret, x.grouper.names)
+
+    return ret

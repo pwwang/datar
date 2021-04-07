@@ -6,7 +6,7 @@ authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7.1"
+python = "^3.7"
 pipda = "*"
 modkit = "*"
 pandas = "^1.2"

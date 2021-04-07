@@ -20,24 +20,24 @@ def test_add(df):
     gvars = group_vars(tbl)
     assert gvars == ['x', 'y']
 
-# def test_join_preserve_grouping(df):
-#     g = df >> group_by(f.x)
+def test_join_preserve_grouping(df):
+    g = df >> group_by(f.x)
 
-#     tbl = g >> inner_join(g, by=['x', 'y'])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ['x']
+    tbl = g >> inner_join(g, by=['x', 'y'])
+    gvars = tbl >> group_vars()
+    assert gvars == ['x']
 
-#     tbl = g >> left_join(g, by=['x', 'y'])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ['x']
+    tbl = g >> left_join(g, by=['x', 'y'])
+    gvars = tbl >> group_vars()
+    assert gvars == ['x']
 
-#     tbl = g >> semi_join(g, by=['x', 'y'])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ['x']
+    tbl = g >> semi_join(g, by=['x', 'y'])
+    gvars = tbl >> group_vars()
+    assert gvars == ['x']
 
-#     tbl = g >> anti_join(g, by=['x', 'y'])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ['x']
+    tbl = g >> anti_join(g, by=['x', 'y'])
+    gvars = tbl >> group_vars()
+    assert gvars == ['x']
 
 def test_tibble_lose_grouping(df):
     g = df >> group_by(f.x)
@@ -239,8 +239,26 @@ def test_summarise_maintains_drop():
     assert ng == 1
     assert group_by_drop_default(res2)
 
-# todo
-# joins maintains _drop
+def test_joins_maintains__drop():
+    df1 = group_by(tibble(
+        f1 = factor(c("a", "b"), levels = c("a", "b", "c")),
+        x  = [42,43]
+    ), f.f1, _drop = TRUE)
+
+    df2 = group_by(tibble(
+        f1 = factor(c("a"), levels = c("a", "b", "c")),
+        y = 1
+    ), f.f1, _drop = TRUE)
+
+    res = left_join(df1, df2, by = "f1")
+    assert n_groups(res) == 2
+
+    df2 = group_by(tibble(
+        f1 = factor(c("a", "c"), levels = c("a", "b", "c")),
+        y = [1,2]
+    ), f.f1, _drop = TRUE)
+    res = full_join(df1, df2, by = "f1")
+    assert n_groups(res) == 3
 
 def test_add_passes_drop():
     d = tibble(

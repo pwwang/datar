@@ -37,10 +37,9 @@ def test_cur_data_all():
     out = df >> summarise(x=[cur_data()]) >> pull(f.x, to='list')
     assert out[0].equals(df)
 
-    # todo: go back to this after tests for summarise
-    # out = gf >> summarise(x=[cur_data()]) >> pull(f.x)
-    # assert out.values[0].values.flatten().tolist() == [2]
-    # assert out.values[1].values.flatten().tolist() == [1,3]
+    out = gf >> summarise(x=[cur_data()]) >> pull(f.x)
+    assert out.values[0].values.flatten().tolist() == [2]
+    assert out.values[1].values.flatten().tolist() == [1,3]
 
     out = gf >> summarise(x=[cur_data_all()]) >> pull(f.x)
     assert out.values[0].values.flatten().tolist() == ["a", 2]
@@ -54,10 +53,10 @@ def test_cur_group_rows():
     assert out.values.tolist() == [[1], [0,2]]
 
 def test_cur_data_all_sequentially():
-    df = tibble(a=1) >> group_by(f.a)
+    df = tibble(a=1)
     out = df >> mutate(x = ncol(cur_data()), y = ncol(cur_data()))
     expect = tibble(a=1, x=1, y=2)
-    assert out.obj.equals(expect)
+    assert out.equals(expect)
 
     gf = tibble(a = 1, b = 2) >> group_by(f.a)
     out = gf >> mutate(x = ncol(cur_data_all()), y = ncol(cur_data_all()))

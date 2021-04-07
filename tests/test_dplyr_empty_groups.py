@@ -62,47 +62,46 @@ def test_bind_rows(df):
     gsize = group_size(gg)
     assert gsize == [4,4,0]
 
-# todo
-# def test_join_respect_zero_len_groups():
-#     df1 = tibble(
-#         f=factor([1,1,2,2], levels=[1,2,3]),
-#         x=[1,2,1,4]
-#     ) >> group_by(f.f)
-#     df2 = tibble(
-#         f=factor([2,2,3,3], levels=[1,2,3]),
-#         x=[1,2,3,4]
-#     ) >> group_by(f.f)
+def test_join_respect_zero_len_groups():
+    df1 = tibble(
+        f=factor([1,1,2,2], levels=[1,2,3]),
+        x=[1,2,1,4]
+    ) >> group_by(f.f)
+    df2 = tibble(
+        f=factor([2,2,3,3], levels=[1,2,3]),
+        x=[1,2,3,4]
+    ) >> group_by(f.f)
 
-#     gsize = group_size(left_join(df1, df2, by=f.f))
-#     assert gsize == [2,4]
-#     gsize = group_size(right_join(df1, df2, by=f.f))
-#     assert gsize == [4,2]
-#     gsize = group_size(full_join(df1, df2, by=f.f))
-#     assert gsize == [2,4,2]
-#     gsize = group_size(anti_join(df1, df2, by=f.f))
-#     assert gsize == [2]
-#     gsize = group_size(inner_join(df1, df2, by=f.f))
-#     assert gsize == [4]
+    gsize = group_size(left_join(df1, df2, by=f.f))
+    assert gsize == [2,4]
+    gsize = group_size(right_join(df1, df2, by=f.f))
+    assert gsize == [4,2]
+    gsize = group_size(full_join(df1, df2, by=f.f))
+    assert gsize == [2,4,2]
+    gsize = group_size(anti_join(df1, df2, by=f.f))
+    assert gsize == [2]
+    gsize = group_size(inner_join(df1, df2, by=f.f))
+    assert gsize == [4]
 
-#     df1 = tibble(
-#         f=factor([1,1,2,2], levels=[1,2,3]),
-#         x=[1,2,1,4]
-#     ) >> group_by(f.f, _drop=False)
-#     df2 = tibble(
-#         f=factor([2,2,3,3], levels=[1,2,3]),
-#         x=[1,2,3,4]
-#     ) >> group_by(f.f, _drop=False)
+    df1 = tibble(
+        f=factor([1,1,2,2], levels=[1,2,3]),
+        x=[1,2,1,4]
+    ) >> group_by(f.f, _drop=False)
+    df2 = tibble(
+        f=factor([2,2,3,3], levels=[1,2,3]),
+        x=[1,2,3,4]
+    ) >> group_by(f.f, _drop=False)
 
-#     gsize = group_size(left_join(df1, df2, by=f.f))
-#     assert gsize == [2,4,0]
-#     gsize = group_size(right_join(df1, df2, by=f.f))
-#     assert gsize == [0,4,2]
-#     gsize = group_size(full_join(df1, df2, by=f.f))
-#     assert gsize == [2,4,2]
-#     gsize = group_size(anti_join(df1, df2, by=f.f))
-#     assert gsize == [2,0,0]
-#     gsize = group_size(inner_join(df1, df2, by=f.f))
-#     assert gsize == [0,4,0]
+    gsize = group_size(left_join(df1, df2, by=f.f))
+    assert gsize == [2,4,0]
+    gsize = group_size(right_join(df1, df2, by=f.f))
+    assert gsize == [0,4,2]
+    gsize = group_size(full_join(df1, df2, by=f.f))
+    assert gsize == [2,4,2]
+    gsize = group_size(anti_join(df1, df2, by=f.f))
+    assert gsize == [2,0,0]
+    gsize = group_size(inner_join(df1, df2, by=f.f))
+    assert gsize == [0,4,0]
 
 def test_n_groups_respect_zero_len_groups():
     df = tibble(x=factor([1,2,3], levels=[1,2,3,4])) >> group_by(f.x, _drop=False)

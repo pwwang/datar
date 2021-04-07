@@ -606,7 +606,11 @@ def cur_data(_data: DataFrame) -> int:
     grouper = getattr(_data.flags, 'grouper', None)
     if not grouper:
         return _data
-    copied = _data.copy()
+
+    copied = _data.copy()[[
+        col for col in _data.columns if col not in grouper.names
+    ]]
+
     copy_flags(copied, _data)
     return copied.reset_index(drop=True)
 
