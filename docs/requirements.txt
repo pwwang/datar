@@ -6,3 +6,5 @@ ipykernel
 # to compile readme.ipynb
 plotnine
 klib
+ipynbname
+pardoc

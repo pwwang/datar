@@ -57,14 +57,16 @@ def pivot_longer(
                 the column containing the cell values, overriding values_to.
         names_prefix: A regular expression used to remove matching text from
             the start of each variable name.
-        names_sep, names_pattern: If names_to contains multiple values,
+        names_sep: and
+        names_pattern: If names_to contains multiple values,
             these arguments control how the column name is broken up.
             names_sep takes the same specification as separate(), and
             can either be a numeric vector (specifying positions to break on),
             or a single string (specifying a regular expression to split on).
         names_pattern: takes the same specification as extract(),
             a regular expression containing matching groups (()).
-        names_ptypes, values_ptypes: A list of column name-prototype pairs.
+        names_ptypes: and
+        values_ptypes: A list of column name-prototype pairs.
             A prototype (or ptype for short) is a zero-length vector
             (like integer() or numeric()) that defines the type, class, and
             attributes of a vector. Use these arguments if you want to confirm
@@ -72,7 +74,8 @@ def pivot_longer(
             Note that if you want to change (instead of confirm) the types
             of specific columns, you should use names_transform or
             values_transform instead.
-        names_transform, values_transform: A list of column name-function pairs.
+        names_transform: and
+        values_transform: A list of column name-function pairs.
             Use these arguments if you need to change the types of
             specific columns. For example,
             names_transform = dict(week = as.integer) would convert a
@@ -164,7 +167,8 @@ def pivot_wider(
         id_cols: A set of columns that uniquely identifies each observation.
             Defaults to all columns in data except for the columns specified
             in names_from and values_from.
-        names_from, values_from: A pair of arguments describing which column
+        names_from: and
+        values_from: A pair of arguments describing which column
             (or columns) to get the name of the output column (names_from),
             and which column (or columns) to get the cell values from
             (values_from).
@@ -340,7 +344,7 @@ def fill(
     """Fills missing values in selected columns using the next or
     previous entry.
 
-    See: https://tidyr.tidyverse.org/reference/fill.html
+    See https://tidyr.tidyverse.org/reference/fill.html
 
     Args:
         _data: A dataframe
@@ -380,7 +384,7 @@ def expand_grid(
 ) -> DataFrame:
     """Expand elements into a new dataframe
 
-    See: https://tidyr.tidyverse.org/reference/expand_grid.html
+    See https://tidyr.tidyverse.org/reference/expand_grid.html
 
     Args:
         _data, **kwargs: Name-value pairs. The name will become the column
@@ -426,7 +430,7 @@ def extract(
     group into a new column. If the groups don't match, or the input is NA,
     the output will be NA.
 
-    See: https://tidyr.tidyverse.org/reference/extract.html
+    See https://tidyr.tidyverse.org/reference/extract.html
 
     Args:
         _data: The dataframe
@@ -674,7 +678,7 @@ def drop_na(
 ) -> DataFrameType:
     """Drop rows containing missing values
 
-    See: https://tidyr.tidyverse.org/reference/drop_na.html
+    See https://tidyr.tidyverse.org/reference/drop_na.html
 
     Args:
         data: A data frame.
@@ -697,7 +701,7 @@ def expand(
         # _name_repair: Union[str, Callable] = None # todo
         **kwargs: Iterable[Any]
 ) -> DataFrame:
-    """See: https://tidyr.tidyverse.org/reference/expand.html"""
+    """See https://tidyr.tidyverse.org/reference/expand.html"""
     iterables = []
     names = []
     for i, column in enumerate(columns):

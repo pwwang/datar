@@ -132,15 +132,17 @@ def mutate(
             in the output:
             - "all", the default, retains all variables.
             - "used" keeps any variables used to make new variables;
-                it's useful for checking your work as it displays inputs and
-                outputs side-by-side.
+              it's useful for checking your work as it displays inputs and
+              outputs side-by-side.
             - "unused" keeps only existing variables not used to make new
                 variables.
             - "none", only keeps grouping keys (like transmute()).
-        _before, _after: Optionally, control where new columns should appear
+        _before: and
+        _after: Optionally, control where new columns should appear
             (the default is to add to the right hand side).
             See relocate() for more details.
-        *args, **kwargs: Name-value pairs. The name gives the name of the column
+        *args: and
+        **kwargs: Name-value pairs. The name gives the name of the column
             in the output. The value can be:
             - A vector of length 1, which will be recycled to the correct
                 length.
@@ -150,16 +152,16 @@ def mutate(
 
     Returns:
         An object of the same type as _data. The output has the following
-            properties:
-            - Rows are not affected.
-            - Existing columns will be preserved according to the _keep
-                argument. New columns will be placed according to the
-                _before and _after arguments. If _keep = "none"
-                (as in transmute()), the output order is determined only
-                by ..., not the order of existing columns.
-            - Columns given value None will be removed
-            - Groups will be recomputed if a grouping variable is mutated.
-            - Data frame attributes are preserved.
+        properties:
+        - Rows are not affected.
+        - Existing columns will be preserved according to the _keep
+            argument. New columns will be placed according to the
+            _before and _after arguments. If _keep = "none"
+            (as in transmute()), the output order is determined only
+            by ..., not the order of existing columns.
+        - Columns given value None will be removed
+        - Groups will be recomputed if a grouping variable is mutated.
+        - Data frame attributes are preserved.
     """
     if getattr(_data.flags, 'rowwise', False):
         return _mutate_rowwise(
@@ -289,18 +291,20 @@ def relocate(
 
     Args:
         _data: A data frame
-        column, *columns: Columns to move
-        _before, _after: Destination. Supplying neither will move columns to
+        column: and
+        *columns: Columns to move
+        _before: and
+        _after: Destination. Supplying neither will move columns to
             the left-hand side; specifying both is an error.
 
     Returns:
         An object of the same type as .data. The output has the following
-            properties:
-            - Rows are not affected.
-            - The same columns appear in the output, but (usually) in a
-                different place.
-            - Data frame attributes are preserved.
-            - Groups are not affected
+        properties:
+        - Rows are not affected.
+        - The same columns appear in the output, but (usually) in a
+            different place.
+        - Data frame attributes are preserved.
+        - Groups are not affected
     """
     grouper = _data.grouper if isinstance(_data, DataFrameGroupBy) else None
     _data = objectize(_data)
@@ -687,7 +691,7 @@ def summarise(
 ) -> DataFrameType:
     """Summarise each group to fewer rows
 
-    See: https://dplyr.tidyverse.org/reference/summarise.html
+    See https://dplyr.tidyverse.org/reference/summarise.html
 
     Args:
         _groups: Grouping structure of the result.
@@ -902,11 +906,12 @@ def count(
 ) -> DataFrame:
     """Count observations by group
 
-    See: https://dplyr.tidyverse.org/reference/count.html
+    See https://dplyr.tidyverse.org/reference/count.html
 
     Args:
         _data: The dataframe
-        *columns, **mutates: Variables to group by
+        *columns: and
+        **mutates: Variables to group by
         wt: Frequency weights. Can be None or a variable:
             If None (the default), counts the number of rows in each group.
             If a variable, computes sum(wt) for each group.
@@ -1100,7 +1105,8 @@ def distinct(
 
     Args:
         _data: The dataframe
-        *columns, **mutates: Optional variables to use when determining
+        *columns: and
+        **mutates: Optional variables to use when determining
             uniqueness.
         _keep_all: If TRUE, keep all variables in _data
 
