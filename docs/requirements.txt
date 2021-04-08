@@ -2,3 +2,6 @@ mkdocs-material
 pymdown-extensions
 mkapi-fix
 mkdocs-jupyter
+# to compile readme.ipynb
+plotnine
+klib
