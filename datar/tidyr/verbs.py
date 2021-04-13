@@ -12,7 +12,7 @@ from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    copy_flags, group_df, objectize, select_columns, list_diff, logger
+    copy_flags, group_df, objectize, vars_select, list_diff, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
@@ -98,7 +98,7 @@ def pivot_longer(
     Returns:
         The pivoted dataframe.
     """
-    columns = select_columns(_data.columns, cols)
+    columns = vars_select(_data.columns, cols)
     id_columns = list_diff(_data.columns, columns)
     var_name = '__tmp_names_to__' if names_pattern or names_sep else names_to
     ret = _data.melt(
@@ -196,7 +196,7 @@ def pivot_wider(
     """
     if id_cols is None:
         all_cols = _data.columns.tolist()
-        selected_cols = select_columns(all_cols, names_from, values_from)
+        selected_cols = vars_select(all_cols, names_from, values_from)
         id_cols = list_diff(all_cols, selected_cols)
     ret = pandas.pivot_table(
         _data,
@@ -367,7 +367,7 @@ def fill(
                     method='ffill' if _direction.endswith('down') else 'bfill',
                 )
         else:
-            columns = select_columns(_data.columns, *columns)
+            columns = vars_select(_data.columns, *columns)
             subset = fill(_data[columns], _direction=_direction)
             _data[columns] = subset
         return _data
@@ -600,7 +600,7 @@ def separate_rows(
         Dataframe with rows separated and repeated.
     """
     all_columns = _data.columns.tolist()
-    selected = select_columns(all_columns, *columns)
+    selected = vars_select(all_columns, *columns)
 
     weights = []
     repeated = []
@@ -653,7 +653,7 @@ def unite(
         The dataframe with selected columns united
     """
     grouper = getattr(_data, 'grouper', None)
-    columns = select_columns(_data.columns, *columns)
+    columns = vars_select(_data.columns, *columns)
     _data = objectize(_data)
     data = _data.copy()
     copy_flags(data, _data)
@@ -688,7 +688,7 @@ def drop_na(
         Dataframe with rows with NAs dropped
     """
     grouper = getattr(_data, 'grouper', None)
-    columns = select_columns(_data.columns, *columns) if columns else None
+    columns = vars_select(_data.columns, *columns) if columns else None
     ret = _data.dropna(subset=columns)
     if grouper is not None:
         return group_df(ret, grouper.names)

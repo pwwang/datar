@@ -53,21 +53,21 @@ def test_mutate_does_not_loose_variables():
     by_a = by_ab >> summarise(x=sum(f.x), _groups="drop_last")
     by_a_quantile = by_a >> group_by(quantile=ntile(f.x, 4))
 
-    assert by_a_quantile.obj.columns.tolist() == ["a", "b", "x", "quantile"]
+    assert by_a_quantile.columns.tolist() == ["a", "b", "x", "quantile"]
 
 def test_orders_by_groups():
     df = tibble(a = sample(range(1,11), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.obj.a.tolist() == list(range(1,11))
+    assert out.a.tolist() == list(range(1,11))
 
     df = tibble(a = sample(letters[:10], 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.obj.a.tolist() == letters[:10]
+    assert out.a.tolist() == letters[:10]
 
     df = tibble(a = sample(sqrt(range(1,11)), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
     expect = list(sqrt(range(1,11)))
-    assert out.obj.a.tolist() == expect
+    assert out.a.tolist() == expect
 
 def test_by_tuple_values():
     df = tibble(
@@ -75,12 +75,12 @@ def test_by_tuple_values():
         y=[(1,2), (1,2,3), (1,2)]
     ) >> group_by(f.y)
     out = df >> count()
-    assert out.obj.y.tolist() == [(1,2), (1,2,3)]
-    assert out.obj.n.tolist() == [2, 1]
+    assert out.y.tolist() == [(1,2), (1,2,3)]
+    assert out.n.tolist() == [2, 1]
 
 def test_select_add_group_vars():
     res = mtcars >> group_by(f.vs) >> select(f.mpg)
-    assert res.obj.columns.tolist() == ['vs', 'mpg']
+    assert res.columns.tolist() == ['vs', 'mpg']
 
 def test_one_group_for_NA():
     x = c(NA, NA, NA, range(10,0,-1), range(10,0,-1))
@@ -136,7 +136,7 @@ def test_does_not_affect_input_data():
 def test_0_groups():
     df = tibble(x=1).loc[[], :] >> group_by(f.x)
     res = df >> mutate(y=mean(f.x), z=+mean(f.x), n=n())
-    assert res.obj.columns.tolist() == ['x', 'y', 'z', 'n']
+    assert res.columns.tolist() == ['x', 'y', 'z', 'n']
     rows = res >> nrow()
     assert rows == 0
 
@@ -146,7 +146,7 @@ def test_0_groups_filter():
     d1 = df >> dim()
     d2 = res >> dim()
     assert d1 == d2
-    assert df.obj.columns.tolist()  == res.obj.columns.tolist()
+    assert df.columns.tolist()  == res.columns.tolist()
 
 def test_0_groups_select():
     df = tibble(x=1).loc[[], :] >> group_by(f.x)
@@ -154,7 +154,7 @@ def test_0_groups_select():
     d1 = df >> dim()
     d2 = res >> dim()
     assert d1 == d2
-    assert df.obj.columns.tolist()  == res.obj.columns.tolist()
+    assert df.columns.tolist()  == res.columns.tolist()
 
 def test_0_groups_arrange():
     df = tibble(x=1).loc[[], :] >> group_by(f.x)
@@ -162,7 +162,7 @@ def test_0_groups_arrange():
     d1 = df >> dim()
     d2 = res >> dim()
     assert d1 == d2
-    assert df.obj.columns.tolist()  == res.obj.columns.tolist()
+    assert df.columns.tolist()  == res.columns.tolist()
 
 def test_0_vars(df):
     with pytest.raises(ValueError):
@@ -284,35 +284,35 @@ def test_na_last():
 def test_auto_splicing():
     df1 = iris >> group_by(f.Species)
     df2 = iris >> group_by(tibble(Species=iris.Species))
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
     df1 = iris >> group_by(f.Species)
     df2 = iris >> group_by(across(f.Species))
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
     df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
         f.Sepal_Length, f.Sepal_Width)
     df2 = iris >> group_by(across(starts_with("Sepal"), round))
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
     # across(character()), across(NULL) not supported
 
     df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
         f.Sepal_Length, f.Sepal_Width, f.Species)
     df2 = iris >> group_by(across(starts_with("Sepal"), round), f.Species)
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
     df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
         f.Species, f.Sepal_Length, f.Sepal_Width)
     df2 = iris >> group_by(f.Species, across(starts_with("Sepal"), round))
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
 def test_mutate_semantics():
     df1 = tibble(a = 1, b = 2) >> group_by(c = f.a * f.b, d = f.c + 1)
     df2 = tibble(a = 1, b = 2) >> mutate(
         c = f.a * f.b, d = f.c + 1
     ) >> group_by(f.c, f.d)
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
 def test_implicit_mutate_operates_on_ungrouped_data():
     vars = tibble(x = c(1,2), y = c(3,4), z = c(5,6)) >> group_by(f.y)

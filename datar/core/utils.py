@@ -3,7 +3,7 @@
 import logging
 from functools import singledispatch
 from copy import deepcopy
-from typing import Any, Callable, Iterable, List, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
 from pandas import DataFrame, Categorical
@@ -12,12 +12,16 @@ from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
 from pandas.core.dtypes.common import is_categorical_dtype
+from pipda.symbolic import DirectRefAttr, DirectRefItem
+
+from varname import argname
 
 from .exceptions import (
     ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
 )
 from .types import DataFrameType, StringOrIter, is_scalar
 from .names import repair_names
+from .defaults import DEFAULT_COLUMN_PREFIX
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
@@ -191,7 +195,7 @@ def expand_slice(
     """Expand the slide in an iterable, in a groupby-aware way"""
     return _expand_slice_dummy(elems, total)
 
-def select_columns(
+def vars_select(
         all_columns: Iterable[str],
         *columns: Any,
         raise_nonexist: bool = True
@@ -488,3 +492,96 @@ def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
         repair_names(df.columns.tolist(), repair="check_unique")
     except NameNonUniqueError as error:
         raise ValueError(msg or str(error)) from None
+
+def dict_insert_at(
+        container: Mapping[str, Any],
+        poskeys: Iterable[str],
+        value: Mapping[str, Any],
+        remove: bool = False
+) -> Mapping[str, Any]:
+    """Insert value to a certain position of a dict"""
+    ret_items = []
+    ret_items_append = ret_items.append
+    matched = False
+    for key, val in container.items():
+        if key == poskeys[0]:
+            matched = True
+            ret_items.extend(value.items())
+            if not remove:
+                ret_items_append((key, val))
+        elif matched and key in poskeys:
+            if not remove:
+                ret_items_append((key, val))
+        elif matched and key not in poskeys:
+            matched = False
+            ret_items_append((key, val))
+        else:
+            ret_items_append((key, val))
+
+    return dict(ret_items)
+
+def name_mutatable_args(
+        *args: Union[Series, DataFrame, Mapping[str, Any]],
+        **kwargs: Any
+) -> Mapping[str, Any]:
+    """Convert all mutatable arguments to named mappings, which can be easier
+    to mutate later on.
+
+    If there are Expression objects, keep it. So if an objects have multiple
+    names and it's built by an Expression, then the name might get lost here.
+
+    Examples:
+
+        >>> s = Series([1], name='a')
+        >>> name_mutatable_args(s, b=2)
+        >>> # {'a': s, b: 2}
+        >>> df = DataFrame({'x': [3], 'y': [4]})
+        >>> name_mutatable_args(df)
+        >>> # {'x': Series([3]), 'y': Series([4])}
+        >>> name_mutatable_args(d=df)
+        >>> # {'d$x': Series([3]), 'd$y': Series([4])}
+    """
+    ret = {} # order kept
+
+    for i, arg in enumerate(args):
+        if isinstance(arg, Series):
+            ret[arg.name] = arg
+        elif isinstance(arg, dict):
+            ret.update(arg)
+        elif isinstance(arg, DataFrame):
+            ret.update(arg.to_dict('series'))
+        elif isinstance(arg, (DirectRefAttr, DirectRefItem)):
+            ret[arg.ref] = arg
+        else:
+            ret[f"{DEFAULT_COLUMN_PREFIX}{i}"] = arg
+
+    for key, val in kwargs.items():
+        if isinstance(val, DataFrame):
+            val = val.to_dict('series')
+
+        if isinstance(val, dict):
+            existing_keys = [
+                ret_key for ret_key in ret
+                if ret_key == key or ret_key.startswith(f"{key}$")
+            ]
+            if existing_keys:
+                ret = dict_insert_at(ret, existing_keys, val, remove=True)
+            else:
+                for dkey, dval in val.items():
+                    ret[f"{key}${dkey}"] = dval
+        else:
+            ret[key] = val
+    return ret
+
+def arg_match(arg: Any, values: Iterable[Any], errmsg=Optional[str]) -> Any:
+    """Make sure arg is in one of the values.
+
+    Mimics `rlang::arg_match`.
+    """
+    if not errmsg:
+        values = list(values)
+        name = argname(arg, pos_only=True)
+        errmsg = f'`{name}` must be one of {values}.'
+    if arg not in values:
+        raise ValueError(errmsg)
+    return arg

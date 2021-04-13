@@ -23,36 +23,13 @@ from ..core.types import (
 from ..core.exceptions import ColumnNotExistingError
 from ..core.utils import (
     copy_flags, filter_columns, list_union,
-    objectize, list_diff, select_columns
+    objectize, list_diff, vars_select
 )
 from ..core.contexts import Context
 from ..base.constants import NA
 
 # pylint: disable=redefined-outer-name
 
-@register_func(None, context=Context.EVAL)
-def desc(x: Iterable[Any]) -> Series:
-    """Transform a vector into a format that will be sorted in descending order
-
-    This is useful within arrange().
-
-    The original API:
-    https://dplyr.tidyverse.org/reference/desc.html
-
-    Args:
-        x: vector to transform
-
-    Returns:
-        The descending order of x
-    """
-    x = Series(x)
-    try:
-        return -x
-    except TypeError:
-        cat = Categorical(x)
-        code = Series(cat.codes).astype(float)
-        code[code == -1.] = NA
-        return -code
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
@@ -70,7 +47,7 @@ def c_across(
     """
     if not _cols:
         _cols = _data.columns
-    _cols = select_columns(_data.columns.tolist(), _cols)
+    _cols = vars_select(_data.columns.tolist(), _cols)
 
     series = [_data[col] for col in _cols]
     return numpy.concatenate(series)
@@ -551,9 +528,12 @@ def n_distinct(series: Iterable[Any]) -> int:
     return len(set(series))
 
 @register_func(context=Context.EVAL)
-def n(series: Iterable[Any]) -> int:
+def n(x: Iterable[Any]) -> int:
     """gives the current group size."""
-    return len(series)
+    if isinstance(x, DataFrame) and x.shape[1] == 0:
+        # in case it's a 0-col dataframe
+        return len(x.index)
+    return len(x)
 
 @register_func(context=Context.EVAL)
 def row_number(_data: Iterable[Any]) -> Series:

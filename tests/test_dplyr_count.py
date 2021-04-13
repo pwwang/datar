@@ -45,7 +45,7 @@ def test_drop():
 
     out = count(group_by(df, f.f, _drop = FALSE))
     # print(out.obj)
-    assert out.obj.n.tolist() == [0,1,0]
+    assert out.n.tolist() == [0,1,0]
 
 def test_preserve_grouping():
     df = tibble(g = c(1, 2, 2, 2))
@@ -56,4 +56,5 @@ def test_preserve_grouping():
 
     df1 = df >> group_by(f.g) >> count()
     df2 = exp >> group_by(f.g)
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
+    assert group_vars(df1) == group_vars(df2)

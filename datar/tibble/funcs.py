@@ -1,4 +1,5 @@
 """Functions ported from tidyverse-tibble"""
+from datar.core.defaults import DEFAULT_COLUMN_PREFIX
 import itertools
 from typing import Any, Callable, Union, Optional
 
@@ -8,6 +9,7 @@ from varname import argname, varname
 from pipda import Context
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
+from varname.utils import VarnameRetrievingError
 
 from ..core.utils import copy_flags, df_assign_item, objectize, to_df
 from ..core.names import repair_names
@@ -38,10 +40,16 @@ def tibble(
     """
     if not args and not kwargs:
         df = DataFrame() if not _rows else DataFrame(index=range(_rows))
-        df.__dfname__ = varname(raise_exc=False)
+        try:
+            df.__dfname__ = varname(raise_exc=False)
+        except VarnameRetrievingError:
+            df.__dfname__ = None
         return df
+    try:
+        argnames = argname(args, vars_only=False, pos_only=True)
+    except VarnameRetrievingError:
+        argnames = [f"{DEFAULT_COLUMN_PREFIX}{i}" for i in range(len(args))]
 
-    argnames = argname(args, vars_only=False, pos_only=True)
     name_values = zip(argnames, args)
     name_values = itertools.chain(name_values, kwargs.items())
     # cannot do it with Mappings, same keys will be lost
@@ -64,10 +72,10 @@ def tibble(
             arg = tibble(**arg)
 
         if df is None:
-            if isinstance(arg, (DataFrame, DataFrameGroupBy)):
-                arg = objectize(arg)
-                df = arg.copy()
-                copy_flags(df, arg)
+            if isinstance(arg, DataFrame):
+                # df = arg.copy()
+                # DataFrameGroupBy.copy copied into DataFrameGroupBy
+                df = DataFrame(arg)
                 if name not in argnames:
                     df.columns = [f'{name}${col}' for col in df.columns]
 
@@ -87,8 +95,10 @@ def tibble(
 
     if df is None:
         df = DataFrame()
-    df.__dfname__ = varname(raise_exc=False)
-
+    try:
+        df.__dfname__ = varname(raise_exc=False)
+    except VarnameRetrievingError: # still raises in some cases
+        df.__dfname__ = None
     return df
 
 def tribble(*dummies: Any) -> DataFrame:
@@ -131,5 +141,8 @@ def tribble(*dummies: Any) -> DataFrame:
         DataFrame(data, columns=columns) if data
         else DataFrame(columns=columns)
     )
-    ret.__dfname__ = varname(raise_exc=False)
+    try:
+        ret.__dfname__ = varname(raise_exc=False)
+    except VarnameRetrievingError:
+        ret.__dfname__ = None
     return ret

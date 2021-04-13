@@ -23,7 +23,7 @@ from ..core.exceptions import ColumnNameInvalidError, ColumnNotExistingError
 from ..core.utils import (
     align_value, check_column_uniqueness, copy_flags, df_assign_item,
     expand_slice, get_n_from_prop, group_df, groupby_apply, list_diff,
-    list_intersect, list_union, objectize, select_columns, to_df,
+    list_intersect, list_union, objectize, vars_select, to_df,
     logger, update_df
 )
 from ..core.names import repair_names
@@ -34,65 +34,6 @@ from .funcs import group_by_drop_default
 
 # pylint: disable=redefined-builtin,no-value-for-parameter
 
-@register_verb(DataFrame, context=Context.EVAL)
-def arrange(
-        _data: DataFrame,
-        *series: Iterable[Any],
-        _by_group: bool = False
-) -> DataFrame:
-    """orders the rows of a data frame by the values of selected columns.
-
-    The original API:
-    https://dplyr.tidyverse.org/reference/arrange.html
-
-    Args:
-        _data: A data frame
-        *series: Variables, or functions of variables.
-            Use desc() to sort a variable in descending order.
-        _by_group: If TRUE, will sort first by grouping variable.
-            Applies to grouped data frames only.
-        **kwargs: Name-value pairs that apply with mutate
-
-    Returns:
-        An object of the same type as _data.
-        The output has the following properties:
-            All rows appear in the output, but (usually) in a different place.
-            Columns are not modified.
-            Groups are not modified.
-            Data frame attributes are preserved.
-    """
-    if not series:
-        return _data
-
-    check_column_uniqueness(
-        _data,
-        "Cannot arrange a data frame with duplicate names."
-    )
-
-    sorting_df = DataFrame(index=_data.index) >> mutate(*series)
-    by = sorting_df.columns.tolist()
-    sorting_df.sort_values(by=by, inplace=True)
-
-    ret = _data.loc[sorting_df.index, :]
-    copy_flags(ret, _data)
-    return ret
-
-@arrange.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrameGroupBy,
-        *series: Any,
-        _by_group: bool = False
-) -> DataFrameGroupBy:
-    """Arrange grouped dataframe"""
-    if not _by_group:
-        ret = _data.obj >> arrange(*series)
-    else:
-        ret = _data.obj >> arrange(
-            *(_data.obj[col] for col in _data.grouper.names),
-            *series
-        )
-    copy_flags(ret, _data)
-    return group_df(ret, _data.grouper.names)
 
 def _mutate_rowwise(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
     """Mutate on rowwise data frame"""
@@ -309,7 +250,7 @@ def relocate(
     grouper = _data.grouper if isinstance(_data, DataFrameGroupBy) else None
     _data = objectize(_data)
     all_columns = _data.columns.to_list()
-    columns = select_columns(all_columns, column, *columns)
+    columns = vars_select(all_columns, column, *columns)
     rest_columns = list_diff(all_columns, columns)
     if _before is not None and _after is not None:
         raise ColumnNameInvalidError(
@@ -318,11 +259,11 @@ def relocate(
     if _before is None and _after is None:
         rearranged = columns + rest_columns
     elif _before is not None:
-        before_columns = select_columns(rest_columns, _before)
+        before_columns = vars_select(rest_columns, _before)
         cutpoint = min(rest_columns.index(bcol) for bcol in before_columns)
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     else: #_after
-        after_columns = select_columns(rest_columns, _after)
+        after_columns = vars_select(rest_columns, _after)
         cutpoint = max(rest_columns.index(bcol) for bcol in after_columns) + 1
         rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
     ret = _data[rearranged]
@@ -353,7 +294,7 @@ def select(
         data = _data
         groups = []
 
-    selected = select_columns(
+    selected = vars_select(
         data.columns,
         *columns,
         *renamings.values()
@@ -390,7 +331,7 @@ def rowwise(_data: DataFrame, *columns: str) -> DataFrame:
     if not columns:
         columns = True
     else:
-        columns = select_columns(_data.columns, columns)
+        columns = vars_select(_data.columns, columns)
     data.flags.rowwise = columns
     return data
 
@@ -682,157 +623,6 @@ def _summarise_rowwise(
     return applied
 
 
-@register_verb(DataFrame, context=Context.PENDING)
-def summarise(
-        _data: DataFrame,
-        *dfs: Union[DataFrame, Mapping[str, Iterable[Any]]],
-        _groups: Optional[str] = None,
-        **kwargs: Any
-) -> DataFrameType:
-    """Summarise each group to fewer rows
-
-    See https://dplyr.tidyverse.org/reference/summarise.html
-
-    Args:
-        _groups: Grouping structure of the result.
-            - "drop_last": dropping the last level of grouping.
-            - "drop": All levels of grouping are dropped.
-            - "keep": Same grouping structure as _data.
-            - "rowwise": Each row is its own group.
-        *dfs, **kwargs: Name-value pairs, where value is the summarized
-            data for each group
-
-    Returns:
-        The summary dataframe.
-    """
-    check_column_uniqueness(
-        _data,
-        "Can't transform a data frame with duplicate names."
-    )
-    if getattr(_data.flags, 'rowwise', False):
-        return _summarise_rowwise(
-            _data,
-            *dfs,
-            _groups=_groups,
-            **kwargs
-        )
-
-    context = Context.EVAL.value
-
-    serieses = {}
-    new_names = []
-    for i, ser in enumerate(dfs):
-        if isinstance(ser, Series):
-            serieses[ser.name] = ser.values
-        elif isinstance(ser, DataFrame):
-            serieses.update(ser.to_dict('series'))
-        elif isinstance(ser, dict):
-            serieses.update(ser)
-        else:
-            serieses[f"V{i}"] = ser
-            new_names.append(f"V{i}")
-
-    serieses.update(kwargs)
-    kwargs = serieses
-
-    ret = None
-
-    for key, val in kwargs.items():
-        if val is None:
-            continue
-        if ret is None:
-            val = evaluate_expr(val, _data, context)
-            if key in new_names and isinstance(val, DataFrame):
-                key = None
-            ret = to_df(val, key)
-            continue
-        try:
-            val = evaluate_expr(val, ret, context)
-        except ColumnNotExistingError:
-            val = evaluate_expr(val, _data, context)
-
-        value = align_value(val, ret)
-        df_assign_item(ret, key, value)
-
-    if ret is None:
-        ret = DataFrame(index=[0])
-
-    copy_flags(ret, _data)
-    ret.flags.rowwise = False
-
-    if _groups == 'rowwise':
-        ret.flags.rowwise = True
-
-    return ret
-
-@summarise.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrameGroupBy,
-        *dfs: Union[DataFrame, Mapping[str, Iterable[Any]]],
-        _groups: Optional[str] = None,
-        **kwargs: Any
-) -> DataFrameType:
-
-    gsizes = []
-    if _data.obj.shape[0] > 0:
-        def apply_func(df):
-            df.flags.grouper = _data.grouper
-            ret = df >> summarise(*dfs, _groups=_groups, **kwargs)
-            gsizes.append(0 if df.shape[0] == 0 else ret.shape[0])
-            return ret
-
-        applied = groupby_apply(_data, apply_func, groupdata=True)
-    else: # 0-row dataframe
-        # check cols in *dfs
-        applied = DataFrame(
-            columns=list_union(_data.grouper.names, kwargs.keys())
-        )
-
-    g_keys = _data.grouper.names
-    if _groups is None:
-        has_args = len(kwargs) > 0 or len(dfs) > 0
-        all_ones = all(gsize <= 1 for gsize in gsizes)
-
-        if applied.shape[0] <= 1 or all_ones or not has_args:
-            _groups = 'drop_last'
-            if len(g_keys) == 1 and summarise.inform:
-                logger.info(
-                    '`summarise()` ungrouping output '
-                    '(override with `_groups` argument)'
-                )
-            elif summarise.inform:
-                logger.info(
-                    '`summarise()` has grouped output by '
-                    '%s (override with `_groups` argument)',
-                    g_keys[:-1]
-                )
-        else:
-            _groups = 'keep'
-            if summarise.inform:
-                logger.info(
-                    '`summarise()` has grouped output by %s. '
-                    'You can override using the `_groups` argument.',
-                    g_keys
-                )
-
-    copy_flags(applied, _data)
-
-    if _groups == 'drop':
-        return applied
-
-    if _groups == 'drop_last':
-        return group_df(applied, g_keys[:-1]) if g_keys[:-1] else applied
-
-    if _groups == 'keep':
-        # even keep the unexisting levels
-        return group_df(applied, g_keys)
-
-    # else:
-    # todo: raise
-    return applied
-
-summarise.inform = True
-summarize = summarise # pylint: disable=invalid-name
 
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -893,203 +683,6 @@ def _(
 
 # ------------------------------
 # count
-
-@register_verb(DataFrame, context=Context.EVAL)
-def count(
-        _data: DataFrame,
-        *columns: Any,
-        wt: Optional[NumericOrIter] = None,
-        sort: bool = False,
-        name: Optional[str] = None,
-        _drop: Optional[bool] = None,
-        **mutates: Any
-) -> DataFrame:
-    """Count observations by group
-
-    See https://dplyr.tidyverse.org/reference/count.html
-
-    Args:
-        _data: The dataframe
-        *columns: and
-        **mutates: Variables to group by
-        wt: Frequency weights. Can be None or a variable:
-            If None (the default), counts the number of rows in each group.
-            If a variable, computes sum(wt) for each group.
-        sort: If TRUE, will show the largest groups at the top.
-        name: The name of the new column in the output.
-
-    Returns:
-        DataFrame object with the count column
-    """
-    if _drop is None:
-        _drop = group_by_drop_default(_data)
-
-    mutated = _data >> mutate(*columns, **mutates, _keep='none')
-    data = _data.copy()
-    update_df(data, mutated)
-    copy_flags(data, _data)
-
-    columns = mutated.columns.tolist()
-    if not columns:
-        raise ValueError("No columns to count.")
-
-    grouped = group_df(data, columns, drop=_drop)
-    # check if name in columns
-    if name is None:
-        name = 'n'
-        while name in columns:
-            name += 'n'
-        if name != 'n':
-            logger.warning(
-                'Storing counts in `%s`, as `n` already present in input. '
-                'Use `name="new_name"` to pick a new name.',
-                name
-            )
-    elif isinstance(name, str):
-        columns = [col for col in columns if col != name]
-    else:
-        raise ValueError("`name` must be a single string.")
-
-    if wt is None:
-        count_frame = grouped[columns].grouper.size().to_frame(name=name)
-    else:
-        count_frame = Series(wt).groupby(
-            grouped.grouper
-        ).sum().to_frame(name=name)
-
-    ret = count_frame.reset_index(level=columns)
-    if sort:
-        ret = ret.sort_values([name], ascending=[False])
-    return ret
-
-@count.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrameGroupBy,
-        *columns: Any,
-        wt: Optional[NumericOrIter] = None,
-        sort: bool = False,
-        name: Optional[str] = None,
-        _drop: Optional[bool] = None,
-        **mutates: Any
-):
-    if _drop is None:
-        _drop = group_by_drop_default(_data)
-
-    gkeys = _data.grouper.names
-
-    def apply_func(df):
-        if df.shape[0] == 0:
-            return None
-        return df >> count(
-            df[gkeys],
-            *columns,
-            wt=wt,
-            sort=sort,
-            name=name,
-            _drop=True,
-            **mutates
-        )
-
-    applied = groupby_apply(_data, apply_func)# index reset
-
-    if not _drop:
-        if len(gkeys) > 1 or not is_categorical(_data.obj[gkeys[0]]):
-            logger.warning(
-                'Currently, _drop=False of count on grouped dataframe '
-                'only works when dataframe is grouped by a single '
-                'categorical column.'
-            )
-        else:
-            applied = applied.set_index(gkeys).reindex(
-                _data.obj[gkeys[0]].cat.categories,
-                fill_value=0
-            ).reset_index(level=gkeys)
-
-    # not dropping anything
-    return group_df(applied, gkeys)
-
-
-@register_verb(DataFrameGroupBy, context=Context.PENDING)
-def tally(
-        _data: DataFrameGroupBy,
-        wt: Optional[NumericOrIter] = None,
-        sort: bool = False,
-        name: Optional[str] = None
-) -> DataFrame:
-    """A ower-level function for count that assumes you've done the grouping
-
-    See count()
-    """
-    ret = _data >> count(wt=wt, sort=sort, name=name)
-    return ret.obj if isinstance(ret, DataFrameGroupBy) else ret
-
-@tally.register(DataFrame, context=Context.EVAL)
-def _(
-        _data: DataFrame,
-        wt: Optional[NumericOrIter] = None,
-        sort: bool = False, # pylint: disable=unused-argument
-        name: Optional[str] = None
-) -> DataFrame:
-    """tally for DataFrame object"""
-    name = name or 'n'
-    if wt is None:
-        wt = _data.shape[0]
-    else:
-        wt = wt.sum()
-    return DataFrame({name: [wt]})
-
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
-def add_count(
-        _data: DataFrameType,
-        *columns: Any,
-        wt: Optional[str] = None,
-        sort: bool = False,
-        name: str = 'n',
-        **mutates: Any
-) -> DataFrameType:
-    """Equivalents to count() but use mutate() instead of summarise()
-
-    See count().
-    """
-    count_frame = count(_data, *columns, wt=wt, sort=sort, name=name, **mutates)
-    ret = objectize(_data).merge(
-        count_frame,
-        on=count_frame.columns.to_list()[:-1]
-    )
-
-    if sort:
-        ret = ret.sort_values([name], ascending=[False])
-
-    copy_flags(ret, _data)
-    if isinstance(_data, DataFrameGroupBy):
-        return group_df(ret, _data.grouper)
-    return ret
-
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.PENDING)
-def add_tally(
-        _data: DataFrameType,
-        wt: Optional[str] = None,
-        sort: bool = False,
-        name: str = 'n'
-) -> DataFrameType:
-    """Equivalents to tally() but use mutate() instead of summarise()
-
-    See count().
-    """
-    tally_frame = tally(_data, wt=wt, sort=False, name=name)
-
-    ret = objectize(_data).assign(**{
-        name: tally_frame.values.flatten()[0]
-    })
-
-    if sort:
-        ret = ret.sort_values([name], ascending=[False])
-
-    copy_flags(ret, _data)
-    if isinstance(_data, DataFrameGroupBy):
-        return group_df(ret, _data.grouper)
-
-    return ret
 
 @register_verb(DataFrame, context=Context.PENDING)
 def distinct(
@@ -1917,69 +1510,3 @@ def nest_join(
     if y_name:
         y_matched = y_matched.to_frame(name=y_name)
     return pandas.concat([x, y_matched], axis=1)
-
-@register_verb(
-    (DataFrame, DataFrameGroupBy),
-    context=Context.EVAL,
-    extra_contexts={'by': Context.SELECT}
-)
-def semi_join(
-        x: DataFrameType,
-        y: DataFrameType,
-        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-        copy: bool = False
-) -> DataFrameType:
-    """Returns all rows from x with a match in y.
-
-    See inner_join()
-    """
-    xobj = objectize(x)
-    y = objectize(y)
-    ret = pandas.merge(
-        xobj, y,
-        on=by,
-        how='left',
-        copy=copy,
-        suffixes=['', '_y'],
-        indicator=True
-    )
-    ret = ret.loc[ret._merge == 'both', xobj.columns.tolist()]
-
-    copy_flags(ret, x)
-    if isinstance(x, DataFrameGroupBy):
-        return group_df(ret, x.grouper.names)
-
-    return ret
-
-@register_verb(
-    (DataFrame, DataFrameGroupBy),
-    context=Context.EVAL,
-    extra_contexts={'by': Context.SELECT}
-)
-def anti_join(
-        x: DataFrameType,
-        y: DataFrameType,
-        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
-        copy: bool = False
-) -> DataFrameType:
-    """Returns all rows from x without a match in y.
-
-    See inner_join()
-    """
-    xobj = objectize(x)
-    y = objectize(y)
-    ret = pandas.merge(
-        xobj, y,
-        on=by,
-        how='left',
-        copy=copy,
-        suffixes=['', '_y'],
-        indicator=True
-    )
-    ret = ret.loc[ret._merge != 'both', xobj.columns.tolist()]
-
-    copy_flags(ret, x)
-    if isinstance(x, DataFrameGroupBy):
-        return group_df(ret, x.grouper.names)
-
-    return ret

@@ -1,9 +1,6 @@
 """Load operator, provide f and __version__"""
-from pipda import Symbolic
-
 # pylint: disable=unused-import
-from .core import operator
-
-f = Symbolic() # pylint: disable=invalid-name
+from .core import operator as _datar_operator
+from .core.defaults import f
 
 __version__ = '0.0.1'

@@ -14,7 +14,7 @@ from pipda.utils import DataEnv, functype
 
 from .utils import (
     df_assign_item, objectize, expand_collections, list_diff, sanitize_slice,
-    select_columns, logger, to_df
+    vars_select, logger, to_df
 )
 from .contexts import ContextSelectSlice
 from .types import DataFrameType, is_scalar
@@ -142,7 +142,7 @@ class Across:
         cols = everything(data) if cols is None else cols
         if not isinstance(cols, (list, tuple)):
             cols = [cols]
-        cols = select_columns(objectize(data).columns, *cols)
+        cols = vars_select(objectize(data).columns, *cols)
 
         fns_list = []
         if callable(fns):
