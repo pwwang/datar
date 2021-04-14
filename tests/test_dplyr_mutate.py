@@ -177,8 +177,8 @@ def test_rowwise_mutate_as_expected():
 
 def test_rowwise_list_data():
     test = rowwise(tibble(x=[1,2]))
-    out = test >> mutate(a=[[1]]) >> mutate(b=[[f.a[0][0] + 1]])
-    exp = test >> mutate(a=[[1]], b=[[f.a[0][0] + 1]])
+    out = test >> mutate(a=[[1]]) >> mutate(b=[[f.a[cur_group_id()][0] + 1]])
+    exp = test >> mutate(a=[[1]], b=[[f.a[cur_group_id()][0] + 1]])
 
     assert out.equals(exp)
 

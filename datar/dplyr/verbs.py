@@ -463,61 +463,6 @@ def _summarise_rowwise(
 
 
 
-@register_verb(DataFrame, context=Context.EVAL)
-def filter(
-        _data: DataFrame,
-        *conditions: Iterable[bool],
-        _preserve: bool = False
-) -> DataFrame:
-    """Subset a data frame, retaining all rows that satisfy your conditions
-
-    Args:
-        condition, *conditions: Expressions that return logical values
-        _preserve: Relevant when the .data input is grouped.
-            If _preserve = FALSE (the default), the grouping structure
-            is recalculated based on the resulting data, otherwise
-            the grouping is kept as is.
-
-    Returns:
-        The subset dataframe
-    """
-    if _data.shape[0] == 0:
-        return _data
-    # check condition, conditions
-    condition = numpy.array([True] * _data.shape[0])
-    for cond in conditions:
-        if is_scalar(cond):
-            cond = numpy.array([cond] * _data.shape[0])
-        condition = condition & cond
-    try:
-        condition = objectize(condition).values.flatten()
-    except AttributeError:
-        ...
-
-    ret = _data[condition].reset_index(drop=True)
-    copy_flags(ret, _data)
-    return ret
-
-@filter.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrameGroupBy,
-        *conditions: Expression,
-        _preserve: bool = False
-) -> DataFrameGroupBy:
-    """Filter on DataFrameGroupBy object"""
-    if _data.obj.shape[0] > 0:
-        def apply_func(df):
-            df.flags.grouper = _data.grouper
-            return df >> filter(*conditions)
-
-        ret = groupby_apply(_data, apply_func, groupdata=True)
-    else:
-        ret = DataFrame(columns=_data.obj.columns)
-    copy_flags(ret, _data)
-
-    if _preserve:
-        return group_df(ret, _data.grouper)
-    return group_df(ret, _data.grouper.names)
 
 # ------------------------------
 # count

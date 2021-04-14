@@ -46,6 +46,20 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         else:
             self.__dict__['_group_data'] = _group_data
 
+    @classmethod
+    def construct_from(
+            cls,
+            data: DataFrame,
+            template: "DataFrameGroupBy"
+    ) -> "DataFrameGroupBy":
+        """Construct from a template dataframe"""
+        return cls(
+            data,
+            _group_vars=template._group_vars,
+            _drop=template.attrs.get('groupby_drop', True),
+            _group_data=template._group_data
+        )
+
     def _compute_group_data(self): # pylint: disable=too-many-branches
         """Compute group data"""
         # group by values have to be hashable
@@ -156,7 +170,8 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         def apply_func(gdata_row):
             index = gdata_row[0]
             subdf = self.iloc[gdata_row[1]['_rows'], :]
-            subdf.reset_index(drop=True, inplace=True)
+            if _drop_index:
+                subdf.reset_index(drop=True, inplace=True)
             subdf.attrs['group_index'] = index
             subdf.attrs['group_data'] = groupdata
             ret = func(subdf, *args, **kwargs)
