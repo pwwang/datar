@@ -278,15 +278,15 @@ def test_mutate_null_preserves_correct_all_vars():
     exp = tibble(y=2)
     assert df.equals(exp)
 
-# wait for if_else
+# TODO:
 # def test_mutate_casts_data_frame_results_to_common_type():
 #     df = tibble(x = [1,2], g = [1,2]) >> group_by(f.g)
 #     res = df >> mutate(if_else(f.g == 1, tibble(y=1), tibble(y=1, z=2)))
-#     print(res)
+#     assert res.z.fillna(0.).tolist() == [0., 2.]
 
 # TODO: test warning catching
 
-# wait for if_else
+# wait for rowwise
 # test_that("mutate() supports empty list columns in rowwise data frames (#5804", {
 #   res <- tibble(a = list()) %>%
 #     rowwise() %>%

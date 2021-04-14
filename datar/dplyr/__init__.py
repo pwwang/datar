@@ -13,8 +13,8 @@ from .verbs import (
 from .funcs import (
     starts_with, ends_with, contains, matches,
     last_col, all_of, any_of,
-    min_rank, dense_rank, percent_rank, cume_dist, ntile, case_when,
-    if_else, n_distinct, row_number, cummean, cumall,
+    min_rank, dense_rank, percent_rank, cume_dist, ntile,
+    n_distinct, row_number, cummean, cumall,
     cumany, lead, lag, num_range, recode, recode_factor, recode_categorical,
     coalesce, na_if, near, nth, first, last, between
 )
@@ -39,3 +39,4 @@ from .mutate import mutate
 from .select import select
 from .across import across, c_across, if_all, if_any
 from .tidyselect import where, everything
+from .if_else import if_else, case_when
