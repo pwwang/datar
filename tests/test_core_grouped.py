@@ -126,3 +126,56 @@ def test_apply():
         'n': [1,0]
     })
     assert out.equals(exp)
+
+def test_construct_with_give_groupdata():
+    df = DataFrame({'a': [1,2,3]})
+    gf = DataFrameGroupBy(df, _group_vars=['a'])
+
+    gf2 = DataFrameGroupBy(df, _group_vars=['a'], _group_data=gf._group_data)
+
+    assert gf._group_data.equals(gf2._group_data)
+
+def test_apply_returns_none():
+    df = DataFrame({'a': []})
+    gf = DataFrameGroupBy(df, _group_vars=['a'])
+    out = gf.group_apply(lambda df: None)
+    assert out is None
+
+def test_repr():
+    df = DataFrame({'a': [1,2,3]})
+    gf = DataFrameGroupBy(df, _group_vars=['a'])
+    out = repr(gf)
+
+    assert "[Groups: ['a'] (n=3)]" in out
+
+def test_copy():
+    df = DataFrame({'a': [1,2,3]})
+    gf = DataFrameGroupBy(df, _group_vars=['a'])
+
+    gf2 = gf.copy()
+    assert isinstance(gf2, DataFrameGroupBy)
+    assert gf._group_vars == gf2._group_vars
+    assert gf._group_data.equals(gf2._group_data)
+
+# rowwise ---------------------------------------
+def test_rowwise():
+    df = DataFrame({'a': [1,2,3], 'b': [4,5,6]})
+    rf = DataFrameRowwise(df)
+    assert rf._group_data.columns.tolist() == ['_rows']
+    assert rf._group_data.shape == (3, 1)
+    out = rf.group_apply(
+        lambda df: DataFrame({'c': df.a + df.b})
+    )
+    assert out.equals(DataFrame([[5],[7],[9]], columns=['c']))
+
+    rf = DataFrameRowwise(df, _group_vars=['a'])
+    assert rf._group_data.columns.tolist() == ['a', '_rows']
+    assert rf._group_data.shape == (3, 2)
+    out = rf.group_apply(
+        lambda df: DataFrame({'c': df.a + df.b}),
+        _groupdata=True
+    )
+    assert out.equals(DataFrame([[1,5],[2,7],[3,9]], columns=['a', 'c']))
+
+    with pytest.raises(ValueError):
+        rf.group_apply(lambda df: None, _spike_groupdata=DataFrame())

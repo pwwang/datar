@@ -13,10 +13,17 @@ from ..base.constants import NA
 class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
     """GroupBy data frame, instead of the one from pandas
 
-    Because:
+    Because
     1. Pandas DataFrameGroupBy cannot handle mutilpe categorical columns as
-        groupby variables
+        groupby variables with non-obserable values
     2. It is very hard to retrieve group indices and data when doing apply
+
+    Args:
+        *args: and
+        **kwargs: The values used to construct the data frame
+        _group_vars: The grouping variables
+        _drop: Whether to drop non-observable rows
+        _group_data: Reuse other group data so we don't re-compute
     """
     def __init__(
             self,
@@ -34,18 +41,19 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         self.attrs['groupby_drop'] = _drop
 
         self.__dict__['_group_vars'] = _group_vars or []
-        if not _group_vars:
-            self.__dict__['_group_data'] = DataFrame({
-                '_rows': [list(range(self.shape[0]))]
-            })
-        elif _group_data is None:
+        if _group_data is None:
             self.__dict__['_group_data'] = self._compute_group_data()
         else:
             self.__dict__['_group_data'] = _group_data
 
-    def _compute_group_data(self):
+    def _compute_group_data(self): # pylint: disable=too-many-branches
         """Compute group data"""
         # group by values have to be hashable
+        if not self._group_vars:
+            return DataFrame({
+                '_rows': [list(range(self.shape[0]))]
+            })
+
         gdata = self[self._group_vars].sort_values(self._group_vars)
         if self.attrs['groupby_drop']:
             rows_dict = defaultdict(lambda: [])
@@ -125,6 +133,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             *args: Any,
             _groupdata: bool = True,
             _drop_index: bool = True,
+            _spike_groupdata: Optional[DataFrame] = None,
             **kwargs: Any
     ) -> DataFrame:
         """Apply function to each group
@@ -133,21 +142,30 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             func: The function applied to the groups
             *args, **kwargs: The arguments for func
             _groupdata: Whether to include the group data in the results or not
+            _drop_index: Should we drop the index or keep it
+            _spike_groupdata: External group data to used, instead of
+                `self._group_data`. This is useful for rowwise dataframe when
+                no group vars not specified (`self._group_data` has only
+                `_rows` column).
         """
-
+        groupdata = (
+            self._group_data
+            if _spike_groupdata is None
+            else _spike_groupdata
+        )
         def apply_func(gdata_row):
             index = gdata_row[0]
             subdf = self.iloc[gdata_row[1]['_rows'], :]
             subdf.reset_index(drop=True, inplace=True)
             subdf.attrs['group_index'] = index
-            subdf.attrs['group_data'] = self._group_data
+            subdf.attrs['group_data'] = groupdata
             ret = func(subdf, *args, **kwargs)
             if ret is None:
                 return ret
 
             if _groupdata:
                 # attaching grouping data
-                gdata = self._group_data.loc[
+                gdata = groupdata.loc[
                     [index] * ret.shape[0],
                     [gvar for gvar in self._group_vars if gvar not in ret]
                 ]
@@ -156,7 +174,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             return ret
 
         to_concat = [
-            apply_func(row) for row in self._group_data.iterrows()
+            apply_func(row) for row in groupdata.iterrows()
         ]
         if all(elem is None for elem in to_concat):
             return None
@@ -180,4 +198,44 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             _group_vars=self._group_vars,
             _drop=self.attrs.get('groupby_drop', True),
             _group_data=self._group_data.copy() if deep else self._group_data
+        )
+
+class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
+    """Group data frame rowwisely"""
+    def _compute_group_data(self):
+        _rows = Series(
+            [[i] for i in range(self.shape[0])],
+            name='_rows'
+        )
+        if not self._group_vars:
+            return _rows.to_frame()
+
+        gdata = self[self._group_vars].copy()
+        gdata['_rows'] = _rows
+        return gdata
+
+    def group_apply(
+            self,
+            func: Callable,
+            *args: Any,
+            _groupdata: bool = True,
+            _drop_index: bool = True,
+            _spike_groupdata: Optional[DataFrame] = None,
+            **kwargs: Any
+    ) -> DataFrame:
+        if _spike_groupdata is not None:
+            raise ValueError('`_spike_groupdata` not allowed.')
+        if self._group_vars:
+            gdata = self._group_data
+        else:
+            gdata = self.copy()
+            gdata['_rows'] = self._group_data
+
+        return super().group_apply(
+            func,
+            *args,
+            _groupdata=_groupdata,
+            _drop_index=_drop_index,
+            _spike_groupdata=gdata,
+            **kwargs
         )
