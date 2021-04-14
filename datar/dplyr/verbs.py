@@ -272,44 +272,6 @@ def relocate(
     return ret
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def select(
-        _data: DataFrameType,
-        *columns: Union[StringOrIter, Inverted],
-        **renamings: Mapping[str, str]
-) -> DataFrameType:
-    """Select (and optionally rename) variables in a data frame
-
-    Args:
-        *columns: The columns to select
-        **renamings: The columns to rename and select in new => old column way.
-
-    Returns:
-        The dataframe with select columns
-    """
-    if isinstance(_data, DataFrameGroupBy):
-        data = _data.obj
-        groups = _data.grouper.names
-    else:
-        data = _data
-        groups = []
-
-    selected = vars_select(
-        data.columns,
-        *columns,
-        *renamings.values()
-    )
-    selected = list_union(groups, selected)
-    # old -> new
-    new_names = {val: key for key, val in renamings.items() if val in selected}
-    data = data[selected]
-    if new_names:
-        data = data.rename(columns=new_names)
-
-    copy_flags(data, _data)
-    if isinstance(_data, DataFrameGroupBy):
-        return group_df(data, _data.grouper)
-    return data
 
 
 @register_verb(DataFrame, context=Context.SELECT)

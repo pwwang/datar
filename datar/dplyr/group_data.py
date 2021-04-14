@@ -34,7 +34,8 @@ def group_keys(_data: DataFrame) -> DataFrame:
 
 @group_keys.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> DataFrame:
-    return group_data(_data).iloc[:, :-1]
+    # .copy() allows future modifications
+    return group_data(_data).iloc[:, :-1].copy()
 
 @register_verb(DataFrame)
 def group_rows(_data: DataFrame) -> List[List[int]]:

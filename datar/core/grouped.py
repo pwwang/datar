@@ -3,7 +3,6 @@ from typing import Any, Callable, List, Optional
 from itertools import product
 from collections import defaultdict
 
-import numpy
 import pandas
 from pandas.core.arrays.categorical import Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
@@ -50,8 +49,13 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         gdata = self[self._group_vars].sort_values(self._group_vars)
         if self.attrs['groupby_drop']:
             rows_dict = defaultdict(lambda: [])
-            for row in gdata.itertuples():
-                rows_dict[row[1:]].append(row.Index)
+            for row in gdata.iterrows():
+                # NAs not equal
+                elems = tuple(
+                    None if pandas.isna(elem) else elem
+                    for elem in row[1]
+                )
+                rows_dict[elems].append(row[0])
         else:
             vardata_list = []
             # make sure the value and the value of left column are observed
@@ -80,7 +84,6 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
 
             rows_dict = {}
             for row in product(*vardata_list):
-
                 row_pass = True
                 for i, elem in enumerate(row):
                     if i == 0 or not pandas.isna(elem):

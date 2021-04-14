@@ -8,6 +8,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 import numpy
 from pandas import DataFrame, Categorical
 from pandas.core.flags import Flags
+from pandas.core.indexes.base import Index
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
@@ -80,7 +81,7 @@ def check_column(column: Any) -> None:
     """
     from .middlewares import Inverted
     if not isinstance(column, (
-            (int, str, list, set, tuple, Inverted, slice)
+            (int, str, list, set, tuple, Inverted, slice, Series)
     )):
         raise ColumnNameInvalidError(
             'Invalid column, expected int, str, list, tuple, c(), '
@@ -96,7 +97,7 @@ def expand_collections(collections: Any) -> List[Any]:
     Returns:
         The flattened list
     """
-    if is_scalar(collections):
+    if is_scalar(collections) or isinstance(collections, Series):
         return [collections]
     ret = []
     for collection in collections:
@@ -135,19 +136,72 @@ def filter_columns(
                 ret.append(column)
     return ret
 
-def sanitize_slice(slc: slice, all_columns: List[str]) -> slice:
-    """Sanitize slice objects"""
-    int_start, int_stop, step = slc.start, slc.stop, slc.step
-    if isinstance(int_start, str):
-        int_start = all_columns.index(int_start)
-    if isinstance(int_stop, str):
-        int_stop = all_columns.index(int_stop)
+def sanitize_slice(
+        slc: slice,
+        all_columns: Optional[List[str]] = None,
+        raise_nonexists: bool = True
+) -> List[int]:
+    """Sanitize slice objects, and compile it into a list of indexes
 
-    int_stop += 1
+    Args:
+        slc: The slice object
+        all_columns: All columns used to convert names into indexes
+            If it is not provided, the slice is expected to be all integers
+        raise_nonexists: Raise error when a column doesnot exist?
+            Requires `all_columns`.
+
+    Returns:
+        A list of indexes
+
+    Raises:
+        ColumnNotExistingError: When a column does not exist
+    """
+    start, stop, step = slc.start, slc.stop, slc.step
+    if all_columns is None and (
+            isinstance(start, str) or
+            isinstance(stop, str) or
+            raise_nonexists or
+            (isinstance(start, int) and start < 0) or
+            (isinstance(stop, int) and stop < 0) or
+            stop is None
+    ):
+        raise ValueError(
+            '`all_columns` is required when start/stop of slice is column '
+            'name, None or negative index, or `raise_nonexists` is True.'
+        )
+    if isinstance(start, str):
+        if start not in all_columns:
+            # raise anyway
+            raise ColumnNotExistingError(f'Column `{start}` does not exist.')
+        start = all_columns.index(start)
+    if isinstance(stop, str):
+        if stop not in all_columns:
+            raise ColumnNotExistingError(f'Column `{stop}` does not exist.')
+        stop = all_columns.index(stop) + 1
+
+    start = 0 if start is None else start
+    if start < 0:
+        start += len(all_columns)
+
+    stop = len(all_columns) if stop is None else stop
+    if stop < 0:
+        stop += len(all_columns) + 1
+
     if step == 0:
-        step = None
-        int_stop -= 1
-    return slice(int_start, int_stop, step)
+        stop -= 1
+        step = 1
+
+    out = []
+    out_append = out.append
+    i = start
+    while i < stop:
+        if all_columns is not None and raise_nonexists and i >= len(all_columns):
+            raise ColumnNotExistingError(
+                f'Column at location {i} does not exist.'
+            )
+        out_append(i)
+        i += 1 if step is None else step
+    return out
 
 def _expand_slice_dummy(
         elems: Union[slice, list, int, tuple, "Negated", "Inverted"],
@@ -198,8 +252,8 @@ def expand_slice(
 def vars_select(
         all_columns: Iterable[str],
         *columns: Any,
-        raise_nonexist: bool = True
-) -> List[str]:
+        raise_nonexists: bool = True
+) -> List[int]:
     """Select columns
 
     Args:
@@ -207,49 +261,53 @@ def vars_select(
         *columns: arguments to select from the pool
         raise_nonexist: Whether raise exception when column not exists
             in the pool
+        return_indexes: Whether return indexes instead of column names
+            This is useful when there are duplicated names
 
     Returns:
-        The selected columns
+        The selected indexes for columns
 
     Raises:
         ColumnNameInvalidError: When the column is invalid to select
         ColumnNotExistingError: When the column does not exist in the pool
     """
     from .middlewares import Inverted
-    if not isinstance(all_columns, list):
-        all_columns = list(all_columns)
-
-    negs = [isinstance(column, Inverted) for column in columns]
-    has_negs = any(negs)
-    if has_negs and not all(negs):
-        raise ColumnNameInvalidError(
-            'Either none or all of the columns are negative.'
-        )
+    from ..base.funcs import setdiff
+    all_columns = list(all_columns)
 
     selected = []
+    selected_append = selected.append
     for column in columns:
+        if column is None:
+            continue
+
         check_column(column)
         if isinstance(column, int): # 1, -1
             # -1 will do select instead of removal
-            selected.append(all_columns[column])
-        elif isinstance(column, (list, tuple, set)): # ['x', 'y']
-            selected.extend(column)
+            if column not in selected:
+                selected_append(column)
+        elif isinstance(column, (list, tuple)): # ['x','y'] or [0,2]
+            idxes = vars_select(all_columns, *column)
+            for idx in idxes:
+                if idx not in selected:
+                    selected_append(idx)
         elif isinstance(column, Inverted):
-            selected.extend(column.elems)
+            excludes = column.evaluate(all_columns, raise_nonexists)
+            selected = setdiff(selected or range(len(all_columns)), excludes)
         elif isinstance(column, slice):
-            selected.extend(all_columns[sanitize_slice(column, all_columns)])
+            idxes = sanitize_slice(column, all_columns, raise_nonexists)
+            for idx in idxes:
+                if idx not in selected:
+                    selected_append(idx)
         else:
-            selected.append(column)
-
-    if raise_nonexist:
-        for sel in selected:
-            if sel not in all_columns:
+            if isinstance(column, Series):
+                column = column.name
+            if column not in all_columns and raise_nonexists:
                 raise ColumnNotExistingError(
-                    f"Column `{sel}` doesn't exist."
+                    f"Column `{column}` does not exist."
                 )
 
-    if has_negs:
-        selected = list_diff(all_columns, selected)
+            selected_append(all_columns.index(column))
     return selected
 
 def series_expandable(
@@ -585,3 +643,14 @@ def arg_match(arg: Any, values: Iterable[Any], errmsg=Optional[str]) -> Any:
     if arg not in values:
         raise ValueError(errmsg)
     return arg
+
+def copy_attrs(
+        df1: DataFrame,
+        df2: DataFrame,
+        deep: bool = False,
+        group: bool = False
+) -> None:
+    """Copy attrs from df2 to df1"""
+    for key, val in df2.attrs.items():
+        if group or not key.startswith('group_'):
+            df1.attrs[key] = deepcopy(val) if deep else val

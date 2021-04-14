@@ -1,5 +1,6 @@
 """Middlewares for datar"""
 import builtins
+from datar.core.exceptions import ColumnNotExistingError
 
 from typing import (
     Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
@@ -17,7 +18,7 @@ from .utils import (
     vars_select, logger, to_df
 )
 from .contexts import ContextSelectSlice
-from .types import DataFrameType, is_scalar
+from .types import DataFrameType, is_iterable, is_scalar
 
 class Collection(list):
     """Mimic the c function in R
@@ -40,55 +41,37 @@ class Collection(list):
 class Inverted:
     """Inverted object, pending for next action"""
 
-    def __init__(
-            self,
-            elems: Any,
-            data: DataFrameType,
-            context: ContextBase = Context.SELECT.value
-    ) -> None:
-        self.data = objectize(data)
-        self.context = context
+    def __init__(self, elems: Union[slice, str, list, tuple, Series]) -> None:
         if isinstance(elems, slice):
-            if isinstance(context, ContextSelectSlice):
-                self.elems = [elems]
-            else:
-                columns = self.data.columns.tolist()
-                self.elems = columns[sanitize_slice(elems, columns)]
-        elif not isinstance(elems, Collection):
-            if is_scalar(elems):
-                self.elems = Collection(elems)
-            else:
-                self.elems = Collection(*elems)
-        elif not isinstance(context, ContextSelectSlice):
-            columns = self.data.columns.to_list()
-            self.elems = [
-                columns[elem] if isinstance(elem, int) else elem
-                for elem in elems
-            ]
-        else:
             self.elems = elems
-        self._complements = None
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Inverted):
-            return False
-        return self.elem == other.elem and self.data == other.data
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
-
-    @property
-    def complements(self):
-        """Complements of inverted columns"""
-        if isinstance(self.context, ContextSelectSlice):
-            # slice literal not being expanded
-            return self
-        if self._complements is None:
-            self._complements = list_diff(self.data.columns, self.elems)
-        return self._complements
+        else:
+            self.elems = Collection(elems)
 
     def __repr__(self) -> str:
         return f"Inverted({self.elems})"
+
+    def evaluate(
+            self,
+            all_columns: Iterable[str],
+            raise_nonexists: bool = True
+    ) -> List[int]:
+        """Evaluate with current selected columns"""
+        if isinstance(self.elems, slice):
+            return sanitize_slice(self.elems, all_columns, raise_nonexists)
+        if isinstance(self.elems, Series):
+            return all_columns.index(self.elems.name)
+        out = []
+        out_append = out.append
+        for elem in self.elems:
+            if isinstance(elem, Series):
+                elem = elem.name
+            if elem not in all_columns and raise_nonexists:
+                raise ColumnNotExistingError(
+                    f"Column `{elem}` does not exist."
+                )
+            out_append(all_columns.index(elem))
+        return out
+
 
 class Negated:
     """Negated object"""

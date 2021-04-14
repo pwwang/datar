@@ -2,19 +2,21 @@
 
 See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
-from datar.core.grouped import DataFrameGroupBy
 from typing import Any, Iterable, Optional, Union
 
 from pandas import DataFrame
-from pipda import register_verb, evaluate_expr
+from pipda import register_verb
 from pipda.utils import Expression
 
 from ..core.contexts import Context
 from ..core.types import NumericOrIter, NumericType
-from ..core.utils import logger
+from ..core.utils import copy_attrs, logger
 from ..core.defaults import f
+from ..core.grouped import DataFrameGroupBy
+from ..base.funcs import sum # pylint: disable=redefined-builtin
+from .context import n
 from .group_by import group_by_drop_default, group_by
-from .group_data import group_data, group_size, group_vars
+from .group_data import group_data, group_vars
 from .mutate import mutate
 from .summarise import summarise
 from .arrange import arrange
@@ -56,6 +58,13 @@ def count(
         out = x
 
     out = tally(out, wt=wt, sort=sort, name=name)
+    if isinstance(x, DataFrameGroupBy):
+        out = DataFrameGroupBy(
+            out,
+            _group_vars=group_vars(x),
+            _drop=group_by_drop_default(x),
+            _group_data=group_data(x)
+        )
     return out
 
 @register_verb(DataFrame, context=Context.PENDING)
@@ -69,22 +78,18 @@ def tally(
 
     See count()
     """
-    n = tally_n(x, wt)
+    tallyn = tally_n(wt)
 
     name = check_name(name, group_vars(x))
     # TODO: thread-safety
     summarise_inform = summarise.inform
     summarise.inform = False
-    out = summarise.dispatch(DataFrame)(x, {name: n})
+    # pylint: disable=no-value-for-parameter
+    out = x >> summarise({name: n() if tallyn is None else tallyn})
     summarise.inform = summarise_inform
 
-    if isinstance(x, DataFrameGroupBy):
-        out = DataFrameGroupBy(
-            out,
-            _group_vars=group_vars(x),
-            _drop=group_by_drop_default(x),
-            _group_data=group_data(x)
-        )
+    # keep attributes
+    copy_attrs(out, x)
 
     if sort:
         return arrange(out, desc(f[name]))
@@ -122,10 +127,10 @@ def add_tally(
 
     See count().
     """
-    wt = evaluate_expr(wt, x, Context.EVAL)
-    n = tally_n(x, wt)
+    tallyn = tally_n(wt)
     name = check_name(name, x.columns)
-    out = mutate(x, {name: n})
+    # pylint: disable=no-value-for-parameter
+    out = x >> mutate({name: n() if tallyn is None else tallyn})
 
     if sort:
         return arrange(out, desc(f[name]))
@@ -134,17 +139,15 @@ def add_tally(
 
 # Helpers -----------------------------------------------------------------
 def tally_n(
-        x: DataFrame,
         wt: Optional[Union[NumericOrIter, Expression]]
 ) -> Iterable[NumericType]:
     """Compuate the weights for counting"""
     if wt is None:
-        return group_size(x)
-    if not isinstance(wt, Expression):
-        return sum(wt)
-    # Expression
-    wt = evaluate_expr(wt, x, Context.EVAL)
-    return map(lambda rows: wt[rows].sum(), group_data(x)['_rows'])
+        return None # will be n() later on
+
+    # If it's Expression, will return a Function object
+    # Otherwise, sum of wt
+    return sum(wt)
 
 def check_name(name: Optional[str], invars: Iterable[str]) -> str:
     """Check if count is valid"""

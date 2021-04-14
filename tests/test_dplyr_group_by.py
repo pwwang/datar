@@ -1,8 +1,8 @@
 #https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-group-by.r
 
-from pandas.core import groupby
 import pytest
 
+import numpy
 from datar.all import *
 from datar.datasets import mtcars, iris
 from datar.core.exceptions import ColumnNotExistingError
@@ -84,49 +84,43 @@ def test_select_add_group_vars():
 
 def test_one_group_for_NA():
     x = c(NA, NA, NA, range(10,0,-1), range(10,0,-1))
-    w = c(20, 30, 40, range(1,11), range(1,11))
-    n_dist = n_distinct(x)
-    assert n_dist == 11
+    w = numpy.array(c(20, 30, 40, range(1,11), range(1,11))) * 10
 
+    assert n_distinct(x) == 11
     res = tibble(x = x, w = w) >> group_by(f.x) >> summarise(n = n())
-    rows = res >> nrow()
-    assert rows == 11
+    assert nrow(res) == 11
 
 def test_zero_row_dfs():
-    df = tibble(a=1,b=1,g=1).loc[[], :]
-    dfg = df >> group_by(f.g, _drop=False)
-    d = dfg >> dim()
-    assert d == (0, 3)
+    df = tibble(a=[], b=[], g=[])
+    dfg = group_by(df, f.g, _drop=False)
+    assert dim(dfg) == (0, 3)
+    assert group_vars(dfg) == ["g"]
+    assert group_size(dfg) == []
 
-    x = dfg >> summarise(n=n())
-    d = x >> dim()
-    assert d == (0, 2)
-    # with pytest.raises(NotImplementedError):
+    x = summarise(dfg, n=n())
+    assert dim(x) == (0, 2)
     assert group_vars(x) == []
 
-    x = dfg >> mutate(c = f.b+1)
-    d = x >> dim()
-    assert d == (0, 4)
-    gvars = x >> group_vars()
-    assert gvars == ['g']
+    x = mutate(dfg, c = f.b+1)
+    assert dim(x) == (0, 4)
+    assert group_vars(x) == ["g"]
+    assert group_size(x) == []
 
-    x = dfg >> filter(f.a==100)
-    d = x >> dim()
-    assert d == (0, 3)
-    gvars = x >> group_vars()
-    assert gvars == ['g']
+    x = filter(dfg, f.a==100)
+    assert dim(x) == (0, 3)
+    assert group_vars(x) == ["g"]
+    assert group_size(x) == []
 
-    x = dfg >> arrange(f.a, f.g)
-    d = x >> dim()
-    assert d == (0, 3)
-    gvars = x >> group_vars()
-    assert gvars == ['g']
+    # wait for arrange
+    # x = arrange(dfg, f.a, f.g)
+    # assert dim(x) == (0, 3)
+    # assert group_vars(x) == ["g"]
+    # assert group_size(x) == []
 
-    x = dfg >> select(f.a)
-    d = x >> dim()
-    assert d == (0, 2)
-    gvars = x >> group_vars()
-    assert gvars == ['g']
+    x = select(dfg, f.a)
+    assert dim(x) == (0, 2)
+    assert group_vars(x) == ["g"]
+    assert group_size(x) == []
 
 def test_does_not_affect_input_data():
     df = tibble(x=1)
@@ -156,17 +150,25 @@ def test_0_groups_select():
     assert d1 == d2
     assert df.columns.tolist()  == res.columns.tolist()
 
-def test_0_groups_arrange():
-    df = tibble(x=1).loc[[], :] >> group_by(f.x)
-    res = df >> arrange(f.x)
-    d1 = df >> dim()
-    d2 = res >> dim()
-    assert d1 == d2
-    assert df.columns.tolist()  == res.columns.tolist()
+# wait for arrange
+# def test_0_groups_arrange():
+#     df = tibble(x=1).loc[[], :] >> group_by(f.x)
+#     res = df >> arrange(f.x)
+#     d1 = df >> dim()
+#     d2 = res >> dim()
+#     assert d1 == d2
+#     assert df.columns.tolist()  == res.columns.tolist()
 
 def test_0_vars(df):
-    with pytest.raises(ValueError):
-        df >> group_by()
+    gdata = group_data(group_by(iris))
+    assert names(gdata) == ["_rows"]
+    out = gdata >> pull(to='list')
+    assert out == [list(range(nrow(iris)))]
+
+    gdata = group_data(group_by(iris, **{}))
+    assert names(gdata) == ["_rows"]
+    out = gdata >> pull(to='list')
+    assert out == [list(range(nrow(iris)))]
 
 def test_drop():
     res = iris >> filter(f.Species == "setosa") >> group_by(
@@ -273,39 +275,43 @@ def test_add_passes_drop():
     assert group_by_drop_default(res)
 
 def test_na_last():
-    # this is a pandas bug when try to retrieve groupby groups with NAs
-    # https://github.com/pandas-dev/pandas/issues/35202
-    res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> group_by(f.x)
-    # ret = res >> group_rows()
 
-    lvls = res.grouper.levels[0].fillna('NA')
-    assert lvls.tolist() == ['apple', 'banana', 'NA']
+    res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> \
+        group_by(f.x) >> \
+        group_data()
+
+    x = res.x.fillna("")
+    assert x.tolist() == ["apple", "banana", ""]
+
+    out = res >> pull(to='list')
+    assert out == [[0], [2], [1]]
 
 def test_auto_splicing():
     df1 = iris >> group_by(f.Species)
     df2 = iris >> group_by(tibble(Species=iris.Species))
     assert df1.equals(df2)
 
-    df1 = iris >> group_by(f.Species)
-    df2 = iris >> group_by(across(f.Species))
-    assert df1.equals(df2)
+    # wait for across
+    # df1 = iris >> group_by(f.Species)
+    # df2 = iris >> group_by(across(f.Species))
+    # assert df1.equals(df2)
 
-    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
-        f.Sepal_Length, f.Sepal_Width)
-    df2 = iris >> group_by(across(starts_with("Sepal"), round))
-    assert df1.equals(df2)
+    # df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+    #     f.Sepal_Length, f.Sepal_Width)
+    # df2 = iris >> group_by(across(starts_with("Sepal"), round))
+    # assert df1.equals(df2)
 
     # across(character()), across(NULL) not supported
 
-    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
-        f.Sepal_Length, f.Sepal_Width, f.Species)
-    df2 = iris >> group_by(across(starts_with("Sepal"), round), f.Species)
-    assert df1.equals(df2)
+    # df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+    #     f.Sepal_Length, f.Sepal_Width, f.Species)
+    # df2 = iris >> group_by(across(starts_with("Sepal"), round), f.Species)
+    # assert df1.equals(df2)
 
-    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
-        f.Species, f.Sepal_Length, f.Sepal_Width)
-    df2 = iris >> group_by(f.Species, across(starts_with("Sepal"), round))
-    assert df1.equals(df2)
+    # df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+    #     f.Species, f.Sepal_Length, f.Sepal_Width)
+    # df2 = iris >> group_by(f.Species, across(starts_with("Sepal"), round))
+    # assert df1.equals(df2)
 
 def test_mutate_semantics():
     df1 = tibble(a = 1, b = 2) >> group_by(c = f.a * f.b, d = f.c + 1)
@@ -314,11 +320,12 @@ def test_mutate_semantics():
     ) >> group_by(f.c, f.d)
     assert df1.equals(df2)
 
-def test_implicit_mutate_operates_on_ungrouped_data():
-    vars = tibble(x = c(1,2), y = c(3,4), z = c(5,6)) >> group_by(f.y)
-    vars >>= group_by(across(any_of(c('y','z'))))
-    gv = group_vars(vars)
-    assert gv == ['y', 'z']
+# wait for across
+# def test_implicit_mutate_operates_on_ungrouped_data():
+#     vars = tibble(x = c(1,2), y = c(3,4), z = c(5,6)) >> group_by(f.y)
+#     vars >>= group_by(across(any_of(c('y','z'))))
+#     gv = group_vars(vars)
+#     assert gv == ['y', 'z']
 
 def test_errors():
     df = tibble(x=1, y=2)
@@ -329,8 +336,8 @@ def test_errors():
     with pytest.raises(ValueError):
         df >> ungroup(f.x)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ColumnNotExistingError):
         df >> group_by(f.x, f.y) >> ungroup(f.z)
 
-    with pytest.raises(ColumnNotExistingError):
+    with pytest.raises(ValueError):
         df >> group_by(z=f.a+1)

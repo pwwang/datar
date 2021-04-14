@@ -12,7 +12,7 @@ from pipda.utils import Expression
 from ..core.grouped import DataFrameGroupBy
 from ..core.contexts import Context
 from ..core.utils import name_mutatable_args, vars_select
-
+from ..core.exceptions import ColumnNotExistingError
 from ..base.funcs import setdiff, union
 
 from .group_data import group_vars
@@ -59,7 +59,7 @@ def _(x: DataFrameGroupBy, *cols: str) -> DataFrame:
         return DataFrame(x)
     old_groups = group_vars(x)
     to_remove = vars_select(x.columns, *cols)
-    new_groups = setdiff(old_groups, to_remove)
+    new_groups = setdiff(old_groups, x.columns[to_remove])
 
     return group_by(x, *new_groups)
 
@@ -133,7 +133,7 @@ def add_computed_columns(
         nonexists = setdiff(col_names, out.columns)
 
     if nonexists:
-        raise ValueError(
+        raise ColumnNotExistingError(
             'Must group by variables found in `_data`. '
             f'Columns {nonexists} are not found.'
         )

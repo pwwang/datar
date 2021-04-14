@@ -55,7 +55,7 @@ def _(
     sizes = []
     if group_data(_data).shape[0] == 0:
         out = summarise_build(_data, *args, **kwargs)
-        sizes = [out.shape[0]]
+        sizes = []
     else:
         def apply_func(df):
             out = summarise(df, *args, **kwargs)

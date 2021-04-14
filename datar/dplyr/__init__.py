@@ -2,7 +2,7 @@
 
 # pylint: disable=redefined-builtin, unused-import
 from .verbs import (
-    relocate, select, rowwise, transmutate,
+    relocate, rowwise, transmutate,
     ungroup, group_cols,
     group_map, group_modify, group_walk, group_trim,
     group_split, with_groups, filter, distinct, pull, rename,
@@ -11,7 +11,7 @@ from .verbs import (
     union, setdiff, union_all, setequal, nest_join
 )
 from .funcs import (
-    across, c_across, starts_with, ends_with, contains,
+    across, c_across, starts_with, ends_with, contains, matches,
     everything, last_col, all_of, any_of, where, if_any, if_all,
     min_rank, dense_rank, percent_rank, cume_dist, ntile, case_when,
     if_else, n_distinct, row_number, cur_group_id, cur_group_rows,
@@ -34,3 +34,4 @@ from .desc import desc
 from .arrange import arrange
 from .context import n, cur_data_all
 from .mutate import mutate
+from .select import select

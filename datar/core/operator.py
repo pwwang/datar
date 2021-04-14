@@ -27,8 +27,8 @@ class DatarOperator(Operator):
 
     def invert(self, operand: Any, _context: Optional[ContextBase]) -> Any:
         """Interpretation for ~x"""
-        if isinstance(operand, (slice, str, list)):
-            return Inverted(operand, self.data, _context).complements
+        if isinstance(operand, (slice, str, list, tuple)):
+            return Inverted(operand)
         return self._arithmetize1(operand, 'invert')
 
     def neg(self, operand: Any) -> Any:

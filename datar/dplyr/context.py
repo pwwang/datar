@@ -10,7 +10,7 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
 
-@register_func(context=Context.EVAL, verb_arg_only=True)
+@register_func(context=Context.EVAL)
 def n(series: Iterable[Any]) -> int:
     """gives the current group size."""
     return len(series)

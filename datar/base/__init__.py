@@ -1,7 +1,7 @@
 """Public APIs from this submodule"""
 # pylint: disable=unused-import,redefined-builtin
 from .constants import NA, TRUE, FALSE, NULL, pi, Inf, letters, LETTERS
-from .verbs import colnames, rownames, dim, nrow, ncol, diag, t
+from .verbs import colnames, rownames, dim, nrow, ncol, diag, t, names
 from .funcs import (
     as_date, as_character, as_double, as_factor, as_categorical,
     as_int, as_integer, as_logical, as_bool, table, as_numeric,

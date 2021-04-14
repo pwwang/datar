@@ -35,6 +35,16 @@ def test_group_data():
     gf = DataFrameGroupBy(df)
     assert gf._group_data.equals(DataFrame({'_rows': [[0,1,2]]}))
 
+    df = DataFrame({'a': [1,2,3,NA,NA]})
+    gf = DataFrameGroupBy(df, _group_vars=['a'])
+    exp = DataFrame([
+        [1, [0]],
+        [2, [1]],
+        [3, [2]],
+        [NA,[3,4]]
+    ], columns=['a', '_rows'])
+    assert gf._group_data.equals(exp)
+
 def test_group_data_cat():
     df = DataFrame({'a': Categorical([1,NA,2], categories=[1,2,3])})
     gf = DataFrameGroupBy(df, _group_vars=['a'])
@@ -59,13 +69,16 @@ def test_group_data_cat():
 
 def test_multi_cats():
     df = DataFrame({
-        'a': Categorical([1, NA, NA], categories=[1]),
-        'b': Categorical([2, 2, 3], categories=[2,3]),
-        'c': Categorical([3, None, None], categories=[3]),
-        'd': Categorical([4, NA, NA], categories=[4]),
+        'a': Categorical([1, None, NA, NA], categories=[1]),
+        'b': Categorical([2, 2, 2, 3], categories=[2,3]),
+        'c': Categorical([3, None, NA, None], categories=[3]),
+        'd': Categorical([4, NA, None, NA], categories=[4]),
     })
     gf = DataFrameGroupBy(df, _group_vars=list('abcd'), _drop=False)
     assert len(gf._group_data) == 8
+
+    gf = DataFrameGroupBy(df, _group_vars=list('abcd'), _drop=True)
+    assert len(gf._group_data) == 3
 
 def test_0row_df():
     df = DataFrame({'a': [], 'b': []})

@@ -164,7 +164,7 @@ def _(
     return x
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame)
 def t(_data: DataFrame, copy: bool = False) -> DataFrame:
     """Get the transposed dataframe
 
@@ -176,3 +176,7 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
         The transposed dataframe.
     """
     return _data.transpose(copy=copy)
+
+@register_verb(DataFrame)
+def names(x: DataFrame) -> List[str]:
+    return x.columns.tolist()
