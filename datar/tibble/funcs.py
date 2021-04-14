@@ -6,12 +6,12 @@ from typing import Any, Callable, Union, Optional
 from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
 from varname import argname, varname
-from pipda import Context
+from pipda import Context, register_func
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 from varname.utils import VarnameRetrievingError
 
-from ..core.utils import copy_flags, df_assign_item, objectize, to_df
+from ..core.utils import df_assign_item, objectize, to_df
 from ..core.names import repair_names
 
 def tibble(
@@ -100,6 +100,16 @@ def tibble(
     except VarnameRetrievingError: # still raises in some cases
         df.__dfname__ = None
     return df
+
+@register_func(None, context=Context.EVAL)
+def fibble(
+        *args: Any,
+        _name_repair: Union[str, Callable] = 'check_unique',
+        _rows: Optional[int] = None,
+        **kwargs: Any
+) -> DataFrame:
+    """A function of tibble that can be used as an argument of verbs"""
+    return tibble(*args, **kwargs, _name_repair=_name_repair, _rows=_rows)
 
 def tribble(*dummies: Any) -> DataFrame:
     """Create dataframe using an easier to read row-by-row layout

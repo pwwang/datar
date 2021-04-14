@@ -1,5 +1,6 @@
 """Grabbed from
 https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-across.R"""
+from datar.core.grouped import DataFrameRowwise
 import numpy
 from pipda import register_func
 import pytest
@@ -325,21 +326,19 @@ def test_nb_fail():
     rows = out >> nrow()
     assert rows == 150
 
-# wait for rowwise
-# def test_nb_fail_c_across():
-#     df = tibble(
-#         id=[1, 2, 3, 4],
-#         k=['a', 'b', 'c', 'd'],
-#         w=runif(4),
-#         x=runif(4),
-#         y=runif(4),
-#         z=runif(4)
-#     )
-#     out = df >> rowwise() >> mutate(
-#         sum = sum(c_across(f[f.w:f.z])),
-#         sd = sd(c_across(f[f.w:f.z]))
-#     )
+def test_nb_fail_c_across():
+    df = tibble(
+        id=[1, 2, 3, 4],
+        k=['a', 'b', 'c', 'd'],
+        w=runif(4),
+        x=runif(4),
+        y=runif(4),
+        z=runif(4)
+    )
+    out = df >> rowwise() >> mutate(
+        sum = sum(c_across(f[f.w:f.z])),
+        sd = sd(c_across(f[f.w:f.z]))
+    )
 
-#     assert out.flags.rowwise
-#     rows = nrow(out)
-#     assert rows == 4
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 4

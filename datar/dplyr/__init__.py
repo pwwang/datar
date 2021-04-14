@@ -2,8 +2,8 @@
 
 # pylint: disable=redefined-builtin, unused-import
 from .verbs import (
-    relocate, rowwise, transmutate,
-    ungroup, group_cols,
+    relocate, transmutate,
+    group_cols,
     group_map, group_modify, group_walk, group_trim,
     group_split, with_groups, filter, distinct, pull, rename,
     rename_with, slice, slice_head, slice_tail, slice_min,
@@ -19,7 +19,7 @@ from .funcs import (
     coalesce, na_if, near, nth, first, last, between
 )
 
-from .group_by import group_by_drop_default, group_by
+from .group_by import group_by_drop_default, group_by, rowwise, ungroup
 from .group_data import (
     group_data, group_keys, group_rows, group_indices,
     group_vars, group_size, n_groups

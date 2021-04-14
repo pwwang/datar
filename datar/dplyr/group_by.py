@@ -9,10 +9,13 @@ from pipda import register_verb
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 from pipda.utils import Expression
 
-from ..core.grouped import DataFrameGroupBy
+from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
 from ..core.defaults import f
-from ..core.utils import copy_attrs, name_mutatable_args, vars_select
+from ..core.utils import (
+    copy_attrs, name_mutatable_args, vars_select,
+    check_column_uniqueness
+)
 from ..core.exceptions import ColumnNotExistingError
 from ..base.funcs import setdiff, union
 
@@ -51,6 +54,41 @@ def group_by(
     return out
 
 @register_verb(DataFrame, context=Context.SELECT)
+def rowwise(_data: DataFrame, *columns: str) -> DataFrameRowwise:
+    """Compute on a data frame a row-at-a-time
+
+    Args:
+        _data: The dataframe
+        *columns:  Variables to be preserved when calling summarise().
+            This is typically a set of variables whose combination
+            uniquely identify each row.
+
+    Returns:
+        A row-wise data frame
+    """
+    check_column_uniqueness(_data)
+    columns = vars_select(_data.columns, columns)
+    if not columns:
+        return DataFrameRowwise(_data)
+    return DataFrameRowwise(_data, _group_vars=_data.columns[columns].tolist())
+
+@rowwise.register(DataFrameGroupBy, context=Context.SELECT)
+def _(_data: DataFrameGroupBy, *columns: str) -> DataFrameRowwise:
+    # grouped dataframe's columns are unique already
+    if columns:
+        raise ValueError(
+            "Can't re-group when creating rowwise data. "
+            "Either first `ungroup()` or call `rowwise()` without arguments."
+        )
+    return DataFrameRowwise(_data, _group_vars=group_vars(_data))
+
+@rowwise.register(DataFrameRowwise, context=Context.SELECT)
+def _(_data: DataFrameRowwise, *columns: str) -> DataFrameRowwise:
+    # grouped dataframe's columns are unique already
+    return DataFrameRowwise(_data, _group_vars=list(columns))
+
+
+@register_verb(DataFrame, context=Context.SELECT)
 def ungroup(x: DataFrame, *cols: str) -> DataFrame:
     if cols:
         raise ValueError(f'`*cols` is not empty.')
@@ -66,11 +104,11 @@ def _(x: DataFrameGroupBy, *cols: str) -> DataFrame:
 
     return group_by(x, *new_groups)
 
-# @ungroup.register(RowwiseDataFrame, context=Context.SELECT)
-# def _(x: RowwiseDataFrame, *cols: str) -> DataFrame:
-#     if cols:
-#         raise ValueError(f'`*cols` is not empty.')
-#     return DataFrame(x)
+@ungroup.register(DataFrameRowwise, context=Context.SELECT)
+def _(x: DataFrameRowwise, *cols: str) -> DataFrame:
+    if cols:
+        raise ValueError(f'`*cols` is not empty.')
+    return DataFrame(x)
 
 def group_by_prepare(
         _data: DataFrame,

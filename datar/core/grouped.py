@@ -205,7 +205,8 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
     def _compute_group_data(self):
         _rows = Series(
             [[i] for i in range(self.shape[0])],
-            name='_rows'
+            name='_rows',
+            dtype=object
         )
         if not self._group_vars:
             return _rows.to_frame()
@@ -238,4 +239,19 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
             _drop_index=_drop_index,
             _spike_groupdata=gdata,
             **kwargs
+        )
+
+    # pylint: disable=bad-super-call
+    def __repr__(self) -> str:
+        """Including grouping information when printed"""
+        ret = super(DataFrameGroupBy, self).__repr__()
+        ret = f"{ret}\n[Rowwise: {self._group_vars}]"
+        return ret
+
+    def copy(self, deep: bool = True) -> "DataFrameRowwise":
+        return DataFrameRowwise(
+            super(DataFrameGroupBy, self).copy() if deep else self,
+            _group_vars=self._group_vars,
+            _drop=self.attrs.get('groupby_drop', True),
+            _group_data=self._group_data.copy() if deep else self._group_data
         )

@@ -910,6 +910,13 @@ def length(x: Any) -> int:
     return len(x)
 
 @register_func(None, context=Context.EVAL)
+def lengths(x: Any) -> List[int]:
+    """Lengths of elements in x"""
+    if is_scalar(x):
+        return [1]
+    return [length(elem) for elem in x]
+
+@register_func(None, context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> List[Any]:
     if is_scalar(x):
         x = [x]

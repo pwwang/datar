@@ -179,3 +179,13 @@ def test_rowwise():
 
     with pytest.raises(ValueError):
         rf.group_apply(lambda df: None, _spike_groupdata=DataFrame())
+
+def test_rowwise_repr():
+    df = DataFrame({'a': [1,2,3], 'b': [4,5,6]})
+    rf = DataFrameRowwise(df)
+    out = repr(rf)
+    assert '[Rowwise: []]' in out
+
+    rf = DataFrameRowwise(df, _group_vars=['a'])
+    out = repr(rf)
+    assert "[Rowwise: ['a']]" in out

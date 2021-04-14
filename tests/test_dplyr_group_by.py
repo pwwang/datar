@@ -1,4 +1,5 @@
 #https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-group-by.r
+#https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rowwise.r
 
 import pytest
 
@@ -6,6 +7,7 @@ import numpy
 from datar.all import *
 from datar.datasets import mtcars, iris
 from datar.core.exceptions import ColumnNotExistingError
+from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
 
 @pytest.fixture
 def df():
@@ -337,3 +339,67 @@ def test_errors():
 
     with pytest.raises(ValueError):
         df >> group_by(z=f.a+1)
+
+# rowwise --------------------------------------------
+# wait for verbs
+# def test_rowwise_preserved_by_major_verbs():
+#     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
+
+#     out = arrange(rf, f.y)
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = filter(rf, f.x < 3)
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = mutate(rf, x = f.x + 1)
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = rename(rf, X = f.x)
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = select(rf, "x")
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = slice(rf, c(1, 1))
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     # Except for summarise
+#     out = summarise(rf, z = mean(f.x, f.y))
+#     assert isinstance(out, DataFrameGroupBy)
+#     assert group_vars(out) == ['x']
+
+# wait for get/pull/mutate/setNames/toupper
+# def test_rowwise_preserved_by_subsetting():
+#     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
+
+#     out = get(rf, [0])
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = mutate(rf, z=range(5,0,-1))
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['x']
+
+#     out = setNames(rf, toupper(names(out))
+#     assert isinstance(out, DataFrameRowwise)
+#     assert group_vars(out) == ['X']
+
+def test_rowwise_captures_group_vars():
+    df = group_by(tibble(g = [1,2], x = [1,2]), f.g)
+    rw = rowwise(df)
+
+    assert group_vars(rw) == ["g"]
+
+    with pytest.raises(ValueError):
+        rowwise(df, f.x)
+
+def test_can_re_rowwise():
+    rf1 = rowwise(tibble(x = range(1,6), y = range(1,6)), "x")
+    rf2 = rowwise(rf1, f.y)
+    assert group_vars(rf2) == ['y']

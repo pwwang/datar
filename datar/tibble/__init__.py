@@ -1,3 +1,3 @@
 """APIs for R-tibble"""
 
-from .funcs import tibble, tribble
+from .funcs import tibble, tribble, fibble

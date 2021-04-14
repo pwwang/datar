@@ -4,7 +4,7 @@ from pipda.function import register_func
 import pytest
 from pandas.core.frame import DataFrame
 from datar.all import *
-from datar.core.grouped import DataFrameGroupBy
+from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
 from datar.core.exceptions import ColumnNotExistingError
 
 def test_empty_mutate_returns_input():
@@ -107,11 +107,10 @@ def test_handles_data_frame_columns():
     out = res >> pull(f.new_col)
     assert out.equals(tibble(x=[1,2,3]))
 
-    # wait for rowwise
-    # rf = rowwise(df, f.a)
-    # res = mutate(rf, new_col=tibble(x=rf.a))
-    # out = res >> pull(f.new_col)
-    # assert out.equals(tibble(x=[1,2,3]))
+    rf = rowwise(df, f.a)
+    res = mutate(rf, new_col=fibble(x=f.a))
+    out = res >> pull(f.new_col)
+    assert out.equals(tibble(x=[1,2,3]))
 
 def test_unnamed_data_frames_are_automatically_unspliced():
     out = tibble(a=1) >> mutate(tibble(b=2))
@@ -148,14 +147,12 @@ def test_works_on_0row_grouped_data_frame():
     assert isinstance(res, DataFrameGroupBy)
     assert res.a2.tolist() == []
 
-# wait for rowwise
-# test_that("mutate works on zero-row rowwise data frame (#4224)", {
-#   dat <- data.frame(a = numeric(0))
-#   res <- dat %>% rowwise() %>% mutate(a2 = a * 2)
-#   expect_type(res$a2, "double")
-#   expect_s3_class(res, "rowwise_df")
-#   expect_equal(res$a2, numeric(0))
-# })
+def test_works_on_0row_rowwise_df():
+    dat = tibble(a=[])
+    res = dat >> rowwise() >> mutate(a2=f.a*2)
+
+    assert isinstance(res, DataFrameRowwise)
+    assert res.a2.tolist() == []
 
 def test_works_on_empty_data_frames():
     df = tibble()
@@ -168,33 +165,22 @@ def test_works_on_empty_data_frames():
     assert nrow(res) == 0
     assert ncol(res) == 1
 
-# wait for rowwise
-# test_that("mutate handles 0 rows rowwise (#1300)", {
-#   res <- tibble(y = character()) %>% rowwise() %>% mutate(z = 1)
-#   expect_equal(nrow(res), 0L)
-# })
+def test_handles_0row_rowwise():
+    res = tibble(y=[]) >> rowwise() >> mutate(z=1)
+    assert dim(res) == (0, 2)
 
-# wait for rowwise
-# test_that("rowwise mutate gives expected results (#1381)", {
-#   f <- function(x) ifelse(x < 2, NA_real_, x)
-#   res <- tibble(x = 1:3) %>% rowwise() %>% mutate(y = f(x))
-#   expect_equal(res$y, c(NA, 2, 3))
-# })
+def test_rowwise_mutate_as_expected():
+    res = tibble(x=[1,2,3]) >> rowwise() >> mutate(y=if_else(f.x<2, NA, f.x))
+    assert res.y.fillna(0).tolist() == [0, 2, 3]
 
 # grouped mutate does not drop grouping attributes
 
-# wait for rowwise
-# test_that("mutate() hands list columns with rowwise magic to follow up expressions (#4845)", {
-#   test <- rowwise(tibble(x = 1:2))
+def test_rowwise_list_data():
+    test = rowwise(tibble(x=[1,2]))
+    out = test >> mutate(a=[[1]]) >> mutate(b=[[f.a[0][0] + 1]])
+    exp = test >> mutate(a=[[1]], b=[[f.a[0][0] + 1]])
 
-#   expect_identical(
-#     test %>%
-#       mutate(a = list(1)) %>%
-#       mutate(b = list(a + 1)),
-#     test %>%
-#       mutate(a = list(1), b = list(a + 1))
-#   )
-# })
+    assert out.equals(exp)
 
 # .before, .after, .keep ------------------------------------------------------
 def test_keep_unused_keeps_variables_explicitly_mentioned():
@@ -286,13 +272,11 @@ def test_mutate_null_preserves_correct_all_vars():
 
 # TODO: test warning catching
 
-# wait for rowwise
-# test_that("mutate() supports empty list columns in rowwise data frames (#5804", {
-#   res <- tibble(a = list()) %>%
-#     rowwise() %>%
-#     mutate(n = lengths(a))
-#   expect_equal(res$n, integer())
-# })
+def test_rowwise_empty_list_columns():
+    res = tibble(a=[[]]) >> rowwise() >> mutate(n=lengths(f.a))
+    # Different!
+    # since [] is an element in row#0
+    assert res.n.tolist() == [0]
 
 # Error messages ----------------------------------------------------------
 def test_errors():

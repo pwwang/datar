@@ -146,7 +146,8 @@ def _(
     if out is not None:
         # keep the original row order
         out.sort_index(inplace=True)
-        return DataFrameGroupBy(
+        # not only DataFrameGroupBy but also DataFrameRowwise
+        return _data.__class__(
             out,
             _group_vars=group_vars(_data),
             _drop=group_by_drop_default(_data)
@@ -156,7 +157,7 @@ def _(
     df = DataFrame({key: [] for key in named})
     out = _data.copy()
     out[df.columns.tolist()] = df
-    return DataFrameGroupBy(
+    return _data.__class__(
         out,
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data),
