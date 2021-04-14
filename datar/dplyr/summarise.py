@@ -7,11 +7,11 @@ from pipda import register_verb, evaluate_expr
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.utils import (
-    align_value, check_column_uniqueness, df_assign_item,
+    align_value, arg_match, check_column_uniqueness, df_assign_item,
     name_mutatable_args, logger
 )
 from ..core.exceptions import ColumnNotExistingError
-from ..core.grouped import DataFrameGroupBy
+from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from .group_data import group_keys, group_vars, group_data
 from .group_by import group_by_drop_default
 
@@ -42,7 +42,11 @@ def summarise(
         _data,
         "Can't transform a data frame with duplicate names."
     )
-    return summarise_build(_data, *args, **kwargs)
+    _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
+    out = summarise_build(_data, *args, **kwargs)
+    if _groups == 'rowwise':
+        return DataFrameRowwise(out, _drop=group_by_drop_default(_data))
+    return out
 
 @summarise.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
@@ -52,25 +56,28 @@ def _(
         **kwargs: Any
 ) -> DataFrame:
     # empty
-    sizes = []
+    _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
+
+    allone = True
     if group_data(_data).shape[0] == 0:
         out = summarise_build(_data, *args, **kwargs)
-        sizes = []
     else:
         def apply_func(df):
+            nonlocal allone
             out = summarise(df, *args, **kwargs)
-            sizes.append(out.shape[0])
+            if out.shape[0] != 1:
+                allone = False
             return out
 
         out = _data.group_apply(apply_func)
 
+    g_keys = group_vars(_data)
     if _groups is None:
-        if all(size == 1 for size in sizes):
+        if allone and not isinstance(_data, DataFrameRowwise):
             _groups = "drop_last"
         else:
             _groups = "keep"
 
-    g_keys = group_vars(_data)
     if _groups == "drop_last":
         if len(g_keys) > 1:
             if summarise.inform:
@@ -84,7 +91,7 @@ def _(
                 _group_vars=g_keys[:-1],
                 _drop=group_by_drop_default(_data)
             )
-    elif _groups == "keep":
+    elif _groups == "keep" and g_keys:
         if summarise.inform:
             logger.info(
                 '`summarise()` has grouped output by '
@@ -96,8 +103,17 @@ def _(
             _group_vars=g_keys,
             _drop=group_by_drop_default(_data)
         )
-    # elif _group == "rowwise":
-    #     ...
+    elif _groups == "rowwise":
+        out = DataFrameRowwise(
+            out,
+            _group_vars=g_keys,
+            _drop=group_by_drop_default(_data)
+        )
+    elif isinstance(_data, DataFrameRowwise) and summarise.inform:
+        logger.info(
+            '`summarise()` has ungrouped output. '
+            'You can override using the `_groups` argument.'
+        )
     # else: # drop
     return out
 
