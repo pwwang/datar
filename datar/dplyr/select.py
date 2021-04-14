@@ -2,10 +2,9 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/select.R
 """
-from datar.core.exceptions import ColumnNotExistingError
-from typing import Mapping, Union
+from typing import Any, Iterable, List, Mapping, Tuple, Union
 
-from pandas import DataFrame
+from pandas import DataFrame, Index
 from pipda import register_verb
 
 from ..core.contexts import Context
@@ -13,6 +12,7 @@ from ..core.types import StringOrIter
 from ..core.utils import vars_select, logger
 from ..core.middlewares import Inverted
 from ..core.grouped import DataFrameGroupBy
+from ..core.exceptions import ColumnNotExistingError
 from ..base.funcs import setdiff, union
 from .group_by import group_by_drop_default
 from .group_data import group_data, group_vars
@@ -33,40 +33,14 @@ def select(
         The dataframe with select columns
     """
     all_columns = _data.columns
-    selected = vars_select(all_columns, *args, *kwargs.values())
-
     gvars = group_vars(_data)
-    missing = setdiff(gvars, all_columns[selected])
-    if missing:
-        logger.info(
-            "Adding missing grouping variables: %s",
-            missing
-        )
-
-    selected = union(all_columns.get_indexer_for(gvars), selected)
+    selected, new_names = eval_select(
+        all_columns,
+        *args,
+        **kwargs,
+        _group_vars=gvars
+    )
     out = _data.iloc[:, selected].copy()
-
-    # dplyr takes new -> old
-    # we transform it to old -> new for better access
-    new_names = {}
-    for key, val in kwargs.items():
-        # key: new name
-        # val: old name
-        if isinstance(val, str):
-            idx = all_columns.get_indexer_for([val])
-            if len(idx) > 1:
-                raise ValueError(
-                    'Names must be unique. '
-                    f'Name "{val}" found at locations {list(idx)}.'
-                )
-        else: # int
-            try:
-                val = all_columns[val]
-            except IndexError:
-                raise ColumnNotExistingError(
-                    f'Location {val} does not exist.'
-                ) from None
-        new_names[val] = key
 
     if new_names:
         out.rename(columns=new_names, inplace=True)
@@ -82,3 +56,47 @@ def select(
             _group_data=gdata
         )
     return out
+
+def eval_select(
+        _all_columns: Index,
+        *args: Any,
+        _group_vars: Iterable[str],
+        **kwargs: Any
+) -> Tuple[List[int], Mapping[str, str]]:
+    """Evaluate selections to get locations
+
+    Returns:
+        A tuple of (selected columns, dict of old-to-new renaming columns)
+    """
+    selected = vars_select(_all_columns, *args, *kwargs.values())
+    missing = setdiff(_group_vars, _all_columns[selected])
+    if missing:
+        logger.info(
+            "Adding missing grouping variables: %s",
+            missing
+        )
+
+    selected = union(_all_columns.get_indexer_for(_group_vars), selected)
+
+    # dplyr takes new -> old
+    # we transform it to old -> new for better access
+    new_names = {}
+    for key, val in kwargs.items():
+        # key: new name
+        # val: old name
+        if isinstance(val, str):
+            idx = _all_columns.get_indexer_for([val])
+            if len(idx) > 1:
+                raise ValueError(
+                    'Names must be unique. '
+                    f'Name "{val}" found at locations {list(idx)}.'
+                )
+        else: # int
+            try:
+                val = _all_columns[val]
+            except IndexError:
+                raise ColumnNotExistingError(
+                    f'Location {val} does not exist.'
+                ) from None
+        new_names[val] = key
+    return selected, new_names

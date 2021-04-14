@@ -3,7 +3,7 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 """
 
-from typing import Any, Optional, Tuple, List
+from typing import Any, Optional, Tuple, List, Union
 from pandas import DataFrame
 from pipda import register_verb, evaluate_expr, ContextBase
 
@@ -28,8 +28,8 @@ def mutate(
         _data: DataFrame,
         *args: Any,
         _keep: str = 'all',
-        _before: Optional[str] = None,
-        _after: Optional[str] = None,
+        _before: Optional[Union[int, str]] = None,
+        _after: Optional[Union[int, str]] = None,
         **kwargs: Any
 ) -> DataFrame:
     # pylint: disable=too-many-branches
@@ -92,7 +92,7 @@ def mutate(
     # out.columns.difference(removed)
     # changes column order when removed == []
     out = out[setdiff(out.columns, removed)]
-    if _before or _after:
+    if _before is not None or _after is not None:
         new = setdiff(cols.columns, _data.columns)
         out = relocate(out, *new, _before=_before, _after=_after)
 

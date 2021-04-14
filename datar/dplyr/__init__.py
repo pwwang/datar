@@ -2,7 +2,7 @@
 
 # pylint: disable=redefined-builtin, unused-import
 from .verbs import (
-    relocate, transmutate,
+    transmutate,
     group_cols,
     group_map, group_modify, group_walk, group_trim,
     group_split, with_groups, filter, distinct, pull, rename,
@@ -12,7 +12,7 @@ from .verbs import (
 )
 from .funcs import (
     starts_with, ends_with, contains, matches,
-    last_col, all_of, any_of,
+    all_of, any_of,
     min_rank, dense_rank, percent_rank, cume_dist, ntile,
     n_distinct, row_number, cummean, cumall,
     cumany, lead, lag, num_range, recode, recode_factor, recode_categorical,
@@ -38,5 +38,6 @@ from .context import (
 from .mutate import mutate
 from .select import select
 from .across import across, c_across, if_all, if_any
-from .tidyselect import where, everything
+from .tidyselect import where, everything, last_col
 from .if_else import if_else, case_when
+from .relocate import relocate

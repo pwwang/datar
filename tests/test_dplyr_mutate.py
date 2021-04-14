@@ -212,19 +212,18 @@ def test_keep_none_prefers_new_order():
     out = df >> mutate(y=1, x=2, _keep="none")
     assert out.columns.tolist() == ['y', 'x']
 
-# wait for relocate
-# def test_can_use_before_and_after_to_control_column_position():
-#     df = tibble(x = 1, y = 2)
-#     out = mutate(df, z=1)
-#     assert out.columns.tolist() == ['x', 'y', 'z']
-#     out = mutate(df, z=1, _before=0)
-#     assert out.columns.tolist() == ['z', 'x', 'y']
-#     out = mutate(df, z=1, _after=0)
-#     assert out.columns.tolist() == ['x', 'z', 'y']
+def test_can_use_before_and_after_to_control_column_position():
+    df = tibble(x = 1, y = 2)
+    # out = mutate(df, z=1)
+    # assert out.columns.tolist() == ['x', 'y', 'z']
+    out = mutate(df, z=1, _before=0)
+    assert out.columns.tolist() == ['z', 'x', 'y']
+    out = mutate(df, z=1, _after=0)
+    assert out.columns.tolist() == ['x', 'z', 'y']
 
-#     df = tibble(x = 1, y = 2)
-#     out = mutate(df, x=1, _after=f.y)
-#     assert out.columns.tolist() == ['x', 'y']
+    df = tibble(x = 1, y = 2)
+    out = mutate(df, x=1, _after=f.y)
+    assert out.columns.tolist() == ['x', 'y']
 
 def test_keep_always_retains_grouping_variables():
     df = tibble(x = 1, y = 2, z = 3) >> group_by(f.z)

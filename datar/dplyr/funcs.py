@@ -137,26 +137,6 @@ def matches(
         re.search,
     )
 
-@register_func(context=Context.SELECT)
-def last_col(
-        _data: DataFrameType,
-        offset: int = 0,
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
-) -> str:
-    """Select last variable, possibly with an offset.
-
-    Args:
-        _data: The data piped in
-        offset: The offset from the end.
-            Note that this is 0-based, the same as `tidyverse`'s `last_col`
-        vars: A set of variable names. If not supplied, the variables are
-            taken from the data columns.
-
-    Returns:
-        The variable
-    """
-    vars = vars or _data.columns
-    return vars[-(offset+1)]
 
 @register_func(context=Context.EVAL)
 def all_of(

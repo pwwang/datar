@@ -1,29 +1,28 @@
 """Relocate columns"""
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy
-from ..core.utils import list_diff, vars_select
-from ..core.exceptions import ColumnNameInvalidError
-from .group_by import group_by_drop_default
+from ..base.funcs import setdiff, union
+from .group_data import group_vars
+from .select import eval_select
 
 @register_verb(DataFrame, context=Context.SELECT)
 def relocate(
         _data: DataFrame,
-        column: str,
-        *columns: str,
+        *args: Any,
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
+        **kwargs: Any
 ) -> DataFrame:
     """change column positions
 
     Args:
         _data: A data frame
-        column: and
-        *columns: Columns to move
+        *args: and
+        **kwargs: Columns to rename and move
         _before: and
         _after: Destination. Supplying neither will move columns to
             the left-hand side; specifying both is an error.
@@ -37,29 +36,38 @@ def relocate(
         - Data frame attributes are preserved.
         - Groups are not affected
     """
-    groups = _data._group_vars if isinstance(_data, DataFrameGroupBy) else None
-    all_columns = _data.columns.to_list()
-    columns = vars_select(all_columns, column, *columns)
-    rest_columns = list_diff(all_columns, columns)
+    gvars = group_vars(_data)
+    all_columns = _data.columns
+    to_move, new_names = eval_select(
+        all_columns,
+        *args,
+        **kwargs,
+        _group_vars=gvars
+    )
     if _before is not None and _after is not None:
-        raise ColumnNameInvalidError(
-            'Only one of _before and _after can be specified.'
+        raise ValueError(
+            "Must supply only one of `_before` and `_after`."
         )
-    if _before is None and _after is None:
-        rearranged = columns + rest_columns
-    elif _before is not None:
-        before_columns = vars_select(rest_columns, _before)
-        cutpoint = min(rest_columns.index(bcol) for bcol in before_columns)
-        rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
-    else: #_after
-        after_columns = vars_select(rest_columns, _after)
-        cutpoint = max(rest_columns.index(bcol) for bcol in after_columns) + 1
-        rearranged = rest_columns[:cutpoint] + columns + rest_columns[cutpoint:]
-    ret = _data[rearranged]
-    if groups is not None:
-        return DataFrameGroupBy(
-            ret,
-            _group_vars=groups,
-            _drop=group_by_drop_default(_data)
-        )
-    return ret
+
+    if _before is not None:
+        where = min(eval_select(all_columns, _before, _group_vars=[])[0])
+        if where not in to_move:
+            to_move.append(where)
+
+    elif _after is not None:
+        where = max(eval_select(all_columns, _after, _group_vars=[])[0])
+        if where not in to_move:
+            to_move.insert(0, where)
+    else:
+        where = 0
+        if where not in to_move:
+            to_move.append(where)
+
+    lhs = setdiff(range(where), to_move)
+    rhs = setdiff(range(where+1, _data.shape[1]), to_move)
+    pos = union(lhs, union(to_move, rhs))
+    out = _data.iloc[:, pos].copy()
+    if new_names:
+        out.rename(columns=new_names, inplace=True)
+
+    return out
