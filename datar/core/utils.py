@@ -13,7 +13,7 @@ from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
 from pandas.core.dtypes.common import is_categorical_dtype
-from pipda.symbolic import DirectRefAttr, DirectRefItem
+from pipda.symbolic import Reference
 
 from varname import argname
 
@@ -606,7 +606,7 @@ def name_mutatable_args(
             ret.update(arg)
         elif isinstance(arg, DataFrame):
             ret.update(arg.to_dict('series'))
-        elif isinstance(arg, (DirectRefAttr, DirectRefItem)):
+        elif isinstance(arg, Reference):
             ret[arg.ref] = arg
         else:
             ret[f"{DEFAULT_COLUMN_PREFIX}{i}"] = arg

@@ -111,11 +111,10 @@ def test_zero_row_dfs():
     assert group_vars(x) == ["g"]
     assert group_size(x) == []
 
-    # wait for arrange
-    # x = arrange(dfg, f.a, f.g)
-    # assert dim(x) == (0, 3)
-    # assert group_vars(x) == ["g"]
-    # assert group_size(x) == []
+    x = arrange(dfg, f.a, f.g)
+    assert dim(x) == (0, 3)
+    assert group_vars(x) == ["g"]
+    assert group_size(x) == []
 
     x = select(dfg, f.a)
     assert dim(x) == (0, 2)
@@ -150,14 +149,13 @@ def test_0_groups_select():
     assert d1 == d2
     assert df.columns.tolist()  == res.columns.tolist()
 
-# wait for arrange
-# def test_0_groups_arrange():
-#     df = tibble(x=1).loc[[], :] >> group_by(f.x)
-#     res = df >> arrange(f.x)
-#     d1 = df >> dim()
-#     d2 = res >> dim()
-#     assert d1 == d2
-#     assert df.columns.tolist()  == res.columns.tolist()
+def test_0_groups_arrange():
+    df = tibble(x=1).loc[[], :] >> group_by(f.x)
+    res = df >> arrange(f.x)
+    d1 = df >> dim()
+    d2 = res >> dim()
+    assert d1 == d2
+    assert df.columns.tolist()  == res.columns.tolist()
 
 def test_0_vars(df):
     gdata = group_data(group_by(iris))
@@ -291,27 +289,26 @@ def test_auto_splicing():
     df2 = iris >> group_by(tibble(Species=iris.Species))
     assert df1.equals(df2)
 
-    # wait for across
-    # df1 = iris >> group_by(f.Species)
-    # df2 = iris >> group_by(across(f.Species))
-    # assert df1.equals(df2)
+    df1 = iris >> group_by(f.Species)
+    df2 = iris >> group_by(across(f.Species))
+    assert df1.equals(df2)
 
-    # df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
-    #     f.Sepal_Length, f.Sepal_Width)
-    # df2 = iris >> group_by(across(starts_with("Sepal"), round))
-    # assert df1.equals(df2)
+    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+        f.Sepal_Length, f.Sepal_Width)
+    df2 = iris >> group_by(across(starts_with("Sepal"), round))
+    assert df1.equals(df2)
 
     # across(character()), across(NULL) not supported
 
-    # df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
-    #     f.Sepal_Length, f.Sepal_Width, f.Species)
-    # df2 = iris >> group_by(across(starts_with("Sepal"), round), f.Species)
-    # assert df1.equals(df2)
+    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+        f.Sepal_Length, f.Sepal_Width, f.Species)
+    df2 = iris >> group_by(across(starts_with("Sepal"), round), f.Species)
+    assert df1.equals(df2)
 
-    # df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
-    #     f.Species, f.Sepal_Length, f.Sepal_Width)
-    # df2 = iris >> group_by(f.Species, across(starts_with("Sepal"), round))
-    # assert df1.equals(df2)
+    df1 = iris >> mutate(across(starts_with("Sepal"), round)) >> group_by(
+        f.Species, f.Sepal_Length, f.Sepal_Width)
+    df2 = iris >> group_by(f.Species, across(starts_with("Sepal"), round))
+    assert df1.equals(df2)
 
 def test_mutate_semantics():
     df1 = tibble(a = 1, b = 2) >> group_by(c = f.a * f.b, d = f.c + 1)
@@ -320,12 +317,11 @@ def test_mutate_semantics():
     ) >> group_by(f.c, f.d)
     assert df1.equals(df2)
 
-# wait for across
-# def test_implicit_mutate_operates_on_ungrouped_data():
-#     vars = tibble(x = c(1,2), y = c(3,4), z = c(5,6)) >> group_by(f.y)
-#     vars >>= group_by(across(any_of(c('y','z'))))
-#     gv = group_vars(vars)
-#     assert gv == ['y', 'z']
+def test_implicit_mutate_operates_on_ungrouped_data():
+    vars = tibble(x = c(1,2), y = c(3,4), z = c(5,6)) >> group_by(f.y)
+    vars >>= group_by(across(any_of(c('y','z'))))
+    gv = group_vars(vars)
+    assert gv == ['y', 'z']
 
 def test_errors():
     df = tibble(x=1, y=2)

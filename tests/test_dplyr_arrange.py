@@ -67,22 +67,21 @@ def test_update_grouping():
     assert isinstance(res, DataFrameGroupBy)
     assert group_rows(res) == [[1,3], [0,2]]
 
-# wait for across
-# def test_across():
-#     df = tibble(x = [1, 3, 2, 1], y = [4, 3, 2, 1])
+def test_across():
+    df = tibble(x = [1, 3, 2, 1], y = [4, 3, 2, 1])
 
-#     out = df >> arrange(across())
-#     expect = df >> arrange(f.x, f.y)
-#     assert out.equals(expect)
+    out = df >> arrange(across())
+    expect = df >> arrange(f.x, f.y)
+    assert out.equals(expect)
 
-#     out = df >> arrange(across(_fns=desc))
-#     expect = df >> arrange(desc(f.x), desc(f.y))
-#     assert out.equals(expect)
+    out = df >> arrange(across(_fns=desc))
+    expect = df >> arrange(desc(f.x), desc(f.y))
+    assert out.equals(expect)
 
-#     out = df >> arrange(across(f.x))
-#     expect = df >> arrange(f.x)
-#     assert out.equals(expect)
+    out = df >> arrange(across(f.x))
+    expect = df >> arrange(f.x)
+    assert out.equals(expect)
 
-#     out = df >> arrange(across(f.y))
-#     expect = df >> arrange(f.y)
-#     assert out.equals(expect)
+    out = df >> arrange(across(f.y))
+    expect = df >> arrange(f.y)
+    assert out.equals(expect)

@@ -11,7 +11,8 @@ from pipda.utils import Expression
 
 from ..core.grouped import DataFrameGroupBy
 from ..core.contexts import Context
-from ..core.utils import name_mutatable_args, vars_select
+from ..core.defaults import f
+from ..core.utils import copy_attrs, name_mutatable_args, vars_select
 from ..core.exceptions import ColumnNotExistingError
 from ..base.funcs import setdiff, union
 
@@ -41,11 +42,13 @@ def group_by(
         _drop = group_by_drop_default(_data)
 
     groups = group_by_prepare(_data, *args, **kwargs, _add=_add)
-    return DataFrameGroupBy(
+    out = DataFrameGroupBy(
         groups['data'],
         _group_vars=groups['group_names'],
         _drop=_drop
     )
+    copy_attrs(out, _data)
+    return out
 
 @register_verb(DataFrame, context=Context.SELECT)
 def ungroup(x: DataFrame, *cols: str) -> DataFrame:
@@ -104,6 +107,8 @@ def add_computed_columns(
 ) -> Mapping[str, Any]:
     """Add mutated columns if necessary"""
     from .mutate import mutate_cols
+    # support direct strings
+    args = [f[arg] if isinstance(arg, str) else arg for arg in args]
     named = name_mutatable_args(*args, **kwargs)
 
     if any(

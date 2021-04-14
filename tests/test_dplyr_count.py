@@ -62,19 +62,19 @@ def test_preserve_grouping():
     assert df1.equals(df2)
     assert group_vars(df1) == group_vars(df2)
 
-# wait for group_by to keep attrs
-# def test_output_preserves_class_attributes_where_possible():
-#     df = tibble(g=c(1,2,2,2))
-#     df.attrs['my_attr'] = 1
 
-#     out = df >> count(f.g)
-#     assert isinstance(out, DataFrame)
-#     assert out.attrs['my_attr'] == 1
+def test_output_preserves_class_attributes_where_possible():
+    df = tibble(g=c(1,2,2,2))
+    df.attrs['my_attr'] = 1
 
-#     out = df >> group_by(f.g) >> count()
-#     assert isinstance(out, DataFrameGroupBy)
-#     assert group_vars(out) == ['g']
-#     assert 'my_attr' not in out.attrs
+    out = df >> count(f.g)
+    assert isinstance(out, DataFrame)
+    assert out.attrs['my_attr'] == 1
+
+    out = df >> group_by(f.g) >> count()
+    assert isinstance(out, DataFrameGroupBy)
+    assert group_vars(out) == ['g']
+    assert 'my_attr' not in out.attrs
 
 def test_can_only_explicitly_chain_together_multiple_tallies():
     df = tibble(g=c(1,1,2,2), n=[1,2,3,4])
@@ -92,12 +92,11 @@ def test_can_only_explicitly_chain_together_multiple_tallies():
 
 # tally -------------------------------------------------------------------
 
-# wait for arrange
-# def test_tally_can_sort_output():
-#     gf = group_by(tibble(x = c(1, 1, 2, 2, 2)), f.x)
-#     out = tally(gf, sort = TRUE)
-#     exp = tibble(x = c(2, 1), n = c(3, 2))
-#     assert out.equals(exp)
+def test_tally_can_sort_output():
+    gf = group_by(tibble(x = c(1, 1, 2, 2, 2)), f.x)
+    out = tally(gf, sort = TRUE)
+    exp = tibble(x = c(2, 1), n = c(3, 2))
+    assert out.equals(exp)
 
 def test_weighted_tally_drops_nas():
     df = tibble(x=c(1,1,NA))
@@ -125,13 +124,12 @@ def test_output_preserves_grouping():
 
 # add_tally ---------------------------------------------------------------
 
-# wait for group_by sort
-# def test_can_add_tallies_of_a_variable():
-#     df = tibble(a=c(2,1,1))
-#     out = df >> group_by(f.a) >> add_tally()
-#     exp = group_by(tibble(a=c(2,1,1), n=c(1,2,2)), f.a)
-#     assert out.equals(exp)
-#     assert group_vars(out) == group_vars(exp)
+def test_can_add_tallies_of_a_variable():
+    df = tibble(a=c(2,1,1))
+    out = df >> group_by(f.a) >> add_tally()
+    exp = group_by(tibble(a=c(2,1,1), n=c(1,2,2)), f.a)
+    assert out.equals(exp)
+    assert group_vars(out) == group_vars(exp)
 
 def test_add_tally_can_be_given_a_weighting_variable():
     df = tibble(a=c(1,1,2,2,2), w=c(1,1,2,3,4))

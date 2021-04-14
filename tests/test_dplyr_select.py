@@ -18,10 +18,11 @@ def test_grouping_variables_preserved_with_a_message(caplog):
     assert 'Adding missing grouping variables' in caplog.text
     assert res.columns.tolist() == ['g', 'x']
 
-# wait for group_by
-# def test_non_syntactic_grouping_variable_is_preserved():
-#     df = DataFrame({"a b": [1]}) >> group_by("a b") >> select()
-#     assert df.columns.tolist() == ["a b"]
+def test_non_syntactic_grouping_variable_is_preserved():
+    df = DataFrame({"a b": [1]}) >> group_by("a b") >> select()
+    assert df.columns.tolist() == ["a b"]
+    df = DataFrame({"a b": [1]}) >> group_by(f["a b"]) >> select()
+    assert df.columns.tolist() == ["a b"]
 
 def test_select_doesnot_fail_if_some_names_missing():
     df1 = tibble(x=range(1,11), y=range(1,11), z=range(1,11))

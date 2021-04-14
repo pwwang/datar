@@ -202,11 +202,10 @@ def test_keep_unused_keeps_variables_explicitly_mentioned():
     out = mutate(df, x1=f.x+1, y=f.y, _keep="unused")
     assert out.columns.tolist() == ["y", "x1"]
 
-# wait for across
-# def test_keep_used_not_affected_by_across():
-#     df = tibble(x = 1, y = 2, z = 3, a = "a", b = "b", c = "c")
-#     out = df >> mutate(across(where(is_numeric), identity), _keep = "unused")
-#     assert out.columns.tolist() == df.columns.tolist()
+def test_keep_used_not_affected_by_across():
+    df = tibble(x = 1, y = 2, z = 3, a = "a", b = "b", c = "c")
+    out = df >> mutate(across(where(is_numeric), identity), _keep = "unused")
+    assert out.columns.tolist() == df.columns.tolist()
 
 def test_keep_used_keeps_variables_used_in_expressions():
     df = tibble(a = 1, b = 2, c = 3, x = 1, y = 2)
