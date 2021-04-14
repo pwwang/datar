@@ -14,6 +14,7 @@ from ..core.utils import (
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.grouped import DataFrameGroupBy
 from ..base.funcs import setdiff, union, intersect, c
+from ..base.constants import NA
 from .group_by import group_by_drop_default
 from .group_data import group_vars, group_data
 from .relocate import relocate
@@ -185,14 +186,23 @@ def mutate_cols(
             continue
 
         if isinstance(mutatable, DataFrame):
-            for col in mutatable.columns:
-                new_name = (
-                    col if name.startswith(DEFAULT_COLUMN_PREFIX)
-                    else f'{name}${col}'
+            if (
+                    mutatable.shape[1] == 0 and
+                    not name.startswith(DEFAULT_COLUMN_PREFIX)
+            ):
+                df_assign_item(
+                    data, name, [NA] * mutatable.shape[0], allow_incr=False
                 )
-                coldata = align_value(mutatable[col], data)
-                df_assign_item(data, new_name, coldata, allow_incr=False)
-                new_columns.append(new_name)
+                new_columns.append(name)
+            else:
+                for col in mutatable.columns:
+                    new_name = (
+                        col if name.startswith(DEFAULT_COLUMN_PREFIX)
+                        else f'{name}${col}'
+                    )
+                    coldata = align_value(mutatable[col], data)
+                    df_assign_item(data, new_name, coldata, allow_incr=False)
+                    new_columns.append(new_name)
         else:
             mutatable = align_value(mutatable, data)
             df_assign_item(data, name, mutatable, allow_incr=False)

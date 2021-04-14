@@ -6,8 +6,9 @@ from typing import Any, Optional
 from pipda import register_operator, Operator
 from pipda.context import ContextBase
 
-from .utils import align_value, list_intersect, list_union
+from .utils import align_value, vars_select
 from .middlewares import Inverted, Negated
+from ..base.funcs import intersect, union
 
 @register_operator
 class DatarOperator(Operator):
@@ -49,8 +50,11 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(left, list) and isinstance(left[0], str):
-            return list_intersect(left, right)
+        if isinstance(left, (list, Inverted)):
+            left = vars_select(self.data.columns, left)
+            right = vars_select(self.data.columns, right)
+            out = intersect(left, right)
+            return list(self.data.columns[out])
         return self._arithmetize2(left, right, 'and_')
 
     def or_(self, left: Any, right: Any) -> Any:
@@ -65,8 +69,11 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(left, list) and isinstance(left[0], str):
-            return list_union(left, right)
+        if isinstance(left, (list, Inverted)):
+            left = vars_select(self.data.columns, left)
+            right = vars_select(self.data.columns, right)
+            out = union(left, right)
+            return list(self.data.columns[out])
         return self._arithmetize2(left, right, 'or_')
 
     def ne(self, left: Any, right: Any) -> bool: # pylint: disable=invalid-name

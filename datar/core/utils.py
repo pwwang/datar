@@ -81,7 +81,7 @@ def check_column(column: Any) -> None:
     """
     from .middlewares import Inverted
     if not isinstance(column, (
-            (int, str, list, set, tuple, Inverted, slice, Series)
+            (int, str, list, set, tuple, Inverted, slice, Series, Index)
     )):
         raise ColumnNameInvalidError(
             'Invalid column, expected int, str, list, tuple, c(), '

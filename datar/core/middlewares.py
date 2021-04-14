@@ -121,11 +121,11 @@ class Across:
             names: Optional[str] = None,
             kwargs: Optional[Mapping[str, Any]] = None
     ) -> None:
-        from ..dplyr.funcs import everything
+        from ..dplyr.tidyselect import everything
         cols = everything(data) if cols is None else cols
         if not isinstance(cols, (list, tuple)):
             cols = [cols]
-        cols = vars_select(objectize(data).columns, *cols)
+        cols = data.columns[vars_select(data.columns, *cols)]
 
         fns_list = []
         if callable(fns):

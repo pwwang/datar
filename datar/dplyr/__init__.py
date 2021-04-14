@@ -11,11 +11,10 @@ from .verbs import (
     union, setdiff, union_all, setequal, nest_join
 )
 from .funcs import (
-    across, c_across, starts_with, ends_with, contains, matches,
-    everything, last_col, all_of, any_of, where, if_any, if_all,
+    starts_with, ends_with, contains, matches,
+    last_col, all_of, any_of,
     min_rank, dense_rank, percent_rank, cume_dist, ntile, case_when,
-    if_else, n_distinct, row_number, cur_group_id, cur_group_rows,
-    cur_group, cur_data, cur_column, cummean, cumall,
+    if_else, n_distinct, row_number, cummean, cumall,
     cumany, lead, lag, num_range, recode, recode_factor, recode_categorical,
     coalesce, na_if, near, nth, first, last, between
 )
@@ -32,6 +31,11 @@ from .summarise import summarise, summarize
 from .count_tally import count, tally, add_count, add_tally
 from .desc import desc
 from .arrange import arrange
-from .context import n, cur_data_all
+from .context import (
+    n, cur_data_all, cur_group_id, cur_group_rows,
+    cur_group, cur_data, cur_column
+)
 from .mutate import mutate
 from .select import select
+from .across import across, c_across, if_all, if_any
+from .tidyselect import where, everything
