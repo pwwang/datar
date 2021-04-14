@@ -349,9 +349,6 @@ def align_value(
     if is_scalar(value):
         return value
 
-    data = objectize(data)
-    value = objectize(value)
-
     if series_expandable(value, data):
         return series_expand(value, data)
 
@@ -398,7 +395,8 @@ def df_assign_item(
         df: DataFrame,
         item: str,
         value: Any,
-        allow_dups: bool = False
+        allow_dups: bool = False,
+        allow_incr: bool = True
 ) -> None:
     """Assign an item to a dataframe"""
     value = align_value(value, df)
@@ -409,7 +407,7 @@ def df_assign_item(
 
     lenval = 1 if is_scalar(value) else len(value)
 
-    if df.shape[0] == 1 and lenval > 1:
+    if allow_incr and df.shape[0] == 1 and lenval > 1:
         if df.shape[1] == 0: # 0-column df
             # Otherwise, cannot set a frame with no defined columns
             df['__assign_placeholder__'] = 1

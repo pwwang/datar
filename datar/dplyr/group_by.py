@@ -56,7 +56,7 @@ def ungroup(x: DataFrame, *cols: str) -> DataFrame:
 @ungroup.register(DataFrameGroupBy, context=Context.SELECT)
 def _(x: DataFrameGroupBy, *cols: str) -> DataFrame:
     if not cols:
-        return DataFrame(x)
+        return DataFrame(x, index=x.index)
     old_groups = group_vars(x)
     to_remove = vars_select(x.columns, *cols)
     new_groups = setdiff(old_groups, x.columns[to_remove])

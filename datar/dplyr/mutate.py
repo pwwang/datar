@@ -128,7 +128,9 @@ def _(
 ) -> DataFrameGroupBy:
     """Mutate on DataFrameGroupBy object"""
     def apply_func(df):
-        return mutate(
+        index = df.attrs['group_index']
+        rows = df.attrs['group_data'].loc[index, '_rows']
+        ret = mutate(
             df,
             *args,
             _keep=_keep,
@@ -136,9 +138,13 @@ def _(
             _after=_after,
             **kwargs
         )
+        ret.index = rows
+        return ret
 
-    out = _data.group_apply(apply_func)
+    out = _data.group_apply(apply_func, _drop_index=False)
     if out is not None:
+        # keep the original row order
+        out.sort_index(inplace=True)
         return DataFrameGroupBy(
             out,
             _group_vars=group_vars(_data),
@@ -185,11 +191,11 @@ def mutate_cols(
                     else f'{name}${col}'
                 )
                 coldata = align_value(mutatable[col], data)
-                df_assign_item(data, new_name, coldata)
+                df_assign_item(data, new_name, coldata, allow_incr=False)
                 new_columns.append(new_name)
         else:
             mutatable = align_value(mutatable, data)
-            df_assign_item(data, name, mutatable)
+            df_assign_item(data, name, mutatable, allow_incr=False)
             new_columns.append(name)
 
     # keep column order

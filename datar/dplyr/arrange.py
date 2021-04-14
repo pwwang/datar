@@ -1,18 +1,25 @@
+"""Arrange rows by column values
 
-from typing import Any, Iterable
+See source https://github.com/tidyverse/dplyr/blob/master/R/arrange.R
+"""
+from typing import Any
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import check_column_uniqueness
 from ..core.grouped import DataFrameGroupBy
+from ..base.funcs import union
+from .group_data import group_vars
+from .group_by import ungroup, group_by_drop_default
 from .mutate import mutate
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.PENDING)
 def arrange(
         _data: DataFrame,
-        *series: Iterable[Any],
-        _by_group: bool = False
+        *args: Any,
+        _by_group: bool = False,
+        **kwargs: Any
 ) -> DataFrame:
     """orders the rows of a data frame by the values of selected columns.
 
@@ -35,7 +42,7 @@ def arrange(
             Groups are not modified.
             Data frame attributes are preserved.
     """
-    if not series:
+    if not args and not kwargs:
         return _data
 
     check_column_uniqueness(
@@ -43,27 +50,21 @@ def arrange(
         "Cannot arrange a data frame with duplicate names."
     )
 
-    sorting_df = DataFrame(index=_data.index) >> mutate(*series)
-    by = sorting_df.columns.tolist()
-    sorting_df.sort_values(by=by, inplace=True)
-
-    ret = _data.loc[sorting_df.index, :]
-    return ret
-
-@arrange.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrameGroupBy,
-        *series: Any,
-        _by_group: bool = False
-) -> DataFrameGroupBy:
-    """Arrange grouped dataframe"""
     if not _by_group:
-        ret = _data.obj >> arrange(*series)
+        sorting_df = mutate(ungroup(_data), *args, **kwargs, _keep="none")
+        sorting_df = sorting_df.sort_values(by=sorting_df.columns.tolist())
     else:
-        ret = _data.obj >> arrange(
-            *(_data.obj[col] for col in _data.grouper.names),
-            *series
+        gvars = group_vars(_data)
+        sorting_df = ungroup(mutate(_data, *args, **kwargs, _keep="none"))
+        by = union(gvars, sorting_df.columns)
+        sorting_df = sorting_df.sort_values(by=by)
+
+    out = _data.loc[sorting_df.index, :].reset_index(drop=True)
+    if isinstance(_data, DataFrameGroupBy):
+        return DataFrameGroupBy(
+            out,
+            _group_vars=group_vars(_data),
+            _drop=group_by_drop_default(_data)
         )
-    # copy_flags(ret, _data)
-    # return group_df(ret, _data.grouper.names)
-    return ret
+
+    return out

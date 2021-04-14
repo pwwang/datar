@@ -124,6 +124,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             func: Callable,
             *args: Any,
             _groupdata: bool = True,
+            _drop_index: bool = True,
             **kwargs: Any
     ) -> DataFrame:
         """Apply function to each group
@@ -143,14 +144,14 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             ret = func(subdf, *args, **kwargs)
             if ret is None:
                 return ret
-            ret.reset_index(drop=True, inplace=True)
 
             if _groupdata:
                 # attaching grouping data
                 gdata = self._group_data.loc[
                     [index] * ret.shape[0],
                     [gvar for gvar in self._group_vars if gvar not in ret]
-                ].reset_index(drop=True)
+                ]
+                gdata.index = ret.index
                 ret = pandas.concat([gdata, ret], axis=1)
             return ret
 
@@ -159,7 +160,9 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         ]
         if all(elem is None for elem in to_concat):
             return None
-        ret = pandas.concat(to_concat, axis=0).reset_index(drop=True)
+        ret = pandas.concat(to_concat, axis=0)
+        if _drop_index:
+            ret.reset_index(drop=True, inplace=True)
 
         ret.attrs['groupby_drop'] = self.attrs['groupby_drop']
         return ret
