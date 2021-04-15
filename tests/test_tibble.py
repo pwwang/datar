@@ -85,11 +85,11 @@ def test_hierachical_names():
     assert pulled.columns.tolist() == ['y', 'z']
 
 
-def test_meta_flags_preserved():
+def test_meta_attrs_preserved():
     foo = tibble(x=1)
-    foo.flags.rowwise = True
+    foo.attrs['a'] = 1
     bar = tibble(foo)
-    assert bar.flags.rowwise == True
+    assert bar.attrs['a'] == 1
 
 def test_f_pronoun():
     foo = tibble(a=1, b=f.a)

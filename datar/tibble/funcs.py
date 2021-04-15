@@ -1,17 +1,17 @@
 """Functions ported from tidyverse-tibble"""
-from datar.core.defaults import DEFAULT_COLUMN_PREFIX
 import itertools
 from typing import Any, Callable, Union, Optional
 
 from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
-from varname import argname, varname
 from pipda import Context, register_func
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
+from varname import argname, varname
 from varname.utils import VarnameRetrievingError
 
-from ..core.utils import df_assign_item, objectize, to_df
+from ..core.defaults import DEFAULT_COLUMN_PREFIX
+from ..core.utils import copy_attrs, df_assign_item, objectize, to_df
 from ..core.names import repair_names
 
 def tibble(
@@ -75,7 +75,7 @@ def tibble(
             if isinstance(arg, DataFrame):
                 # df = arg.copy()
                 # DataFrameGroupBy.copy copied into DataFrameGroupBy
-                df = DataFrame(arg)
+                df = DataFrame(arg).copy()
                 if name not in argnames:
                     df.columns = [f'{name}${col}' for col in df.columns]
 
@@ -99,6 +99,9 @@ def tibble(
         df.__dfname__ = varname(raise_exc=False)
     except VarnameRetrievingError: # still raises in some cases
         df.__dfname__ = None
+
+    if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
+        copy_attrs(df, args[0])
     return df
 
 @register_func(None, context=Context.EVAL)
