@@ -5,8 +5,7 @@ from .verbs import (
     transmutate,
     group_cols,
     group_map, group_modify, group_walk, group_trim,
-    group_split, with_groups, pull, rename,
-    rename_with,
+    group_split, with_groups, pull,
     union_all, setequal, nest_join
 )
 from .funcs import (
@@ -49,3 +48,4 @@ from .rank import (
     ntile, row_number, min_rank, dense_rank, percent_rank, cume_dist
 )
 from .bind import bind_cols, bind_rows
+from .rename import rename, rename_with

@@ -12,7 +12,7 @@ def df():
         x = c(1, 2, 1, 4)
     # group_by(..., _drop=False) only works for a
     # single categorical columns
-    ) >> group_by(f.f, _drop = FALSE)
+    ) >> group_by(f.e, f.f, _drop = FALSE)
 
 def test_filter_slice_keep_zero_len_groups(df):
     out = filter(df, f.f == 1)
@@ -27,6 +27,7 @@ def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
     out = ungroup(count(filter(df, f.f==1)))
     expect = tibble(
+        e=1,
         f=factor([1,2,3], levels=[1,2,3]),
         n=[2,0,0]
     )
@@ -34,6 +35,7 @@ def test_filter_slice_retain_zero_group_labels(df):
 
     out = ungroup(count(slice(df, 0)))
     expect = tibble(
+        e=1,
         f=factor([1,2,3], levels=[1,2,3]),
         n=[1,1,0]
     )
@@ -56,11 +58,9 @@ def test_arrange_keeps_zero_len_groups(df):
     assert gsize == [2,2,0]
 
 def test_bind_rows(df):
-    # wait for bind_rows
-    # gg = bind_rows(df, df)
-    # gsize = group_size(gg)
-    # assert gsize == [4,4,0]
-    pass
+    gg = bind_rows(df, df)
+    gsize = group_size(gg)
+    assert gsize == [2,2,0]
 
 def test_join_respect_zero_len_groups():
     df1 = tibble(

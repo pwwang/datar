@@ -233,56 +233,6 @@ def pull(
         return zip(name, value)
     return value
 
-@register_verb(DataFrame, context=Context.SELECT)
-def rename(
-        _data: DataFrame,
-        **kwargs: str
-) -> DataFrame:
-    """Changes the names of individual variables using new_name = old_name
-    syntax
-
-    Args:
-        _data: The dataframe
-        **kwargs: The new_name = old_name pairs
-
-    Returns:
-        The dataframe with new names
-    """
-    names = {val: key for key, val in kwargs.items()}
-    ret = _data.rename(columns=names)
-    copy_flags(ret, _data)
-    row_wise = getattr(ret.flags, 'rowwise', None)
-    if is_scalar(row_wise):
-        return ret
-
-    for i, var in enumerate(row_wise):
-        if var in names:
-            row_wise[i] = names[var]
-    return ret
-
-@register_verb(DataFrame, context=Context.SELECT)
-def rename_with(
-        _data: DataFrame,
-        _fn: Callable[[str], str],
-        _cols: Optional[Iterable[str]] = None
-) -> DataFrame:
-    """Renames columns using a function.
-
-    Args:
-        _data: The dataframe
-        _fn: The function to rename a column
-        _cols: the columns to rename. If not specified, all columns are
-            considered
-
-    Returns:
-        The dataframe with new names
-    """
-    _cols = _cols or _data.columns
-
-    new_columns = {col: _fn(col) for col in _cols}
-    return _data.rename(columns=new_columns)
-
-
 # Two table verbs
 # ---------------
 

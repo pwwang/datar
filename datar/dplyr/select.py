@@ -4,7 +4,7 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/select.R
 """
 from typing import Any, Iterable, List, Mapping, Tuple, Union
 
-from pandas import DataFrame, Index
+from pandas import DataFrame, Index, Series
 from pipda import register_verb
 
 from ..core.contexts import Context
@@ -84,6 +84,8 @@ def eval_select(
     for key, val in kwargs.items():
         # key: new name
         # val: old name
+        if isinstance(val, Series):
+            val = val.name
         if isinstance(val, str):
             idx = _all_columns.get_indexer_for([val])
             if len(idx) > 1:
