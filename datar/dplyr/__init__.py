@@ -6,7 +6,7 @@ from .verbs import (
     group_cols,
     group_map, group_modify, group_walk, group_trim,
     group_split, with_groups, pull, rename,
-    rename_with, bind_cols, bind_rows,
+    rename_with,
     union_all, setequal, nest_join
 )
 from .funcs import (
@@ -48,3 +48,4 @@ from .slice import  (
 from .rank import (
     ntile, row_number, min_rank, dense_rank, percent_rank, cume_dist
 )
+from .bind import bind_cols, bind_rows

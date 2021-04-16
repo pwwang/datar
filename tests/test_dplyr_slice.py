@@ -41,14 +41,14 @@ def test_slice_works_with_negative_indices():
 
 def test_slice_works_with_grouped_data():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
-    # wait for row_number
-    # res = slice(g, f[:2])
-    # exp = filter(g, row_number() < 2)
-    # assert res.equals(exp)
 
-    # res = slice(g, -f[:2])
-    # exp = filter(g, row_number() >= 2)
-    # assert res.equals(exp)
+    res = slice(g, f[:2])
+    exp = filter(g, row_number() < 2)
+    assert res.equals(exp)
+
+    res = slice(g, ~f[:2])
+    exp = filter(g, row_number() >= 2)
+    assert res.equals(exp)
 
     g = group_by(tibble(x=c(1,1,2,2,2)), f.x)
     out = group_keys(slice(g, 2, _preserve=True)) >> pull(f.x, to='list')

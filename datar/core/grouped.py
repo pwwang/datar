@@ -133,6 +133,10 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             for row in gdata.itertuples():
                 rows_dict[row[1:]].append(row.Index)
 
+        # sort the rows to try to keep the order in original data
+        for key, val in rows_dict.items():
+            rows_dict[key] = sorted(val)
+
         ret = DataFrame(
             rows_dict.keys(),
             columns=self._group_vars
