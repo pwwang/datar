@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
         python-version: [3.9]
@@ -21,7 +21,7 @@ jobs:
           python -m pip install poetry
           poetry config virtualenvs.create false
           poetry install -v
-      - name: Update docs
+      - name: Build docs
         run: |
           python -m pip install mkdocs
           python -m pip install -r docs/requirements.txt
@@ -32,8 +32,12 @@ jobs:
           cp ../example.png example.png
           cp ../example2.png example2.png
           cd ..
+          mkdocs build
+        if : success()
+      - name: Deploy docs
+        run: |
           mkdocs gh-deploy --clean --force
-        if: success()
+        if: success() && github.ref == 'refs/heads/master'
 
   fix-index:
     needs: docs
