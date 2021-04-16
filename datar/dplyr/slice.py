@@ -4,7 +4,8 @@ https://github.com/tidyverse/dplyr/blob/master/R/slice.R
 """
 import builtins
 from typing import Any, Iterable, List, Optional, Union
-from pandas import DataFrame
+
+from pandas import DataFrame, RangeIndex
 from pipda import register_verb
 
 from ..core.contexts import Context
@@ -52,6 +53,8 @@ def slice( # pylint: disable=redefined-builtin
 
     rows = sanitize_rows(rows, _data.shape[0])
     out = _data.iloc[rows, :]
+    if isinstance(_data.index, RangeIndex):
+        out.reset_index(drop=True, inplace=True)
     #copy_attrs(out, _data) # attrs carried
     return out
 
@@ -62,7 +65,9 @@ def _(
         _preserve: bool = False
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.group_apply(lambda df: slice(df, *rows))
+    out = _data.group_apply(
+        lambda df: slice(df, *rows)
+    )
     out = DataFrameGroupBy(
         out,
         _group_vars=group_vars(_data),

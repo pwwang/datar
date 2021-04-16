@@ -85,10 +85,9 @@ def test_on_iter_type():
         y=[(1,2,3), (2,3,4), (3,4,5), (4,5,6), (5,6,7)]
     )
 
-    # wait for slice
-    # out = df >> distinct()
-    # expect = df >> slice([0,2,4])
-    # assert out.equals(expect)
+    out = df >> distinct()
+    expect = df >> slice([0,2,4])
+    assert out.equals(expect)
 
     out2 = df2 >> distinct()
     assert out2.equals(df2)

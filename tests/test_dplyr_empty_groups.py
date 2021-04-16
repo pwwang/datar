@@ -19,10 +19,9 @@ def test_filter_slice_keep_zero_len_groups(df):
     gsize = group_size(out)
     assert gsize == [2,0,0]
 
-    # wait for slice
-    # out = slice(df, 1)
-    # gsize = group_size(out)
-    # assert gsize == [1,1,0]
+    out = slice(df, 0)
+    gsize = group_size(out)
+    assert gsize == [1,1,0]
 
 def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
@@ -33,13 +32,12 @@ def test_filter_slice_retain_zero_group_labels(df):
     )
     assert out.equals(expect)
 
-    # wait for slice
-    # out = ungroup(count(slice(df, 1)))
-    # expect = tibble(
-    #     f=factor([1,2,3], levels=[1,2,3]),
-    #     n=[1,1,0]
-    # )
-    # assert out.equals(expect)
+    out = ungroup(count(slice(df, 0)))
+    expect = tibble(
+        f=factor([1,2,3], levels=[1,2,3]),
+        n=[1,1,0]
+    )
+    assert out.equals(expect)
 
 def test_mutate_keeps_zero_len_groups(df):
     gsize = group_size(mutate(df, z=2))
