@@ -2,10 +2,10 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/filter.R
 """
-from typing import Iterable
+from typing import Iterable, Optional
 
 import numpy
-from pandas import DataFrame
+from pandas import DataFrame, RangeIndex
 from pipda import register_verb
 from pipda.utils import Expression
 
@@ -17,11 +17,11 @@ from .group_by import group_by_drop_default
 from .group_data import group_data, group_vars
 
 @register_verb(DataFrame, context=Context.EVAL)
-def filter(
+def filter( # pylint: disable=redefined-builtin
         _data: DataFrame,
         *conditions: Iterable[bool],
         _preserve: bool = False,
-        _drop_index: bool = True
+        _drop_index: Optional[bool] = None
 ) -> DataFrame:
     """Subset a data frame, retaining all rows that satisfy your conditions
 
@@ -31,6 +31,9 @@ def filter(
             If _preserve = FALSE (the default), the grouping structure
             is recalculated based on the resulting data, otherwise
             the grouping is kept as is.
+        _drop_index: Whether drop the index or not.
+            When it is None and the index of _data is a RangeIndex, then
+            the index is dropped.
 
     Returns:
         The subset dataframe
@@ -47,6 +50,9 @@ def filter(
         condition = condition.values.flatten()
     except AttributeError:
         ...
+
+    if _drop_index is None:
+        _drop_index = isinstance(_data.index, RangeIndex)
 
     out = _data[condition]
     if _drop_index:
@@ -76,15 +82,18 @@ def _(
     )
 
     if _preserve:
-        gdata = group_data(out).set_index(group_vars(out))['_rows'].to_dict()
-        new_gdata = group_data(_data).copy()
-        for row in new_gdata.iterrows():
-            ser = row[1]
-            key = tuple(ser[:-1])
-            ser[-1] = gdata[key] if key in gdata else []
-            new_gdata.iloc[row[0], :] = ser
-
-        out._group_data = new_gdata
+        preserve_grouping(out, _data)
 
     copy_attrs(out, _data)
     return out
+
+def preserve_grouping(new: DataFrame, old: DataFrame):
+    gdata = group_data(new).set_index(group_vars(new))['_rows'].to_dict()
+    new_gdata = group_data(old).copy()
+    for row in new_gdata.iterrows():
+        ser = row[1]
+        key = tuple(ser[:-1])
+        ser[-1] = gdata[key] if key in gdata else []
+        new_gdata.iloc[row[0], :] = ser
+
+    new._group_data = new_gdata

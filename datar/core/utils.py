@@ -88,7 +88,10 @@ def check_column(column: Any) -> None:
             f'f.column, ~c() or ~f.column, got {type(column)}'
         )
 
-def expand_collections(collections: Any) -> List[Any]:
+def expand_collections(
+        collections: Any,
+        pool: Optional[Iterable[Any]] = None
+) -> List[Any]:
     """Expand and flatten all iterables in the collections
 
     Args:
@@ -97,11 +100,16 @@ def expand_collections(collections: Any) -> List[Any]:
     Returns:
         The flattened list
     """
+    from .middlewares import Negated
+    if isinstance(collections, Negated):
+        return collections.evaluate(pool)
+    if isinstance(collections, slice):
+        return sanitize_slice(collections, pool, raise_nonexists=False)
     if is_scalar(collections) or isinstance(collections, Series):
         return [collections]
     ret = []
     for collection in collections:
-        ret.extend(expand_collections(collection))
+        ret.extend(expand_collections(collection, pool))
     return ret
 
 def filter_columns(
@@ -138,7 +146,7 @@ def filter_columns(
 
 def sanitize_slice(
         slc: slice,
-        all_columns: Optional[List[str]] = None,
+        all_columns: Optional[List[Union[str, int]]] = None,
         raise_nonexists: bool = True
 ) -> List[int]:
     """Sanitize slice objects, and compile it into a list of indexes
@@ -157,21 +165,30 @@ def sanitize_slice(
         ColumnNotExistingError: When a column does not exist
     """
     start, stop, step = slc.start, slc.stop, slc.step
-    if all_columns is None and (
-            isinstance(start, str) or
-            isinstance(stop, str) or
-            raise_nonexists or
-            (isinstance(start, int) and start < 0) or
-            (isinstance(stop, int) and stop < 0) or
-            stop is None
-    ):
-        raise ValueError(
-            '`all_columns` is required when start/stop of slice is column '
-            'name, None or negative index, or `raise_nonexists` is True.'
-        )
+    if all_columns is None:
+        # Treated as plain slice
+        if isinstance(start, str) or isinstance(stop, str):
+            raise ValueError(
+                '`all_columns` is required when start/stop of slice is '
+                'column name.'
+            )
+        step = 1 if step is None else step
+        if start is None:
+            start = 0
+        if stop is None:
+            stop = 0
+
+        out = []
+        out_append = out.append
+        i = start
+        while (i < stop) if step > 0 else (i > stop):
+            out_append(i)
+            i += step
+        return out
+
+    # all_columns defined
     if isinstance(start, str):
         if start not in all_columns:
-            # raise anyway
             raise ColumnNotExistingError(f'Column `{start}` does not exist.')
         start = all_columns.index(start)
     if isinstance(stop, str):
@@ -179,28 +196,27 @@ def sanitize_slice(
             raise ColumnNotExistingError(f'Column `{stop}` does not exist.')
         stop = all_columns.index(stop) + 1
 
+    all_len = len(all_columns)
     start = 0 if start is None else start
     if start < 0:
-        start += len(all_columns)
+        start += all_len
 
     stop = len(all_columns) if stop is None else stop
     if stop < 0:
-        stop += len(all_columns) + 1
+        stop += all_len + 1
 
     if step == 0:
         stop -= 1
         step = 1
 
-    out = []
-    out_append = out.append
-    i = start
-    while i < stop:
-        if all_columns is not None and raise_nonexists and i >= len(all_columns):
-            raise ColumnNotExistingError(
-                f'Column at location {i} does not exist.'
-            )
-        out_append(i)
-        i += 1 if step is None else step
+    out = sanitize_slice(slice(start, stop, step))
+    if raise_nonexists:
+        for i in out:
+            if i >= all_len:
+                raise ColumnNotExistingError(
+                    f'Column at location {i} does not exist.'
+                )
+
     return out
 
 def _expand_slice_dummy(
@@ -292,8 +308,7 @@ def vars_select(
                 if idx not in selected:
                     selected_append(idx)
         elif isinstance(column, Inverted):
-            excludes = column.evaluate(all_columns, raise_nonexists)
-            selected = setdiff(selected or range(len(all_columns)), excludes)
+            selected.extend(column.evaluate(all_columns, raise_nonexists))
         elif isinstance(column, slice):
             idxes = sanitize_slice(column, all_columns, raise_nonexists)
             for idx in idxes:

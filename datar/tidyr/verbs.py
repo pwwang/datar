@@ -23,7 +23,7 @@ from ..core.contexts import Context
 from ..core.names import repair_names
 from ..base.constants import NA
 from ..base.funcs import levels
-from ..dplyr.verbs import distinct
+from ..dplyr.distinct import distinct
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(

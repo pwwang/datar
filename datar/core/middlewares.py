@@ -1,6 +1,5 @@
 """Middlewares for datar"""
 import builtins
-from datar.core.exceptions import ColumnNotExistingError
 
 from typing import (
     Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
@@ -10,15 +9,15 @@ from abc import ABC
 from pandas import DataFrame
 from pandas.core.series import Series
 from pipda.symbolic import DirectRefAttr
-from pipda.context import Context, ContextBase
+from pipda.context import ContextBase
 from pipda.utils import DataEnv, functype
 
+from .exceptions import ColumnNotExistingError
 from .utils import (
-    df_assign_item, objectize, expand_collections, list_diff, sanitize_slice,
+    df_assign_item, objectize, expand_collections, sanitize_slice,
     vars_select, logger, to_df
 )
-from .contexts import ContextSelectSlice
-from .types import DataFrameType, is_iterable, is_scalar
+from .types import DataFrameType
 
 class Collection(list):
     """Mimic the c function in R
@@ -28,20 +27,25 @@ class Collection(list):
     Args:
         *args: The elements
     """
-    def __init__(self, *args: Any) -> None:
-        super().__init__(expand_collections(args))
+    def __init__(
+            self, *args: Any,
+            pool: Optional[Iterable[Any]] = None # used to evaluate slice
+    ) -> None:
+        super().__init__(expand_collections(args, pool=pool))
 
-    def expand_slice(
-            self,
-            total: Union[int, Iterable[int]]
-    ) -> Union[List[int], List[List[int]]]:
-        """Expand the slice in the list in a groupby-aware way"""
+    def __neg__(self):
+        return Negated(self)
 
+    def __invert__(self):
+        return Inverted(self)
 
 class Inverted:
     """Inverted object, pending for next action"""
 
-    def __init__(self, elems: Union[slice, str, list, tuple, Series]) -> None:
+    def __init__(
+            self,
+            elems: Union[slice, str, list, tuple, Series]
+    ) -> None:
         if isinstance(elems, slice):
             self.elems = elems
         else:
@@ -52,35 +56,61 @@ class Inverted:
 
     def evaluate(
             self,
-            all_columns: Iterable[str],
+            all_columns: Iterable[Union[str, int]],
             raise_nonexists: bool = True
     ) -> List[int]:
         """Evaluate with current selected columns"""
-        if isinstance(self.elems, slice):
-            return sanitize_slice(self.elems, all_columns, raise_nonexists)
-        if isinstance(self.elems, Series):
-            return all_columns.index(self.elems.name)
+        from ..base.funcs import setdiff
+
         out = []
         out_append = out.append
-        for elem in self.elems:
-            if isinstance(elem, Series):
-                elem = elem.name
-            if elem not in all_columns and raise_nonexists:
-                raise ColumnNotExistingError(
-                    f"Column `{elem}` does not exist."
-                )
-            out_append(all_columns.index(elem))
-        return out
+        if isinstance(self.elems, slice):
+            out.extend(sanitize_slice(self.elems, all_columns, raise_nonexists))
+        elif isinstance(self.elems, Series):
+            out_append(all_columns.index(self.elems.name))
+        else:
+            for elem in self.elems:
+                if isinstance(elem, Series):
+                    elem = elem.name
+                if elem not in all_columns and raise_nonexists:
+                    raise ColumnNotExistingError(
+                        f"Column `{elem}` does not exist."
+                    )
+                if elem not in all_columns:
+                    out_append(elem)
+                else:
+                    out_append(all_columns.index(elem))
+
+        return setdiff(range(len(all_columns)), out)
 
 
 class Negated:
     """Negated object"""
     def __init__(self, elems: Union[slice, list]) -> None:
         """In case of -[1,2,3] or -c(1,2,3) or -f[1:3]"""
-        self.elems = [elems] if isinstance(elems, slice) else elems
+        self.elems = elems
 
     def __repr__(self) -> str:
         return f"Negated({self.elems})"
+
+    def evaluate(
+            self,
+            all_columns: Optional[Iterable[Union[str, int]]] = None,
+            raise_nonexists: bool = False
+    ) -> List[int]:
+        """Negate the elements"""
+        elems = (
+            reversed([
+                i+1 for i in sanitize_slice(
+                    self.elems,
+                    all_columns,
+                    raise_nonexists=raise_nonexists
+                )
+            ])
+            if isinstance(self.elems, slice)
+            else self.elems
+        )
+        return [-elem for elem in elems]
 
 class DescSeries(Series): # pylint: disable=too-many-ancestors
     """Marking a series as descending"""

@@ -148,7 +148,6 @@ def add_computed_columns(
     # support direct strings
     args = [f[arg] if isinstance(arg, str) else arg for arg in args]
     named = name_mutatable_args(*args, **kwargs)
-
     if any(
             isinstance(val, Expression) and
             not isinstance(val, (DirectRefAttr, DirectRefItem))

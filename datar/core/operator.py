@@ -7,7 +7,7 @@ from pipda import register_operator, Operator
 from pipda.context import ContextBase
 
 from .utils import align_value, vars_select
-from .middlewares import Inverted, Negated
+from .middlewares import Collection, Inverted, Negated
 from ..base.funcs import intersect, union
 
 @register_operator
@@ -28,7 +28,7 @@ class DatarOperator(Operator):
 
     def invert(self, operand: Any, _context: Optional[ContextBase]) -> Any:
         """Interpretation for ~x"""
-        if isinstance(operand, (slice, str, list, tuple)):
+        if isinstance(operand, (slice, str, list, tuple, Collection)):
             return Inverted(operand)
         return self._arithmetize1(operand, 'invert')
 

@@ -77,6 +77,8 @@ def test_na_conditions():
     assert list(out) == [1,4,4]
 
 def test_atomic_conditions():
+    import warnings
+    warnings.filterwarnings("error")
     out = case_when(
         TRUE, [1,2,3],
         FALSE, [4,5,6]
@@ -102,15 +104,16 @@ def test_0len_conditions_and_values():
     )
     assert list(out) == []
 
-def test_inside_mutate():
-    out = mtcars >> get(f[:4]) >> mutate(
-        out = case_when(
-            f.cyl == 4, 1,
-            f['am'] == 1, 2,
-            TRUE, 0
-        )
-    ) >> pull(to='list')
-    assert out == [2,2,1,0]
+# wait for get
+# def test_inside_mutate():
+#     out = mtcars >> get(f[:4]) >> mutate(
+#         out = case_when(
+#             f.cyl == 4, 1,
+#             f['am'] == 1, 2,
+#             TRUE, 0
+#         )
+#     ) >> pull(to='list')
+#     assert out == [2,2,1,0]
 
 
 def test_errors():

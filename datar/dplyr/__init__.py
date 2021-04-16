@@ -6,8 +6,7 @@ from .verbs import (
     group_cols,
     group_map, group_modify, group_walk, group_trim,
     group_split, with_groups, pull, rename,
-    rename_with, slice, slice_head, slice_tail, slice_min,
-    slice_max, slice_sample, bind_cols, bind_rows,
+    rename_with, bind_cols, bind_rows,
     union_all, setequal, nest_join
 )
 from .funcs import (
@@ -43,3 +42,7 @@ from .if_else import if_else, case_when
 from .relocate import relocate
 from .filter import filter
 from .distinct import distinct
+from .slice import  (
+    slice, slice_head, slice_tail, slice_min,
+    slice_max, slice_sample
+)

@@ -57,7 +57,7 @@ def test_handles_simple_symbols():
 
 def test_handles_scalar_results():
     df1 = mtcars >> filter(min(f.mpg) > 0)
-    assert df1.equals(drop_index(mtcars))
+    assert df1.equals(mtcars)
 
     df2 = mtcars >> group_by(f.cyl) >> filter(min(f.mpg)>0)
     df3 = mtcars >> group_by(f.cyl)
@@ -74,7 +74,7 @@ def test_discards_na():
 
 def test_returns_input_with_no_args():
     df = filter(mtcars)
-    assert df.equals(mtcars.reset_index(drop=True))
+    assert df.equals(mtcars)
 
 def test_complex_vec():
     d = tibble(x=range(1,11), y=[i+2j for i in range(1,11)])

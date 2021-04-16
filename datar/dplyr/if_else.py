@@ -69,9 +69,10 @@ def case_when(*when_cases: Any) -> Series:
     for case, rep in when_cases:
         if case is True:
             out[:] = rep
-        elif case is not False: # skip atmoic False condition
+        elif case is not False and case is not NA: # skip atmoic False condition
             case = numpy.array(case)
             case[numpy.isnan(case)] = False
+            case = case.astype(bool)
             index = numpy.where(case)
             if is_scalar(rep) or len(rep) == 1 or len(rep) == len(index):
                 out[index] = rep

@@ -33,7 +33,12 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             _group_data: Optional[DataFrame] = None,
             **kwargs: Any
     ) -> None:
-        super().__init__(*args, **kwargs)
+        # drop args[0]'s index as well, if it is a DataFrame.
+        # self.reset_index(drop=True, inplace=True)
+        if args and not kwargs and isinstance(args[0], DataFrame):
+            super().__init__(args[0].copy())
+        else:
+            super().__init__(*args, **kwargs)
         self.reset_index(drop=True, inplace=True)
 
         if _drop is None:
