@@ -49,7 +49,7 @@ def select(
         gvars = [new_names.get(gvar, gvar) for gvar in gvars]
         gdata = group_data(_data)
         gdata.columns = gvars + ['_rows']
-        return DataFrameGroupBy(
+        return _data.__class__(
             out,
             _group_vars=gvars,
             _drop=group_by_drop_default(_data),

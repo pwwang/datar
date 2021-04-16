@@ -61,7 +61,7 @@ def arrange(
 
     out = _data.loc[sorting_df.index, :].reset_index(drop=True)
     if isinstance(_data, DataFrameGroupBy):
-        return DataFrameGroupBy(
+        return _data.__class__(
             out,
             _group_vars=group_vars(_data),
             _drop=group_by_drop_default(_data)

@@ -68,7 +68,7 @@ def _(
     out = _data.group_apply(
         lambda df: slice(df, *rows)
     )
-    out = DataFrameGroupBy(
+    out = _data.__class__(
         out,
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data)

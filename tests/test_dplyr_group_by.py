@@ -341,38 +341,38 @@ def test_errors():
         df >> group_by(z=f.a+1)
 
 # rowwise --------------------------------------------
-# wait for verbs
-# def test_rowwise_preserved_by_major_verbs():
-#     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
 
-#     out = arrange(rf, f.y)
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+def test_rowwise_preserved_by_major_verbs():
+    rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
 
-#     out = filter(rf, f.x < 3)
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = arrange(rf, f.y)
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
 
-#     out = mutate(rf, x = f.x + 1)
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = filter(rf, f.x < 3)
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
 
-#     out = rename(rf, X = f.x)
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = mutate(rf, x = f.x + 1)
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
 
-#     out = select(rf, "x")
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = rename(rf, X = f.x)
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['X']
 
-#     out = slice(rf, c(1, 1))
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = select(rf, "x")
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
 
-#     # Except for summarise
-#     out = summarise(rf, z = mean(f.x, f.y))
-#     assert isinstance(out, DataFrameGroupBy)
-#     assert group_vars(out) == ['x']
+    out = slice(rf, c(1, 1))
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
+
+    # Except for summarise
+    out = summarise(rf, z = mean([f.x, f.y]))
+    assert isinstance(out, DataFrameGroupBy)
+    assert group_vars(out) == ['x']
 
 # wait for get/pull/mutate/setNames/toupper
 # def test_rowwise_preserved_by_subsetting():
