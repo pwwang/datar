@@ -191,67 +191,8 @@ def any_of(
     return [elem for elem in x if elem in vars]
 
 
-def _ranking(
-        data: Iterable[Any],
-        na_last: str,
-        method: str,
-        percent: bool = False
-) -> Iterable[float]:
-    """Rank the data"""
-    if not isinstance(data, Series):
-        data = Series(data)
-
-    ascending = not isinstance(data, DescSeries)
-
-    ret = data.rank(
-        method=method,
-        ascending=ascending,
-        pct=percent,
-        na_option=(
-            'keep' if na_last == 'keep'
-            else 'top' if not na_last
-            else 'bottom'
-        )
-    )
-    return ret
-
-@register_func(None, context=Context.EVAL)
-def min_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
-    """Rank the data using min method"""
-    return _ranking(series, na_last=na_last, method='min')
-
-@register_func(None, context=Context.EVAL)
-def dense_rank(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
-    """Rank the data using dense method"""
-    return _ranking(series, na_last=na_last, method='dense')
-
-@register_func(None, context=Context.EVAL)
-def percent_rank(
-        series: Iterable[Any],
-        na_last: str = "keep"
-) -> Iterable[float]:
-    """Rank the data using percent_rank method"""
-    ranking = _ranking(series, na_last, 'min', True)
-    min_rank = ranking.min()
-    max_rank = ranking.max()
-    ret = ranking.transform(lambda r: (r-min_rank)/(max_rank-min_rank))
-    ret[ranking.isna()] = NA
-    return ret
 
 
-@register_func(None, context=Context.EVAL)
-def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
-    """Rank the data using percent_rank method"""
-    ranking = _ranking(series, na_last, 'min')
-    max_ranking = ranking.max()
-    ret = ranking.transform(lambda r: ranking.le(r).sum() / max_ranking)
-    ret[ranking.isna()] = NA
-    return ret
-
-@register_func(None, context=Context.EVAL)
-def ntile(series: Iterable[Any], n: int) -> Iterable[Any]:
-    """A rough rank, which breaks the input vector into ‘n’ buckets."""
-    return pandas.cut(series, n, labels=range(n))
 
 
 @register_func(None, context=Context.EVAL)
@@ -272,10 +213,6 @@ def n_distinct(series: Iterable[Any]) -> int:
     return len(set(series))
 
 
-@register_func(context=Context.EVAL)
-def row_number(_data: Iterable[Any]) -> Series:
-    """Gives the row number, 0-based."""
-    return Series(range(len(_data)), dtype='int')
 
 
 @register_func(None, context=Context.EVAL)

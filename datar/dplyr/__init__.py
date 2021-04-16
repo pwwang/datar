@@ -12,8 +12,7 @@ from .verbs import (
 from .funcs import (
     starts_with, ends_with, contains, matches,
     all_of, any_of,
-    min_rank, dense_rank, percent_rank, cume_dist, ntile,
-    n_distinct, row_number, cummean, cumall,
+    n_distinct, cummean, cumall,
     cumany, lead, lag, num_range, recode, recode_factor, recode_categorical,
     coalesce, na_if, near, nth, first, last, between
 )
@@ -45,4 +44,7 @@ from .distinct import distinct
 from .slice import  (
     slice, slice_head, slice_tail, slice_min,
     slice_max, slice_sample
+)
+from .rank import (
+    ntile, row_number, min_rank, dense_rank, percent_rank, cume_dist
 )
