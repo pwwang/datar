@@ -103,7 +103,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
                 if is_categorical_dtype(vardata):
                     vardata = vardata.cat.categories
 
-                vardata = vardata[~pandas.isna(vardata)]
+                vardata = vardata[~pandas.isna(vardata)].unique()
 
                 if has_na:
                     vardata = vardata.tolist() + [NA]
