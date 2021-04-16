@@ -5,7 +5,7 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..base.funcs import setdiff, union
+from ..base import setdiff, union
 from .group_data import group_vars
 from .select import eval_select
 

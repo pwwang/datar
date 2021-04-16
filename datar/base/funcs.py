@@ -916,44 +916,6 @@ def lengths(x: Any) -> List[int]:
         return [1]
     return [length(elem) for elem in x]
 
-@register_func(None, context=Context.EVAL)
-def setdiff(x: Any, y: Any) -> List[Any]:
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    return [elem for elem in x if elem not in y]
-
-
-@register_func(None, context=Context.EVAL)
-def intersect(x: Any, y: Any) -> List[Any]:
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    return [elem for elem in x if elem in y]
-
-
-@register_func(None, context=Context.EVAL)
-def union(x: Any, y: Any) -> List[Any]:
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    # pylint: disable=arguments-out-of-order
-    return list(x) + setdiff(y, x)
-
-@register_func(None, context=Context.EVAL)
-def setequal(x: Any, y: Any) -> List[Any]:
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    x = sorted(x)
-    y = sorted(y)
-    return x == y
-
-
 # ---------------------------------
 # Plain functions
 # ---------------------------------

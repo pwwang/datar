@@ -2,15 +2,16 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/distinct.R
 """
-from typing import Any
+from typing import Any, Iterable
 
+import pandas
 from pandas import DataFrame
-from pipda import register_verb
+from pipda import register_verb, register_func
 
 from ..core.contexts import Context
 from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..base.funcs import union, setdiff, intersect
+from ..base import union, setdiff, intersect
 from .mutate import mutate
 from .group_by import group_by_drop_default, ungroup
 from .group_data import group_vars
@@ -86,3 +87,11 @@ def _(
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data)
     )
+
+@register_func(None, context=Context.EVAL)
+def n_distinct(data: Iterable[Any], na_rm: bool = False) -> int:
+    """Get the length of distince elements"""
+    # TODO: add tests
+    if not na_rm:
+        return len(pandas.unique(data))
+    return pandas.notna(data).sum()

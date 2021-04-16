@@ -9,7 +9,6 @@ from pipda.context import (
     ContextPending,
     ContextSelect
 )
-from .utils import copy_flags
 from .exceptions import ColumnNotExistingError
 
 class ContextEval(ContextEvalPipda):
@@ -26,9 +25,8 @@ class ContextEval(ContextEvalPipda):
             cols = [col for col in parent.columns if col.startswith(f'{ref}$')]
             if not cols:
                 raise ColumnNotExistingError(ref)
-            ret = parent.loc[: cols]
+            ret = parent.loc[:, cols]
             ret.columns = [col[(len(ref)+1):] for col in cols]
-            copy_flags(ret, parent)
             return ret
         try:
             return super().getitem(parent, ref)

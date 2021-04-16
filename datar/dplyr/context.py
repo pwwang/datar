@@ -9,7 +9,7 @@ from pipda import register_func
 
 from ..core.contexts import Context
 from ..core.middlewares import CurColumn
-from ..base.funcs import setdiff
+from ..base import setdiff
 from .group_data import group_vars
 
 # n used directly in count

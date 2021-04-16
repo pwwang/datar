@@ -3,12 +3,13 @@
 from typing import Iterable, Mapping, Optional, Union
 
 import pandas
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import StringOrIter
 from ..core.grouped import DataFrameGroupBy
+from ..base import intersect, setdiff
 from .group_by import group_by_drop_default
 
 def _join(
@@ -236,3 +237,52 @@ def anti_join(
         )
 
     return ret
+
+@register_verb(DataFrame, context=Context.EVAL)
+def nest_join(
+        x: DataFrame,
+        y: DataFrame,
+        by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
+        copy: bool = False,
+        suffix: Iterable[str] = ("_x", "_y"),
+        keep: bool = False
+) -> DataFrame:
+    """Returns all rows and columns in x with a new nested-df column that
+    contains all matches from y
+
+    See inner_join()
+    """
+    on = by
+    if isinstance(by, (list, tuple, set)):
+        on = dict(zip(by, by))
+    elif by is None:
+        common_cols = intersect(x.columns.tolist(), y.columns)
+        on = dict(zip(common_cols, common_cols))
+    elif not isinstance(by, dict):
+        on = {by: by}
+
+    if copy:
+        x = x.copy()
+
+    def get_nested_df(row: Series) -> DataFrame:
+        condition = None
+        for key in on:
+            if condition is None:
+                condition = y[on[key]] == row[key]
+            else:
+                condition = condition and (y[on[key]] == row[key])
+        df = filter(y, condition)
+        if not keep:
+            df = df[setdiff(df.columns, on.values())]
+        if suffix:
+            for col in df.columns:
+                if col in x:
+                    x.rename(columns={col: f'{col}{suffix[0]}'}, inplace=True)
+                    df.rename(columns={col: f'{col}{suffix[1]}'}, inplace=True)
+        return df
+
+    y_matched = x.apply(get_nested_df, axis=1)
+    y_name = getattr(y, '__dfname__', None)
+    if y_name:
+        y_matched = y_matched.to_frame(name=y_name)
+    return pandas.concat([x, y_matched], axis=1)

@@ -60,7 +60,7 @@ class Inverted:
             raise_nonexists: bool = True
     ) -> List[int]:
         """Evaluate with current selected columns"""
-        from ..base.funcs import setdiff
+        from ..base import setdiff
 
         out = []
         out_append = out.append

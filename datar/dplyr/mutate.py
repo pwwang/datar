@@ -13,8 +13,7 @@ from ..core.utils import (
 )
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.grouped import DataFrameGroupBy
-from ..base.funcs import setdiff, union, intersect, c
-from ..base.constants import NA
+from ..base import setdiff, union, intersect, c, NA
 from .group_by import group_by_drop_default
 from .group_data import group_vars, group_data
 from .relocate import relocate
@@ -162,6 +161,28 @@ def _(
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data),
         _group_data=group_data(_data)
+    )
+
+
+@register_verb(DataFrame, context=Context.PENDING)
+def transmutate(
+        _data: DataFrame,
+        *args: Any,
+        _before: Optional[Union[int, str]] = None,
+        _after: Optional[Union[int, str]] = None,
+        **kwargs: Any
+) -> DataFrame:
+    """Mutate with _keep='none'
+
+    See mutate().
+    """
+    # TODO: add tests
+    return _data >> mutate(
+        *args,
+        _keep='none',
+        _before=_before,
+        _after=_after,
+        **kwargs
     )
 
 def mutate_cols(

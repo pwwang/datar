@@ -13,7 +13,7 @@ from ..core.middlewares import Collection, Inverted, Negated
 from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy
 from ..base.constants import NA
-from ..base.funcs import intersect, unique
+from ..base import intersect, unique
 from .group_by import group_by_drop_default
 from .group_data import group_vars
 from .filter import preserve_grouping

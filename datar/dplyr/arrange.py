@@ -9,7 +9,7 @@ from pipda import register_verb
 from ..core.contexts import Context
 from ..core.utils import check_column_uniqueness
 from ..core.grouped import DataFrameGroupBy
-from ..base.funcs import union
+from ..base import union
 from .group_data import group_vars
 from .group_by import ungroup, group_by_drop_default
 from .mutate import mutate

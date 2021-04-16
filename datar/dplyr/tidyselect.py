@@ -1,11 +1,16 @@
 """Select helpers"""
-from typing import Callable, Iterable, List, Optional
+import re
+from typing import Callable, Iterable, List, Optional, Union
+
 from pandas import DataFrame
 from pipda import register_func
 from pipda.utils import functype
 
 from ..core.contexts import Context
-from ..base.funcs import setdiff
+from ..core.utils import vars_select
+from ..core.types import StringOrIter
+from ..core.exceptions import ColumnNotExistingError
+from ..base import setdiff
 from .group_data import group_vars
 
 
@@ -75,3 +80,218 @@ def last_col(
     """
     vars = vars or _data.columns
     return vars[-(offset+1)]
+
+@register_func(context=Context.SELECT)
+def starts_with(
+        _data: DataFrame,
+        match: StringOrIter,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+) -> List[str]:
+    """Select columns starting with a prefix.
+
+    Args:
+        _data: The data piped in
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: cname.startswith(mat),
+    )
+
+@register_func(context=Context.SELECT)
+def ends_with(
+        _data: DataFrame,
+        match: str,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+) -> List[str]:
+    """Select columns ending with a suffix.
+
+    Args:
+        _data: The data piped in
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: cname.endswith(mat),
+    )
+
+@register_func(context=Context.SELECT)
+def contains(
+        _data: DataFrame,
+        match: str,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+) -> List[str]:
+    """Select columns containing substrings.
+
+    Args:
+        _data: The data piped in
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        lambda mat, cname: mat in cname,
+    )
+
+@register_func(context=Context.SELECT)
+def matches(
+        _data: DataFrame,
+        match: str,
+        ignore_case: bool = True,
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+) -> List[str]:
+    """Select columns matching regular expressions.
+
+    Args:
+        _data: The data piped in
+        match: Regular expressions. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        vars: A set of variable names. If not supplied, the variables are
+            taken from the data columns.
+
+    Returns:
+        A list of matched vars
+    """
+    return filter_columns(
+        vars or _data.columns,
+        match,
+        ignore_case,
+        re.search,
+    )
+
+
+@register_func(context=Context.EVAL)
+def all_of(
+        _data: DataFrame,
+        x: Iterable[Union[int, str]]
+) -> List[str]:
+    """For strict selection.
+
+    If any of the variables in the character vector is missing,
+    an error is thrown.
+
+    Args:
+        _data: The data piped in
+        x: A set of variables to match the columns
+
+    Returns:
+        The matched column names
+
+    Raises:
+        ColumnNotExistingError: When any of the elements in `x` does not exist
+            in `_data` columns
+    """
+    all_columns = _data.columns
+    x = all_columns[vars_select(all_columns, x)]
+    nonexists = setdiff(x, all_columns)
+    if nonexists:
+        raise ColumnNotExistingError(
+            "Can't subset columns that don't exist. "
+            f"Columns {nonexists} not exist."
+        )
+
+    return list(x)
+
+@register_func(context=Context.SELECT)
+def any_of(
+        _data: DataFrame,
+        x: Iterable[Union[int, str]],
+        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+) -> List[str]:
+    """Select but doesn't check for missing variables.
+
+    It is especially useful with negative selections,
+    when you would like to make sure a variable is removed.
+
+    Args:
+        _data: The data piped in
+        x: A set of variables to match the columns
+
+    Returns:
+        The matched column names
+    """
+    all_columns = _data.columns
+    vars = vars or all_columns
+    x = all_columns[vars_select(vars, x)]
+    return [elem for elem in x if elem in vars]
+
+@register_func(None)
+def num_range(
+        prefix: str,
+        range: Iterable[int], # pylint: disable=redefined-builtin
+        width: Optional[int] = None
+) -> List[str]:
+    """Matches a numerical range like x01, x02, x03.
+
+    Args:
+        _data: The data piped in
+        prefix: A prefix that starts the numeric range.
+        range: A sequence of integers, like `range(3)` (produces `0,1,2`).
+        width: Optionally, the "width" of the numeric range.
+            For example, a range of 2 gives "01", a range of three "001", etc.
+
+    Returns:
+        A list of ranges with prefix.
+    """
+    return [
+        f"{prefix}{elem if not width else str(elem).zfill(width)}"
+        for elem in range
+    ]
+
+def filter_columns(
+        all_columns: Iterable[str],
+        match: Union[Iterable[str], str],
+        ignore_case: bool,
+        func: Callable[[str, str], bool]
+) -> List[str]:
+    """Filter the columns with given critera
+
+    Args:
+        all_columns: The column pool to filter
+        match: Strings. If len>1, the union of the matches is taken.
+        ignore_case: If True, the default, ignores case when matching names.
+        func: A function to define how to filter.
+
+    Returns:
+        A list of matched vars
+    """
+    if not isinstance(match, (tuple, list, set)):
+        match = [match]
+
+    ret = []
+    for mat in match:
+        for column in all_columns:
+            if column in ret:
+                continue
+            if (func(
+                    mat.lower() if ignore_case else mat,
+                    column.lower() if ignore_case else column
+            )):
+                ret.append(column)
+    return ret

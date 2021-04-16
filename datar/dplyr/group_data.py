@@ -5,7 +5,7 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.grouped import DataFrameGroupBy
-from ..base.funcs import setdiff
+from ..base import setdiff
 
 @register_verb(DataFrame)
 def group_data(_data: DataFrame) -> DataFrame:
@@ -76,6 +76,7 @@ def _(_data: DataFrameGroupBy) -> List[str]:
 
 # groups in dplyr returns R list
 groups = group_vars # pylint: disable=invalid-name
+group_cols = group_vars # pylint: disable=invalid-name
 
 @register_verb(DataFrame)
 def group_size(_data: DataFrame) -> List[int]:

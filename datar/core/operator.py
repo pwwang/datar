@@ -8,7 +8,6 @@ from pipda.context import ContextBase
 
 from .utils import align_value, vars_select
 from .middlewares import Collection, Inverted, Negated
-from ..base.funcs import intersect, union
 
 @register_operator
 class DatarOperator(Operator):
@@ -50,6 +49,7 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
+        from ..base import intersect
         if isinstance(left, (list, Inverted)):
             left = vars_select(self.data.columns, left)
             right = vars_select(self.data.columns, right)
@@ -69,6 +69,7 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
+        from ..base import union
         if isinstance(left, (list, Inverted)):
             left = vars_select(self.data.columns, left)
             right = vars_select(self.data.columns, right)

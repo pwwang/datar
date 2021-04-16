@@ -3,16 +3,15 @@
 import logging
 from functools import singledispatch
 from copy import deepcopy
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import numpy
-from pandas import DataFrame, Categorical
+from pandas import DataFrame
 from pandas.core.flags import Flags
 from pandas.core.indexes.base import Index
 from pandas.core.series import Series
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.groupby.ops import BaseGrouper
-from pandas.core.dtypes.common import is_categorical_dtype
 from pipda.symbolic import Reference
 
 from varname import argname
@@ -45,30 +44,6 @@ def list_diff(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
         The list1 elements that don't exist in list2.
     """
     return [elem for elem in list1 if elem not in list2]
-
-def list_intersect(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
-    """Get the intersect between two lists and keep the order
-
-    Args:
-        list1: The first list
-        list2: The second list
-
-    Returns:
-        The list1 elements that also exist in list2.
-    """
-    return [elem for elem in list1 if elem in list2]
-
-def list_union(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
-    """Get the union between two lists and keep the order
-
-    Args:
-        list1: The first list
-        list2: The second list
-
-    Returns:
-        The elements with elements in either list1 or list2
-    """
-    return list1 + list_diff(list1=list2, list2=list1)
 
 def check_column(column: Any) -> None:
     """Check if a column is valid
@@ -110,38 +85,6 @@ def expand_collections(
     ret = []
     for collection in collections:
         ret.extend(expand_collections(collection, pool))
-    return ret
-
-def filter_columns(
-        all_columns: Iterable[str],
-        match: Union[Iterable[str], str],
-        ignore_case: bool,
-        func: Callable[[str, str], bool]
-) -> List[str]:
-    """Filter the columns with given critera
-
-    Args:
-        all_columns: The column pool to filter
-        match: Strings. If len>1, the union of the matches is taken.
-        ignore_case: If True, the default, ignores case when matching names.
-        func: A function to define how to filter.
-
-    Returns:
-        A list of matched vars
-    """
-    if not isinstance(match, (tuple, list, set)):
-        match = [match]
-
-    ret = []
-    for mat in match:
-        for column in all_columns:
-            if column in ret:
-                continue
-            if (func(
-                    mat.lower() if ignore_case else mat,
-                    column.lower() if ignore_case else column
-            )):
-                ret.append(column)
     return ret
 
 def sanitize_slice(
@@ -219,52 +162,6 @@ def sanitize_slice(
 
     return out
 
-def _expand_slice_dummy(
-        elems: Union[slice, list, int, tuple, "Negated", "Inverted"],
-        total: int,
-        from_negated: bool = False
-) -> List[int]:
-    """Expand a dummy slice object"""
-    from .middlewares import Negated, Inverted
-    all_indexes = list(range(total))
-    if isinstance(elems, int):
-        return [elems + 1 if from_negated else elems]
-    if isinstance(elems, slice):
-        if from_negated:
-            # we want [0, 1, 2, 3]
-            # to be negated as [-1, -2, -3, -4]
-            return [elem+1 for elem in all_indexes[elems]]
-        return all_indexes[elems]
-    if isinstance(elems, (list, tuple)):
-        selected_indexes = sum(
-            (_expand_slice_dummy(elem, total, from_negated) for elem in elems),
-            []
-        )
-        return list_intersect(selected_indexes, all_indexes)
-    if isinstance(elems, Negated):
-        if from_negated:
-            raise ValueError('Cannot nest negated selections.')
-        selected_indexes = sum(
-            (_expand_slice_dummy(elem, total, True) for elem in elems.elems),
-            []
-        )
-        return [-elem for elem in selected_indexes]
-    if isinstance(elems, Inverted):
-        selected_indexes = sum(
-            (_expand_slice_dummy(elem, total, from_negated)
-             for elem in elems.elems),
-            []
-        )
-        return list_diff(all_indexes, selected_indexes)
-    raise TypeError(f'Unsupported type for slice expansion: {type(elems)!r}.')
-
-def expand_slice(
-        elems: Union[slice, list, "Negated", "Inverted"],
-        total: Union[int, Iterable[int]]
-) -> Union[List[int], List[List[int]]]:
-    """Expand the slide in an iterable, in a groupby-aware way"""
-    return _expand_slice_dummy(elems, total)
-
 def vars_select(
         all_columns: Iterable[str],
         *columns: Any,
@@ -288,7 +185,6 @@ def vars_select(
         ColumnNotExistingError: When the column does not exist in the pool
     """
     from .middlewares import Inverted
-    from ..base.funcs import setdiff
     all_columns = list(all_columns)
 
     selected = []
@@ -384,14 +280,6 @@ def align_value(
         # numpy.ndarray
         return value.repeat(nrepeat)
     return value
-
-def update_df(df: DataFrame, df2: DataFrame) -> None:
-    """Update the dataframe"""
-    # DataFrame.update ignores nonexisting columns
-    # and not keeps categories
-
-    for col in df2.columns:
-        df[col] = df2[col]
 
 def copy_flags(df1: DataFrame, flags: Union[DataFrameType, Flags]) -> None:
     """Deep copy the flags from one dataframe to another"""
@@ -491,18 +379,6 @@ def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
     name = name or data.obj.name
     return data.obj.to_frame(name=name).groupby(data.grouper, dropna=False)
 
-def get_n_from_prop(
-        total: int,
-        n: Optional[int] = None,
-        prop: Optional[float] = None
-) -> int:
-    """Get n from a proportion"""
-    if n is None and prop is None:
-        return 1
-    if prop is not None:
-        return int(float(total) * min(prop, 1.0))
-    return min(n, total)
-
 def group_df(
         df: DataFrame,
         grouper: Union[BaseGrouper, StringOrIter],
@@ -521,41 +397,6 @@ def group_df(
         group_keys=False,
         observed=drop
     )
-
-def groupby_apply(
-        df: DataFrameGroupBy,
-        func: Callable,
-        groupdata: bool = False
-) -> DataFrame:
-    """Apply a function to DataFrameGroupBy object"""
-    if groupdata:
-        # df.groupby(group_keys=True).apply does not always add group as index
-        g_keys = df.grouper.names
-        def apply_func(subdf):
-            if subdf is None or subdf.shape[0] == 0:
-                return None
-            ret = func(subdf)
-            for key in g_keys:
-                if key not in ret:
-                    df_assign_item(ret, key, subdf[key].values[0])
-                    if is_categorical_dtype(subdf[key]):
-                        ret[key] = Categorical(
-                            ret[key],
-                            categories=subdf[key].cat.categories
-                        )
-            columns = list_union(g_keys, ret.columns)
-            # keep the original order
-            commcols = [col for col in df.obj.columns if col in columns]
-            # make sure columns are included
-            columns = list_union(commcols, list_diff(columns, commcols))
-            return ret[columns]
-
-        ret = df.apply(apply_func).reset_index(drop=True)
-    else:
-        ret = df.apply(func).reset_index(drop=True)
-
-    copy_flags(ret, df)
-    return ret
 
 def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
     """Check if column names are unique of a dataframe"""

@@ -17,7 +17,7 @@ from ..core.utils import (
     check_column_uniqueness
 )
 from ..core.exceptions import ColumnNotExistingError
-from ..base.funcs import setdiff, union
+from ..base import setdiff, union
 
 from .group_data import group_vars
 
