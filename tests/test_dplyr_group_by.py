@@ -374,21 +374,20 @@ def test_rowwise_preserved_by_major_verbs():
     assert isinstance(out, DataFrameGroupBy)
     assert group_vars(out) == ['x']
 
-# wait for get/pull/mutate/setNames/toupper
-# def test_rowwise_preserved_by_subsetting():
-#     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
+def test_rowwise_preserved_by_subsetting():
+    rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
 
-#     out = get(rf, [0])
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = get(rf, [0])
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
 
-#     out = mutate(rf, z=range(5,0,-1))
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['x']
+    out = mutate(rf, z=f.y)
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['x']
 
-#     out = setNames(rf, toupper(names(out))
-#     assert isinstance(out, DataFrameRowwise)
-#     assert group_vars(out) == ['X']
+    out = setNames(rf, [name.upper() for name in names(rf)])
+    assert isinstance(out, DataFrameRowwise)
+    assert group_vars(out) == ['X']
 
 def test_rowwise_captures_group_vars():
     df = group_by(tibble(g = [1,2], x = [1,2]), f.g)

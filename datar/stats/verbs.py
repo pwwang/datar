@@ -3,8 +3,8 @@ from typing import Iterable
 from pandas import DataFrame
 from pipda import register_verb
 
+from ..dplyr.rename import rename
+
 @register_verb(DataFrame)
 def setNames(obj: DataFrame, names: Iterable[str]) -> DataFrame:
-    out = obj.copy()
-    out.columns = names
-    return out
+    return rename(obj, **dict(zip(names, obj.columns)))

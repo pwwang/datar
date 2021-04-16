@@ -104,16 +104,15 @@ def test_0len_conditions_and_values():
     )
     assert list(out) == []
 
-# wait for get
-# def test_inside_mutate():
-#     out = mtcars >> get(f[:4]) >> mutate(
-#         out = case_when(
-#             f.cyl == 4, 1,
-#             f['am'] == 1, 2,
-#             TRUE, 0
-#         )
-#     ) >> pull(to='list')
-#     assert out == [2,2,1,0]
+def test_inside_mutate():
+    out = mtcars >> get(f[:4]) >> mutate(
+        out = case_when(
+            f.cyl == 4, 1,
+            f['am'] == 1, 2,
+            TRUE, 0
+        )
+    ) >> pull(to='list')
+    assert out == [2,2,1,0]
 
 
 def test_errors():
