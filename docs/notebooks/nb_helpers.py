@@ -1,8 +1,8 @@
 """helpers for notebooks"""
-import ipynbname
-import pardoc
 from IPython.display import display, Markdown, HTML
 from IPython.core.interactiveshell import InteractiveShell
+import pardoc
+
 InteractiveShell.ast_node_interactivity = "all"
 
 BINDER_URL = (
@@ -12,9 +12,11 @@ BINDER_URL = (
 
 def nb_header(*funcs, book=None):
     """Print the header of a notebooks, mostly the docs"""
+    if book is None:
+        book = funcs[0].__name__
     display(HTML(
-        '<div style="text-align: right; text-style: italic">Try this notebook on '
-        f'<a target="_blank" href="{BINDER_URL}{ipynbname.name()}.ipynb">'
+        '<div style="text-align: right; text-style: italic">Try this notebook '
+        f'on <a target="_blank" href="{BINDER_URL}{book}.ipynb">'
         'binder</a>.</div>'
     ))
 
@@ -27,4 +29,3 @@ def nb_header(*funcs, book=None):
         )
         display(Markdown(f'{"#"*3} # {func.__name__}  '))
         display(Markdown(formatted))
-

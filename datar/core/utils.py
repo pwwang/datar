@@ -199,7 +199,11 @@ def vars_select(
             if column not in selected:
                 selected_append(column)
         elif isinstance(column, (list, tuple)): # ['x','y'] or [0,2]
-            idxes = vars_select(all_columns, *column)
+            idxes = vars_select(
+                all_columns,
+                *column,
+                raise_nonexists=raise_nonexists
+            )
             for idx in idxes:
                 if idx not in selected:
                     selected_append(idx)
@@ -218,7 +222,9 @@ def vars_select(
                     f"Column `{column}` does not exist."
                 )
 
-            selected_append(all_columns.index(column))
+            selected_append(
+                all_columns.index(column) if column in all_columns else column
+            )
     return selected
 
 def series_expandable(

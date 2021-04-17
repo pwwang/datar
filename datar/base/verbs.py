@@ -177,6 +177,7 @@ def names(x: DataFrame) -> List[str]:
 
 @register_verb(context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> List[Any]:
+    """Diff of two iterables"""
     if is_scalar(x):
         x = [x]
     if is_scalar(y):
@@ -186,6 +187,7 @@ def setdiff(x: Any, y: Any) -> List[Any]:
 
 @register_verb(context=Context.EVAL)
 def intersect(x: Any, y: Any) -> List[Any]:
+    """Intersect of two iterables"""
     if is_scalar(x):
         x = [x]
     if is_scalar(y):
@@ -195,6 +197,7 @@ def intersect(x: Any, y: Any) -> List[Any]:
 
 @register_verb(context=Context.EVAL)
 def union(x: Any, y: Any) -> List[Any]:
+    """Union of two iterables"""
     if is_scalar(x):
         x = [x]
     if is_scalar(y):
@@ -204,6 +207,7 @@ def union(x: Any, y: Any) -> List[Any]:
 
 @register_verb(context=Context.EVAL)
 def setequal(x: Any, y: Any) -> List[Any]:
+    """Check set equality for two iterables (order doesn't matter)"""
     if is_scalar(x):
         x = [x]
     if is_scalar(y):

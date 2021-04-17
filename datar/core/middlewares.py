@@ -7,6 +7,7 @@ from typing import (
 from abc import ABC
 
 from pandas import DataFrame
+from pandas.core.indexes.base import Index
 from pandas.core.series import Series
 from pipda.symbolic import DirectRefAttr
 from pipda.context import ContextBase
@@ -69,9 +70,20 @@ class Inverted:
         elif isinstance(self.elems, Series):
             out_append(all_columns.index(self.elems.name))
         else:
+            all_columns_are_strs = all(
+                isinstance(col, str) for col in all_columns
+            )
             for elem in self.elems:
                 if isinstance(elem, Series):
                     elem = elem.name
+                if isinstance(elem, int) and all_columns_are_strs:
+                    try:
+                        elem = all_columns[elem]
+                    except IndexError:
+                        if raise_nonexists:
+                            raise ColumnNotExistingError(
+                                f"Column at location {elem} does not exist."
+                            ) from None
                 if elem not in all_columns and raise_nonexists:
                     raise ColumnNotExistingError(
                         f"Column `{elem}` does not exist."

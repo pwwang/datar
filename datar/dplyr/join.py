@@ -11,6 +11,7 @@ from ..core.types import StringOrIter
 from ..core.grouped import DataFrameGroupBy
 from ..base import intersect, setdiff
 from .group_by import group_by_drop_default
+from .filter import filter # pylint: disable=redefined-builtin
 
 def _join(
         x: DataFrame,

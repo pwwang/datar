@@ -85,7 +85,7 @@ from datar.core.contexts import Context
 from datar.datasets import iris
 from datar.dplyr import pull
 
-dist_plot = register_verb(context=Context.EVAL)(klib.dist_plot)
+dist_plot = register_verb(func=klib.dist_plot)
 iris >> pull(f.Sepal_Length) >> dist_plot()
 ```
 

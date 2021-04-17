@@ -7,7 +7,6 @@ https://github.com/tidyverse/dplyr/blob/master/R/group_trim.R
 # TODO: add tests
 
 from pipda.utils import evaluate_expr
-from datar.core.types import StringOrIter
 from typing import Any, Callable, Iterable, List, Optional
 
 import pandas
@@ -17,12 +16,14 @@ from pipda import register_verb
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.utils import copy_attrs, logger, vars_select
+from ..core.types import StringOrIter
 from ..base import is_factor, droplevels, setdiff
 from .group_data import group_rows, group_vars
 from .group_by import group_by, group_by_drop_default, ungroup
 from .select import select
 from .mutate import mutate
 from .across import across
+from .tidyselect import where
 
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -46,16 +47,18 @@ def group_modify(
         **kwargs: Any,
 ) -> DataFrame:
     """Modify data in each group with func, returns a dataframe"""
-    out = group_map(_data, _f, _keep=_keep, *args, **kwargs)
-    out = pandas.concat(out, ignore_index=True)
-    if isinstance(_data, DataFrameGroupBy):
-        out = _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
-    copy_attrs(out, _data)
-    return out
+    # TODO
+    # out = group_map(_data, _f, _keep=_keep, *args, **kwargs)
+    # out = pandas.concat(out, ignore_index=True)
+
+    # if isinstance(_data, DataFrameGroupBy):
+    #     out = _data.__class__(
+    #         out,
+    #         _group_vars=group_vars(_data),
+    #         _drop=group_by_drop_default(_data)
+    #     )
+    # copy_attrs(out, _data)
+    # return out
 
 @register_verb(DataFrame, context=Context.EVAL)
 def group_walk(
@@ -82,12 +85,12 @@ def _(
         _drop: Optional[bool] = None
 ) -> DataFrameGroupBy:
     if _drop is None:
-        _drop = group_by_drop_default(_drop)
+        _drop = group_by_drop_default(_data)
 
     gvars = group_vars(_data)
     ungrouped = ungroup(_data)
-    fgroups = select(ungrouped, across(gvars, is_factor))
-    dropped = mutate(ungrouped, across(fgroups.columns.tolist(), droplevels))
+    fgroups = ungrouped >> select(where(is_factor))
+    dropped = ungrouped >> mutate(across(fgroups.columns.tolist(), droplevels))
 
     out = _data.__class__(
         dropped,
@@ -119,7 +122,7 @@ def with_groups(
     all_columns = _data.columns
     _groups = evaluate_expr(_groups, _data, Context.SELECT)
     _groups = all_columns[vars_select(all_columns, _groups)]
-    grouped = group_by(_data, _group_vars=_groups)
+    grouped = group_by(_data, *_groups)
 
     out = _func(grouped, *args, **kwargs)
     copy_attrs(out, _data)

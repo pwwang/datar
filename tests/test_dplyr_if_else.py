@@ -1,6 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-if-else.R and
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-case-when.R
+import pandas
 import pytest
 import numpy
 from datar.all import *
@@ -22,7 +23,7 @@ def test_vector_true_false_ok():
 def test_missing_values_are_missing():
     out = if_else(c(TRUE, NA, FALSE), -1, 1)
     assert out[0] == -1.
-    assert numpy.isnan(out[1])
+    assert pandas.isna(out[1])
     assert out[2] == 1.
 
 def test_if_else_errors():

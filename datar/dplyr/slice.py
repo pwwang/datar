@@ -149,7 +149,7 @@ def _(
         with_ties: Union[bool, str] = True
 ) -> DataFrameGroupBy:
     """slice_min for DataFrameGroupBy object"""
-    out = _data.groupby_apply(lambda df: slice_min(
+    out = _data.group_apply(lambda df: slice_min(
         df,
         order_by=order_by,
         n=n,
@@ -194,7 +194,7 @@ def _(
         with_ties: Union[bool, str] = True
 ) -> DataFrameGroupBy:
     """slice_min for DataFrameGroupBy object"""
-    out = _data.groupby_apply(lambda df: slice_max(
+    out = _data.group_apply(lambda df: slice_max(
         df,
         order_by=order_by,
         n=n,
@@ -242,7 +242,7 @@ def _(
         replace: bool = False,
         random_state: Any = None
 ) -> DataFrameGroupBy:
-    out = _data.groupby_apply(lambda df: slice_sample(
+    out = _data.group_apply(lambda df: slice_sample(
         df,
         n=n,
         prop=prop,

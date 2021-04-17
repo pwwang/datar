@@ -70,7 +70,7 @@ def rename_with(
         The dataframe with new names
     """
     if not args:
-        cols = _data.columns
+        cols = _data.columns.tolist()
     else:
         cols = args[0]
         args = args[1:]

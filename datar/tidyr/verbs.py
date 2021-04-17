@@ -1,4 +1,5 @@
 """Verbs from R-tidyr"""
+from datar.dplyr.group_by import group_by_drop_default
 import re
 import itertools
 from functools import singledispatch
@@ -7,12 +8,12 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 import numpy
 import pandas
 from pandas import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.generic import SeriesGroupBy
 from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    copy_flags, group_df, objectize, vars_select, list_diff, logger
+    copy_attrs, objectize, vars_select, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
@@ -21,9 +22,10 @@ from ..core.types import (
 from ..core.middlewares import Nesting
 from ..core.contexts import Context
 from ..core.names import repair_names
-from ..base.constants import NA
-from ..base.funcs import levels
+from ..core.grouped import DataFrameGroupBy
+from ..base import NA, levels, setdiff
 from ..dplyr.distinct import distinct
+from ..dplyr.group_data import group_vars
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
@@ -98,8 +100,9 @@ def pivot_longer(
     Returns:
         The pivoted dataframe.
     """
-    columns = vars_select(_data.columns, cols)
-    id_columns = list_diff(_data.columns, columns)
+    all_columns = _data.columns
+    columns = all_columns[vars_select(all_columns, cols)]
+    id_columns = setdiff(all_columns, columns)
     var_name = '__tmp_names_to__' if names_pattern or names_sep else names_to
     ret = _data.melt(
         id_vars=id_columns,
@@ -117,7 +120,7 @@ def pivot_longer(
 
     if '.value' in names_to:
         ret2 = ret.pivot(columns='.value', values=values_to)
-        rest_columns = list_diff(ret.columns, ['.value', values_to])
+        rest_columns = setdiff(ret.columns, ['.value', values_to])
         ret2.loc[:, rest_columns] = ret.loc[:, rest_columns]
 
         ret2_1 = ret2.iloc[:(ret2.shape[0] // 2), ]
@@ -195,9 +198,9 @@ def pivot_wider(
         The pivoted dataframe.
     """
     if id_cols is None:
-        all_cols = _data.columns.tolist()
-        selected_cols = vars_select(all_cols, names_from, values_from)
-        id_cols = list_diff(all_cols, selected_cols)
+        all_cols = _data.columns
+        selected_cols = all_cols[vars_select(all_cols, names_from, values_from)]
+        id_cols = setdiff(all_cols, selected_cols)
     ret = pandas.pivot_table(
         _data,
         index=id_cols,
@@ -262,7 +265,7 @@ def uncount(
     all_columns = _data.columns.tolist()
     weight_name = getattr(weights, 'name', None)
     if weight_name in all_columns and weights is _data[weight_name]:
-        rest_columns = list_diff(all_columns, [weight_name])
+        rest_columns = setdiff(all_columns, [weight_name])
     else:
         rest_columns = all_columns
 
@@ -333,14 +336,14 @@ def replace_na(
     return _replace_na(_data, series_or_replace)
 
 @register_verb(
-    (DataFrame, DataFrameGroupBy),
+    DataFrame,
     context=Context.SELECT
 )
 def fill(
-        _data: DataFrameType,
+        _data: DataFrame,
         *columns: str,
         _direction: str = "down"
-) -> DataFrameType:
+) -> DataFrame:
     """Fills missing values in selected columns using the next or
     previous entry.
 
@@ -357,25 +360,38 @@ def fill(
     Returns:
         The dataframe with NAs being replaced.
     """
-    if isinstance(_data, DataFrame):
-        if not columns:
-            _data = _data.fillna(
-                method='ffill' if _direction.startswith('down') else 'bfill',
+    data = _data.copy()
+    if not columns:
+        data = data.fillna(
+            method='ffill' if _direction.startswith('down') else 'bfill',
+        )
+        if _direction in ('updown', 'downup'):
+            data = data.fillna(
+                method='ffill' if _direction.endswith('down') else 'bfill',
             )
-            if _direction in ('updown', 'downup'):
-                _data = _data.fillna(
-                    method='ffill' if _direction.endswith('down') else 'bfill',
-                )
-        else:
-            columns = vars_select(_data.columns, *columns)
-            subset = fill(_data[columns], _direction=_direction)
-            _data[columns] = subset
-        return _data
+    else:
+        columns = data.columns[vars_select(data.columns, *columns)]
+        subset = fill(data[columns], _direction=_direction)
+        data[columns] = subset
+    return data
+
+@fill.register(DataFrameGroupBy, context=Context.SELECT)
+def _(
+        _data: DataFrameGroupBy,
+        *columns: str,
+        _direction: str = "down"
+) -> DataFrameGroupBy:
     # DataFrameGroupBy
-    grouper = _data.grouper
-    return _data.apply(
+    out = _data.group_apply(
         lambda df: fill(df, *columns, _direction=_direction)
-    ).groupby(grouper, dropna=False)
+    )
+    out = _data.__class__(
+        out,
+        _group_vars=group_vars(_data),
+        _drop=group_by_drop_default(_data)
+    )
+    copy_attrs(out, _data)
+    return out
 
 def expand_grid(
         _data: Iterable[Any] = None,
@@ -599,8 +615,8 @@ def separate_rows(
     Returns:
         Dataframe with rows separated and repeated.
     """
-    all_columns = _data.columns.tolist()
-    selected = vars_select(all_columns, *columns)
+    all_columns = _data.columns
+    selected = all_columns[vars_select(all_columns, *columns)]
 
     weights = []
     repeated = []
@@ -652,30 +668,34 @@ def unite(
     Returns:
         The dataframe with selected columns united
     """
-    grouper = getattr(_data, 'grouper', None)
-    columns = vars_select(_data.columns, *columns)
-    _data = objectize(_data)
-    data = _data.copy()
-    copy_flags(data, _data)
+    all_columns = _data.columns
+    columns = all_columns[vars_select(all_columns, *columns)]
+
+    out = _data.copy()
 
     def unite_cols(row):
         if na_rm:
             row = [elem for elem in row if elem is not NA]
         return sep.join(str(elem) for elem in row)
 
-    data[col] = data[columns].agg(unite_cols, axis=1)
+    out[col] = out[columns].agg(unite_cols, axis=1)
     if remove:
-        data.drop(columns=columns, inplace=True)
+        out.drop(columns=columns, inplace=True)
 
-    if grouper is not None:
-        return group_df(data, grouper)
-    return data
+    if isinstance(_data, DataFrameGroupBy):
+        out = _data.__class__(
+            out,
+            _group_vars=group_vars(_data),
+            _drop=group_by_drop_default(_data)
+        )
+    copy_attrs(out, _data)
+    return out
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT)
 def drop_na(
-        _data: DataFrameType,
+        _data: DataFrame,
         *columns: str
-) -> DataFrameType:
+) -> DataFrame:
     """Drop rows containing missing values
 
     See https://tidyr.tidyverse.org/reference/drop_na.html
@@ -687,12 +707,19 @@ def drop_na(
     Returns:
         Dataframe with rows with NAs dropped
     """
-    grouper = getattr(_data, 'grouper', None)
-    columns = vars_select(_data.columns, *columns) if columns else None
-    ret = _data.dropna(subset=columns)
-    if grouper is not None:
-        return group_df(ret, grouper.names)
-    return ret
+    all_columns = _data.columns
+    columns = vars_select(all_columns, *columns)
+    columns = all_columns[columns]
+    out = _data.dropna(subset=columns)
+
+    if isinstance(_data, DataFrameGroupBy):
+        out = _data.__class__(
+            out,
+            _group_vars=group_vars(_data),
+            _drop=group_by_drop_default(_data)
+        )
+    copy_attrs(out, _data)
+    return out
 
 @register_verb(DataFrame, context=Context.EVAL)
 def expand(

@@ -10,7 +10,7 @@ from ..core.contexts import Context
 from ..core.utils import vars_select
 from ..core.types import StringOrIter
 from ..core.exceptions import ColumnNotExistingError
-from ..base import setdiff
+from ..base import setdiff, intersect
 from .group_data import group_vars
 
 
@@ -236,10 +236,15 @@ def any_of(
     Returns:
         The matched column names
     """
-    all_columns = _data.columns
-    vars = vars or all_columns
-    x = all_columns[vars_select(vars, x)]
-    return [elem for elem in x if elem in vars]
+    vars = vars or _data.columns
+    x = vars_select(vars, x, raise_nonexists=False)
+    exists = []
+    for idx in x:
+        try:
+            exists.append(vars[idx])
+        except IndexError:
+            ...
+    return intersect(vars, exists)
 
 @register_func(None)
 def num_range(

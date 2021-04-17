@@ -39,13 +39,13 @@ def lead(
         if not isinstance(order_by, Series):
             order_by = Series(order_by)
         order_by = order_by.sort_values()
-        series = series.loc[order_by.index, :]
+        series = series[order_by.index]
 
     ret = [default] * len(series)
     ret[:-n] = series.values[n:]
     if order_by is not None:
         ret = Series(ret, index=order_by.index)
-        return ret.loc[index, :]
+        return ret[index]
     return Series(ret, index=index)
 
 @register_func(None, context=Context.EVAL)
@@ -67,11 +67,11 @@ def lag(
         if not isinstance(order_by, Series):
             order_by = Series(order_by)
         order_by = order_by.sort_values()
-        series = series.loc[order_by.index, :]
+        series = series[order_by.index]
 
     ret = [default] * len(series)
     ret[n:] = series.values[:-n]
     if order_by is not None:
         ret = Series(ret, index=order_by.index)
-        return ret.loc[index, :]
+        return ret[index]
     return Series(ret, index=index)

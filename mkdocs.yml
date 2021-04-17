@@ -18,7 +18,7 @@ plugins:
     - search # necessary for search to work
     - mkapi
     - mkdocs-jupyter:
-        execute: True
+        execute: false
 extra_css:
     - style.css
 nav:

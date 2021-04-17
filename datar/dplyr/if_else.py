@@ -64,7 +64,7 @@ def case_when(*when_cases: Any) -> Series:
         out_len = len(when_cases[0])
     elif is_iterable(when_cases[1]):
         out_len = len(when_cases[1])
-    out = numpy.array([NA] * out_len)
+    out = numpy.array([NA] * out_len).astype(object)
     when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
     for case, rep in when_cases:
         if case is True:

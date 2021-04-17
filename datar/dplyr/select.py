@@ -13,7 +13,7 @@ from ..core.utils import vars_select, logger
 from ..core.middlewares import Inverted
 from ..core.grouped import DataFrameGroupBy
 from ..core.exceptions import ColumnNotExistingError
-from ..base import NA, setdiff, union
+from ..base import setdiff, union
 from .group_by import group_by_drop_default
 from .group_data import group_data, group_vars
 
@@ -69,6 +69,7 @@ def eval_select(
         A tuple of (selected columns, dict of old-to-new renaming columns)
     """
     selected = vars_select(_all_columns, *args, *kwargs.values())
+    print(selected)
     missing = setdiff(_group_vars, _all_columns[selected])
     if missing:
         logger.info(
