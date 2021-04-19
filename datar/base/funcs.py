@@ -379,7 +379,6 @@ is_int = is_integer
 @register_func(None, context=Context.EVAL)
 def is_double(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, (float, numpy.float))
     return is_float_dtype(x)
@@ -389,8 +388,7 @@ is_float = is_double
 @register_func(None, context=Context.EVAL)
 def is_na(x: Any) -> BoolOrIter:
     """Check if x is nan or not"""
-    x = objectize(x)
-    return numpy.isnan(x)
+    return pandas.isna(x)
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:

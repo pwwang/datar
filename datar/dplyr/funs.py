@@ -1,8 +1,8 @@
 """Functions from R-dplyr"""
-# TODO: add tests
 from typing import Any, Iterable, Optional
 
 import numpy
+import pandas
 from pandas import DataFrame, Series
 from pipda import register_func
 
@@ -22,7 +22,11 @@ def between(
 ) -> BoolOrIter:
     """Function version of `left <= x <= right`, which cannot do it rowwisely
     """
+    if not is_scalar(left) or not is_scalar(right):
+        raise ValueError(f"`{between}` expects scalars for `left` and `right`.")
     if is_scalar(x):
+        if pandas.isna(x) or pandas.isna(left) or pandas.isna(right):
+            return NA
         return left <= x <= right
     return Series(between(elem, left, right) for elem in x)
 
@@ -30,23 +34,50 @@ def between(
 def cummean(series: Iterable[NumericType]) -> Iterable[float]:
     """Get cumulative means"""
     if not isinstance(series, Series):
-        series = Series(series)
-    return series.cumsum(skipna=False) / (Series(range(len(series))) + 1.0)
+        series = Series(series, dtype='float64')
+    if len(series) > 0:
+        return series.cumsum(skipna=False) / (Series(range(len(series))) + 1.0)
+    return Series([], dtype='float64')
 
 @register_func(None, context=Context.EVAL)
-def cumall(series: Iterable[NumericType]) -> Iterable[float]:
+def cumall(series: Any) -> Series:
     """Get cumulative bool. All cases after first False"""
-    if not isinstance(series, Series):
-        series = Series(series)
-    return series.cummin(skipna=False).astype(bool)
+    if is_scalar(series):
+        series = [series]
+
+    bools = boolean(series) # all to bool, with NAs kept
+    out = []
+    out_append = out.append
+    for elem in bools:
+        if not out:
+            out_append(elem)
+        elif out[-1] is True and elem is True:
+            out_append(True)
+        elif out[-1] is False or elem is False:
+            out_append(False)
+        else:
+            out_append(NA)
+    return Series(out) if out else Series([], dtype=bool)
 
 @register_func(None, context=Context.EVAL)
-def cumany(series: Iterable[NumericType]) -> Iterable[float]:
+def cumany(series: Any) -> Series:
     """Get cumulative bool. All cases after first True"""
-    if not isinstance(series, Series):
-        series = Series(series)
-    return series.cummax(skipna=False).astype(bool)
+    if is_scalar(series):
+        series = [series]
 
+    # numpy treats NA differently than R does
+    bools = boolean(series) # all to bool, with NAs kept
+    out = []
+    out_append = out.append
+    for elem in bools:
+        if not out:
+            out_append(elem)
+        elif out[-1] is True or elem is True:
+            out_append(True)
+        else:
+            out_append(NA)
+    # let itself choose dtype (bool or object if NA exists)
+    return Series(out) if out else Series([], dtype=bool)
 
 @register_func(None, context=Context.EVAL)
 def coalesce(x: Any, *replace: Any) -> Any:
@@ -99,19 +130,13 @@ def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
     if is_scalar(x):
         x = [x]
     if not isinstance(x, Series):
-        x = Series(x)
+        x = Series(x, dtype=object) if len(x) == 0 else Series(x)
 
-    if not isinstance(y, Series) and is_scalar(y):
-        y = Series(y)
-    if isinstance(y, Series):
-        y = y.values
-
-    x = x.to_frame(name='x')
-    x.loc[x.x.values == y] = NA
-    return x['x']
+    x[x == y] = NA
+    return x
 
 @register_func(None, context=Context.EVAL)
-def near(x: Iterable[Any], y: Any, tol: float = 1e-8) -> Iterable[Any]:
+def near(x: Iterable[Any], y: Any, tol: float = 1e-8) -> Iterable[bool]:
     """Compare numbers with tolerance"""
     if is_scalar(x):
         x = [x]
@@ -130,6 +155,8 @@ def nth(
     if order_by is not None:
         order_by = numpy.array(order_by)
         x = x[order_by.argsort()]
+    if not isinstance(n, int):
+        raise TypeError("`nth` expects `n` to be an integer")
     try:
         return x[n]
     except IndexError:
@@ -166,3 +193,9 @@ def last(
         return x[-1]
     except IndexError:
         return default
+
+def boolean(value: Any) -> BoolOrIter:
+    """Convert value to bool, but keep NAs"""
+    if is_scalar(value):
+        return NA if pandas.isna(value) else bool(value)
+    return [boolean(elem) for elem in value]

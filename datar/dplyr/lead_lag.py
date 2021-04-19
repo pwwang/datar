@@ -31,6 +31,9 @@ def lead(
     Returns:
         Lead or lag values with default values filled to series.
     """
+    if n == 0: # ignore other arguments
+        return series
+
     series, cats, default = lead_lag_prepare(series, n, default, order_by)
     index = series.index
 
@@ -54,6 +57,9 @@ def lag(
 
     See lead()
     """
+    if n == 0: # ignore other arguments
+        return series
+
     series, cats, default = lead_lag_prepare(series, n, default, order_by)
     index = series.index
 

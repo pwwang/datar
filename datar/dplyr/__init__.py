@@ -51,3 +51,4 @@ from .group_iter import (
 from .pull import pull
 from .lead_lag import lead, lag
 from .recode import recode, recode_factor, recode_categorical
+from .order_by import order_by, with_order
