@@ -26,6 +26,15 @@ def summarise(
 
     See https://dplyr.tidyverse.org/reference/summarise.html
 
+    Note:
+        Both input and the summarised data can be recycled, but separately.
+        For example:
+        >>> df = tibble(x=[1,2,3,4])
+        >>> df >> summarise(y=sum(f.x), z=f.y*2)
+        >>> #   y  z
+        >>> # 0 10 20
+        >>> df >> summarise(y=sum(f.x), z=f.x+f.y) # fail
+
     Args:
         _groups: Grouping structure of the result.
             - "drop_last": dropping the last level of grouping.
@@ -125,6 +134,7 @@ def summarise_build(
         *args: Any,
         **kwargs: Any
 ) -> DataFrame:
+    """Build summarise result"""
     context = Context.EVAL.value
     named = name_mutatable_args(*args, **kwargs)
 

@@ -64,7 +64,7 @@ def test_orders_by_groups():
 
     df = tibble(a = sample(letters[:10], 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.a.tolist() == letters[:10]
+    assert out.a.tolist() == letters[:10].tolist()
 
     df = tibble(a = sample(sqrt(range(1,11)), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()

@@ -14,9 +14,9 @@ from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy
 from ..base.constants import NA
 from ..base import intersect, unique
+from .filter import filter_groups
 from .group_by import group_by_drop_default
 from .group_data import group_vars
-from .filter import preserve_grouping
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -73,8 +73,11 @@ def _(
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data)
     )
-    if _preserve:
-        preserve_grouping(out, _data)
+    gdata = filter_groups(out, _data)
+
+    if not _preserve and _data.attrs.get('groupby_drop', True):
+        out._group_data = gdata[gdata['_rows'].map(len) > 0]
+
     copy_attrs(out, _data)
     return out
 

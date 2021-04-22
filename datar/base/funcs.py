@@ -24,7 +24,7 @@ from .constants import NA
 from ..core.utils import categorize, objectize, logger
 from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
-    BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
+    BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
     NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
     is_iterable, is_series_like, is_scalar
 )
@@ -353,7 +353,6 @@ def is_character(x: Any) -> BoolOrIter:
 @register_func(None, context=Context.EVAL)
 def is_categorical(x: Any) -> bool:
     """Check if x is categorical data"""
-    x = objectize(x)
     return is_categorical_dtype(x)
 
 is_factor = is_categorical
@@ -837,7 +836,7 @@ def droplevels(x: Categorical) -> Categorical:
     return categorize(x).remove_unused_categories()
 
 @register_func(None, context=Context.EVAL)
-def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
+def levels(x: CategoricalLikeType) -> Optional[List[Any]]:
     """Get levels from a factor
 
     Args:
@@ -846,12 +845,11 @@ def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
     Returns:
         levels of the categorical data
     """
-    if isinstance(x, Categorical):
-        return x.categories
-    if is_categorical_dtype(x):
-        return x.cat.categories
-
-    return None
+    if not is_categorical_dtype(x):
+        return None
+    if isinstance(x, Series):
+        x = x.cat
+    return x.categories
 
 @register_func(None, context=Context.EVAL)
 def rep(

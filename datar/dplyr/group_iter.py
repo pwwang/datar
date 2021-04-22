@@ -6,19 +6,18 @@ https://github.com/tidyverse/dplyr/blob/master/R/group_trim.R
 """
 # TODO: add tests
 
-from pipda.utils import evaluate_expr
 from typing import Any, Callable, Iterable, List, Optional
 
 import pandas
 from pandas import DataFrame
-from pipda import register_verb
+from pipda import register_verb, evaluate_expr
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.utils import copy_attrs, logger, vars_select
+from ..core.utils import copy_attrs, logger, vars_select, nargs
 from ..core.types import StringOrIter
-from ..base import is_factor, droplevels, setdiff
-from .group_data import group_rows, group_vars
+from ..base import is_factor, droplevels, setdiff, intersect
+from .group_data import group_data, group_keys, group_rows, group_vars
 from .group_by import group_by, group_by_drop_default, ungroup
 from .select import select
 from .mutate import mutate
@@ -34,9 +33,17 @@ def group_map(
         _keep: bool = False,
         **kwargs: Any,
 ) -> List[Any]:
-    """Map function to data in each group, returns a list"""
-    for chunk in group_split(_data, _keep=_keep):
-        yield _f(chunk, *args, **kwargs)
+    """A generator to map function to data in each group"""
+    keys = group_keys(_data) if nargs(_f) > 1 else None
+    for i, chunk in enumerate(group_split(_data, _keep=_keep)):
+        if keys is None:
+            yield _f(chunk)
+        else:
+            yield _f(chunk, keys.iloc[[i], :], *args, **kwargs)
+
+group_map.list = register_verb(DataFrame, context=Context.PENDING)(
+    lambda *args, **kwargs: list(group_map(*args, **kwargs))
+)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def group_modify(
@@ -47,18 +54,48 @@ def group_modify(
         **kwargs: Any,
 ) -> DataFrame:
     """Modify data in each group with func, returns a dataframe"""
-    # TODO
-    # out = group_map(_data, _f, _keep=_keep, *args, **kwargs)
-    # out = pandas.concat(out, ignore_index=True)
+    return _f(_data, *args, **kwargs)
 
-    # if isinstance(_data, DataFrameGroupBy):
-    #     out = _data.__class__(
-    #         out,
-    #         _group_vars=group_vars(_data),
-    #         _drop=group_by_drop_default(_data)
-    #     )
-    # copy_attrs(out, _data)
-    # return out
+@group_modify.register(DataFrameGroupBy)
+def _(
+        _data: DataFrameGroupBy,
+        _f: Callable,
+        *args: Any,
+        _keep: bool = False,
+        **kwargs: Any,
+) -> DataFrameGroupBy:
+    gvars = group_vars(_data)
+    func = (lambda df, keys: _f(df)) if nargs(_f) == 1 else _f
+
+    def fun(df, keys):
+        res = func(df, keys, *args, **kwargs)
+        if not isinstance(res, DataFrame):
+            raise ValueError(
+                "The result of `_f` should be a data frame."
+            )
+        bad = intersect(res.columns, gvars)
+        if bad:
+            raise ValueError(
+                "The returned data frame cannot contain the original grouping "
+                f"variables: {bad}."
+            )
+
+        return pandas.concat(
+            (
+                keys.iloc[[0] * res.shape[0], :].reset_index(drop=True),
+                res.reset_index(drop=True)
+            ),
+            axis=1
+        )
+
+    chunks = group_map(_data, fun, _keep=_keep)
+    out = pandas.concat(chunks, axis=0)
+    return _data.__class__(
+        out,
+        _group_vars=gvars,
+        _drop=group_by_drop_default(_data)
+    )
+
 
 @register_verb(DataFrame, context=Context.EVAL)
 def group_walk(
@@ -137,7 +174,8 @@ def group_split(
 ) -> Iterable[DataFrame]:
     """Get a list of data in each group"""
     data = group_by(_data, *args, **kwargs)
-    return group_split_impl(data, _keep=_keep)
+    yield from group_split_impl(data, _keep=_keep)
+
 
 @group_split.register(DataFrameGroupBy, context=Context.EVAL)
 def _(
@@ -146,8 +184,14 @@ def _(
         _keep: bool = True,
         **kwargs: Any
 ) -> DataFrameGroupBy:
-    data = group_by(_data, *args, **kwargs, _add=True)
-    return group_split_impl(data, _keep=_keep)
+    # data = group_by(_data, *args, **kwargs, _add=True)
+    if args or kwargs:
+        logger.warning(
+            "`*args` and `**kwargs` are ignored in "
+            "`group_split(<DataFrameGroupBy)`, please use "
+            "`group_by(..., _add=True) >> group_split()`."
+        )
+    return group_split_impl(_data, _keep=_keep)
 
 @group_split.register(DataFrameRowwise, context=Context.EVAL)
 def _(
@@ -159,18 +203,22 @@ def _(
     if args or kwargs:
         logger.warning(
             "`*args` and `**kwargs` is ignored in "
-            "group_split(<DataFrameRowwise>)."
+            "`group_split(<DataFrameRowwise>)`."
         )
     if _keep is not None:
         logger.warning(
             "`_keep` is ignored in "
-            "group_split(<DataFrameRowwise>)."
+            "`group_split(<DataFrameRowwise>)`."
         )
 
     return group_split_impl(_data, _keep=True)
 
+group_split.list = register_verb(DataFrame, context=Context.PENDING)(
+    lambda *args, **kwargs: list(group_split(*args, **kwargs))
+)
 
 def group_split_impl(data: DataFrame, _keep: bool):
+    """Implement splitting data frame by groups"""
     out = ungroup(data)
     indices = group_rows(data)
 

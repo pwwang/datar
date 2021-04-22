@@ -2,6 +2,7 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/filter.R
 """
+from functools import singledispatch
 from typing import Iterable, Optional
 
 import numpy
@@ -10,7 +11,7 @@ from pipda import register_verb
 from pipda.utils import Expression
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy
+from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import is_scalar
 from ..core.utils import copy_attrs
 from .group_by import group_by_drop_default
@@ -51,10 +52,10 @@ def filter( # pylint: disable=redefined-builtin
     except AttributeError:
         ...
 
+    out = _data[condition]
     if _drop_index is None:
         _drop_index = isinstance(_data.index, RangeIndex)
 
-    out = _data[condition]
     if _drop_index:
         out = out.reset_index(drop=True)
     copy_attrs(out, _data)
@@ -64,7 +65,8 @@ def filter( # pylint: disable=redefined-builtin
 def _(
         _data: DataFrameGroupBy,
         *conditions: Expression,
-        _preserve: bool = False
+        _preserve: bool = False,
+        _drop_index: Optional[bool] = None # TODO ?
 ) -> DataFrameGroupBy:
     """Filter on DataFrameGroupBy object"""
     if _data.shape[0] > 0:
@@ -80,20 +82,36 @@ def _(
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data)
     )
+    gdata = filter_groups(out, _data)
 
-    if _preserve:
-        preserve_grouping(out, _data)
+    if not _preserve and _data.attrs.get('groupby_drop', True):
+        out._group_data = gdata[gdata['_rows'].map(len) > 0]
 
     copy_attrs(out, _data)
     return out
 
-def preserve_grouping(new: DataFrame, old: DataFrame):
+@singledispatch
+def filter_groups(
+        new: DataFrameGroupBy,
+        old: DataFrameGroupBy
+) -> DataFrame:
+    """Filter non-existing rows in groupdata"""
     gdata = group_data(new).set_index(group_vars(new))['_rows'].to_dict()
     new_gdata = group_data(old).copy()
     for row in new_gdata.iterrows():
         ser = row[1]
         key = tuple(ser[:-1])
-        ser[-1] = gdata[key] if key in gdata else []
-        new_gdata.iloc[row[0], :] = ser
+        if len(key) == 1:
+            key = key[0]
+        ser[-1] = gdata.get(key, [])
+        new_gdata.loc[row[0], :] = ser
 
     new._group_data = new_gdata
+    return new_gdata
+
+@filter_groups.register
+def _(
+        new: DataFrameRowwise,
+        old: DataFrameRowwise
+) -> DataFrame:
+    return new._group_data

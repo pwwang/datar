@@ -2,6 +2,8 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/distinct.R
 """
+from datar.core.types import is_scalar
+from datar.core.middlewares import Collection
 from typing import Any, Iterable
 
 import pandas
@@ -89,9 +91,10 @@ def _(
     )
 
 @register_func(None, context=Context.EVAL)
-def n_distinct(data: Iterable[Any], na_rm: bool = False) -> int:
+def n_distinct(*data: Any, na_rm: bool = False) -> int:
     """Get the length of distince elements"""
-    # TODO: add tests
+    data = Collection(*(dat if is_scalar(dat) else list(dat) for dat in data))
+    data = pandas.unique(data)
     if not na_rm:
-        return len(pandas.unique(data))
+        return len(data)
     return pandas.notna(data).sum()

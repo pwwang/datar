@@ -29,7 +29,18 @@ def _(_data: DataFrameGroupBy) -> DataFrame:
 
 @register_verb(DataFrame)
 def group_keys(_data: DataFrame) -> DataFrame:
-    """Just grouping data without the `_rows` columns"""
+    """Just grouping data without the `_rows` columns
+
+    Note:
+        Additional arguments to select columns in dplyr are deprecated.
+        Here we don't support it ahead.
+
+    Args:
+        _data: The data frame
+
+    Returns:
+        The group data without `_rows` column.
+    """
     return DataFrame(index=[0])
 
 @group_keys.register(DataFrameGroupBy)

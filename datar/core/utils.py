@@ -1,9 +1,10 @@
 """Core utilities"""
 
 import logging
+import inspect
 from functools import singledispatch
 from copy import deepcopy
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
 from pandas import DataFrame
@@ -514,3 +515,7 @@ def copy_attrs(
     for key, val in df2.attrs.items():
         if group or not key.startswith('group_'):
             df1.attrs[key] = deepcopy(val) if deep else val
+
+def nargs(fun: Callable) -> int:
+    """Get the number of arguments of a function"""
+    return len(inspect.signature(fun).parameters)

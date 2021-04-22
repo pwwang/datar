@@ -157,6 +157,12 @@ def test_filter_false_handles_indices():
     out = group_rows(out)
     assert out == []
 
+    # not documented, but _drop=False keeps groups
+    out = mtcars >> group_by(f.cyl, _drop=False) >> filter(
+        False)
+    out = group_rows(out)
+    assert out == [[], [], []]
+
 # def test_hybrid_lag_and_default_value_for_string_cols():
 
 def test_handles_tuple_columns():

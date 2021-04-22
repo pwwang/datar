@@ -12,5 +12,5 @@ NULL = None
 pi = math.pi # pylint: disable=invalid-name
 Inf = numpy.inf # pylint: disable=invalid-name
 
-letters = list(ascii_letters[:26]) # pylint: disable=invalid-name
-LETTERS = list(ascii_letters[26:])
+letters = numpy.array(list(ascii_letters[:26])) # pylint: disable=invalid-name
+LETTERS = numpy.array(list(ascii_letters[26:]))

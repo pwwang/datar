@@ -3,6 +3,7 @@ from typing import Any, Iterable, Union
 
 # pylint: disable=unused-import
 import numpy
+from pandas.core.arrays.categorical import Categorical
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
@@ -15,6 +16,7 @@ FloatType = Union[float, numpy.float64]
 DataFrameType = Union[DataFrame, DataFrameGroupBy]
 SeriesType = Union[Series, SeriesGroupBy]
 SeriesLikeType = Union[Series, SeriesGroupBy, numpy.ndarray]
+CategoricalLikeType = Union[Series, Categorical]
 StringOrIter = Union[str, Iterable[str]]
 IntOrIter = Union[IntType, Iterable[IntType]]
 DoubleOrIter = Union[numpy.double, Iterable[numpy.double]]
