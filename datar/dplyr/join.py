@@ -3,14 +3,16 @@
 from typing import Iterable, Mapping, Optional, Union
 
 import pandas
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, Categorical
+from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.types import StringOrIter
-from ..core.grouped import DataFrameGroupBy
-from ..base import intersect, setdiff
+from ..core.types import StringOrIter, is_scalar
+from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..base import intersect, setdiff, union
 from .group_by import group_by_drop_default
+from .group_data import group_data, group_vars
 from .filter import filter # pylint: disable=redefined-builtin
 
 def _join(
@@ -20,10 +22,18 @@ def _join(
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False,
         suffix: Iterable[str] = ("_x", "_y"),
+        na_matches: str = "", # TODO: how?
         keep: bool = False
 ) -> DataFrame:
     """General join"""
-    if isinstance(by, dict):
+    if by is not None and not by:
+        ret = pandas.merge(
+            x, y,
+            how='cross',
+            copy=copy,
+            suffixes=suffix
+        )
+    elif isinstance(by, dict):
         right_on = list(by.values())
         ret = pandas.merge(
             x, y,
@@ -35,7 +45,22 @@ def _join(
         )
         if not keep:
             ret.drop(columns=right_on, inplace=True)
+    elif keep:
+        # on=... doesn't keep both by columns in left and right
+        left_on = [f"{col}{suffix[0]}" for col in by]
+        right_on = [f"{col}{suffix[1]}" for col in by]
+        x = x.rename(columns=dict(zip(by, left_on)))
+        y = y.rename(columns=dict(zip(by, right_on)))
+        ret = pandas.merge(
+            x, y,
+            left_on=left_on,
+            right_on=right_on,
+            how=how,
+            copy=copy,
+            suffixes=suffix
+        )
     else:
+        by = [by] if is_scalar(by) else by
         ret = pandas.merge(
             x, y,
             on=by,
@@ -43,13 +68,32 @@ def _join(
             copy=copy,
             suffixes=suffix
         )
+        for col in by:
+            if is_categorical_dtype(x[col]) and is_categorical_dtype(y[col]):
+                ret[col] = Categorical(
+                    ret[col],
+                    categories=union(
+                        x[col].cat.categories,
+                        y[col].cat.categories
+                    )
+                )
 
-    if isinstance(x, DataFrameGroupBy):
-        return DataFrameGroupBy(
+    if isinstance(x, DataFrameRowwise):
+        gvars = intersect(group_vars(x), ret.columns)
+        return DataFrameRowwise(
             ret,
-            _group_vars=x._group_vars,
+            _group_vars=gvars,
             _drop=group_by_drop_default(x)
         )
+
+    if isinstance(x, DataFrameGroupBy):
+        gvars = intersect(group_vars(x), ret.columns)
+        if gvars:
+            return DataFrameGroupBy(
+                ret,
+                _group_vars=gvars,
+                _drop=group_by_drop_default(x)
+            )
 
     return ret
 
@@ -135,6 +179,10 @@ def right_join(
     """Mutating joins including all rows in y.
 
     See inner_join()
+
+    Note:
+        The rows of the order is preserved according to `y`. But `dplyr`'s
+        `right_join` preserves order from `x`.
     """
     return _join(
         x, y,
@@ -192,9 +240,9 @@ def semi_join(
         how='left',
         copy=copy,
         suffixes=['', '_y'],
-        indicator=True
+        indicator='__merge__'
     )
-    ret = ret.loc[ret._merge == 'both', x.columns.tolist()]
+    ret = ret.loc[ret['__merge__'] == 'both', x.columns.tolist()]
 
     if isinstance(x, DataFrameGroupBy):
         return DataFrameGroupBy(
@@ -239,14 +287,18 @@ def anti_join(
 
     return ret
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={'by': Context.SELECT}
+)
 def nest_join(
         x: DataFrame,
         y: DataFrame,
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False,
-        suffix: Iterable[str] = ("_x", "_y"),
-        keep: bool = False
+        keep: bool = False,
+        name: Optional[str] = None
 ) -> DataFrame:
     """Returns all rows and columns in x with a new nested-df column that
     contains all matches from y
@@ -275,15 +327,20 @@ def nest_join(
         df = filter(y, condition)
         if not keep:
             df = df[setdiff(df.columns, on.values())]
-        if suffix:
-            for col in df.columns:
-                if col in x:
-                    x.rename(columns={col: f'{col}{suffix[0]}'}, inplace=True)
-                    df.rename(columns={col: f'{col}{suffix[1]}'}, inplace=True)
+
         return df
 
     y_matched = x.apply(get_nested_df, axis=1)
-    y_name = getattr(y, '__dfname__', None)
+    y_name = name or getattr(y, '__dfname__', None)
     if y_name:
         y_matched = y_matched.to_frame(name=y_name)
-    return pandas.concat([x, y_matched], axis=1)
+
+    out = pandas.concat([x, y_matched], axis=1)
+    if isinstance(x, DataFrameGroupBy):
+        return x.__class__(
+            x,
+            _group_vars=group_vars(x),
+            _drop=group_by_drop_default(x),
+            _group_data=group_data(x)
+        )
+    return out
