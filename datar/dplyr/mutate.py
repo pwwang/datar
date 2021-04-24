@@ -83,7 +83,7 @@ def mutate(
 
     cols, removed = mutate_cols(_data, context, *args, **kwargs)
     if cols is None:
-        return _data
+        cols = DataFrame(index=_data.index)
 
     out = _data.copy()
     # order is the same as _data
@@ -95,6 +95,7 @@ def mutate(
         new = setdiff(cols.columns, _data.columns)
         out = relocate(out, *new, _before=_before, _after=_after)
 
+    print(cols.columns)
     if keep == 'all':
         return out
     if keep == 'unused':
@@ -111,6 +112,7 @@ def mutate(
             c(group_vars(_data), used, cols.columns)
         )
     else: # keep == 'none':
+        print(cols.columns)
         keep = union(
             setdiff(group_vars(_data), cols.columns),
             intersect(cols.columns, out.columns)
@@ -165,7 +167,7 @@ def _(
 
 
 @register_verb(DataFrame, context=Context.PENDING)
-def transmutate(
+def transmute(
         _data: DataFrame,
         *args: Any,
         _before: Optional[Union[int, str]] = None,
@@ -176,7 +178,6 @@ def transmutate(
 
     See mutate().
     """
-    # TODO: add tests
     return _data >> mutate(
         *args,
         _keep='none',
@@ -191,6 +192,7 @@ def mutate_cols(
         *args: Any,
         **kwargs: Any
 ) -> Tuple[Optional[DataFrame], List[str]]:
+    """Mutate columns"""
     if not args and not kwargs:
         return None, []
 

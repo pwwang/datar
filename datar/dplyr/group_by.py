@@ -116,6 +116,7 @@ def group_by_prepare(
         _add: bool = False,
         **kwargs: Any
 ) -> Mapping[str, Any]:
+    """Prepare for group by"""
     computed_columns = add_computed_columns(
         _data,
         *args,
@@ -128,12 +129,13 @@ def group_by_prepare(
     if _add:
         group_names = union(group_vars(_data), group_names)
 
-    unknown = setdiff(group_names, out.columns)
-    if unknown:
-        raise ValueError(
-            "Must group by variables found in `_data`.",
-            f"Column `{unknown}` not found."
-        )
+    # checked in add_computed_columns
+    # unknown = setdiff(group_names, out.columns)
+    # if unknown:
+    #     raise ValueError(
+    #         "Must group by variables found in `_data`.",
+    #         f"Column `{unknown}` not found."
+    #     )
 
     return {'data': out, 'group_names': group_names}
 

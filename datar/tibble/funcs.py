@@ -2,8 +2,7 @@
 import itertools
 from typing import Any, Callable, Union, Optional
 
-from pandas import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy
+from pandas import DataFrame, Series
 from pipda import Context, register_func
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
@@ -45,8 +44,11 @@ def tibble(
         except VarnameRetrievingError:
             df.__dfname__ = None
         return df
+
     try:
         argnames = argname(args, vars_only=False, pos_only=True)
+        if len(argnames) != len(args):
+            raise VarnameRetrievingError
     except VarnameRetrievingError:
         argnames = [f"{DEFAULT_COLUMN_PREFIX}{i}" for i in range(len(args))]
 
@@ -71,6 +73,9 @@ def tibble(
         if isinstance(arg, dict):
             arg = tibble(**arg)
 
+        elif isinstance(arg, Series) and name in argnames:
+            name = arg.name
+
         if df is None:
             if isinstance(arg, DataFrame):
                 # df = arg.copy()
@@ -81,7 +86,7 @@ def tibble(
 
             else:
                 df = to_df(arg, name)
-        elif isinstance(arg, (DataFrame, DataFrameGroupBy)):
+        elif isinstance(arg, DataFrame):
             for col in arg.columns:
                 df_assign_item(
                     df,

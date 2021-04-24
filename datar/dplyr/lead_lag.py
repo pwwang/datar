@@ -11,6 +11,7 @@ from pipda import register_func
 from ..core.types import NumericType, is_scalar
 from ..core.contexts import Context
 from ..base.constants import NA
+from .order_by import with_order
 
 @register_func(None, context=Context.EVAL)
 def lead(
@@ -34,14 +35,15 @@ def lead(
     if n == 0: # ignore other arguments
         return series
 
-    series, cats, default = lead_lag_prepare(series, n, default, order_by)
+    if order_by is not None:
+        return with_order(order_by, lead, series, n=n, default=default)
+
+    series, cats, default = lead_lag_prepare(series, n, default)
     index = series.index
 
     ret = default * len(series)
     ret[:-n] = series.values[n:]
-    if order_by is not None:
-        ret = Series(ret, index=order_by.index)
-        ret = ret[index]
+
     if cats is not None:
         ret = Categorical(ret, categories=cats)
     return Series(ret, index=index)
@@ -60,14 +62,15 @@ def lag(
     if n == 0: # ignore other arguments
         return series
 
-    series, cats, default = lead_lag_prepare(series, n, default, order_by)
+    if order_by is not None:
+        return with_order(order_by, lag, series, n=n, default=default)
+
+    series, cats, default = lead_lag_prepare(series, n, default)
     index = series.index
 
     ret = default * len(series)
     ret[n:] = series.values[:-n]
-    if order_by is not None:
-        ret = Series(ret, index=order_by.index)
-        ret = ret[index]
+
     if cats is not None:
         ret = Categorical(ret, categories=cats)
     return Series(ret, index=index)
@@ -75,8 +78,7 @@ def lag(
 def lead_lag_prepare(
         data: Iterable[Any],
         n: int,
-        default: Any,
-        order_by: Optional[Iterable[Any]]
+        default: Any
 ):
     """Prepare and check arguments for lead-lag"""
     cats = None
@@ -96,11 +98,5 @@ def lead_lag_prepare(
 
     if not isinstance(data, Series):
         data = Series(data)
-
-    if order_by is not None:
-        if not isinstance(order_by, Series):
-            order_by = Series(order_by)
-        order_by = order_by.sort_values()
-        data = data[order_by.index]
 
     return data, cats, default

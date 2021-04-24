@@ -130,6 +130,11 @@ def test_can_add_tallies_of_a_variable():
     exp = group_by(tibble(a=c(2,1,1), n=c(1,2,2)), f.a)
     assert out.equals(exp)
     assert group_vars(out) == group_vars(exp)
+    # sort
+    out = df >> group_by(f.a) >> add_tally(sort=True)
+    exp = group_by(tibble(a=c(1,1,2), n=c(2,2,1)), f.a)
+    assert out.equals(exp)
+    assert group_vars(out) == group_vars(exp)
 
 def test_add_tally_can_be_given_a_weighting_variable():
     df = tibble(a=c(1,1,2,2,2), w=c(1,1,2,3,4))

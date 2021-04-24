@@ -2,6 +2,7 @@
 import pytest
 
 from datar.all import *
+from .conftest import assert_iterable_equal
 
 def test_missing_replaced():
     x = [NA, 1]
@@ -46,3 +47,8 @@ def test_with_dataframes():
     out = coalesce(df1, df2, df3)
     expect = tibble(x = c(1.0, 1.0, 3.0), y = c(2.0, 4.0, 50.0), z = c(1.0, 2.0, 103.0))
     assert out.equals(expect)
+
+def test_no_rep():
+    x = c(1,2,NA,NA,5)
+    out = coalesce(x)
+    assert_iterable_equal(x, out)

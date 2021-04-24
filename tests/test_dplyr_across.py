@@ -315,6 +315,11 @@ def test_c_across():
     out = df >> summarise(z=[c_across([f.x, f.y])]) >> pull(f.z, to='list')
     assert out[0].tolist() == [1,2,3,4]
 
+    # what if no columns specified
+    gf = group_by(df, f.x)
+    out = gf >> mutate(z=sum(c_across())) >> pull(to='list')
+    assert out == [3,4]
+
 def test_nb_fail():
     from datar.datasets import iris
     out = iris >> mutate(

@@ -248,3 +248,21 @@ def test_rowwise_group_structure_is_updated_after_a_join():
 
     x = left_join(df1, df2, by = "x")
     assert group_rows(x) == [[0],[1],[2]]
+
+def test_join_by_dict_not_keep():
+    df1 = tibble(x=[1,2])
+    df2 = tibble(y=[1,2])
+
+    out = left_join(df1, df2, by=dict(x="y"))
+    assert out.equals(df1)
+
+def test_nest_join_by_multiple():
+    df1 = tibble(x=[1,2], y=[3,4])
+    df2 = tibble(x=[1,2], y=[3,4], z=[5,6])
+    out = nest_join(df1, df2, by=['x', 'y'])
+    assert out.df2.values[0].equals(tibble(z=5))
+    assert out.df2.values[1].equals(tibble(z=6))
+
+    out = nest_join(df1, df2, copy=True)
+    assert out.df2.values[0].equals(tibble(z=5))
+    assert out.df2.values[1].equals(tibble(z=6))

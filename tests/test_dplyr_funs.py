@@ -11,6 +11,8 @@ import pandas
 import pytest
 from datar.all import *
 
+from .conftest import assert_iterable_equal
+
 def test_between():
     b = between([2,5], 1, 3).tolist()
     assert b == [True, False]
@@ -195,3 +197,9 @@ def test_first_uses_default_value_for_0len_input():
     assert first([], default=1) == 1
     assert pandas.isna(last([]))
     assert last([], default=1) == 1
+
+# desc -------------------------------------------------------------
+def test_desc():
+    x = factor(c(letters[:3], NA), levels=letters[:3])
+    out = desc(x)
+    assert_iterable_equal(out, [-0., -1., -2., NA])

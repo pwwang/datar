@@ -24,7 +24,8 @@ from .constants import NA
 from ..core.utils import categorize, logger
 from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
-    BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
+    BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter,
+    NumericOrIter,
     NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
     is_iterable, is_series_like, is_scalar
 )
@@ -443,8 +444,8 @@ def seq(
     if length_out is not None:
         by = (float(to) - float(from_)) / float(length_out - 1)
     elif by is None:
-        by = 1
-        length_out = to - from_ + 1
+        by = 1 if to > from_ else -1
+        length_out = to - from_ + 1 if to > from_ else from_ - to + 1
     else:
         length_out = (to - from_ + 1.1 * by) // by
     return numpy.array([from_ + n * by for n in range(int(length_out))])

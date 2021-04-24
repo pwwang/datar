@@ -40,8 +40,12 @@ def distinct(
     Returns:
         A dataframe without duplicated rows in _data
     """
-    # keep_none_prefers_new_order
-    uniq = mutate(_data, *args, **kwargs, _keep='none').drop_duplicates()
+    if not args and not kwargs:
+        uniq = _data.drop_duplicates()
+    else:
+        # keep_none_prefers_new_order
+        uniq = mutate(_data, *args, **kwargs, _keep='none').drop_duplicates()
+
     if not _keep_all:
         # keep original order
         out = uniq[union(

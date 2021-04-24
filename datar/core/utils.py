@@ -9,6 +9,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 import numpy
 from pandas import DataFrame, Index, Series
 from pandas.core.groupby import SeriesGroupBy
+from pandas.core.dtypes.common import is_categorical_dtype
 from pipda.symbolic import Reference
 
 from varname import argname
@@ -16,7 +17,7 @@ from varname import argname
 from .exceptions import (
     ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
 )
-from .types import DataFrameType, StringOrIter, is_scalar
+from .types import DataFrameType, is_scalar
 from .defaults import DEFAULT_COLUMN_PREFIX
 
 # logger

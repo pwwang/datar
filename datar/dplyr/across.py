@@ -12,6 +12,7 @@ from pipda.context import ContextBase
 from ..core.utils import vars_select
 from ..core.contexts import Context
 from ..core.middlewares import Across, IfAll, IfAny
+from .tidyselect import everything
 
 @register_func(
     context=None,
@@ -70,7 +71,8 @@ def c_across(
         A series
     """
     if not _cols:
-        _cols = _data.columns
+        _cols = everything(_data)
+
     _cols = vars_select(_data.columns.tolist(), _cols)
 
     series = [_data.iloc[:, col] for col in _cols]

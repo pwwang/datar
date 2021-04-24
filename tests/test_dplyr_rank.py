@@ -17,7 +17,7 @@ def ntile_h(x, n):
 
 def test_ntile_ignores_number_of_nas():
     x = c(1,2,3,NA, NA)
-    out = ntile(x, n=3)
+    out = ntile(x, 3)
     assert_iterable_equal(out, [0,1,2,NA,NA])
 
     out = ntile_h(x, 3)

@@ -50,6 +50,10 @@ def test_cur_group_rows():
 
     out = gf >> summarise(x=[cur_group_rows()]) >> pull()
     assert out.values.tolist() == [[1], [0,2]]
+    # data frame
+    out = df >> summarise(x=[cur_group_rows()]) >> pull()
+    assert out.values.tolist() == [[0,1,2]]
+
 
 def test_cur_data_all_sequentially():
     df = tibble(a=1)
@@ -75,3 +79,8 @@ def test_errors():
         cur_group_id()
     with pytest.raises(ValueError):
         cur_group_rows()
+
+def test_cur_column():
+    df = tibble(x=1, y=2, z=3)
+    out = df >> mutate(across(f[f.x:f.z], (lambda x, y: y), y=cur_column()))
+    assert out.values.tolist() == [['x', 'y', 'z']]

@@ -1,5 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-distinct.R
+from datar.core.grouped import DataFrameRowwise
 import pytest
 from datar.all import *
 
@@ -98,7 +99,7 @@ def test_preserves_order():
     assert out.columns.tolist() == ['x', 'y']
 
 def test_on_na():
-    df = tibble(col_a=[1, NA, NA]) >> mutate(col_a=f.col_a+0.0)
+    df = tibble(col_a=[1, NA, NA]) #>> mutate(col_a=f.col_a+0.0)
     rows = df >> distinct() >> nrow()
     assert rows == 2
 
@@ -137,3 +138,11 @@ def test_errors():
         df >> distinct(f.aa, f.bb)
     with pytest.raises(ColumnNotExistingError):
         df >> distinct(y=f.a+1)
+
+def test_rowwise_df():
+    df = tibble(x=[1,1,1,2], y=[1,2,2,2])
+    rf = df >> rowwise()
+    out = distinct(rf)
+    exp = distinct(df)
+    assert out.equals(exp)
+    assert isinstance(out, DataFrameRowwise)

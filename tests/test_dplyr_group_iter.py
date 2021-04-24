@@ -37,6 +37,9 @@ def test_group_data_dataframerowwise_returns_df():
 # group_rows() and group_keys() -------------------------------------------
 def test_group_rows_group_keys_partition_group_data():
     df = tibble(x=[1,2], y=[1,2])
+    rows = group_rows(df)
+    assert rows == [[0,1]]
+
     gf = group_by(df, f.x, f.y)
     gd = group_data(gf)
 
@@ -113,6 +116,8 @@ def test_group_map_respects_empty_groups():
 def test_group_map_can_return_arbitrary_objects():
     out = group_by(mtcars, f.cyl) >> group_map.list(lambda df: 10)
     assert out == [10] * 3
+    out = group_by(mtcars, f.cyl) >> group_walk(lambda df: 10)
+    assert out is None
 
 def test_group_map_works_on_ungrouped_df():
     out = group_map(mtcars, lambda df: head(df, 2))
@@ -245,9 +250,12 @@ def test_group_split_grouped_df_warns_about_args_kwargs(caplog):
 
 def test_group_split_rowwise_df_warns_about_args_kwargs(caplog):
     # test_that("group_split.rowwise_df() warns about ...", {
-    group_split(rowwise(mtcars), f.cyl)
+    group_split(rowwise(mtcars), f.cyl, _keep=True)
     assert '`*args` and `**kwargs` is ignored in `group_split(<DataFrameRowwise>)`' in caplog.text
     # expect_warning(group_split(rowwise(mtcars), cyl))
+
+    # warns about _keep
+    assert "`_keep` is ignored" in caplog.text
 
 def test_group_split_grouped_df_works():
     out = iris >> group_by(f.Species) >> group_split()

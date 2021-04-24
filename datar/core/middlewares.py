@@ -7,7 +7,6 @@ from typing import (
 from abc import ABC
 
 from pandas import DataFrame
-from pandas.core.indexes.base import Index
 from pandas.core.series import Series
 from pipda.symbolic import DirectRefAttr
 from pipda.context import ContextBase

@@ -24,7 +24,7 @@ from .context import (
     n, cur_data_all, cur_group_id, cur_group_rows,
     cur_group, cur_data, cur_column
 )
-from .mutate import mutate, transmutate
+from .mutate import mutate, transmute
 from .select import select
 from .across import across, c_across, if_all, if_any
 from .tidyselect import (

@@ -8,10 +8,10 @@ import numpy
 import pandas
 from pandas.core.frame import DataFrame
 from pipda import register_func
-from pipda.utils import Expression, evaluate_expr
+from pipda.utils import Expression
 
 from ..core.contexts import Context
-from ..core.types import is_scalar
+# from ..core.types import is_scalar
 from ..base.funcs import NA
 
 @register_func(context=Context.EVAL)
@@ -41,8 +41,9 @@ def ntile(
         >>> # [0, 1, NaN, 0, 0, NaN]
         >>> # Categories (2, int64): [0 < 1]
     """
-    if n is None:
-        raise TypeError('Argument `n` is required for `ntile`.')
+    if isinstance(series, int) and n is None:
+        n = series
+        series = None
 
     if series is None:
         if isinstance(_data, Expression):
@@ -53,8 +54,8 @@ def ntile(
             )
         series = row_number(_data) if isinstance(_data, DataFrame) else _data
 
-    if is_scalar(series):
-        series = [series]
+    # if is_scalar(series):
+    #     series = [series]
     # support generator
     series = list(series)
 

@@ -2,6 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-lead-lag.R
 import pytest
 from datar.all import *
+from .conftest import assert_iterable_equal
 
 def test_preserve_orders():
     x = factor(c("a", "b", "c"))
@@ -93,3 +94,12 @@ def test_errors():
 #   expect_snapshot(error = TRUE, lag(c("1", "2", "3"), default = FALSE))
 #   expect_snapshot(error = TRUE, lag(c("1", "2", "3"), default = character()))
 # })
+
+def test_order_by():
+    x = seq(1,10)
+    out = lag(x)
+    assert_iterable_equal(out, c(NA, seq(1,9)))
+
+    out = lag(x, order_by=seq(10,1))
+    assert_iterable_equal(out, c(seq(2,10), NA))
+

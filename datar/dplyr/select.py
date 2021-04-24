@@ -69,7 +69,6 @@ def eval_select(
         A tuple of (selected columns, dict of old-to-new renaming columns)
     """
     selected = vars_select(_all_columns, *args, *kwargs.values())
-    print(selected)
     missing = setdiff(_group_vars, _all_columns[selected])
     if missing:
         logger.info(

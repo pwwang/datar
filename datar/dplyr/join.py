@@ -323,7 +323,7 @@ def nest_join(
             if condition is None:
                 condition = y[on[key]] == row[key]
             else:
-                condition = condition and (y[on[key]] == row[key])
+                condition = condition & (y[on[key]] == row[key])
         df = filter(y, condition)
         if not keep:
             df = df[setdiff(df.columns, on.values())]

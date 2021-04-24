@@ -402,3 +402,24 @@ def test_can_re_rowwise():
     rf1 = rowwise(tibble(x = range(1,6), y = range(1,6)), "x")
     rf2 = rowwise(rf1, f.y)
     assert group_vars(rf2) == ['y']
+
+def test_compound_ungroup():
+    df = tibble(x=1, y=2) >> group_by(f.x, f.y)
+    out = ungroup(df)
+    assert group_vars(out) == []
+
+    out = ungroup(df, f.x)
+    assert group_vars(out) == ['y']
+
+    out = ungroup(df, f.y)
+    assert group_vars(out) == ['x']
+
+    out = group_by(df, f.y, _add=True)
+    assert group_vars(out) == ['x', 'y']
+
+    rf = df >> rowwise()
+    with pytest.raises(ValueError):
+        ungroup(rf, f.x)
+
+    with pytest.raises(ColumnNotExistingError):
+        group_by(df, f.w)

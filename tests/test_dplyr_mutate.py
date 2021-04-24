@@ -6,6 +6,7 @@ from pandas.core.frame import DataFrame
 from datar.all import *
 from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
 from datar.core.exceptions import ColumnNotExistingError
+from datar.datasets import mtcars, iris
 
 def test_empty_mutate_returns_input():
     df = tibble(x=1)
@@ -300,3 +301,70 @@ def test_errors():
         tibble(x = c(2, 2, 3, 3)) >> rowwise() >> mutate(i = range(1,6))
     with pytest.raises(ValueError, match="Length"):
         tibble(x = range(1,11)) >> mutate(y=range(11,21), z=[1,2,3])
+
+# transmute -------------------------------------------------------------
+
+def test_non_syntactic_grouping_variable_is_preserved():
+    # test_that("non-syntactic grouping variable is preserved (#1138)", {
+    df = tibble(**{'a b': 1}) >> group_by('a b') >> transmute()
+    assert df.columns.tolist() == ['a b']
+
+def test_transmutate_preserves_grouping():
+    gf = group_by(tibble(x=[1,2], y=2), f.x)
+
+    out = transmute(gf, x=1)
+    assert group_vars(out) == ['x']
+    assert nrow(group_data(out)) == 1
+
+    out = transmute(gf, z=1)
+    assert group_data(out).equals(group_data(gf))
+
+# Empty transmutes -------------------------------------------------
+
+def test_transmute_without_args_returns_grouping_vars():
+    df = tibble(x=1, y=2)
+    gf = group_by(df, f.x)
+
+    out = df >> transmute()
+    assert dim(out) == (1, 0)
+
+    out = gf >> transmute()
+    assert out.equals(tibble(x=1))
+
+# transmute variables -----------------------------------------------
+
+# test_that("transmute succeeds in presence of raw columns (#1803)", {
+#   df <- tibble(a = 1:3, b = as.raw(1:3))
+#   expect_identical(transmute(df, a), df["a"])
+#   expect_identical(transmute(df, b), df["b"])
+# })
+
+def test_transmute_dont_match_vars_transmute_args():
+    df = tibble(a=1)
+    out = transmute(df, var=f.a)
+    assert out.equals(tibble(var=1))
+    out = transmute(df, exclude=f.a)
+    assert out.equals(tibble(exclude=1))
+    out = transmute(df, include=f.a)
+    assert out.equals(tibble(include=1))
+
+def test_can_transmute_with_data_pronoun():
+    out = transmute(mtcars, mtcars.cyl)
+    exp = transmute(mtcars, f.cyl)
+    assert out.equals(exp)
+
+def test_transmute_doesnot_warn_when_var_removed(caplog):
+    df = tibble(x=1)
+    transmute(df, z=f.x*2, x=NULL)
+    assert caplog.text == ''
+
+def test_transmute_can_handle_auto_splicing():
+    out = iris >> transmute(fibble(f.Sepal_Length, f.Sepal_Width))
+    exp = iris >> select(f.Sepal_Length, f.Sepal_Width)
+    assert out.equals(exp)
+
+def test_transmute_errors():
+    with pytest.raises(TypeError):
+        transmute(mtcars, cyl2=f.cyl, _keep='all')
+    # transmute(mtcars, cyl2=f.cyl, _before=f.disp)
+    # transmute(mtcars, cyl2=f.cyl, _after=f.disp)
