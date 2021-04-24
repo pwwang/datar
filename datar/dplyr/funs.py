@@ -10,7 +10,6 @@ from ..core.types import (
     BoolOrIter, NumericOrIter, NumericType,
     is_iterable, is_scalar
 )
-from ..core.utils import copy_flags
 from ..core.contexts import Context
 from ..base.constants import NA
 
@@ -93,16 +92,14 @@ def coalesce(x: Any, *replace: Any) -> Any:
         A vector the same length as the first argument with missing values
         replaced by the first non-missing value.
     """
-    # TODO: replace copy_flags with copy_attrs
     if not replace:
         return x
 
     if isinstance(x, DataFrame):
         y = x.copy()
-        copy_flags(y, x)
         for repl in replace:
             x = y.combine_first(repl)
-            copy_flags(x, y)
+            # copy_flags(x, y)
             y = x
         return y
 

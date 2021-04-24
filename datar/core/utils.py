@@ -7,12 +7,8 @@ from copy import deepcopy
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
-from pandas import DataFrame
-from pandas.core.flags import Flags
-from pandas.core.indexes.base import Index
-from pandas.core.series import Series
-from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
-from pandas.core.groupby.ops import BaseGrouper
+from pandas import DataFrame, Index, Series
+from pandas.core.groupby import SeriesGroupBy
 from pipda.symbolic import Reference
 
 from varname import argname
@@ -32,18 +28,6 @@ stream_handler.setFormatter(logging.Formatter(
     datefmt='%Y-%m-%d %H:%M:%S'
 ))
 logger.addHandler(stream_handler)
-
-def list_diff(list1: Iterable[Any], list2: Iterable[Any]) -> List[Any]:
-    """Get the difference between two lists and keep the order
-
-    Args:
-        list1: The first list
-        list2: The second list
-
-    Returns:
-        The list1 elements that don't exist in list2.
-    """
-    return [elem for elem in list1 if elem not in list2]
 
 def check_column(column: Any) -> None:
     """Check if a column is valid
@@ -287,19 +271,6 @@ def align_value(
         return value.repeat(nrepeat)
     return value
 
-def copy_flags(df1: DataFrame, flags: Union[DataFrameType, Flags]) -> None:
-    """Deep copy the flags from one dataframe to another"""
-    if isinstance(flags, DataFrame):
-        flags = flags.flags
-    elif isinstance(flags, DataFrameGroupBy):
-        flags = flags.obj.flags
-
-    for key in dir(flags):
-        if key.startswith('_'):
-            continue
-
-        setattr(df1.flags, key, deepcopy(getattr(flags, key)))
-
 def df_assign_item(
         df: DataFrame,
         item: str,
@@ -334,10 +305,11 @@ def df_assign_item(
 
 def categorize(data: Any) -> Any:
     """Get the Categorical object"""
-    try:
-        return data.cat
-    except AttributeError:
+    if not is_categorical_dtype(data):
         return data
+    if isinstance(data, Series):
+        return data.values
+    return data
 
 @singledispatch
 def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
@@ -378,25 +350,6 @@ def _(data: Series, name: Optional[str] = None) -> DataFrame:
 def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
     name = name or data.obj.name
     return data.obj.to_frame(name=name).groupby(data.grouper, dropna=False)
-
-def group_df(
-        df: DataFrame,
-        grouper: Union[BaseGrouper, StringOrIter],
-        drop: Optional[bool] = None
-) -> DataFrameGroupBy:
-    """Group a dataframe"""
-    from ..dplyr import group_by_drop_default
-    if drop is None:
-        drop = group_by_drop_default(df)
-
-    return df.groupby(
-        grouper,
-        as_index=False,
-        sort=True,
-        dropna=False,
-        group_keys=False,
-        observed=drop
-    )
 
 def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
     """Check if column names are unique of a dataframe"""
