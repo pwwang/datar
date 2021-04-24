@@ -21,7 +21,6 @@ from .exceptions import (
     ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
 )
 from .types import DataFrameType, StringOrIter, is_scalar
-from .names import repair_names
 from .defaults import DEFAULT_COLUMN_PREFIX
 
 # logger
@@ -333,12 +332,6 @@ def df_assign_item(
     else:
         df.insert(df.shape[1], item, value, allow_duplicates=True)
 
-def objectize(data: Any) -> Any:
-    """Get the object instead of the GroupBy object"""
-    if isinstance(data, (SeriesGroupBy, DataFrameGroupBy)):
-        return data.obj
-    return data
-
 def categorize(data: Any) -> Any:
     """Get the Categorical object"""
     try:
@@ -413,7 +406,7 @@ def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
             uniq.add(col)
         else:
             msg = msg or 'Name is not unique'
-            raise ValueError(f"{msg}: {col}")
+            raise NameNonUniqueError(f"{msg}: {col}")
 
 def dict_insert_at(
         container: Mapping[str, Any],

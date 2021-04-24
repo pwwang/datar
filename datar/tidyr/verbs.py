@@ -13,7 +13,7 @@ from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    copy_attrs, objectize, vars_select, logger
+    copy_attrs, vars_select, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
@@ -253,7 +253,6 @@ def uncount(
         _data.grouper.names
         if isinstance(_data, DataFrameGroupBy) else None
     )
-    _data = objectize(_data)
     if is_scalar(weights):
         weights = [weights] * _data.shape[0]
 
@@ -304,7 +303,7 @@ def _(
 ) -> Union[DataFrameGroupBy, SeriesGroupBy]:
     """Replace NA for grouped data, keep the group structure"""
     grouper = data.grouper
-    ret = _replace_na(objectize(data), replace)
+    ret = _replace_na(data, replace)
     return ret.groupby(grouper, dropna=False)
 
 @register_verb(

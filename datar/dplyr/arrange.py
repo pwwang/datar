@@ -47,7 +47,7 @@ def arrange(
 
     check_column_uniqueness(
         _data,
-        "Cannot arrange a data frame with duplicate names."
+        "Cannot arrange a data frame with duplicate names"
     )
 
     if not _by_group:

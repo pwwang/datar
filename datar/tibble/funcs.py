@@ -11,7 +11,7 @@ from varname import argname, varname
 from varname.utils import VarnameRetrievingError
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
-from ..core.utils import copy_attrs, df_assign_item, objectize, to_df
+from ..core.utils import copy_attrs, df_assign_item, to_df
 from ..core.names import repair_names
 
 def tibble(
@@ -82,7 +82,6 @@ def tibble(
             else:
                 df = to_df(arg, name)
         elif isinstance(arg, (DataFrame, DataFrameGroupBy)):
-            arg = objectize(arg)
             for col in arg.columns:
                 df_assign_item(
                     df,

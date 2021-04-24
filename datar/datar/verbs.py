@@ -6,7 +6,6 @@ from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
 from pipda import register_verb, evaluate_expr
 
-from ..core.utils import objectize, logger
 from ..core.types import DataFrameType, is_scalar
 from ..core.contexts import Context
 from ..dplyr import select, slice # pylint: disable=redefined-builtin

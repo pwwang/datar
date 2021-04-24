@@ -49,7 +49,7 @@ def summarise(
     """
     check_column_uniqueness(
         _data,
-        "Can't transform a data frame with duplicate names."
+        "Can't transform a data frame with duplicate names"
     )
     _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
     out = summarise_build(_data, *args, **kwargs)

@@ -5,8 +5,6 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.types import is_iterable
-from ..core.utils import objectize
-from ..core.contexts import Context
 
 @register_verb
 def head(_data: Any, n: int = 6) -> DataFrame:

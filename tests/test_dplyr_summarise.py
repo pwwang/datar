@@ -7,7 +7,7 @@ from datar.core.contexts import Context
 import pytest
 from datar.all import *
 from datar.datasets import mtcars
-from datar.core.exceptions import ColumnNotExistingError
+from datar.core.exceptions import ColumnNotExistingError, NameNonUniqueError
 
 def test_freshly_create_vars():
     df = tibble(x=range(1,11))
@@ -248,5 +248,5 @@ def test_errors(caplog):
 
     # Duplicate column names
     x = 1
-    with pytest.raises(ValueError):
+    with pytest.raises(NameNonUniqueError):
         tibble(x, x, _name_repair="minimal") >> summarise(f.x)

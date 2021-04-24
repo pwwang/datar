@@ -21,7 +21,7 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, objectize, logger
+from ..core.utils import categorize, logger
 from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
     BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
@@ -205,7 +205,7 @@ def as_date(
     if not isinstance(x, (Series, SeriesGroupBy)):
         x = Series([x]) if is_scalar(x) else Series(x)
 
-    return objectize(x).transform(
+    return x.transform(
         _as_date_dummy,
         format=format,
         try_formats=try_formats,
@@ -217,7 +217,6 @@ def as_date(
 def _as_type(x: Any, type_: Type) -> Any:
     """Convert x or elements of x to certain type"""
     if is_series_like(x):
-        x = objectize(x)
         return x.astype(type_)
 
     if is_scalar(x):
@@ -263,7 +262,6 @@ def as_factor(x: Iterable[Any]) -> Categorical:
     Returns:
         The converted categorical object
     """
-    x = objectize(x)
     return Categorical(x)
 
 as_categorical = as_factor
@@ -329,7 +327,6 @@ as_bool = as_logical
 @register_func(None, context=Context.EVAL)
 def is_numeric(x: Any) -> BoolOrIter:
     """Check if x is numeric type"""
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, int, float, complex, numpy.number)
 
@@ -345,7 +342,6 @@ def is_character(x: Any) -> BoolOrIter:
     Returns:
         True if
     """
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, str)
     return is_string_dtype(x)
@@ -360,7 +356,6 @@ is_factor = is_categorical
 @register_func(None, context=Context.EVAL)
 def is_int64(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, (int, numpy.int64))
     return is_int64_dtype(x)
@@ -368,7 +363,6 @@ def is_int64(x: Any) -> BoolOrIter:
 @register_func(None, context=Context.EVAL)
 def is_integer(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
-    x = objectize(x)
     if is_scalar(x):
         return is_scalar_int(x)
     return is_integer_dtype(x)
@@ -458,7 +452,6 @@ def seq(
 @register_func(None, context=Context.EVAL)
 def abs(x: Any) -> NumericOrIter:
     """Get the absolute value"""
-    x = objectize(x)
     return numpy.abs(x)
 
 @register_func(None, context=Context.EVAL)
@@ -627,7 +620,6 @@ def pmin(
         na_rm: bool = False
 ) -> Iterable[float]:
     """Get the min value rowwisely"""
-    series = (objectize(ser) for ser in series)
     return [min(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func(None, context=Context.EVAL)
@@ -636,7 +628,6 @@ def pmax(
         na_rm: bool = False
 ) -> Iterable[float]:
     """Get the max value rowwisely"""
-    series = (objectize(ser) for ser in series)
     return [max(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func(None, context=Context.EVAL)
@@ -776,7 +767,6 @@ def round(
         ndigits: int = 0
 ) -> NumericOrIter:
     """Rounding a number"""
-    number = objectize(number)
     if is_series_like(number):
         return number.round(ndigits)
     return builtins.round(number, ndigits)
@@ -784,19 +774,16 @@ def round(
 @register_func(None, context=Context.EVAL)
 def sqrt(x: Any) -> bool:
     """Get the square root of a number"""
-    x = objectize(x)
     return numpy.sqrt(x)
 
 @register_func(None, context=Context.EVAL)
 def sin(x: Any) -> NumericOrIter:
     """Get the sin of a number"""
-    x = objectize(x)
     return numpy.sin(x)
 
 @register_func(None, context=Context.EVAL)
 def cos(x: Any) -> NumericOrIter:
     """Get the cos of a number"""
-    x = objectize(x)
     return numpy.cos(x)
 
 @register_func(None, context=Context.EVAL)
@@ -917,7 +904,7 @@ def factor(
     if is_categorical_dtype(x):
         x = x.to_numpy()
     ret = Categorical(
-        objectize(x),
+        x,
         categories=levels,
         ordered=ordered
     )

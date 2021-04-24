@@ -3,7 +3,7 @@
 import pytest
 from datar.all import *
 from datar.core.grouped import DataFrameGroupBy
-from datar.core.exceptions import ColumnNotExistingError
+from datar.core.exceptions import ColumnNotExistingError, NameNonUniqueError
 
 def test_empty_returns_self():
     df = tibble(x=range(1,11), y=range(1,11))
@@ -31,7 +31,7 @@ def test_errors():
     x = 1
     df = tibble(x, x, _name_repair="minimal")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(NameNonUniqueError):
         df >> arrange(f.x)
 
     df = tibble(x=x)

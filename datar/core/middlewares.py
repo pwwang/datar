@@ -15,7 +15,7 @@ from pipda.utils import DataEnv, functype
 
 from .exceptions import ColumnNotExistingError
 from .utils import (
-    df_assign_item, objectize, expand_collections, sanitize_slice,
+    df_assign_item, expand_collections, sanitize_slice,
     vars_select, logger, to_df
 )
 from .types import DataFrameType
@@ -228,7 +228,6 @@ class Across:
 
                 # todo: check if it is proper
                 #       group information lost
-                value = objectize(value)
                 if ret is None:
                     ret = to_df(value, name)
                 else:

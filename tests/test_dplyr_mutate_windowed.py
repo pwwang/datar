@@ -66,9 +66,8 @@ def test_cum_sum_min_max_works():
     assert_iterable_equal(res.cmaxx, c(list(cummax(df.x[:5])), list(cummax(df.x[5:]))))
     assert_iterable_equal(res.cmaxy, c(list(cummax(df.x[:5])), list(cummax(df.x[5:]))))
 
-    df = df.copy()
-    df.x[2] = NA
-    df.y[3] = NA
+    df.loc[2, 'x'] = NA
+    df.loc[3, 'y'] = NA
     res = mutate(df,
         csumx = cumsum(f.x), csumy = cumsum(f.y),
         cminx = cummin(f.x), cminy = cummin(f.y),
