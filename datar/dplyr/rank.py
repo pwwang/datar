@@ -2,27 +2,66 @@
 
 See https://github.com/tidyverse/dplyr/blob/master/R/slice.R
 """
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 import numpy
 import pandas
+from pandas.core.frame import DataFrame
 from pipda import register_func
+from pipda.utils import Expression, evaluate_expr
 
 from ..core.contexts import Context
+from ..core.types import is_scalar
 from ..base.funcs import NA
 
 @register_func(context=Context.EVAL)
-def row_number(_data: Iterable[Any]) -> numpy.ndarray:
-    """Gives the row number, 0-based."""
-    return numpy.array(range(len(_data)))
+def row_number(
+        _data: Iterable[Any],
+        series: Optional[Iterable[Any]] = None
+) -> numpy.ndarray:
+    """Gives the row number, 1-based."""
+    if series is None:
+        return numpy.array(range(len(_data))) + 1
+    return _rank(series, na_last="keep", method="first")
 
-@register_func(None, context=Context.EVAL)
-def ntile(series: Iterable[Any], n: int) -> Iterable[Any]:
-    """A rough rank, which breaks the input vector into ‘n’ buckets."""
+@register_func(context=Context.EVAL)
+def ntile(
+        _data: Iterable[Any],
+        series: Optional[Iterable[Any]] = None,
+        n: Optional[int] = None
+) -> Iterable[Any]:
+    """A rough rank, which breaks the input vector into ‘n’ buckets.
+
+    Note:
+        The output tiles are 0-based.
+        The result is slightly different from dplyr's ntile.
+        >>> ntile(c(1,2,NA,1,0,NA), 2) # dplyr
+        >>> # 1 2 NA 2 1 NA
+        >>> ntile([1,2,NA,1,0,NA], n=2) # datar
+        >>> # [0, 1, NaN, 0, 0, NaN]
+        >>> # Categories (2, int64): [0 < 1]
+    """
+    if n is None:
+        raise TypeError('Argument `n` is required for `ntile`.')
+
+    if series is None:
+        if isinstance(_data, Expression):
+            raise TypeError(
+                "`ntile` with a given iterable should be used in "
+                "a piping evironment "
+                "(i.e. df >> mutate(nt=ntile(row_number(), n=3)))."
+            )
+        series = row_number(_data) if isinstance(_data, DataFrame) else _data
+
+    if is_scalar(series):
+        series = [series]
+    # support generator
+    series = list(series)
+
     if len(series) == 0:
-        return []
-    if all(pandas.isna(ser) for ser in series):
-        return [NA] * len(series)
+        return pandas.Categorical([])
+    if all(pandas.isna(series)):
+        return pandas.Categorical([NA] * len(series))
     n = min(n, len(series))
     return pandas.cut(series, n, labels=range(n))
 

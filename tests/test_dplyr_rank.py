@@ -17,26 +17,26 @@ def ntile_h(x, n):
 
 def test_ntile_ignores_number_of_nas():
     x = c(1,2,3,NA, NA)
-    out = ntile(x, 3)
+    out = ntile(x, n=3)
     assert_iterable_equal(out, [0,1,2,NA,NA])
 
     out = ntile_h(x, 3)
     assert_iterable_equal(out, [0,1,2,NA,NA])
 
     x1 = c(1,1,1,NA,NA,NA)
-    out = ntile(x1, 1)
+    out = ntile(x1, n=1)
     assert_iterable_equal(out, [0,0,0,NA,NA,NA])
     out = ntile_h(x1, 1)
     assert_iterable_equal(out, [0,0,0,NA,NA,NA])
 
 def test_ntile_always_returns_an_integer():
-    out = ntile([], 3)
-    assert out == []
-    out = ntile_h([], 3)
-    assert out == []
-    out = ntile([NA], 3)
+    out = ntile([], n=3)
+    assert_iterable_equal(out, [])
+    out = ntile_h([], n=3)
+    assert_iterable_equal(out, [])
+    out = ntile([NA], n=3)
     assert_iterable_equal(out, [NA])
-    out = ntile_h([NA], 3)
+    out = ntile_h([NA], n=3)
     assert_iterable_equal(out, [NA])
 
 def test_ntile_does_not_overflow():
@@ -80,17 +80,17 @@ def test_lead_lag_inside_mutates_handles_expressions_as_value_for_default():
 
 def test_ntile_puts_large_groups_first():
 
-    assert_iterable_equal(ntile(range(1), 5), [0])
-    assert_iterable_equal(ntile(range(2), 5), list(range(2)))
-    assert_iterable_equal(ntile(range(3), 5), list(range(3)))
-    assert_iterable_equal(ntile(range(4), 5), list(range(4)))
-    assert_iterable_equal(ntile(range(5), 5), list(range(5)))
-    assert_iterable_equal(ntile(range(6), 5), c(0, range(5)))
-    assert_iterable_equal(ntile(range(1), 7), [0])
-    assert_iterable_equal(ntile(range(2), 7), list(range(2)))
-    assert_iterable_equal(ntile(range(3), 7), list(range(3)))
-    assert_iterable_equal(ntile(range(4), 7), list(range(4)))
-    assert_iterable_equal(ntile(range(5), 7), list(range(5)))
-    assert_iterable_equal(ntile(range(6), 7), list(range(6)))
-    assert_iterable_equal(ntile(range(7), 7), list(range(7)))
-    assert_iterable_equal(ntile(range(8), 7), c(0, range(7)))
+    assert_iterable_equal(ntile(range(1), n=5), [0])
+    assert_iterable_equal(ntile(range(2), n=5), list(range(2)))
+    assert_iterable_equal(ntile(range(3), n=5), list(range(3)))
+    assert_iterable_equal(ntile(range(4), n=5), list(range(4)))
+    assert_iterable_equal(ntile(range(5), n=5), list(range(5)))
+    assert_iterable_equal(ntile(range(6), n=5), c(0, range(5)))
+    assert_iterable_equal(ntile(range(1), n=7), [0])
+    assert_iterable_equal(ntile(range(2), n=7), list(range(2)))
+    assert_iterable_equal(ntile(range(3), n=7), list(range(3)))
+    assert_iterable_equal(ntile(range(4), n=7), list(range(4)))
+    assert_iterable_equal(ntile(range(5), n=7), list(range(5)))
+    assert_iterable_equal(ntile(range(6), n=7), list(range(6)))
+    assert_iterable_equal(ntile(range(7), n=7), list(range(7)))
+    assert_iterable_equal(ntile(range(8), n=7), c(0, range(7)))

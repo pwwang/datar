@@ -111,7 +111,7 @@ def test_cummean_is_consistent_with_cumsum_and_seq_along():
     assert out == pytest.approx([1., 1.5, 2., 2.5, 3.])
 
     # seq_along is 0-based
-    assert out == pytest.approx(cumsum(x) / (seq_along(x) + 1))
+    assert out == pytest.approx(cumsum(x) / seq_along(x))
     assert cummean([]).tolist() == []
 
 # wait for order_by

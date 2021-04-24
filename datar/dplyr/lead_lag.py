@@ -82,8 +82,9 @@ def lead_lag_prepare(
     cats = None
     if is_categorical_dtype(data):
         if isinstance(data, Series):
-            data = data.cat
-        cats = data.categories
+            cats = data.cat.categories
+        else:
+            cats = data.categories
 
     if not isinstance(n, int) or n < 0:
         raise ValueError(f"`lead-lag` expect a non-negative integer for `n`.")

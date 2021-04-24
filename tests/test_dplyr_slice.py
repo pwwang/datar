@@ -14,11 +14,11 @@ def test_slice_handles_numeric_input():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
     res = g >> slice(1)
     assert nrow(res) == 3
-    exp = g >> filter(row_number() == 1)
+    exp = g >> filter(row_number() == 2)
     assert res.equals(exp)
 
     res1 = mtcars >> slice(1)
-    res2 = mtcars >> filter(row_number() == 1)
+    res2 = mtcars >> filter(row_number() == 2)
     assert res1.equals(res2)
 
 def test_slice_silently_ignores_out_of_range_values():
@@ -43,11 +43,11 @@ def test_slice_works_with_grouped_data():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
 
     res = slice(g, f[:2])
-    exp = filter(g, row_number() < 2)
+    exp = filter(g, row_number() < 3)
     assert res.equals(exp)
 
     res = slice(g, ~f[:2])
-    exp = filter(g, row_number() >= 2)
+    exp = filter(g, row_number() >= 3)
     assert res.equals(exp)
 
     g = group_by(tibble(x=c(1,1,2,2,2)), f.x)
@@ -100,7 +100,7 @@ def test_slice_handles_empty_df():
 def test_slice_works_fine_if_n_gt_nrow():
     by_slice = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
     slice_res = by_slice >> slice(7)
-    filter_res = by_slice >> group_by(f.cyl) >> filter(row_number() == 7)
+    filter_res = by_slice >> group_by(f.cyl) >> filter(row_number() == 8)
     assert slice_res.equals(filter_res)
 
 def test_slice_strips_grouped_indices():

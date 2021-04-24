@@ -98,7 +98,7 @@ def test_contains():
 def test_row_number():
     z = tibble(a=[1,2,3])
     b = "a"
-    res = z >> filter(row_number() == 3)
+    res = z >> filter(row_number() == 4)
     rows = nrow(res)
     assert rows == 0
 

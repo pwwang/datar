@@ -13,7 +13,7 @@ from .funcs import (
     is_int, is_int64, is_integer, is_na, is_numeric, sum, mean, median,
     min, max, as_int64, unique, Im, Re, is_in, is_element, length, lengths,
     seq_along, seq_len, seq, abs, pmax, pmin, round, sqrt,
-    droplevels, levels, sin, cos, identity, expandgrid
+    droplevels, levels, sin, cos, identity, expandgrid, all, any
 )
 # plain functions
 from .funcs import factor, rep, context

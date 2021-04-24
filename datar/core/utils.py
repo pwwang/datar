@@ -407,10 +407,13 @@ def group_df(
 
 def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
     """Check if column names are unique of a dataframe"""
-    try:
-        repair_names(df.columns.tolist(), repair="check_unique")
-    except NameNonUniqueError as error:
-        raise ValueError(msg or str(error)) from None
+    uniq = set()
+    for col in df.columns:
+        if col not in uniq:
+            uniq.add(col)
+        else:
+            msg = msg or 'Name is not unique'
+            raise ValueError(f"{msg}: {col}")
 
 def dict_insert_at(
         container: Mapping[str, Any],

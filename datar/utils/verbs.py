@@ -20,7 +20,6 @@ def head(_data: Any, n: int = 6) -> DataFrame:
     """
     if not is_iterable(_data):
         raise TypeError("`head` only works with iterable data.")
-    _data = objectize(_data)
     if isinstance(_data, DataFrame):
         return _data.head(n)
     return _data[:n]
@@ -37,7 +36,6 @@ def tail(_data: Any, n: int = 6) -> DataFrame:
     """
     if not is_iterable(_data):
         raise TypeError("`tail` only works with iterable data.")
-    _data = objectize(_data)
     if isinstance(_data, DataFrame):
         return _data.tail(n)
     return _data[-n:]

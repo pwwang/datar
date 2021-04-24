@@ -384,10 +384,7 @@ def is_double(x: Any) -> BoolOrIter:
 
 is_float = is_double
 
-@register_func(None, context=Context.EVAL)
-def is_na(x: Any) -> BoolOrIter:
-    """Check if x is nan or not"""
-    return pandas.isna(x)
+is_na = register_func(None, context=Context.EVAL)(pandas.isna)
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
@@ -406,7 +403,7 @@ def c(*elems: Any) -> Collection:
 @register_func(None, context=Context.EVAL)
 def seq_along(along_with: Iterable[Any]) -> SeriesLikeType:
     """Generate sequences along an iterable"""
-    return numpy.array(range(len(along_with)))
+    return numpy.array(range(len(along_with))) + 1
 
 @register_func(None, context=Context.EVAL)
 def seq_len(length_out: IntOrIter) -> SeriesLikeType:
@@ -430,26 +427,32 @@ def seq(
         length_out: IntType = None,
         along_with: IntType = None
 ) -> SeriesLikeType:
-    """Generate a sequence"""
+    """Generate a sequence
+
+    https://rdrr.io/r/base/seq.html
+
+    Note:
+        This API is consistent with r-base's seq. 1-based and inclusive.
+    """
     if along_with is not None:
         return seq_along(along_with)
-    if from_ is not None and not isinstance(from_, (int, float)):
+    if from_ is not None and not is_scalar(from_):
         return seq_along(from_)
     if length_out is not None and from_ is None and to is None:
         return seq_len(length_out)
 
     if from_ is None:
-        from_ = 0
+        from_ = 1
     elif to is None:
-        from_, to = 0, from_
+        from_, to = 1, from_
 
     if length_out is not None:
-        by = (float(to) - float(from_)) / float(length_out)
+        by = (float(to) - float(from_)) / float(length_out - 1)
     elif by is None:
         by = 1
-        length_out = to - from_
+        length_out = to - from_ + 1
     else:
-        length_out = (to - from_ + by - by/10.0) // by
+        length_out = (to - from_ + 1.1 * by) // by
     return numpy.array([from_ + n * by for n in range(int(length_out))])
 
 @register_func(None, context=Context.EVAL)
@@ -486,85 +489,58 @@ def floor(x: NumericOrIter) -> IntOrIter:
         return math.floor(x)
     return list(map(math.floor, x))
 
-@register_func(None, context=Context.EVAL)
-def cumsum(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative sums of
-    the elements of the argument.
+def cumx(x: Any, how: str) -> numpy.ndarray:
+    """Cummulative along the elements in x
 
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
-
-    Returns:
-        The cumulative sums
+    numpy and pandas' cums only put NA at the position of original NA, and skip
+    it for later elements. However, all elements afterwards are NA's in R.
     """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cumsum(skipna=skipna)
+    if is_scalar(x):
+        x = [x]
 
-@register_func(None, context=Context.EVAL)
-def cummin(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative minima of
-    the elements of the argument.
+    if len(x) == 0:
+        return numpy.array([])
 
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
+    out = []
+    out_append = out.append
+    def append(elem):
+        if pandas.isna(out[-1]) or pandas.isna(elem):
+            out_append(NA)
+        elif how == 'sum':
+            out_append(out[-1] + elem)
+        elif how == 'prod':
+            out_append(out[-1] * elem)
+        elif how == 'min':
+            out_append(builtins.min(out[-1], elem))
+        elif how == 'max':
+            out_append(builtins.max(out[-1], elem))
 
-    Returns:
-        The cumulative minimas
-    """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cummin(skipna=skipna)
+    for i, elem in enumerate(x):
+        if i == 0:
+            out_append(elem)
+        else:
+            append(elem)
+    return numpy.array(out)
 
 @register_func(None, context=Context.EVAL)
-def cummax(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative maxima of
-    the elements of the argument.
-
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
-
-    Returns:
-        The cumulative maximas
-    """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cummax(skipna=skipna)
+def cumsum(x: Any) -> numpy.ndarray:
+    """Cummulative sum along elements in x"""
+    return cumx(x, 'sum')
 
 @register_func(None, context=Context.EVAL)
-def cumprod(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative products of
-    the elements of the argument.
+def cumprod(x: Any) -> numpy.ndarray:
+    """Cummulative product along elements in x"""
+    return cumx(x, 'prod')
 
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
+@register_func(None, context=Context.EVAL)
+def cummin(x: Any) -> numpy.ndarray:
+    """Cummulative min along elements in x"""
+    return cumx(x, 'min')
 
-    Returns:
-        The cumulative products
-    """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cumprod(skipna=skipna)
+@register_func(None, context=Context.EVAL)
+def cummax(x: Any) -> numpy.ndarray:
+    """Cummulative max along elements in x"""
+    return cumx(x, 'max')
 
 @register_func(None, context=Context.EVAL)
 def cut(
@@ -857,7 +833,7 @@ def rep(
         times: Union[int, Iterable[int]] = 1,
         length: Optional[int] = None, # pylint: disable=redefined-outer-name
         each: int = 1
-) -> Iterable[Any]:
+) -> numpy.ndarray:
     """replicates the values in x
 
     Args:
@@ -884,13 +860,13 @@ def rep(
             )
 
     if is_scalar_int(times):
-        x = [elem for elem in x for _ in range(each)] * int(times)
+        x = numpy.array([elem for elem in x for _ in range(each)] * int(times))
     else:
-        x = [elem for n, elem in zip(times, x) for _ in range(n)]
+        x = numpy.array([elem for n, elem in zip(times, x) for _ in range(n)])
     if length is None:
         return x
     repeats = length // len(x) + 1
-    x = x * repeats
+    x = numpy.tile(x, repeats)
     return x[:length]
 
 @register_func(None, context=Context.EVAL)
@@ -1018,3 +994,12 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
     return numpy.isin(elem, elems)
 
 is_in = is_element
+
+# pylint: disable=unnecessary-lambda
+all = register_func(None, context=Context.EVAL)(
+    # can't set attributes to builtins.all, so wrap it.
+    lambda *args, **kwargs: builtins.all(*args, **kwargs)
+)
+any = register_func(None, context=Context.EVAL)(
+    lambda *args, **kwargs: builtins.any(*args, **kwargs)
+)

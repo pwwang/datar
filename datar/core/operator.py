@@ -1,17 +1,22 @@
 """Operators for datar"""
+from typing import Any, Optional
 from functools import partial
 import operator
 
-from typing import Any, Optional
+import numpy
+import pandas
+from pandas import Series, Categorical
 from pipda import register_operator, Operator
 from pipda.context import ContextBase
 
 from .utils import align_value, vars_select
 from .middlewares import Collection, Inverted, Negated
+from .types import BoolOrIter, is_scalar
 
 @register_operator
 class DatarOperator(Operator):
     """Operator class for datar"""
+
     def _arithmetize1(self, operand: Any, op: str) -> Any:
         """Operator for single operand"""
         op_func = getattr(operator, op)
@@ -77,9 +82,48 @@ class DatarOperator(Operator):
             return list(self.data.columns[out])
         return self._arithmetize2(left, right, 'or_')
 
-    def ne(self, left: Any, right: Any) -> bool: # pylint: disable=invalid-name
+    # def eq(self, left: Any, right: Any) -> BoolOrIter:
+    #     """Check equality of left and right"""
+    #     if is_categorical_dtype(left) and is_categorical_dtype(right):
+
+    #     if isinstance(left, Series):
+    #         left = left.values
+    #     if isinstance(right, Series):
+    #         right = right.values
+
+    #     # try to keep the dimensions
+    #     # make dim1 vector a scalar since series comparions require index
+    #     # to be the same
+    #     if (
+    #             isinstance(left, (Categorical, numpy.ndarray)) and
+    #             isinstance(right, (Categorical, numpy.ndarray)) and
+    #             len(left) != len(right)
+    #     ):
+    #         if len(left) == 1:
+    #             left = left[0]
+    #         elif len(right) == 1:
+    #             right = right[0]
+
+    #     out = self._arithmetize2(left, right, 'eq')
+    #     if isinstance(out, bool):
+    #         return out
+    #     # try keep NAs
+    #     if isinstance(left, numpy.ndarray):
+    #         out[pandas.isna(left)] = numpy.nan
+    #     if isinstance(right, numpy.ndarray):
+    #         out[pandas.isna(right)] = numpy.nan
+    #     # note adding NAs converts dtype to float
+    #     return out
+
+    # pylint: disable=invalid-name
+    def ne(self, left: Any, right: Any) -> BoolOrIter:
         """Interpret for left != right"""
-        return not self.eq(left, right)
+        out = self.eq(left, right)
+        if isinstance(out, (numpy.ndarray, Series)):
+            neout = ~out
+            # neout[pandas.isna(out)] = numpy.nan
+            return neout
+        return not out
 
     def __getattr__(self, name: str) -> Any:
         """Other operators"""
