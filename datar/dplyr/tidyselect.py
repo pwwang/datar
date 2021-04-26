@@ -2,6 +2,7 @@
 import re
 from typing import Callable, Iterable, List, Optional, Union
 
+import numpy
 from pandas import DataFrame
 from pipda import register_func
 from pipda.utils import functype
@@ -9,7 +10,6 @@ from pipda.utils import functype
 from ..core.contexts import Context
 from ..core.utils import vars_select
 from ..core.types import StringOrIter
-from ..core.exceptions import ColumnNotExistingError
 from ..base import setdiff, intersect
 from .group_data import group_vars
 
@@ -33,10 +33,8 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
     for col in columns:
         if pipda_type == 'plain':
             conditions = fn(_data[col])
-        elif pipda_type == 'plain-func':
-            conditions = fn(_data[col], _env=_data)
         else:
-            conditions = fn(_data, _data[col], _env=_data)
+            conditions = fn(_data[col], _env=_data)
 
         if isinstance(conditions, bool):
             if conditions:
@@ -209,12 +207,12 @@ def all_of(
     """
     all_columns = _data.columns
     x = all_columns[vars_select(all_columns, x)]
-    nonexists = setdiff(x, all_columns)
-    if nonexists:
-        raise ColumnNotExistingError(
-            "Can't subset columns that don't exist. "
-            f"Columns {nonexists} not exist."
-        )
+    # nonexists = setdiff(x, all_columns)
+    # if nonexists:
+    #     raise ColumnNotExistingError(
+    #         "Can't subset columns that don't exist. "
+    #         f"Columns {nonexists} not exist."
+    #     )
 
     return list(x)
 
@@ -249,25 +247,29 @@ def any_of(
 @register_func(None)
 def num_range(
         prefix: str,
-        range: Iterable[int], # pylint: disable=redefined-builtin
-        width: Optional[int] = None
+        range_: Iterable[int], # pylint: disable=redefined-builtin
+        width: Optional[int] = None,
+        index1: bool = True
 ) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
 
     Args:
         _data: The data piped in
         prefix: A prefix that starts the numeric range.
-        range: A sequence of integers, like `range(3)` (produces `0,1,2`).
+        range_: A sequence of integers, like `range(3)` (produces `0,1,2`).
         width: Optionally, the "width" of the numeric range.
             For example, a range of 2 gives "01", a range of three "001", etc.
+        index1: Whether it is 1-based
 
     Returns:
         A list of ranges with prefix.
     """
-    return [
-        f"{prefix}{elem if not width else str(elem).zfill(width)}"
-        for elem in range
-    ]
+    zfill = lambda elem: (
+        elem + int(index1)
+        if not width
+        else str(elem + int(index1)).zfill(width)
+    )
+    return numpy.array([f"{prefix}{zfill(elem)}" for elem in range(range_)])
 
 def filter_columns(
         all_columns: Iterable[str],

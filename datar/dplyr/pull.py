@@ -54,8 +54,8 @@ def pull(
         var = var.split('$', 1)[0]
 
     pulled = evaluate_expr(f[var], _data, Context.EVAL)
-    if var in _data.columns and isinstance(pulled, DataFrame):
-        pulled = pulled.iloc[:, 0]
+    # if var in _data.columns and isinstance(pulled, DataFrame):
+    #     pulled = pulled.iloc[:, 0]
 
     if to is None:
         to = 'frame' if isinstance(pulled, DataFrame) else 'series'
@@ -85,6 +85,11 @@ def pull(
         raise ValueError(
             f'Expect {pulled.shape[1]} names but got {len(name)}.'
         )
-    if name:
-        return dict(zip(name, pulled.values()))
-    return pulled.to_dict('series')
+
+    out = pulled.to_dict('series')
+    if not name:
+        return out
+
+    for newname, oldname in zip(name, out):
+        out[newname] = out.pop(oldname)
+    return out

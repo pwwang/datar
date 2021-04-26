@@ -177,6 +177,9 @@ def test_groups_arg(caplog):
     assert gvars == []
     gvars = gf >> summarise(_groups = "keep") >> group_vars()
     assert gvars == ['x', 'y']
+    gvars = gf >> summarise(_groups = "rowwise") >> group_vars()
+    assert gvars == ['x', 'y']
+
 
     rf = df >> rowwise(f.x, f.y)
     gvars = rf >> summarise(_groups = "drop") >> group_vars()

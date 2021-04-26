@@ -1,10 +1,12 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-select.r
+from pipda.verb import register_verb
 from datar.stats.verbs import setNames
 from pandas.core.frame import DataFrame
 import pytest
 from datar.all import *
 from datar.datasets import mtcars
+from datar.core.exceptions import ColumnNotExistingError
 
 def test_preserves_grouping():
     gf = group_by(tibble(g = [1,2,3], x = [3,2,1]), f.g)
@@ -154,3 +156,52 @@ def test_keeps_attributes():
     out = select(df, f.x)
     assert out.attrs['a'] == 'b'
 
+
+def test_select_rename_with_dup_names():
+    df = tibble(tibble(x=1), x=2)
+    with pytest.raises(
+            ValueError,
+            match='Names must be unique. Name "x" found at locations'
+    ):
+        df >> select(y=f.x)
+
+    with pytest.raises(IndexError):
+        df >> select(y=3)
+
+def test_tidyselect_funs():
+    # tidyselect.where
+    def isupper(ser):
+        return ser.name.isupper()
+
+    df = tibble(x=1, X=2, y=3, Y=4)
+    out = df >> select(where(isupper))
+    assert out.columns.tolist() == ['X', 'Y']
+
+    @register_verb
+    def islower(_data, series):
+        return [series.name.islower(), True]
+    out = df >> select(where(islower))
+    assert out.columns.tolist() == ['x', 'y']
+
+    out = df >> select(where(lambda x: False))
+    assert dim(out) == (1,0)
+
+    out = df >> select(ends_with("y"))
+    assert out.columns.tolist() == ['y', 'Y']
+    out = df >> select(contains("y"))
+    assert out.columns.tolist() == ['y', 'Y']
+
+    with pytest.raises(ColumnNotExistingError):
+        df >> select(all_of(['x', 'a']))
+
+    out = df >> select(any_of(['x', 'y']))
+    assert out.columns.tolist() == ['x', 'y']
+    out = df >> select(any_of(['x', 'a']))
+    assert out.columns.tolist() == ['x']
+
+    out = num_range('a', 3, width=2)
+    assert out.tolist() == ['a01', 'a02', 'a03']
+
+    df = tibble(tibble(X=1), X=2)
+    out = df >> select(contains("X"))
+    assert out.columns.tolist() == ["X"]

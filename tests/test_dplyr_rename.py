@@ -30,10 +30,13 @@ def test_can_rename_with_duplicate_columns():
 
 def test_can_select_columns():
     df = tibble(x=1, y=2)
+    out = df >> rename_with(str.upper) >> names()
+    assert out == ['X', 'Y']
     out = df >> rename_with(str.upper, 0) >> names()
     assert out == ['X', 'y']
     out = df >> rename_with(str.upper, f.x) >> names()
     assert out == ['X', 'y']
+
 
 def test_passes_args_kwargs_along():
     df = tibble(x=1, y=2)

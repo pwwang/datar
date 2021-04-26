@@ -94,11 +94,12 @@ def eval_select(
                     f'Name "{val}" found at locations {list(idx)}.'
                 )
         else: # int
-            try:
-                val = _all_columns[val]
-            except IndexError:
-                raise ColumnNotExistingError(
-                    f'Location {val} does not exist.'
-                ) from None
+            # try:
+            #   If out of bounds, it should be raised at getting missing
+            val = _all_columns[val]
+            # except IndexError:
+            #     raise ColumnNotExistingError(
+            #         f'Location {val} does not exist.'
+            #     ) from None
         new_names[val] = key
     return selected, new_names
