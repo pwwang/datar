@@ -90,6 +90,7 @@ def _(_data: DataFrameRowwise, *columns: str) -> DataFrameRowwise:
 
 @register_verb(DataFrame, context=Context.SELECT)
 def ungroup(x: DataFrame, *cols: str) -> DataFrame:
+    """Ungroup a grouped data"""
     if cols:
         raise ValueError(f'`*cols` is not empty.')
     return x

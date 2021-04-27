@@ -4,14 +4,13 @@ from functools import partial
 import operator
 
 import numpy
-import pandas
-from pandas import Series, Categorical
+from pandas import Series
 from pipda import register_operator, Operator
 from pipda.context import ContextBase
 
 from .utils import align_value, vars_select
 from .middlewares import Collection, Inverted, Negated
-from .types import BoolOrIter, is_scalar
+from .types import BoolOrIter
 
 @register_operator
 class DatarOperator(Operator):

@@ -1,5 +1,4 @@
 """Verbs from R-tidyr"""
-from datar.dplyr.group_by import group_by_drop_default
 import re
 import itertools
 from functools import singledispatch
@@ -25,6 +24,7 @@ from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy
 from ..base import NA, levels, setdiff
 from ..dplyr.distinct import distinct
+from ..dplyr.group_by import group_by_drop_default
 from ..dplyr.group_data import group_vars
 
 @register_verb(DataFrame, context=Context.SELECT)

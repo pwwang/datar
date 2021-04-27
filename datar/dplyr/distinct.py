@@ -2,9 +2,7 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/distinct.R
 """
-from datar.core.types import is_scalar
-from datar.core.middlewares import Collection
-from typing import Any, Iterable
+from typing import Any
 
 import pandas
 from pandas import DataFrame
@@ -13,6 +11,8 @@ from pipda import register_verb, register_func
 from ..core.contexts import Context
 from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.types import is_scalar
+from ..core.middlewares import Collection
 from ..base import union, setdiff, intersect
 from .mutate import mutate
 from .group_by import group_by_drop_default, ungroup

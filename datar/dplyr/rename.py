@@ -2,14 +2,14 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/rename.R
 """
-from datar.core.utils import vars_select
-from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
-from typing import Any, Callable, Iterable, Mapping, Optional
+from typing import Any, Callable
 
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
+from ..core.utils import vars_select
+from ..core.grouped import DataFrameGroupBy
 from .group_data import group_vars
 from .select import eval_select
 

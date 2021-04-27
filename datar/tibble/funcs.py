@@ -19,7 +19,7 @@ def tibble(
         _rows: Optional[int] = None,
         **kwargs: Any
 ) -> DataFrame:
-    # pylint: disable=too-many-statements
+    # pylint: disable=too-many-statements,too-many-branches
     """Constructs a data frame
 
     Args:

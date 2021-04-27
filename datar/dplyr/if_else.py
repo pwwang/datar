@@ -6,7 +6,7 @@ https://github.com/tidyverse/dplyr/blob/master/R/case_when.R
 from typing import Any, Iterable, Union
 
 import numpy
-from pandas import DataFrame, Series
+from pandas import Series
 from pipda import register_func
 
 from ..core.contexts import Context

@@ -22,7 +22,7 @@ def _join(
         by: Optional[Union[StringOrIter, Mapping[str, str]]] = None,
         copy: bool = False,
         suffix: Iterable[str] = ("_x", "_y"),
-        na_matches: str = "", # TODO: how?
+        # na_matches: str = "", # TODO: how?
         keep: bool = False
 ) -> DataFrame:
     """General join"""

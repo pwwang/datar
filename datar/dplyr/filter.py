@@ -112,6 +112,6 @@ def filter_groups(
 @filter_groups.register
 def _(
         new: DataFrameRowwise,
-        old: DataFrameRowwise
+        old: DataFrameRowwise # pylint: disable=unused-argument
 ) -> DataFrame:
     return new._group_data

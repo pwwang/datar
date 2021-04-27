@@ -173,6 +173,7 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
 
 @register_verb(DataFrame)
 def names(x: DataFrame) -> List[str]:
+    """Get the column names of a dataframe"""
     return x.columns.tolist()
 
 @register_verb(context=Context.EVAL)

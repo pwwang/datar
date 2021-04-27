@@ -4,7 +4,6 @@ https://github.com/tidyverse/dplyr/blob/master/R/group_split.R
 https://github.com/tidyverse/dplyr/blob/master/R/group_map.R
 https://github.com/tidyverse/dplyr/blob/master/R/group_trim.R
 """
-# TODO: add tests
 
 from typing import Any, Callable, Iterable, List, Optional
 
@@ -17,7 +16,7 @@ from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.utils import copy_attrs, logger, vars_select, nargs
 from ..core.types import StringOrIter
 from ..base import is_factor, droplevels, setdiff, intersect
-from .group_data import group_data, group_keys, group_rows, group_vars
+from .group_data import group_keys, group_rows, group_vars
 from .group_by import group_by, group_by_drop_default, ungroup
 from .select import select
 from .mutate import mutate
@@ -126,6 +125,7 @@ def _(
 
     gvars = group_vars(_data)
     ungrouped = ungroup(_data)
+    # pylint: disable=no-value-for-parameter
     fgroups = ungrouped >> select(where(is_factor))
     dropped = ungrouped >> mutate(across(fgroups.columns.tolist(), droplevels))
 
