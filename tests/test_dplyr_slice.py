@@ -321,8 +321,9 @@ def test_rename_errors_with_invalid_grouped_df():
 def test_mixed_rows():
     df = tibble(x=range(5))
 
+    # order kept
     out = slice(df, c(-c(1,3), 3)) >> pull(f.x, to='list')
-    assert out == [2, 3, 4]
+    assert out == [4, 2, 3]
 
     out = slice(df, c(-f[:2], 3)) >> pull(f.x, to='list')
     assert out == [3, 4]

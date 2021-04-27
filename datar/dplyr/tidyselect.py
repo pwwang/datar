@@ -40,7 +40,8 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
             if conditions:
                 retcols.append(col)
             else:
-                continue
+                # pytest-cov not detecting this line
+                continue # pragma: no cover
         elif all(conditions):
             retcols.append(col)
 
@@ -249,7 +250,7 @@ def num_range(
         prefix: str,
         range_: Iterable[int], # pylint: disable=redefined-builtin
         width: Optional[int] = None,
-        index1: bool = True
+        _base0: bool = False
 ) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
 
@@ -259,15 +260,15 @@ def num_range(
         range_: A sequence of integers, like `range(3)` (produces `0,1,2`).
         width: Optionally, the "width" of the numeric range.
             For example, a range of 2 gives "01", a range of three "001", etc.
-        index1: Whether it is 1-based
+        _base0: Whether it is 0-based
 
     Returns:
         A list of ranges with prefix.
     """
     zfill = lambda elem: (
-        elem + int(index1)
+        elem + int(not _base0)
         if not width
-        else str(elem + int(index1)).zfill(width)
+        else str(elem + int(not _base0)).zfill(width)
     )
     return numpy.array([f"{prefix}{zfill(elem)}" for elem in range(range_)])
 

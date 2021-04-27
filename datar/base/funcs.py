@@ -329,9 +329,10 @@ as_bool = as_logical
 def is_numeric(x: Any) -> BoolOrIter:
     """Check if x is numeric type"""
     if is_scalar(x):
-        return isinstance(x, int, float, complex, numpy.number)
-
-    return is_numeric_dtype(x)
+        return isinstance(x, (int, float, complex, numpy.number))
+    if isinstance(x, Series):
+        return is_numeric_dtype(x)
+    return numpy.array([is_numeric(elem) for elem in x])
 
 @register_func(None, context=Context.EVAL)
 def is_character(x: Any) -> BoolOrIter:
@@ -858,9 +859,17 @@ def rep(
     return x[:length]
 
 @register_func(None, context=Context.EVAL)
+def rev(x: Iterable[Any]) -> numpy.ndarray:
+    """Get reversed vector"""
+    dtype = getattr(x, 'dtype', None)
+    return numpy.array(list(reversed(x)), dtype=dtype)
+
+
+@register_func(None, context=Context.EVAL)
 def unique(x: Iterable[Any]) -> numpy.ndarray:
     """Get unique elements"""
-    return numpy.unique(x)
+    # return numpy.unique(x)
+    return pandas.unique(x) # keeps order
 
 @register_func(None, context=Context.EVAL)
 def length(x: Any) -> int:
