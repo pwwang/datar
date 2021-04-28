@@ -66,8 +66,9 @@ class Inverted:
         out_append = out.append
         if isinstance(self.elems, slice):
             out.extend(sanitize_slice(self.elems, all_columns, raise_nonexists))
-        elif isinstance(self.elems, Series):
-            out_append(all_columns.index(self.elems.name))
+        # Collection won't expand to Series
+        # elif isinstance(self.elems, Series):
+        #     out_append(all_columns.index(self.elems.name))
         else:
             all_columns_are_strs = all(
                 isinstance(col, str) for col in all_columns
@@ -123,11 +124,11 @@ class Negated:
         )
         return [-elem for elem in elems]
 
-class DescSeries(Series): # pylint: disable=too-many-ancestors
-    """Marking a series as descending"""
-    @property
-    def _constructor(self):
-        return DescSeries
+# class DescSeries(Series): # pylint: disable=too-many-ancestors
+#     """Marking a series as descending"""
+#     @property
+#     def _constructor(self):
+#         return DescSeries
 
 class CurColumn:
     """Current column in across"""

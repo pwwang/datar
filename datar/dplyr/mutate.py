@@ -95,7 +95,6 @@ def mutate(
         new = setdiff(cols.columns, _data.columns)
         out = relocate(out, *new, _before=_before, _after=_after)
 
-    print(cols.columns)
     if keep == 'all':
         return out
     if keep == 'unused':
@@ -112,7 +111,6 @@ def mutate(
             c(group_vars(_data), used, cols.columns)
         )
     else: # keep == 'none':
-        print(cols.columns)
         keep = union(
             setdiff(group_vars(_data), cols.columns),
             intersect(cols.columns, out.columns)

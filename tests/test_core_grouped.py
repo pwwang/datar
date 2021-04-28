@@ -157,6 +157,11 @@ def test_copy():
     assert gf._group_vars == gf2._group_vars
     assert gf._group_data.equals(gf2._group_data)
 
+def test_gf_repr_html():
+    df = DataFrame({'a': [1,2,3]})
+    gf = DataFrameGroupBy(df, _group_vars=['a'])
+    assert "[Groups: ['a'] (n=3)]" in gf._repr_html_()
+
 # rowwise ---------------------------------------
 def test_rowwise():
     df = DataFrame({'a': [1,2,3], 'b': [4,5,6]})
@@ -189,3 +194,8 @@ def test_rowwise_repr():
     rf = DataFrameRowwise(df, _group_vars=['a'])
     out = repr(rf)
     assert "[Rowwise: ['a']]" in out
+
+def test_gf_repr_html():
+    df = DataFrame({'a': [1,2,3]})
+    rf = DataFrameRowwise(df, _group_vars=['a'])
+    assert "[Rowwise: ['a'] (n=3)]" in rf._repr_html_()

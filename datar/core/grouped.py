@@ -285,3 +285,8 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
             _drop=self.attrs.get('groupby_drop', True),
             _group_data=self._group_data.copy() if deep else self._group_data
         )
+
+    def _repr_html_(self) -> str:
+        out = super()._repr_html_()
+        ngroups = self._group_data.shape[0]
+        return f"{out}[Rowwise: {self._group_vars} (n={ngroups})]"

@@ -42,7 +42,7 @@ def tibble(
         try:
             df.__dfname__ = varname(raise_exc=False)
         except VarnameRetrievingError:
-            df.__dfname__ = None
+            df.__dfname__ = None # pragma: no cover
         return df
 
     try:
@@ -102,7 +102,7 @@ def tibble(
     try:
         df.__dfname__ = varname(raise_exc=False)
     except VarnameRetrievingError: # still raises in some cases
-        df.__dfname__ = None
+        df.__dfname__ = None # pragma: no cover
 
     if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
         copy_attrs(df, args[0])
@@ -161,5 +161,5 @@ def tribble(*dummies: Any) -> DataFrame:
     try:
         ret.__dfname__ = varname(raise_exc=False)
     except VarnameRetrievingError:
-        ret.__dfname__ = None
+        ret.__dfname__ = None # pragma: no cover
     return ret
