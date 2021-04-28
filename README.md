@@ -1,6 +1,8 @@
 # datar
 
-Port of R data packages ([tidyr][1], [dplyr][2], [tibble][4], etc) in python, using [pipda][3].
+Port of R data packages (especially from tidyverse): [tidyr][1], [dplyr][2], [tibble][4] and so on in python, using [pipda][3].
+
+Unlike other similar packages in python that just mimic the piping sign, `datar` follows the API designs from the original packages as possible. So that nearly no extra effort is needed for those who are familar with those R packages to transition to python.
 
 <!-- badges -->
 
@@ -11,10 +13,6 @@ Port of R data packages ([tidyr][1], [dplyr][2], [tibble][4], etc) in python, us
 ```shell
 pip install -U datar
 ```
-
-## Philosophy
-- Try to keep APIs with the original ones from those R packages
-- Try not to change python's default behaviors (i.e, 0-based indexing)
 
 ## Example usage
 
