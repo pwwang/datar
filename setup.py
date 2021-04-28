@@ -15,7 +15,7 @@ readme = ''
 setup(
     long_description=readme,
     name='datar',
-    version='0.0.1',
+    version='0.0.2',
     description='Probably the closest port of tidyr, dplyr and tibble in python',
     python_requires='==3.*,>=3.7.1',
     author='pwwang',

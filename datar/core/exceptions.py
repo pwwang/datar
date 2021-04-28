@@ -1,7 +1,6 @@
 """Exceptions for datar"""
 class DatarException(Exception):
     """Base exectpion for datar"""
-    ...
 
 class ColumnNotExistingError(DatarException):
     """When selecting non-existing columns"""

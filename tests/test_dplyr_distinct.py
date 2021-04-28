@@ -1,5 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-distinct.R
+from datar.core.grouped import DataFrameRowwise
 import pytest
 from datar.all import *
 
@@ -51,13 +52,13 @@ def test_not_duplicating_cols():
     assert out.columns.tolist() == ['a']
 
     out = df >> group_by(f.a) >> distinct(f.a)
-    assert out.obj.columns.tolist() == ['a']
+    assert out.columns.tolist() == ['a']
 
 def test_grouping_cols_always_included():
     df = tibble(g = c(1, 2), x = c(1, 2))
     out = df >> group_by(f.g) >> distinct(f.x)
 
-    assert out.obj.columns.tolist() == ['g', 'x']
+    assert out.columns.tolist() == ['g', 'x']
 
 def test_switch_groupby_distinct_equal():
     df = tibble(g = c(1, 2), x = c(1, 2))
@@ -65,7 +66,7 @@ def test_switch_groupby_distinct_equal():
     df1 = df >> distinct() >> group_by(f.g)
     df2 = df >> group_by(f.g) >> distinct()
 
-    assert df1.obj.equals(df2.obj)
+    assert df1.equals(df2)
 
 def test_mutate_internally():
     df = tibble(g = c(1, 2), x = c(1, 2))
@@ -98,7 +99,7 @@ def test_preserves_order():
     assert out.columns.tolist() == ['x', 'y']
 
 def test_on_na():
-    df = tibble(col_a=[1, NA, NA]) >> mutate(col_a=f.col_a+0.0)
+    df = tibble(col_a=[1, NA, NA]) #>> mutate(col_a=f.col_a+0.0)
     rows = df >> distinct() >> nrow()
     assert rows == 2
 
@@ -137,3 +138,11 @@ def test_errors():
         df >> distinct(f.aa, f.bb)
     with pytest.raises(ColumnNotExistingError):
         df >> distinct(y=f.a+1)
+
+def test_rowwise_df():
+    df = tibble(x=[1,1,1,2], y=[1,2,2,2])
+    rf = df >> rowwise()
+    out = distinct(rf)
+    exp = distinct(df)
+    assert out.equals(exp)
+    assert isinstance(out, DataFrameRowwise)

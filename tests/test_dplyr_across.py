@@ -1,5 +1,6 @@
 """Grabbed from
 https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-across.R"""
+from datar.core.grouped import DataFrameRowwise
 import numpy
 from pipda import register_func
 import pytest
@@ -14,7 +15,7 @@ def test_on_one_column():
 
 def test_not_selecting_grouping_var():
     df = tibble(g = 1, x = 1)
-    out = df >> group_by(f.g) >> summarise(x = across(everything())) >> pull(f.x)
+    out = df >> group_by(f.g) >> summarise(x = across(everything())) >> pull(f.x, to='frame')
     expected = tibble(x=1)
     assert out.equals(expected)
 
@@ -157,14 +158,15 @@ def test_used_separately():
 
 def test_with_group_id():
     df = tibble(g=[1,2], a=[1,2], b=[3,4]) >> group_by(f.g)
+    expect = df.copy()
+    expect['x'] = [1,4]
 
     @register_func(context=None)
     def switcher(data, group_id, across_a, across_b):
         return across_a.a if group_id == 0 else across_b.b
 
-    expect = df >> ungroup() >> mutate(x=[1,4])
     out = df >> mutate(x=switcher(cur_group_id(), across(f.a), across(f.b)))
-    assert out.obj.equals(expect)
+    assert out.equals(expect)
 
 def test_cache_key():
     df = tibble(g=rep([1,2], each=2), a=range(1,5)) >> group_by(f.g)
@@ -181,7 +183,7 @@ def test_cache_key():
         )
     )
     expect = df >> mutate(x = mean(f.a), y = max(f.a))
-    assert out.obj.equals(expect.obj)
+    assert out.equals(expect)
 
 def test_reject_non_vectors():
     with pytest.raises(ValueError, match='Argument `_fns` of across must be'):
@@ -313,6 +315,11 @@ def test_c_across():
     out = df >> summarise(z=[c_across([f.x, f.y])]) >> pull(f.z, to='list')
     assert out[0].tolist() == [1,2,3,4]
 
+    # what if no columns specified
+    gf = group_by(df, f.x)
+    out = gf >> mutate(z=sum(c_across())) >> pull(to='list')
+    assert out == [3,4]
+
 def test_nb_fail():
     from datar.datasets import iris
     out = iris >> mutate(
@@ -338,6 +345,5 @@ def test_nb_fail_c_across():
         sd = sd(c_across(f[f.w:f.z]))
     )
 
-    assert out.flags.rowwise
-    rows = nrow(out)
-    assert rows == 4
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 4

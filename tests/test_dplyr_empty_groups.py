@@ -12,14 +12,14 @@ def df():
         x = c(1, 2, 1, 4)
     # group_by(..., _drop=False) only works for a
     # single categorical columns
-    ) >> group_by(f.f, _drop = FALSE)
+    ) >> group_by(f.e, f.f, _drop = FALSE)
 
 def test_filter_slice_keep_zero_len_groups(df):
     out = filter(df, f.f == 1)
     gsize = group_size(out)
     assert gsize == [2,0,0]
 
-    out = slice(df, 1)
+    out = slice(df, 0)
     gsize = group_size(out)
     assert gsize == [1,1,0]
 
@@ -27,14 +27,16 @@ def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
     out = ungroup(count(filter(df, f.f==1)))
     expect = tibble(
-        f=[1,2,3],
+        e=1,
+        f=factor([1,2,3], levels=[1,2,3]),
         n=[2,0,0]
     )
     assert out.equals(expect)
 
-    out = ungroup(count(slice(df, 1)))
+    out = ungroup(count(slice(df, 0)))
     expect = tibble(
-        f=[1,2,3],
+        e=1,
+        f=factor([1,2,3], levels=[1,2,3]),
         n=[1,1,0]
     )
     assert out.equals(expect)
@@ -46,9 +48,7 @@ def test_mutate_keeps_zero_len_groups(df):
 def test_summarise_returns_a_row_for_zero_len_groups(df):
     summarised = df >> summarise(z=n())
     rows = summarised >> nrow()
-    # assert rows == 3
-    # not supported when dataframe is empty
-    assert rows == 2
+    assert rows == 3
 
 def test_arrange_keeps_zero_len_groups(df):
     gsize = group_size(arrange(df))
@@ -60,7 +60,7 @@ def test_arrange_keeps_zero_len_groups(df):
 def test_bind_rows(df):
     gg = bind_rows(df, df)
     gsize = group_size(gg)
-    assert gsize == [4,4,0]
+    assert gsize == [2,2,0]
 
 def test_join_respect_zero_len_groups():
     df1 = tibble(
@@ -111,6 +111,4 @@ def test_summarise_respect_zero_len_groups():
     df = tibble(x=factor(rep([1,2,3], each=10), levels=[1,2,3,4]))
 
     out = df >> group_by(f.x, _drop=False) >> summarise(n=n())
-    # assert out.obj.n.tolist() == [10,10,10,0]
-    # not supported when dataframe is empty
-    assert out.n.tolist() == [10,10,10]
+    assert out.n.tolist() == [10,10,10,0]

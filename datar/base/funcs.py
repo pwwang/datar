@@ -21,10 +21,11 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, objectize, logger
+from ..core.utils import categorize, logger
 from ..core.middlewares import Collection, WithDataEnv
 from ..core.types import (
-    BoolOrIter, DataFrameType, DoubleOrIter, IntOrIter, NumericOrIter,
+    BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter,
+    NumericOrIter,
     NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
     is_iterable, is_series_like, is_scalar
 )
@@ -205,7 +206,7 @@ def as_date(
     if not isinstance(x, (Series, SeriesGroupBy)):
         x = Series([x]) if is_scalar(x) else Series(x)
 
-    return objectize(x).transform(
+    return x.transform(
         _as_date_dummy,
         format=format,
         try_formats=try_formats,
@@ -217,7 +218,6 @@ def as_date(
 def _as_type(x: Any, type_: Type) -> Any:
     """Convert x or elements of x to certain type"""
     if is_series_like(x):
-        x = objectize(x)
         return x.astype(type_)
 
     if is_scalar(x):
@@ -263,7 +263,6 @@ def as_factor(x: Iterable[Any]) -> Categorical:
     Returns:
         The converted categorical object
     """
-    x = objectize(x)
     return Categorical(x)
 
 as_categorical = as_factor
@@ -329,11 +328,11 @@ as_bool = as_logical
 @register_func(None, context=Context.EVAL)
 def is_numeric(x: Any) -> BoolOrIter:
     """Check if x is numeric type"""
-    x = objectize(x)
     if is_scalar(x):
-        return isinstance(x, int, float, complex, numpy.number)
-
-    return is_numeric_dtype(x)
+        return isinstance(x, (int, float, complex, numpy.number))
+    if isinstance(x, Series):
+        return is_numeric_dtype(x)
+    return numpy.array([is_numeric(elem) for elem in x])
 
 @register_func(None, context=Context.EVAL)
 def is_character(x: Any) -> BoolOrIter:
@@ -345,7 +344,6 @@ def is_character(x: Any) -> BoolOrIter:
     Returns:
         True if
     """
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, str)
     return is_string_dtype(x)
@@ -353,7 +351,6 @@ def is_character(x: Any) -> BoolOrIter:
 @register_func(None, context=Context.EVAL)
 def is_categorical(x: Any) -> bool:
     """Check if x is categorical data"""
-    x = objectize(x)
     return is_categorical_dtype(x)
 
 is_factor = is_categorical
@@ -361,7 +358,6 @@ is_factor = is_categorical
 @register_func(None, context=Context.EVAL)
 def is_int64(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, (int, numpy.int64))
     return is_int64_dtype(x)
@@ -369,7 +365,6 @@ def is_int64(x: Any) -> BoolOrIter:
 @register_func(None, context=Context.EVAL)
 def is_integer(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
-    x = objectize(x)
     if is_scalar(x):
         return is_scalar_int(x)
     return is_integer_dtype(x)
@@ -379,18 +374,13 @@ is_int = is_integer
 @register_func(None, context=Context.EVAL)
 def is_double(x: Any) -> BoolOrIter:
     """Check if x is double/float data"""
-    x = objectize(x)
     if is_scalar(x):
         return isinstance(x, (float, numpy.float))
     return is_float_dtype(x)
 
 is_float = is_double
 
-@register_func(None, context=Context.EVAL)
-def is_na(x: Any) -> BoolOrIter:
-    """Check if x is nan or not"""
-    x = objectize(x)
-    return numpy.isnan(x)
+is_na = register_func(None, context=Context.EVAL)(pandas.isna)
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
@@ -409,7 +399,7 @@ def c(*elems: Any) -> Collection:
 @register_func(None, context=Context.EVAL)
 def seq_along(along_with: Iterable[Any]) -> SeriesLikeType:
     """Generate sequences along an iterable"""
-    return numpy.array(range(len(along_with)))
+    return numpy.array(range(len(along_with))) + 1
 
 @register_func(None, context=Context.EVAL)
 def seq_len(length_out: IntOrIter) -> SeriesLikeType:
@@ -433,32 +423,37 @@ def seq(
         length_out: IntType = None,
         along_with: IntType = None
 ) -> SeriesLikeType:
-    """Generate a sequence"""
+    """Generate a sequence
+
+    https://rdrr.io/r/base/seq.html
+
+    Note:
+        This API is consistent with r-base's seq. 1-based and inclusive.
+    """
     if along_with is not None:
         return seq_along(along_with)
-    if from_ is not None and not isinstance(from_, (int, float)):
+    if from_ is not None and not is_scalar(from_):
         return seq_along(from_)
     if length_out is not None and from_ is None and to is None:
         return seq_len(length_out)
 
     if from_ is None:
-        from_ = 0
+        from_ = 1
     elif to is None:
-        from_, to = 0, from_
+        from_, to = 1, from_
 
     if length_out is not None:
-        by = (float(to) - float(from_)) / float(length_out)
+        by = (float(to) - float(from_)) / float(length_out - 1)
     elif by is None:
-        by = 1
-        length_out = to - from_
+        by = 1 if to > from_ else -1
+        length_out = to - from_ + 1 if to > from_ else from_ - to + 1
     else:
-        length_out = (to - from_ + by - by/10.0) // by
+        length_out = (to - from_ + 1.1 * by) // by
     return numpy.array([from_ + n * by for n in range(int(length_out))])
 
 @register_func(None, context=Context.EVAL)
 def abs(x: Any) -> NumericOrIter:
     """Get the absolute value"""
-    x = objectize(x)
     return numpy.abs(x)
 
 @register_func(None, context=Context.EVAL)
@@ -489,85 +484,58 @@ def floor(x: NumericOrIter) -> IntOrIter:
         return math.floor(x)
     return list(map(math.floor, x))
 
-@register_func(None, context=Context.EVAL)
-def cumsum(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative sums of
-    the elements of the argument.
+def cumx(x: Any, how: str) -> numpy.ndarray:
+    """Cummulative along the elements in x
 
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
-
-    Returns:
-        The cumulative sums
+    numpy and pandas' cums only put NA at the position of original NA, and skip
+    it for later elements. However, all elements afterwards are NA's in R.
     """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cumsum(skipna=skipna)
+    if is_scalar(x):
+        x = [x]
 
-@register_func(None, context=Context.EVAL)
-def cummin(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative minima of
-    the elements of the argument.
+    if len(x) == 0:
+        return numpy.array([])
 
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
+    out = []
+    out_append = out.append
+    def append(elem):
+        if pandas.isna(out[-1]) or pandas.isna(elem):
+            out_append(NA)
+        elif how == 'sum':
+            out_append(out[-1] + elem)
+        elif how == 'prod':
+            out_append(out[-1] * elem)
+        elif how == 'min':
+            out_append(builtins.min(out[-1], elem))
+        elif how == 'max':
+            out_append(builtins.max(out[-1], elem))
 
-    Returns:
-        The cumulative minimas
-    """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cummin(skipna=skipna)
+    for i, elem in enumerate(x):
+        if i == 0:
+            out_append(elem)
+        else:
+            append(elem)
+    return numpy.array(out)
 
 @register_func(None, context=Context.EVAL)
-def cummax(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative maxima of
-    the elements of the argument.
-
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
-
-    Returns:
-        The cumulative maximas
-    """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cummax(skipna=skipna)
+def cumsum(x: Any) -> numpy.ndarray:
+    """Cummulative sum along elements in x"""
+    return cumx(x, 'sum')
 
 @register_func(None, context=Context.EVAL)
-def cumprod(
-        series: Iterable[NumericType],
-        skipna: bool = False
-) -> SeriesLikeType:
-    """Returns a vector whose elements are the cumulative products of
-    the elements of the argument.
+def cumprod(x: Any) -> numpy.ndarray:
+    """Cummulative product along elements in x"""
+    return cumx(x, 'prod')
 
-    Args:
-        series: A series of numbers
-        skipna: Whether skipping NA's or not. Note that R doesn't have this
-            argument.
+@register_func(None, context=Context.EVAL)
+def cummin(x: Any) -> numpy.ndarray:
+    """Cummulative min along elements in x"""
+    return cumx(x, 'min')
 
-    Returns:
-        The cumulative products
-    """
-    if not is_series_like(series):
-        series = Series(series)
-    return series.cumprod(skipna=skipna)
+@register_func(None, context=Context.EVAL)
+def cummax(x: Any) -> numpy.ndarray:
+    """Cummulative max along elements in x"""
+    return cumx(x, 'max')
 
 @register_func(None, context=Context.EVAL)
 def cut(
@@ -654,7 +622,6 @@ def pmin(
         na_rm: bool = False
 ) -> Iterable[float]:
     """Get the min value rowwisely"""
-    series = (objectize(ser) for ser in series)
     return [min(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func(None, context=Context.EVAL)
@@ -663,7 +630,6 @@ def pmax(
         na_rm: bool = False
 ) -> Iterable[float]:
     """Get the max value rowwisely"""
-    series = (objectize(ser) for ser in series)
     return [max(elem, na_rm=na_rm) for elem in zip(*series)]
 
 @register_func(None, context=Context.EVAL)
@@ -803,7 +769,6 @@ def round(
         ndigits: int = 0
 ) -> NumericOrIter:
     """Rounding a number"""
-    number = objectize(number)
     if is_series_like(number):
         return number.round(ndigits)
     return builtins.round(number, ndigits)
@@ -811,19 +776,16 @@ def round(
 @register_func(None, context=Context.EVAL)
 def sqrt(x: Any) -> bool:
     """Get the square root of a number"""
-    x = objectize(x)
     return numpy.sqrt(x)
 
 @register_func(None, context=Context.EVAL)
 def sin(x: Any) -> NumericOrIter:
     """Get the sin of a number"""
-    x = objectize(x)
     return numpy.sin(x)
 
 @register_func(None, context=Context.EVAL)
 def cos(x: Any) -> NumericOrIter:
     """Get the cos of a number"""
-    x = objectize(x)
     return numpy.cos(x)
 
 @register_func(None, context=Context.EVAL)
@@ -839,7 +801,7 @@ def droplevels(x: Categorical) -> Categorical:
     return categorize(x).remove_unused_categories()
 
 @register_func(None, context=Context.EVAL)
-def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
+def levels(x: CategoricalLikeType) -> Optional[List[Any]]:
     """Get levels from a factor
 
     Args:
@@ -848,12 +810,11 @@ def levels(x: Union[Series, Categorical]) -> Optional[List[Any]]:
     Returns:
         levels of the categorical data
     """
-    if isinstance(x, Categorical):
-        return x.categories
-    if is_categorical_dtype(x):
-        return x.cat.categories
-
-    return None
+    if not is_categorical_dtype(x):
+        return None
+    if isinstance(x, Series):
+        x = x.cat
+    return x.categories
 
 @register_func(None, context=Context.EVAL)
 def rep(
@@ -861,7 +822,7 @@ def rep(
         times: Union[int, Iterable[int]] = 1,
         length: Optional[int] = None, # pylint: disable=redefined-outer-name
         each: int = 1
-) -> Iterable[Any]:
+) -> numpy.ndarray:
     """replicates the values in x
 
     Args:
@@ -888,19 +849,27 @@ def rep(
             )
 
     if is_scalar_int(times):
-        x = [elem for elem in x for _ in range(each)] * int(times)
+        x = numpy.array([elem for elem in x for _ in range(each)] * int(times))
     else:
-        x = [elem for n, elem in zip(times, x) for _ in range(n)]
+        x = numpy.array([elem for n, elem in zip(times, x) for _ in range(n)])
     if length is None:
         return x
     repeats = length // len(x) + 1
-    x = x * repeats
+    x = numpy.tile(x, repeats)
     return x[:length]
+
+@register_func(None, context=Context.EVAL)
+def rev(x: Iterable[Any]) -> numpy.ndarray:
+    """Get reversed vector"""
+    dtype = getattr(x, 'dtype', None)
+    return numpy.array(list(reversed(x)), dtype=dtype)
+
 
 @register_func(None, context=Context.EVAL)
 def unique(x: Iterable[Any]) -> numpy.ndarray:
     """Get unique elements"""
-    return numpy.unique(x)
+    # return numpy.unique(x)
+    return pandas.unique(x) # keeps order
 
 @register_func(None, context=Context.EVAL)
 def length(x: Any) -> int:
@@ -908,6 +877,13 @@ def length(x: Any) -> int:
     if is_scalar(x):
         return 1
     return len(x)
+
+@register_func(None, context=Context.EVAL)
+def lengths(x: Any) -> List[int]:
+    """Lengths of elements in x"""
+    if is_scalar(x):
+        return [1]
+    return [length(elem) for elem in x]
 
 # ---------------------------------
 # Plain functions
@@ -938,7 +914,7 @@ def factor(
     if is_categorical_dtype(x):
         x = x.to_numpy()
     ret = Categorical(
-        objectize(x),
+        x,
         categories=levels,
         ordered=ordered
     )
@@ -1015,3 +991,12 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
     return numpy.isin(elem, elems)
 
 is_in = is_element
+
+# pylint: disable=unnecessary-lambda
+all = register_func(None, context=Context.EVAL)(
+    # can't set attributes to builtins.all, so wrap it.
+    lambda *args, **kwargs: builtins.all(*args, **kwargs)
+)
+any = register_func(None, context=Context.EVAL)(
+    lambda *args, **kwargs: builtins.any(*args, **kwargs)
+)

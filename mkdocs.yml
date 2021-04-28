@@ -18,11 +18,15 @@ plugins:
     - search # necessary for search to work
     - mkapi
     - mkdocs-jupyter:
-        execute: True
+        execute: false
 extra_css:
     - style.css
 nav:
     - 'Home': 'index.md'
+    - 'Import': 'import.md'
+    - 'The f': 'f.md'
+    - 'Piping vs regular calling': 'piping_vs_regular.md'
+    - 'Datasets': 'datasets.md'
     - 'API': 'mkapi/api/datar'
     - 'Examples':
         'across': 'notebooks/across.ipynb'
@@ -76,4 +80,5 @@ nav:
         'uncount': 'notebooks/uncount.ipynb'
         'unite': 'notebooks/unite.ipynb'
         'with_groups': 'notebooks/with_groups.ipynb'
+    - 'TODO': 'TODO.md'
     - 'Change Log': CHANGELOG.md

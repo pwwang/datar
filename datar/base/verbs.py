@@ -1,51 +1,43 @@
 """Function from R-base that can be used as verbs"""
+# TODO: add tests
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
 import numpy
-from pandas.core.frame import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy
+from pandas import DataFrame
 from pipda import register_verb
 
-from ..core.utils import objectize
-from ..core.types import IntType, is_scalar, DataFrameType
+from ..core.types import IntType, is_scalar
 from ..core.contexts import Context
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+# pylint: disable=redefined-outer-name
+
+@register_verb(DataFrame, context=Context.EVAL)
 def colnames(
-        df: DataFrameType,
-        names: Optional[Iterable[str]] = None,
-        copy: bool = False
-) -> Union[List[Any], DataFrameType]:
+        df: DataFrame,
+        names: Optional[Iterable[str]] = None
+) -> Union[List[Any], DataFrame]:
     """Get or set the column names of a dataframe
 
     Args:
         df: The dataframe
         names: The names to set as column names for the dataframe.
-        copy: Whether return a copy of dataframe with new columns
 
     Returns:
         A list of column names if names is None, otherwise return the dataframe
         with new column names.
         if the input dataframe is grouped, the structure is kept.
     """
-    if names is None:
-        return objectize(df).columns.tolist()
+    from ..stats.verbs import setNames
+    if names is not None:
+        return setNames(df, names)
 
-    grouper = getattr(df, 'grouper', None)
-    ret = objectize(df)
-    if copy:
-        ret = ret.copy()
-    ret.columns = names
-    if grouper is not None:
-        return ret.groupby(grouper, dropna=False)
-    return ret
+    return df.columns.tolist()
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL)
 def rownames(
-        df: DataFrameType,
-        names: Optional[Iterable[str]] = None,
-        copy: bool = False
-) -> Union[List[Any], DataFrameType]:
+        df: DataFrame,
+        names: Optional[Iterable[str]] = None
+) -> Union[List[Any], DataFrame]:
     """Get or set the row names of a dataframe
 
     Args:
@@ -58,32 +50,28 @@ def rownames(
         with new row names.
         if the input dataframe is grouped, the structure is kept.
     """
-    if names is None:
-        return objectize(df).index.tolist()
+    if names is not None:
+        df = df.copy()
+        df.index = names
+        return df
 
-    grouper = getattr(df, 'grouper', None)
-    ret = objectize(df)
-    if copy:
-        ret = ret.copy()
-    ret.index = names
-    if grouper is not None:
-        return ret.groupby(grouper, dropna=False)
-    return ret
+    return df.index.tolist()
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
-def dim(x: DataFrameType) -> Tuple[int]:
+@register_verb(DataFrame, context=Context.EVAL)
+def dim(x: DataFrame, stack: bool = True) -> Tuple[int]:
     """Retrieve the dimension of a dataframe.
 
     Args:
         x: a dataframe
+        stack: When there is stacked df, count as 1.
 
     Returns:
         The shape of the dataframe.
     """
-    return objectize(x).shape
+    return (nrow(x), ncol(x, stack))
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
-def nrow(_data: DataFrameType) -> int:
+@register_verb(DataFrame)
+def nrow(_data: DataFrame) -> int:
     """Get the number of rows in a dataframe
 
     Args:
@@ -92,19 +80,25 @@ def nrow(_data: DataFrameType) -> int:
     Returns:
         The number of rows in _data
     """
-    return dim(_data)[0]
+    return _data.shape[0]
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
-def ncol(_data: DataFrameType):
+@register_verb(DataFrame)
+def ncol(_data: DataFrame, stack: bool = True):
     """Get the number of columns in a dataframe
 
     Args:
         _data: The dataframe
+        stack: When there is stacked df, count as 1.
 
     Returns:
         The number of columns in _data
     """
-    return dim(_data)[1]
+    if not stack:
+        return _data.shape[1]
+    cols = set()
+    for col in _data.columns:
+        cols.add(col.split('$', 1)[0] if isinstance(col, str) else col)
+    return len(cols)
 
 @register_verb(context=Context.EVAL)
 def diag(
@@ -147,24 +141,24 @@ def diag(
     ret = DataFrame(numpy.diag(series))
     return ret.iloc[:nrow, :ncol]
 
-@register_verb((DataFrame, DataFrameGroupBy))
-def _(
-        x: DataFrameType,
-        nrow: Any = None, # pylint: disable=redefined-outer-name
-        ncol: Optional[IntType] = None  # pylint: disable=redefined-outer-name
-) -> Union[DataFrame, numpy.ndarray]:
-    """Diag when x is a dataframe"""
-    if nrow is not None and ncol is not None:
-        raise ValueError("Extra arguments received for diag.")
+# @diag.register(DataFrame)
+# def _(
+#         x: DataFrame,
+#         nrow: Any = None, # pylint: disable=redefined-outer-name
+#         ncol: Optional[IntType] = None  # pylint: disable=redefined-outer-name
+# ) -> Union[DataFrame, numpy.ndarray]:
+#     """Diag when x is a dataframe"""
+#     if nrow is not None and ncol is not None:
+#         raise ValueError("Extra arguments received for diag.")
 
-    x = x.copy()
-    if nrow is not None:
-        numpy.fill_diagonal(x, nrow)
+#     x = x.copy()
+#     if nrow is not None:
+#         numpy.fill_diagonal(x, nrow)
 
-    return x
+#     return x
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame)
 def t(_data: DataFrame, copy: bool = False) -> DataFrame:
     """Get the transposed dataframe
 
@@ -176,3 +170,49 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
         The transposed dataframe.
     """
     return _data.transpose(copy=copy)
+
+@register_verb(DataFrame)
+def names(x: DataFrame) -> List[str]:
+    """Get the column names of a dataframe"""
+    return x.columns.tolist()
+
+@register_verb(context=Context.EVAL)
+def setdiff(x: Any, y: Any) -> List[Any]:
+    """Diff of two iterables"""
+    if is_scalar(x):
+        x = [x]
+    if is_scalar(y):
+        y = [y]
+    return [elem for elem in x if elem not in y]
+
+
+@register_verb(context=Context.EVAL)
+def intersect(x: Any, y: Any) -> List[Any]:
+    """Intersect of two iterables"""
+    if is_scalar(x):
+        x = [x]
+    if is_scalar(y):
+        y = [y]
+    return [elem for elem in x if elem in y]
+
+
+@register_verb(context=Context.EVAL)
+def union(x: Any, y: Any) -> List[Any]:
+    """Union of two iterables"""
+    if is_scalar(x):
+        x = [x]
+    if is_scalar(y):
+        y = [y]
+    # pylint: disable=arguments-out-of-order
+    return list(x) + setdiff(y, x)
+
+@register_verb(context=Context.EVAL)
+def setequal(x: Any, y: Any) -> List[Any]:
+    """Check set equality for two iterables (order doesn't matter)"""
+    if is_scalar(x):
+        x = [x]
+    if is_scalar(y):
+        y = [y]
+    x = sorted(x)
+    y = sorted(y)
+    return x == y

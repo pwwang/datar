@@ -254,3 +254,16 @@ def test_errors():
 
     with pytest.raises(TypeError):
         bind_rows([1,2])
+
+# for coverage
+def test_bind_empty_dfs():
+    out = bind_rows(None)
+    assert dim(out) == (0, 0)
+
+    out = bind_cols(None)
+    assert dim(out) == (0, 0)
+
+    df1 = tibble(x=factor([1,2,3]))
+    df2 = tibble()
+    out = bind_rows(df1, df2)
+    assert out.x.tolist() == [1,2,3]

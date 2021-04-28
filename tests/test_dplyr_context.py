@@ -4,17 +4,17 @@ import pytest
 from datar.all import *
 
 def test_cur_group():
-    df = tibble(g = [1,2], x = [1,2])
+    df = tibble(g = 1, x = 1)
     gf = df >> group_by(f.g)
 
-    with pytest.raises(ValueError):
-        df >> summarise(key=[cur_group()])
+    out = df >> summarise(key=[cur_group()]) >> pull(f.key, to='list')
+    assert len(out) == 1
+    assert dim(out[0]) == (1,0)
 
-    out = gf >> summarise(key=[cur_group()]) >> pull(f.key)
-    expect = tibble(g=1)
-    assert out.values[0].equals(expect)
-    expect = tibble(g=2)
-    assert out.values[1].equals(expect)
+    out = gf >> summarise(key=[cur_group()]) >> pull(f.key, to='list')
+    assert len(out) == 1
+    assert out[0].equals(tibble(g=1))
+
 
 def test_cur_group_id():
     df = tibble(x = c("b", "a", "b"))
@@ -26,9 +26,8 @@ def test_cur_group_id():
     assert out.equals(expect)
 
     out = gf >> mutate(id=cur_group_id())
-    # note the order has changed
-    expect = tibble(x=["a", "b","b"], id=[0,1,1])
-    assert out.obj.equals(expect)
+    expect = tibble(x=["b", "a","b"], id=[1,0,1])
+    assert out.equals(expect)
 
 def test_cur_data_all():
     df = tibble(x = c("b", "a", "b"), y = [1,2,3])
@@ -51,6 +50,10 @@ def test_cur_group_rows():
 
     out = gf >> summarise(x=[cur_group_rows()]) >> pull()
     assert out.values.tolist() == [[1], [0,2]]
+    # data frame
+    out = df >> summarise(x=[cur_group_rows()]) >> pull()
+    assert out.values.tolist() == [[0,1,2]]
+
 
 def test_cur_data_all_sequentially():
     df = tibble(a=1)
@@ -61,18 +64,23 @@ def test_cur_data_all_sequentially():
     gf = tibble(a = 1, b = 2) >> group_by(f.a)
     out = gf >> mutate(x = ncol(cur_data_all()), y = ncol(cur_data_all()))
     expect = tibble(a = 1, b = 2, x = 2, y = 3)
-    assert out.obj.equals(expect)
+    assert out.equals(expect)
 
 def test_errors():
-    with pytest.raises(TypeError):
-        n()
-    with pytest.raises(TypeError):
+    # with pytest.raises(TypeError):
+    #     n()
+    with pytest.raises(ValueError):
         cur_data()
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         cur_data_all()
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         cur_group()
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         cur_group_id()
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         cur_group_rows()
+
+def test_cur_column():
+    df = tibble(x=1, y=2, z=3)
+    out = df >> mutate(across(f[f.x:f.z], (lambda x, y: y), y=cur_column()))
+    assert out.values.tolist() == [['x', 'y', 'z']]

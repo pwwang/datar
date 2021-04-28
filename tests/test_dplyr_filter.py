@@ -23,7 +23,7 @@ def test_handles_passing_args():
 
     df >>= group_by(f.x)
     res = g()
-    assert res.obj.x.tolist() == [3]
+    assert res.x.tolist() == [3]
 
 def test_handles_simple_symbols():
     df = tibble(x=range(1,5), test=rep(c(TRUE,FALSE), each=2))
@@ -51,18 +51,17 @@ def test_handles_simple_symbols():
     assert res.x.tolist() == [2]
     assert res.test.tolist() == [True]
 
-    res = g(gdf).obj
+    res = g(gdf)
     assert res.x.tolist() == [2]
     assert res.test.tolist() == [True]
 
 def test_handles_scalar_results():
-    # df1 = mtcars >> filter(min(f.mpg) > 0)
-    # assert df1.equals(mtcars)
+    df1 = mtcars >> filter(min(f.mpg) > 0)
+    assert df1.equals(mtcars)
 
-    df2 = mtcars >> arrange(f.cyl, f.mpg) >> group_by(f.cyl) >> filter(min(f.mpg)>0)
-    # group_by not sorted until apply.
-    df3 = mtcars >> arrange(f.cyl, f.mpg) >> group_by(f.cyl)
-    assert df2.obj.equals(df3.obj)
+    df2 = mtcars >> group_by(f.cyl) >> filter(min(f.mpg)>0)
+    df3 = mtcars >> group_by(f.cyl)
+    assert df2.equals(df3)
 
 def test_discards_na():
     temp = tibble(
@@ -75,7 +74,7 @@ def test_discards_na():
 
 def test_returns_input_with_no_args():
     df = filter(mtcars)
-    assert df.equals(mtcars.reset_index(drop=True))
+    assert df.equals(mtcars)
 
 def test_complex_vec():
     d = tibble(x=range(1,11), y=[i+2j for i in range(1,11)])
@@ -99,7 +98,7 @@ def test_contains():
 def test_row_number():
     z = tibble(a=[1,2,3])
     b = "a"
-    res = z >> filter(row_number() == 3)
+    res = z >> filter(row_number() == 4)
     rows = nrow(res)
     assert rows == 0
 
@@ -147,16 +146,22 @@ def test_grouped_filter_handles_indices():
     assert all(group_keys(res) == group_keys(res2))
 
 def test_filter_false_handles_indices():
-    # todo: figure out how to do _preserve=True
-    # out = mtcars >> group_by(f.cyl) >> filter(
-    #     False, _preserve=True)
-    # out = group_rows(out)
-    # assert out == [[], [], []]
+
+    out = mtcars >> group_by(f.cyl) >> filter(
+        False, _preserve=True)
+    out = group_rows(out)
+    assert out == [[], [], []]
 
     out = mtcars >> group_by(f.cyl) >> filter(
         False, _preserve=False)
     out = group_rows(out)
-    assert out == {}
+    assert out == []
+
+    # not documented, but _drop=False keeps groups
+    out = mtcars >> group_by(f.cyl, _drop=False) >> filter(
+        False)
+    out = group_rows(out)
+    assert out == [[], [], []]
 
 # def test_hybrid_lag_and_default_value_for_string_cols():
 
@@ -212,9 +217,9 @@ def test_handles_df_cols():
     gdf = group_by(df, f.x)
 
     out = filter(gdf, f['z$A'] == 1)
-    assert out.obj.equals(expect)
+    assert out.equals(expect)
     out = filter(gdf, f['z$A'] == 1)
-    assert out.obj.equals(expect)
+    assert out.equals(expect)
 
 # def test_handles_named_logical():
 #     tbl = tibble(a={'a': True})
@@ -262,11 +267,11 @@ def test_preserves_grouping():
 
     out = gf >> filter(is_element(f.x, [3,4]))
     assert group_vars(out) == ['g']
-    assert group_rows(out) == {1: [0], 2: [1]}
+    assert group_rows(out) == [[0], [1]]
 
     out = gf >> filter(f.x < 3)
     assert group_vars(out) == ['g']
-    assert group_rows(out)[1].tolist() == [0, 1]
+    assert group_rows(out) == [[0, 1]]
 
 def test_works_with_if_any_if_all():
     df = tibble(x1=range(1,11), x2=c(range(1,6), 10, 9, 8, 7, 6))
