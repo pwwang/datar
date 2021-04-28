@@ -2,13 +2,12 @@
 
 from typing import Any, Iterable
 
-import numpy
-from pandas.core.series import Series
 from pipda import register_func
 
 from ..core.types import NumericType
 from ..core.contexts import Context
 from ..core.middlewares import Nesting
+from ..base import seq
 
 @register_func(None, context=Context.EVAL)
 def full_seq(
@@ -27,20 +26,20 @@ def full_seq(
     Returns:
         The full sequence
     """
-    data = sorted(x)
-    ret = []
-    for elem in data:
-        if not ret:
-            ret.append(elem)
-            continue
-        last_elem = ret[-1]
-        n = float(elem - last_elem) / float(period)
-        if not numpy.isclose(n, float(round(n)), atol=tol):
-            raise ValueError('`x` is not a regular sequence.')
-        ret.extend((i+1) * period + last_elem for i in range(int(round(n))))
-    if isinstance(x, Series):
-        return Series(x, name=x.name)
-    return ret
+    minx = min(x) # na not counted
+    maxx = max(x)
+
+    if any(
+            (elem - minx) % period > tol and
+            period - ((elem - minx) % period) > tol
+            for elem in x
+    ):
+        raise ValueError('`x` is not a regular sequence.')
+
+    if period - ((maxx - minx) % period) <= tol:
+        maxx += tol
+
+    return seq(minx, maxx, by=period)
 
 @register_func(None, context=None)
 def nesting(*cols: Any, **kwargs: Any) -> Nesting:
