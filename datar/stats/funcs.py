@@ -113,4 +113,6 @@ def weighted_mean(
         if w is not None:
             w = w[notna]
 
+    if w is not None and sum(w) == 0:
+        return numpy.nan
     return numpy.average(x, weights=w)
