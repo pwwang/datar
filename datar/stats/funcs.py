@@ -1,10 +1,12 @@
 """Some functions ported from R-stats"""
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Optional
 
 import numpy
 from pipda import register_func
 
-from ..core.types import FloatOrIter, SeriesLikeType
+from ..core.types import (
+    FloatOrIter, NumericOrIter, NumericType, SeriesLikeType, is_scalar
+)
 from ..core.contexts import Context
 
 # pylint: disable=redefined-builtin, redefined-outer-name
@@ -86,3 +88,29 @@ def sd(
         numpy.nanstd(series, ddof=ddof) if na_rm
         else numpy.std(series, ddof=ddof)
     )
+
+@register_func(None, context=Context.EVAL)
+def weighted_mean(
+        # pylint: disable=invalid-name
+        x: NumericOrIter,
+        w: Optional[NumericOrIter] = None,
+        na_rm: bool = False
+) -> NumericType:
+    """Calculate weighted mean"""
+    if is_scalar(x):
+        x = [x]
+    if w is not None and is_scalar(w):
+        w = [w]
+    x = numpy.array(x)
+    if w is not None:
+        w = numpy.array(w)
+        if len(x) != len(w):
+            raise ValueError("'x' and 'w' must have the same length")
+
+    if na_rm:
+        notna = ~numpy.isnan(x)
+        x = x[notna]
+        if w is not None:
+            w = w[notna]
+
+    return numpy.average(x, weights=w)
