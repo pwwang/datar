@@ -149,5 +149,3 @@ def test_can_override_output_column():
     df = tibble(g=c(1,1,2,2,2), x=c(3,2,5,5,5))
     out = add_tally(df, name="xxx")
     assert out.columns.tolist() == ["g", "x", "xxx"]
-
-

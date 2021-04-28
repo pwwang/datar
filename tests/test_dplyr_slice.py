@@ -354,4 +354,3 @@ def test_slicex_on_grouped_data():
     assert out.equals(tibble(g=[1,2], x=[3,6]))
     out = gf >> slice_sample()
     assert dim(out) == (2, 2)
-

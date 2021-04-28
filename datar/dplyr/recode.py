@@ -39,7 +39,7 @@ def args_to_recodings(
 
     values.update(kwargs)
     if _force_index:
-        for key in values:
+        for key in list(values):
             if isinstance(key, str) and key.isdigit():
                 values[int(key)] = values.pop(key)
     return values

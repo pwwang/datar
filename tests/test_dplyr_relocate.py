@@ -71,6 +71,3 @@ def test_before_0():
     df = tibble(x=1, y=2)
     out = relocate(df, f.y, _before=0)
     assert out.columns.tolist() == ['y', 'x']
-
-
-

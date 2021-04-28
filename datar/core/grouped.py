@@ -217,6 +217,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         return ret
 
     def copy(self, deep: bool = True) -> "DataFrameGroupBy":
+        """Copy the dataframe and keep the class"""
         return DataFrameGroupBy(
             super().copy() if deep else self,
             _group_vars=self._group_vars,

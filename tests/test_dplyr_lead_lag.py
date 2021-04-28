@@ -102,4 +102,3 @@ def test_order_by():
 
     out = lag(x, order_by=seq(10,1))
     assert_iterable_equal(out, c(seq(2,10), NA))
-

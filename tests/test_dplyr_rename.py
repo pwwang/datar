@@ -46,4 +46,3 @@ def test_passes_args_kwargs_along():
 def test_cannot_create_duplicate_names():
     df = tibble(x=1, y=2)
     df >> rename_with(lambda n: "X", [f.x, f.y])
-
