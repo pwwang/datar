@@ -13,24 +13,24 @@ from ..base import setdiff
 from .group_data import group_vars
 
 # n used directly in count
-@register_func(context=Context.EVAL)
+@register_func(context=Context.EVAL, summarise_prefers_input=True)
 def n(series: Iterable[Any]) -> int:
     """gives the current group size."""
     return len(series)
 
-@register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
 def cur_data_all(_data: DataFrame) -> DataFrame:
     """gives the current data for the current group
     (including grouping variables)"""
     return _data
 
-@register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
 def cur_data(_data: DataFrame) -> int:
     """gives the current data for the current group
     (excluding grouping variables)."""
     return _data[setdiff(_data.columns, group_vars(_data))]
 
-@register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
 def cur_group(_data: DataFrame) -> DataFrame:
     """gives the group keys, a tibble with one row and one column for
     each grouping variable."""
@@ -41,12 +41,12 @@ def cur_group(_data: DataFrame) -> DataFrame:
     gdata = _data.attrs['group_data']
     return gdata.iloc[[index], :-1]
 
-@register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
 def cur_group_id(_data: DataFrame) -> int:
     """gives a unique numeric identifier for the current group."""
     return _data.attrs.get('group_index', 1)
 
-@register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
 def cur_group_rows(_data: DataFrame) -> List[int]:
     """gives the row indices for the current group."""
     index = _data.attrs.get('group_index', None)
