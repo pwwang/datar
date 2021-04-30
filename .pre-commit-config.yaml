@@ -4,6 +4,7 @@ repos:
     rev: 5df1a4bf6f04a1ed3a643167b38d502575e29aef
     hooks:
     -   id: trailing-whitespace
+        exclude: 'docs/'
     -   id: end-of-file-fixer
     -   id: check-yaml
 -   repo: local
