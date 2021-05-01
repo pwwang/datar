@@ -3,4 +3,4 @@
 from .core import operator as _datar_operator
 from .core.defaults import f
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'

@@ -46,15 +46,15 @@ df >> mutate(z=if_else(f.x>1, 1, 0))
 df >> filter(f.x>1)
 """# output:
    x      y
-2  2    two
-3  3  three
+0  2    two
+1  3  three
 """
 
 df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
 """# output:
    x      y  z
-2  2    two  1
-3  3  three  1
+0  2    two  1
+1  3  three  1
 """
 ```
 
@@ -65,10 +65,9 @@ from datar.base import sin, pi
 from plotnine import ggplot, aes, geom_line, theme_classic
 
 df = tibble(x=numpy.linspace(0, 2*pi, 500))
-(
-    df >>
-        mutate(y=sin(f.x), sign=if_else(f.y>=0, "positive", "negative")) >>
-        ggplot(aes(x='x', y='y')) + theme_classic()
+(df >>
+   mutate(y=sin(f.x), sign=if_else(f.y>=0, "positive", "negative")) >>
+   ggplot(aes(x='x', y='y')) + theme_classic()
 ) + geom_line(aes(color='sign'), size=1.2)
 ```
 
@@ -79,7 +78,6 @@ df = tibble(x=numpy.linspace(0, 2*pi, 500))
 # for example: klib
 import klib
 from pipda import register_verb
-from datar.core.contexts import Context
 from datar.datasets import iris
 from datar.dplyr import pull
 

@@ -3,6 +3,7 @@
 from typing import Any, Iterable, Mapping, Optional, Union
 from pandas import DataFrame
 from pipda import register_verb, evaluate_expr
+from pipda.function import Function
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
@@ -34,6 +35,23 @@ def summarise(
         >>> #   y  z
         >>> # 0 10 20
         >>> df >> summarise(y=sum(f.x), z=f.x+f.y) # fail
+
+        But they should not be mixed in later argument. For example:
+        >>> df = tibble(x=[1,2,3,4], g=list('aabb')) >> group_by(f.g)
+        >>> df >> summarise(n=n() + f.x)
+        >>> # as expected:
+        >>>      g  n
+        >>> # 0  a  3
+        >>> # 1  a  4
+        >>> # 2  b  5
+        >>> # 3  b  6
+        >>> # [Groups: ['g'] (n=2)]
+        >>> # However:
+        >>> df >> summarise(y=1, n=n() + f.y)
+        >>> # n() will be recycling output instead of input
+        >>> #    g  y  n
+        >>> # 0  a  1  2
+        >>> # 1  b  1  2
 
     Args:
         _groups: Grouping structure of the result.
@@ -140,11 +158,15 @@ def summarise_build(
 
     out = group_keys(_data)
     for key, val in named.items():
+        envdata = out
+        if out.shape[1] == 0 or (
+                isinstance(val, Function) and
+                getattr(val.func, 'summarise_prefers_input', False)
+        ):
+            envdata = _data
+
         try:
-            if out.shape[1] == 0:
-                val = evaluate_expr(val, _data, context)
-            else:
-                val = evaluate_expr(val, out, context)
+            val = evaluate_expr(val, envdata, context)
         except ColumnNotExistingError:
             # also recycle input
             val = evaluate_expr(val, _data, context)
