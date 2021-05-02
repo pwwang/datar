@@ -1,10 +1,12 @@
 # https://github.com/tidyverse/tibble/blob/master/tests/testthat/test-tibble.R
+from datar.base.funcs import seq_along
 import pytest
 
 from datar import f
-from datar.tibble import tibble, tribble
-from datar.base import nrow, rep, dim, sum, diag, NA, letters, LETTERS, NULL
-from datar.dplyr import pull
+from datar.tibble import *
+from datar.base import nrow, rep, dim, sum, diag, NA, letters, LETTERS, NULL, seq
+from datar.dplyr import pull, mutate
+from datar.datasets import iris
 
 def test_correct_rows():
     out = tibble(value=range(1,11)) >> nrow()
@@ -240,3 +242,58 @@ def test_dup_cols():
     x = 1
     df = tibble(x, x, _name_repair='minimal')
     assert df.columns.tolist() == ['x', 'x']
+
+# fibble -------------------------------------------
+def test_fibble():
+    df = tibble(x=[1,2]) >> mutate(fibble(y=f.x))
+    assert df.equals(tibble(x=[1,2], y=[1,2]))
+
+# enframe ------------------------------------------
+
+def test_can_convert_list():
+    df = enframe(seq(3,1))
+    assert df.equals(tibble(name=seq(1,3), value=seq(3,1)))
+
+def test_can_convert_dict():
+    df = enframe(dict(a=2, b=1))
+    assert df.equals(tibble(name=['a','b'], value=[2,1]))
+
+def test_can_convert_empty():
+    df = enframe([])
+    assert df.shape == (0, 2)
+    assert df.columns.tolist() == ['name', 'value']
+
+    df = enframe(None)
+    assert df.shape == (0, 2)
+    assert df.columns.tolist() == ['name', 'value']
+
+def test_can_use_custom_names():
+    df = enframe(letters, name="index", value="letter")
+    assert df.equals(tibble(index=seq_along(letters), letter=letters))
+
+def test_can_enframe_without_names():
+    df = enframe(letters, name=None, value="letter")
+    assert df.equals(tibble(letter=letters))
+
+def test_cannot_value_none():
+    with pytest.raises(ValueError):
+        enframe(letters, value=None)
+
+def test_cannot_pass_with_dimensions():
+    with pytest.raises(ValueError):
+        enframe(iris)
+
+# deframe -----------------------------------------------------------------
+
+def test_can_deframe_2col_data_frame():
+    out = deframe(tibble(name = letters[:3], value = seq(3,1)))
+    assert out == {"a": 3, "b": 2, "c":1}
+
+def test_can_deframe_1col_data_frame():
+    out = deframe(tibble(value=seq(3,1)))
+    assert out.tolist() == [3,2,1]
+
+def test_can_deframe_3col_df_with_warning(caplog):
+    out = deframe(tibble(name=letters[:3], value=seq(3,1), oops=[1,2,3]))
+    assert out == {"a": 3, "b": 2, "c":1}
+    assert "one- or two-column" in caplog.text
