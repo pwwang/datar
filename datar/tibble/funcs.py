@@ -2,7 +2,6 @@
 import itertools
 from typing import Any, Callable, Iterable, List, Mapping, Union, Optional
 
-import pandas
 from pandas import DataFrame, Series, RangeIndex
 from pipda import Context, register_func, register_verb
 from pipda.utils import Expression
@@ -15,6 +14,7 @@ from ..core.utils import copy_attrs, df_assign_item, to_df, logger
 from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import is_scalar
+from ..core.exceptions import ColumnNotExistingError
 from ..base import setdiff
 
 def tibble(
@@ -45,8 +45,8 @@ def tibble(
         df = DataFrame() if not _rows else DataFrame(index=range(_rows))
         try:
             df.__dfname__ = varname(raise_exc=False)
-        except VarnameRetrievingError:
-            df.__dfname__ = None # pragma: no cover
+        except VarnameRetrievingError: # pragma: no cover
+            df.__dfname__ = None
         return df
 
     try:
@@ -105,8 +105,8 @@ def tibble(
         df = DataFrame()
     try:
         df.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError: # still raises in some cases
-        df.__dfname__ = None # pragma: no cover
+    except VarnameRetrievingError: # pragma: no cover
+        df.__dfname__ = None # still raises in some cases
 
     if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
         copy_attrs(df, args[0])
@@ -164,8 +164,8 @@ def tribble(*dummies: Any) -> DataFrame:
     )
     try:
         ret.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError:
-        ret.__dfname__ = None # pragma: no cover
+    except VarnameRetrievingError: # pragma: no cover
+        ret.__dfname__ = None
     return ret
 
 def enframe(
@@ -217,7 +217,11 @@ def deframe(x: DataFrame) -> Union[Iterable, Mapping]:
 
     return dict(zip(x.iloc[:, 0], x.iloc[:, 1]))
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+        DataFrame,
+        context=Context.EVAL,
+        extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
+)
 def add_row(
         _data: DataFrame,
         *args: Any,
@@ -228,7 +232,7 @@ def add_row(
 ) -> DataFrame:
     """Add one or more rows of data to an existing data frame."""
     if (
-            isinstance(_data. DataFrameGroupBy) and
+            isinstance(_data, DataFrameGroupBy) and
             not isinstance(_data, DataFrameRowwise)
     ):
         raise ValueError("Can't add rows to grouped data frames.")
@@ -237,9 +241,12 @@ def add_row(
     from ..dplyr.group_data import group_vars
 
     if not args and not kwargs:
-        df = DataFrame(index=[0])
+        df = DataFrame(index=[0], columns=_data.columns)
     else:
         df = tibble(*args, **kwargs)
+        if df.shape[0] == 0:
+            for col in _data.columns:
+                df[col] = Series(dtype=_data[col].dtype)
 
     extra_vars = setdiff(df.columns, _data.columns)
     if extra_vars:
@@ -258,7 +265,11 @@ def add_row(
     copy_attrs(out, _data)
     return out
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(
+        DataFrame,
+        context=Context.EVAL,
+        extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
+)
 def add_column(
         _data: DataFrame,
         *args: Any,
@@ -272,7 +283,7 @@ def add_column(
     from ..dplyr.group_by import group_by_drop_default
     from ..dplyr.group_data import group_vars
 
-    df = tibble(*args, **kwargs, _name_repair=_name_repair)
+    df = tibble(*args, **kwargs, _name_repair='minimal')
 
     if df.shape[1] == 0:
         return _data.copy()
@@ -291,7 +302,7 @@ def add_column(
         _data.columns.tolist(),
         _base0
     )
-    out = cbind_at(_data, df, pos)
+    out = cbind_at(_data, df, pos, _name_repair)
 
     if isinstance(_data, DataFrameGroupBy):
         out = _data.__class__(
@@ -317,32 +328,42 @@ def remove_rownames(_data: DataFrame) -> DataFrame:
 
 remove_index = drop_index = remove_rownames # pylint: disable=invalid-name
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.SELECT)
 def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
     """Add rownames as a column"""
     if var in _data.columns:
         raise ValueError(f"Column name `{var}` must not be duplicated.")
 
     from ..dplyr.mutate import mutate
-    return mutate(_data, **{var: _data.index}, _before=0)
+    return remove_rownames(mutate(_data, **{var: _data.index}, _before=0))
 
 index_to_column = rownames_to_column # pylint: disable=invalid-name
 
-@register_verb(DataFrame)
-def rowid_to_column(_data: DataFrame, var="rowname") -> DataFrame:
+@register_verb(DataFrame, context=Context.SELECT)
+def rowid_to_column(_data: DataFrame, var="rowid") -> DataFrame:
     """Add rownames as a column"""
     if var in _data.columns:
         raise ValueError(f"Column name `{var}` must not be duplicated.")
 
     from ..dplyr.mutate import mutate
-    return mutate(_data, **{var: range(0, _data.shape[0])}, _before=0)
+    return remove_rownames(
+        mutate(_data, **{var: range(0, _data.shape[0])}, _before=0)
+    )
 
 @register_verb(DataFrame, context=Context.SELECT)
 def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
     """Set rownames/index with one column, and remove it"""
+    if has_rownames(_data):
+        raise ValueError("`_data` must be a data frame without row names.")
+
     from ..dplyr.mutate import mutate
 
-    rownames = _data[var]
+    try:
+        rownames = [str(name) for name in _data[var]]
+    except KeyError:
+        raise ColumnNotExistingError(
+            f"Column `{var}` does not exist."
+        ) from None
     out = mutate(_data, **{var: None})
     out.index = rownames
     return out
@@ -358,32 +379,43 @@ def pos_from_before_after_names(
         base0: bool
 ) -> int:
     """Get the position to insert from before and after"""
-    before = check_names_before_after(before, names, base0)
-    after = check_names_before_after(after, names, base0)
-    return pos_from_before_after(before, after, len(names), True)
+    if before is not None:
+        before = check_names_before_after(before, names, base0)
+    if after is not None:
+        after = check_names_before_after(after, names, base0)
+    return pos_from_before_after(before, after, len(names), base0)
 
 def check_names_before_after(
-        pos: Optional[Union[str, int]],
+        pos: Union[str, int],
         names: List[str],
         base0: bool
 ) -> int:
     """Get position by given index or name"""
-    if pos is None:
-        return len(names)
     if not isinstance(pos, str):
-        return pos - int(not base0)
-    return names.index(pos)
+        return pos
+    try:
+        return names.index(pos) + int(not base0)
+    except ValueError:
+        raise ColumnNotExistingError(
+            f"Column `{pos}` does not exist."
+        ) from None
 
-def cbind_at(data: DataFrame, df: DataFrame, pos: int) -> DataFrame:
+def cbind_at(
+        data: DataFrame,
+        df: DataFrame,
+        pos: int,
+        _name_repair: Union[str, Callable]
+) -> DataFrame:
     """Column bind at certain pos, 0-based"""
+    from ..dplyr import bind_cols
     part1 = data.iloc[:, :pos]
     part2 = data.iloc[:, pos:]
-    return pandas.concat((part1, df, part2), axis=1, ignore_index=True)
+    return bind_cols(part1, df, part2, _name_repair=_name_repair)
 
 def pos_from_before_after(
         before: Optional[int],
         after: Optional[int],
-        nrow: int,
+        length: int,
         base0: bool
 ) -> int:
     """Get the position to insert from before and after"""
@@ -391,17 +423,18 @@ def pos_from_before_after(
         raise ValueError("Can't specify both `_before` and `_after`.")
 
     if before is None and after is None:
-        return nrow
+        return length
 
     if after is not None:
-        after = after - int(not base0) if after > 0 else nrow + after
-        return max(0, min(after + 1, nrow))
+        after = after - int(not base0) if after >= 0 else length + after
+        return max(0, min(after + 1, length))
 
-    before = before - int(not base0) if before > 0 else nrow + before
-    return max(0, min(before - 1, nrow))
+    before = before - int(not base0) if before >= 0 else length + before
+    return max(0, min(before, length))
 
 def rbind_at(data: DataFrame, df: DataFrame, pos: int) -> DataFrame:
     """Row bind at certain pos, 0-based"""
+    from ..dplyr import bind_rows
     part1 = data.iloc[:pos, :]
     part2 = data.iloc[pos:, :]
-    return pandas.concat((part1, df, part2)).reset_index(drop=True)
+    return bind_rows(part1, df, part2)
