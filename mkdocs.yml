@@ -10,6 +10,9 @@ theme:
     #   code: 'Ubuntu Mono'
 markdown_extensions:
     - markdown.extensions.admonition
+    - pymdownx.emoji:
+        emoji_index: !!python/name:materialx.emoji.twemoji
+        emoji_generator: !!python/name:materialx.emoji.to_svg
     - pymdownx.superfences:
         preserve_tabs: true
     - toc:
@@ -23,6 +26,9 @@ extra_css:
     - style.css
 nav:
     - 'Home': 'index.md'
+    - 'Reference maps':
+        'ALL': 'reference-maps/ALL.md'
+        'tibble': 'reference-maps/tibble.md'
     - 'Import': 'import.md'
     - 'The f': 'f.md'
     - 'Piping vs regular calling': 'piping_vs_regular.md'
@@ -30,6 +36,8 @@ nav:
     - 'API': 'mkapi/api/datar'
     - 'Examples':
         'across': 'notebooks/across.ipynb'
+        'add_column': 'notebooks/add_column.ipynb'
+        'add_row': 'notebooks/add_row.ipynb'
         'arrange': 'notebooks/arrange.ipynb'
         'base': 'notebooks/base.ipynb'
         'between': 'notebooks/between.ipynb'
@@ -42,6 +50,7 @@ nav:
         'desc': 'notebooks/desc.ipynb'
         'distinct': 'notebooks/distinct.ipynb'
         'drop_na': 'notebooks/drop_na.ipynb'
+        'enframe': 'notebooks/enframe.ipynb'
         'expand': 'notebooks/expand.ipynb'
         'expand_grid': 'notebooks/expand_grid.ipynb'
         'extract': 'notebooks/extract.ipynb'
@@ -70,6 +79,7 @@ nav:
         'relocate': 'notebooks/relocate.ipynb'
         'rename': 'notebooks/rename.ipynb'
         'replace_na': 'notebooks/replace_na.ipynb'
+        'rownames': 'notebooks/rownames.ipynb'
         'rowwise': 'notebooks/rowwise.ipynb'
         'select': 'notebooks/select.ipynb'
         'separate': 'notebooks/separate.ipynb'

@@ -6,7 +6,9 @@ repos:
     -   id: trailing-whitespace
         exclude: 'docs/'
     -   id: end-of-file-fixer
+        exclude: 'docs/'
     -   id: check-yaml
+        exclude: 'mkdocs.yml'
 -   repo: local
     hooks:
     -   id: masterpylintrc

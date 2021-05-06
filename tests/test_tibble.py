@@ -635,13 +635,13 @@ def test_rowid_to_column():
     # test_that("rowid_to_column keeps the tbl classes", {
     res = rowid_to_column(mtcars)
     assert not has_rownames(res)
-    assert_iterable_equal(res.rowid, seq_len(nrow(mtcars), _base0=True))
+    assert_iterable_equal(res.rowid, seq_len(nrow(mtcars)))
     with pytest.raises(ValueError, match="duplicated"):
         rowid_to_column(mtcars, f.wt)
 
     res1 = rowid_to_column(mtcars, "row_id")
     assert not has_rownames(res1)
-    assert_iterable_equal(res1.row_id, seq_len(nrow(mtcars), _base0=True))
+    assert_iterable_equal(res1.row_id, seq_len(nrow(mtcars)))
     with pytest.raises(ValueError, match="duplicated"):
         rowid_to_column(res1, f.wt)
 
@@ -700,3 +700,20 @@ def test_add_column_for_rowwise_df():
     df2 = add_column(df, y=[3,2,1])
     assert isinstance(df2, DataFrameGroupBy)
     assert group_vars(df2) == ['x']
+
+# tibble_row ---------------------------------------
+def test_tibble_row():
+    # df = tibble_row(a=1, b=[[2,3]])
+    # assert_frame_equal(df, tibble(a=1, b=[[2,3]]))
+
+    df = tibble_row(iris.iloc[[0], :])
+    assert_frame_equal(df, tibble(iris.iloc[[0], :]))
+
+    with pytest.raises(ValueError):
+        tibble_row(a=1, b=[2,3])
+
+    with pytest.raises(ValueError):
+        tibble_row(iris.iloc[1:3, :])
+
+    df = tibble_row()
+    assert df.shape == (1, 0)
