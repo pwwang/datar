@@ -104,6 +104,6 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [12]: https://img.shields.io/codacy/grade/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
 [13]: https://app.codacy.com/gh/pwwang/datar
 [14]: https://img.shields.io/codacy/coverage/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
-[15]: https://pwwang.github.io/datar/reference_maps/ALL/
+[15]: https://pwwang.github.io/datar/reference-maps/ALL/
 [16]: https://pwwang.github.io/datar/notebooks/across/
 [17]: https://pwwang.github.io/datar/api/datar/
