@@ -1,3 +1,6 @@
+## 0.0.4
+- Finish port of tibble.
+
 ## 0.0.3
 - Add stats.weighted_mean
 - Allow function to prefer recycling input or output for summarise

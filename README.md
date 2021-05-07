@@ -1,18 +1,21 @@
 # datar
 
-Port of R data packages (especially from tidyverse): [tidyr][1], [dplyr][2], [tibble][4] and so on in python, using [pipda][3].
+Port of [dplyr][2] and other related R packages in python, using [pipda][3].
 
 Unlike other similar packages in python that just mimic the piping sign, `datar` follows the API designs from the original packages as possible. So that nearly no extra effort is needed for those who are familar with those R packages to transition to python.
 
 <!-- badges -->
+[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13]
 
-[Documentation][5]
+[Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17]
 
 ## Installtion
 
 ```shell
 pip install -U datar
 ```
+
+`datar` requires python 3.7.1+ and is backended by `pandas (1.2+)`.
 
 ## Example usage
 
@@ -92,3 +95,15 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [3]: https://github.com/pwwang/pipda
 [4]: https://tibble.tidyverse.org/index.html
 [5]: https://pwwang.github.io/datar/
+[6]: https://img.shields.io/pypi/v/datar?style=flat-square
+[7]: https://pypi.org/project/datar/
+[8]: https://img.shields.io/github/v/tag/pwwang/datar?style=flat-square
+[9]: https://github.com/pwwang/datar
+[10]: https://img.shields.io/github/workflow/status/pwwang/datar/Build%20and%20Deploy?style=flat-square
+[11]: https://img.shields.io/github/workflow/status/pwwang/datar/Build%20Docs?label=Docs&style=flat-square
+[12]: https://img.shields.io/codacy/grade/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
+[13]: https://app.codacy.com/gh/pwwang/datar
+[14]: https://img.shields.io/codacy/coverage/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
+[15]: https://pwwang.github.io/datar/reference_maps/ALL/
+[16]: https://pwwang.github.io/datar/notebooks/across/
+[17]: https://pwwang.github.io/datar/api/datar/

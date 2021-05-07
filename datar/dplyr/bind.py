@@ -77,7 +77,7 @@ def bind_rows(
             if col in dat and not dat[col].isna().all()
         ]
         all_categorical = [
-            is_categorical(ser) for ser in all_series
+            is_categorical(ser) or all(pandas.isna(ser)) for ser in all_series
         ]
         if all(all_categorical):
             union_cat = union_categoricals(all_series)
@@ -98,6 +98,7 @@ def bind_rows(
             keys=key_data.keys(),
             names=[_id, None]
         ).reset_index(level=0).reset_index(drop=True)
+
     return pandas.concat(key_data.values()).reset_index(drop=True)
 
 @bind_rows.register(DataFrameGroupBy, context=Context.PENDING)

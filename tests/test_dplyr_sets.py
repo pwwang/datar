@@ -3,6 +3,7 @@
 
 import pytest
 import numpy
+from pandas.testing import assert_frame_equal
 from datar.all import *
 
 def test_set_uses_coercion_rules():
@@ -78,7 +79,7 @@ def test_set_operations_reconstruct_grouping_metadata():
 
 def test_set_operations_keep_the_ordering_of_the_data():
     # test_that("set operations keep the ordering of the data (#3839)", {
-    rev_df = lambda df: df >> get(rev(seq_len(nrow(df))))
+    rev_df = lambda df: df >> get(rev(seq_len(nrow(df), _base0=True)))
 
     df1 = tibble(x = seq(1,4), g = rep([1,2], each = 2))
     df2 = tibble(x = seq(3,6), g = rep([2,3], each = 2))
@@ -105,7 +106,8 @@ def test_set_operations_keep_the_ordering_of_the_data():
 
     out = union(rev_df(df1), df2)
     exp = tibble(x=c(seq(4,1), [5,6]), g=rep([2,1,3], each=2))
-    assert out.equals(exp)
+    # assert out.equals(exp)
+    assert_frame_equal(out, exp)
 
     out = union(df1, rev_df(df2))
     exp = tibble(x=c(seq(1,4), [6,5]), g=rep([1,2,3], each=2))

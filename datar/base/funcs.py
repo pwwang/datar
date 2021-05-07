@@ -397,22 +397,25 @@ def c(*elems: Any) -> Collection:
     return Collection(*elems)
 
 @register_func(None, context=Context.EVAL)
-def seq_along(along_with: Iterable[Any]) -> SeriesLikeType:
+def seq_along(
+        along_with: Iterable[Any],
+        _base0: bool = False
+) -> SeriesLikeType:
     """Generate sequences along an iterable"""
-    return numpy.array(range(len(along_with))) + 1
+    return numpy.array(range(len(along_with))) + int(not _base0)
 
 @register_func(None, context=Context.EVAL)
-def seq_len(length_out: IntOrIter) -> SeriesLikeType:
+def seq_len(length_out: IntOrIter, _base0: bool = False) -> SeriesLikeType:
     """Generate sequences with the length"""
     if is_scalar(length_out):
-        return numpy.array(range(int(length_out)))
+        return numpy.array(range(int(length_out))) + int(not _base0)
     if len(length_out) > 1:
         logger.warning(
             "In seq_len(%r) : first element used of 'length_out' argument",
             length_out
         )
     length_out = int(list(length_out)[0])
-    return numpy.array(range(length_out))
+    return numpy.array(range(length_out)) + int(not _base0)
 
 
 @register_func(None, context=Context.EVAL)
@@ -421,7 +424,8 @@ def seq(
         to: IntType = None,
         by: IntType = None,
         length_out: IntType = None,
-        along_with: IntType = None
+        along_with: IntType = None,
+        _base0: bool = False
 ) -> SeriesLikeType:
     """Generate a sequence
 
@@ -431,24 +435,27 @@ def seq(
         This API is consistent with r-base's seq. 1-based and inclusive.
     """
     if along_with is not None:
-        return seq_along(along_with)
+        return seq_along(along_with, _base0)
     if from_ is not None and not is_scalar(from_):
-        return seq_along(from_)
+        return seq_along(from_, _base0)
     if length_out is not None and from_ is None and to is None:
         return seq_len(length_out)
 
+    base = int(not _base0)
+
     if from_ is None:
-        from_ = 1
+        from_ = base
     elif to is None:
-        from_, to = 1, from_
+        from_, to = base, from_
 
     if length_out is not None:
         by = (float(to) - float(from_)) / float(length_out - 1)
+
     elif by is None:
         by = 1 if to > from_ else -1
-        length_out = to - from_ + 1 if to > from_ else from_ - to + 1
+        length_out = to - from_ + base if to > from_ else from_ - to + base
     else:
-        length_out = (to - from_ + 1.1 * by) // by
+        length_out = (to - from_ + .1 * by + float(base) * by) // by
     return numpy.array([from_ + n * by for n in range(int(length_out))])
 
 @register_func(None, context=Context.EVAL)

@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "datar"
-version = "0.0.3"
-description = "Port of R data packages tidyr, dplyr, tibble and so on in python"
+version = "0.0.4"
+description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
+readme = "README.md"
 license = "MIT"
+homepage = "https://github.com/pwwang/datar"
+repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with pandas
