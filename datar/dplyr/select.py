@@ -24,6 +24,12 @@ def select(
 ) -> DataFrame:
     """Select (and optionally rename) variables in a data frame
 
+    To exclude columns use `~` instead of `-`. For example, to exclude last
+    column: `select(df, ~c(-1))`.
+
+    To use column name in slice: `f[f.col1:f.col2]`. If you don't want `col2`
+    to be included: `f[f.col1:f.col2:0]`
+
     Args:
         *columns: The columns to select
         **renamings: The columns to rename and select in new => old column way.
@@ -33,7 +39,7 @@ def select(
     """
     all_columns = _data.columns
     gvars = group_vars(_data)
-    selected, new_names = eval_select(
+    selected, new_names = _eval_select(
         all_columns,
         *args,
         **kwargs,
@@ -56,7 +62,7 @@ def select(
         )
     return out
 
-def eval_select(
+def _eval_select(
         _all_columns: Index,
         *args: Any,
         _group_vars: Iterable[str],

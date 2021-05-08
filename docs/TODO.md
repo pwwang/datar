@@ -6,3 +6,4 @@
 - Add more detailed documentations
 - Add reference maps to compare to the references from the original packages.
 - Add `_base0` argument to APIs with index involved
+- Add `options` for `index_base`, `dplyr.summarise.inform`, etc

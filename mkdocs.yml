@@ -28,6 +28,7 @@ nav:
     - 'Home': 'index.md'
     - 'Reference maps':
         'ALL': 'reference-maps/ALL.md'
+        'dplyr': 'reference-maps/dplyr.md'
         'tibble': 'reference-maps/tibble.md'
     - 'Import': 'import.md'
     - 'The f': 'f.md'
@@ -55,6 +56,7 @@ nav:
         'expand_grid': 'notebooks/expand_grid.ipynb'
         'extract': 'notebooks/extract.ipynb'
         'fill': 'notebooks/fill.ipynb'
+        'filter': 'notebooks/filter.ipynb'
         'filter-joins': 'notebooks/filter-joins.ipynb'
         'full_seq': 'notebooks/full_seq.ipynb'
         'get': 'notebooks/get.ipynb'

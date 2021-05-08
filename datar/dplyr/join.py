@@ -46,6 +46,8 @@ def _join(
         if not keep:
             ret.drop(columns=right_on, inplace=True)
     elif keep:
+        if by is None:
+            by = intersect(x.columns, y.columns)
         # on=... doesn't keep both by columns in left and right
         left_on = [f"{col}{suffix[0]}" for col in by]
         right_on = [f"{col}{suffix[1]}" for col in by]
@@ -60,6 +62,8 @@ def _join(
             suffixes=suffix
         )
     else:
+        if by is None:
+            by = intersect(x.columns, y.columns)
         by = [by] if is_scalar(by) else by
         ret = pandas.merge(
             x, y,
@@ -152,7 +156,8 @@ def left_join(
 ) -> DataFrame:
     """Mutating joins including all rows in x.
 
-    See inner_join()
+    See Also:
+        [`inner_join()`](datar.dplyr.join.inner_join)
     """
     return _join(
         x, y,
@@ -178,7 +183,8 @@ def right_join(
 ) -> DataFrame:
     """Mutating joins including all rows in y.
 
-    See inner_join()
+    See Also:
+        [`inner_join()`](datar.dplyr.join.inner_join)
 
     Note:
         The rows of the order is preserved according to `y`. But `dplyr`'s
@@ -208,7 +214,8 @@ def full_join(
 ) -> DataFrame:
     """Mutating joins including all rows in x or y.
 
-    See inner_join()
+    See Also:
+        [`inner_join()`](datar.dplyr.join.inner_join)
     """
     return _join(
         x, y,
@@ -232,7 +239,8 @@ def semi_join(
 ) -> DataFrame:
     """Returns all rows from x with a match in y.
 
-    See inner_join()
+    See Also:
+        [`inner_join()`](datar.dplyr.join.inner_join)
     """
     ret = pandas.merge(
         x, y,
@@ -266,7 +274,8 @@ def anti_join(
 ) -> DataFrame:
     """Returns all rows from x without a match in y.
 
-    See inner_join()
+    See Also:
+        [`inner_join()`](datar.dplyr.join.inner_join)
     """
     ret = pandas.merge(
         x, y,
@@ -303,7 +312,8 @@ def nest_join(
     """Returns all rows and columns in x with a new nested-df column that
     contains all matches from y
 
-    See inner_join()
+    See Also:
+        [`inner_join()`](datar.dplyr.join.inner_join)
     """
     on = by
     if isinstance(by, (list, tuple, set)):

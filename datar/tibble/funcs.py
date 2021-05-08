@@ -472,7 +472,7 @@ def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
         raise ValueError(f"Column name `{var}` must not be duplicated.")
 
     from ..dplyr.mutate import mutate
-    return remove_rownames(mutate(_data, **{var: _data.index}, _before=0))
+    return remove_rownames(mutate(_data, **{var: _data.index}, _before=1))
 
 index_to_column = rownames_to_column # pylint: disable=invalid-name
 
@@ -500,7 +500,7 @@ def rowid_to_column(
     return remove_rownames(mutate(
         _data,
         **{var: range(base, _data.shape[0] + base)},
-        _before=0
+        _before=1
     ))
 
 @register_verb(DataFrame, context=Context.SELECT)

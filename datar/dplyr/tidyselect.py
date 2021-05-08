@@ -99,7 +99,7 @@ def starts_with(
     Returns:
         A list of matched vars
     """
-    return filter_columns(
+    return _filter_columns(
         vars or _data.columns,
         match,
         ignore_case,
@@ -125,7 +125,7 @@ def ends_with(
     Returns:
         A list of matched vars
     """
-    return filter_columns(
+    return _filter_columns(
         vars or _data.columns,
         match,
         ignore_case,
@@ -151,7 +151,7 @@ def contains(
     Returns:
         A list of matched vars
     """
-    return filter_columns(
+    return _filter_columns(
         vars or _data.columns,
         match,
         ignore_case,
@@ -177,7 +177,7 @@ def matches(
     Returns:
         A list of matched vars
     """
-    return filter_columns(
+    return _filter_columns(
         vars or _data.columns,
         match,
         ignore_case,
@@ -272,7 +272,7 @@ def num_range(
     )
     return numpy.array([f"{prefix}{zfill(elem)}" for elem in range(range_)])
 
-def filter_columns(
+def _filter_columns(
         all_columns: Iterable[str],
         match: Union[Iterable[str], str],
         ignore_case: bool,

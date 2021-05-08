@@ -14,7 +14,7 @@ from .bind import bind_rows
 from .group_by import group_by_drop_default
 from .group_data import group_vars
 
-def check_xy(x: DataFrame, y: DataFrame) -> None:
+def _check_xy(x: DataFrame, y: DataFrame) -> None:
     """Check the dimension and columns of x and y for set operations"""
     if x.shape[1] != y.shape[1]:
         raise ValueError(
@@ -46,7 +46,7 @@ def _(
     Returns:
         The dataframe of intersect of input dataframes
     """
-    check_xy(x, y)
+    _check_xy(x, y)
     from .distinct import distinct
     return distinct(pandas.merge(x, y, how='inner'))
 
@@ -76,7 +76,7 @@ def _(
     Returns:
         The dataframe of union of input dataframes
     """
-    check_xy(x, y)
+    _check_xy(x, y)
     from .distinct import distinct
     return distinct(pandas.merge(x, y, how='outer'))
 
@@ -106,7 +106,7 @@ def _(
     Returns:
         The dataframe of setdiff of input dataframes
     """
-    check_xy(x, y)
+    _check_xy(x, y)
     indicator = '__datar_setdiff__'
     out = pandas.merge(x, y, how='left', indicator=indicator)
 
@@ -143,7 +143,7 @@ def union_all(
     Returns:
         The dataframe of union of all rows of input dataframes
     """
-    check_xy(x, y)
+    _check_xy(x, y)
     return bind_rows(x, y)
 
 @union_all.register(DataFrameGroupBy, context=Context.EVAL)
@@ -172,7 +172,7 @@ def _(
     Returns:
         True if they equal else False
     """
-    check_xy(x, y)
+    _check_xy(x, y)
 
     x = x.sort_values(by=x.columns.to_list()).reset_index(drop=True)
     y = y.sort_values(by=y.columns.to_list()).reset_index(drop=True)
