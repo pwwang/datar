@@ -27,9 +27,11 @@ def summarise(
 
     See https://dplyr.tidyverse.org/reference/summarise.html
 
-    Note:
-        Both input and the summarised data can be recycled, but separately.
-        For example:
+    Both input and the summarised data can be recycled, but separately.
+
+    Aliases: `summarize`
+
+    Examples:
         >>> df = tibble(x=[1,2,3,4])
         >>> df >> summarise(y=sum(f.x), z=f.y*2)
         >>> #   y  z
@@ -70,7 +72,7 @@ def summarise(
         "Can't transform a data frame with duplicate names"
     )
     _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
-    out = summarise_build(_data, *args, **kwargs)
+    out = _summarise_build(_data, *args, **kwargs)
     if _groups == 'rowwise':
         return DataFrameRowwise(out, _drop=group_by_drop_default(_data))
     return out
@@ -87,7 +89,7 @@ def _(
 
     allone = True
     if group_data(_data).shape[0] == 0:
-        out = summarise_build(_data, *args, **kwargs)
+        out = _summarise_build(_data, *args, **kwargs)
     else:
         def apply_func(df):
             nonlocal allone
@@ -147,7 +149,7 @@ def _(
 summarise.inform = True
 summarize = summarise # pylint: disable=invalid-name
 
-def summarise_build(
+def _summarise_build(
         _data: DataFrame,
         *args: Any,
         **kwargs: Any

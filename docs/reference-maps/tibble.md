@@ -20,6 +20,7 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 |[normal]()|API that is regularly ported|
 |<s>[strike-through]()</s>|API that is not ported, or not an API originally|
 |[**bold**]()|API that is unique in `datar`|
+|_italic_|Working in process|
 
 
 ### Tibbles

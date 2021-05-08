@@ -4,7 +4,7 @@ from pipda.context import ContextError
 import pytest
 from datar.all import *
 from datar.datasets import mtcars
-from datar.dplyr.slice import n_from_prop
+from datar.dplyr.slice import _n_from_prop
 
 def test_empty_slice_returns_input():
     df = tibble(x=[1,2,3])
@@ -303,19 +303,19 @@ def test_rename_errors_with_invalid_grouped_df():
 
     # n and prop are carefully validated
     # with pytest.raises(ValueError):
-    #     n_from_prop(10, n=1, prop=1)
+    #     _n_from_prop(10, n=1, prop=1)
     with pytest.raises(TypeError):
-        n_from_prop(10, n="a")
+        _n_from_prop(10, n="a")
     with pytest.raises(TypeError):
-        n_from_prop(10, prop="a")
+        _n_from_prop(10, prop="a")
     with pytest.raises(ValueError):
-        n_from_prop(10, n=-1)
+        _n_from_prop(10, n=-1)
     with pytest.raises(ValueError):
-        n_from_prop(10, prop=-1)
+        _n_from_prop(10, prop=-1)
     with pytest.raises(TypeError):
-        n_from_prop(10, n=n())
+        _n_from_prop(10, n=n())
     with pytest.raises(TypeError):
-        n_from_prop(10, prop=n())
+        _n_from_prop(10, prop=n())
 
 ## tests for datar
 def test_mixed_rows():

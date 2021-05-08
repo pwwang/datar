@@ -14,7 +14,7 @@ from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy
 from ..base.constants import NA
 from ..base import intersect, unique
-from .filter import filter_groups
+from .filter import _filter_groups
 from .group_by import group_by_drop_default
 from .group_data import group_vars
 
@@ -51,7 +51,7 @@ def slice( # pylint: disable=redefined-builtin
     if not rows:
         return _data
 
-    rows = sanitize_rows(rows, _data.shape[0])
+    rows = _sanitize_rows(rows, _data.shape[0])
     out = _data.iloc[rows, :]
     if isinstance(_data.index, RangeIndex):
         out.reset_index(drop=True, inplace=True)
@@ -73,7 +73,7 @@ def _(
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data)
     )
-    gdata = filter_groups(out, _data)
+    gdata = _filter_groups(out, _data)
 
     if not _preserve and _data.attrs.get('groupby_drop', True):
         out._group_data = gdata[gdata['_rows'].map(len) > 0]
@@ -91,9 +91,10 @@ def slice_head(
 
     Args:
         _data: The dataframe.
-        n, prop: Provide either n, the number of rows, or prop,
-            the proportion of rows to select. If neither are supplied,
-            n = 1 will be used.
+        n: and
+        prop: Provide either n, the number of rows, or prop, the proportion of
+            rows to select.
+            If neither are supplied, n = 1 will be used.
             If n is greater than the number of rows in the group (or prop > 1),
             the result will be silently truncated to the group size.
             If the proportion of a group size is not an integer,
@@ -102,7 +103,7 @@ def slice_head(
     Returns:
         The sliced dataframe
     """
-    n = n_from_prop(_data.shape[0], n, prop)
+    n = _n_from_prop(_data.shape[0], n, prop)
     return slice(_data, builtins.slice(None, n))
 
 
@@ -114,9 +115,10 @@ def slice_tail(
 ) -> DataFrame:
     """Select last rows
 
-    See: slice_head()
+    See Also:
+        [`slice_head()`](datar.dplyr.slice.slice_head)
     """
-    n = n_from_prop(_data.shape[0], n, prop)
+    n = _n_from_prop(_data.shape[0], n, prop)
     return slice(_data, builtins.slice(-n, None))
 
 
@@ -130,9 +132,10 @@ def slice_min(
 ) -> DataFrame:
     """select rows with lowest values of a variable.
 
-    See slice_head()
+    See Also:
+        [`slice_head()`](datar.dplyr.slice.slice_head)
     """
-    n = n_from_prop(_data.shape[0], n, prop)
+    n = _n_from_prop(_data.shape[0], n, prop)
 
     sorting_df = DataFrame(index=_data.index)
     sorting_df['x'] = order_by
@@ -175,9 +178,10 @@ def slice_max(
 ) -> DataFrame:
     """select rows with highest values of a variable.
 
-    See slice_head()
+    See Also:
+        [`slice_head()`](datar.dplyr.slice.slice_head)
     """
-    n = n_from_prop(_data.shape[0], n, prop)
+    n = _n_from_prop(_data.shape[0], n, prop)
 
     sorting_df = DataFrame(index=_data.index)
     sorting_df['x'] = order_by
@@ -221,9 +225,10 @@ def slice_sample(
 ) -> DataFrame:
     """Randomly selects rows.
 
-    See slice_head()
+    See Also:
+        [`slice_head()`](datar.dplyr.slice.slice_head)
     """
-    n = n_from_prop(_data.shape[0], n, prop)
+    n = _n_from_prop(_data.shape[0], n, prop)
     if n == 0:
         # otherwise _data.sample raises error when weight_by is empty as well
         return _data.iloc[[], :]
@@ -259,7 +264,7 @@ def _(
         _drop=group_by_drop_default(_data)
     )
 
-def n_from_prop(
+def _n_from_prop(
         total: int,
         n: Optional[int] = None,
         prop: Optional[float] = None,
@@ -277,7 +282,7 @@ def n_from_prop(
         return int(float(total) * min(prop, 1.0))
     return min(n, total)
 
-def sanitize_rows(
+def _sanitize_rows(
         rows: Iterable[Union[int, list, tuple, Collection, Inverted, Negated]],
         nrow: int
 ) -> List[int]:

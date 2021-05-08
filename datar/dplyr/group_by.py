@@ -44,7 +44,7 @@ def group_by(
     if _drop is None:
         _drop = group_by_drop_default(_data)
 
-    groups = group_by_prepare(_data, *args, **kwargs, _add=_add)
+    groups = _group_by_prepare(_data, *args, **kwargs, _add=_add)
     out = DataFrameGroupBy(
         groups['data'],
         _group_vars=groups['group_names'],
@@ -111,14 +111,14 @@ def _(x: DataFrameRowwise, *cols: str) -> DataFrame:
         raise ValueError(f'`*cols` is not empty.')
     return DataFrame(x)
 
-def group_by_prepare(
+def _group_by_prepare(
         _data: DataFrame,
         *args: Any,
         _add: bool = False,
         **kwargs: Any
 ) -> Mapping[str, Any]:
     """Prepare for group by"""
-    computed_columns = add_computed_columns(
+    computed_columns = _add_computed_columns(
         _data,
         *args,
         _fn="group_by",
@@ -130,7 +130,7 @@ def group_by_prepare(
     if _add:
         group_names = union(group_vars(_data), group_names)
 
-    # checked in add_computed_columns
+    # checked in _add_computed_columns
     # unknown = setdiff(group_names, out.columns)
     # if unknown:
     #     raise ValueError(
@@ -140,14 +140,14 @@ def group_by_prepare(
 
     return {'data': out, 'group_names': group_names}
 
-def add_computed_columns(
+def _add_computed_columns(
         _data: DataFrame,
         *args: Any,
         _fn: str = "group_by",
         **kwargs: Any
 ) -> Mapping[str, Any]:
     """Add mutated columns if necessary"""
-    from .mutate import mutate_cols
+    from .mutate import _mutate_cols
     # support direct strings
     args = [f[arg] if isinstance(arg, str) else arg for arg in args]
     named = name_mutatable_args(*args, **kwargs)
@@ -158,7 +158,7 @@ def add_computed_columns(
     ):
         context = Context.EVAL.value
         try:
-            cols, nonexists = mutate_cols(
+            cols, nonexists = _mutate_cols(
                 ungroup(_data),
                 context,
                 *args,

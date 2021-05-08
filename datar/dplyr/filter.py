@@ -27,7 +27,7 @@ def filter( # pylint: disable=redefined-builtin
     """Subset a data frame, retaining all rows that satisfy your conditions
 
     Args:
-        condition, *conditions: Expressions that return logical values
+        *conditions: Expressions that return logical values
         _preserve: Relevant when the .data input is grouped.
             If _preserve = FALSE (the default), the grouping structure
             is recalculated based on the resulting data, otherwise
@@ -82,7 +82,7 @@ def _(
         _group_vars=group_vars(_data),
         _drop=group_by_drop_default(_data)
     )
-    gdata = filter_groups(out, _data)
+    gdata = _filter_groups(out, _data)
 
     if not _preserve and _data.attrs.get('groupby_drop', True):
         out._group_data = gdata[gdata['_rows'].map(len) > 0]
@@ -91,7 +91,7 @@ def _(
     return out
 
 @singledispatch
-def filter_groups(
+def _filter_groups(
         new: DataFrameGroupBy,
         old: DataFrameGroupBy
 ) -> DataFrame:
@@ -109,7 +109,7 @@ def filter_groups(
     new._group_data = new_gdata
     return new_gdata
 
-@filter_groups.register
+@_filter_groups.register
 def _(
         new: DataFrameRowwise,
         old: DataFrameRowwise # pylint: disable=unused-argument

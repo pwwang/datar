@@ -78,9 +78,9 @@ def tally(
 
     See count()
     """
-    tallyn = tally_n(wt)
+    tallyn = _tally_n(wt)
 
-    name = check_name(name, group_vars(x))
+    name = _check_name(name, group_vars(x))
     # TODO: thread-safety
     summarise_inform = summarise.inform
     summarise.inform = False
@@ -127,8 +127,8 @@ def add_tally(
 
     See count().
     """
-    tallyn = tally_n(wt)
-    name = check_name(name, x.columns)
+    tallyn = _tally_n(wt)
+    name = _check_name(name, x.columns)
     # pylint: disable=no-value-for-parameter
     out = x >> mutate({name: n() if tallyn is None else tallyn})
 
@@ -138,7 +138,7 @@ def add_tally(
 
 
 # Helpers -----------------------------------------------------------------
-def tally_n(
+def _tally_n(
         wt: Optional[Union[NumericOrIter, Expression]]
 ) -> Iterable[NumericType]:
     """Compuate the weights for counting"""
@@ -149,10 +149,10 @@ def tally_n(
     # Otherwise, sum of wt
     return sum(wt)
 
-def check_name(name: Optional[str], invars: Iterable[str]) -> str:
+def _check_name(name: Optional[str], invars: Iterable[str]) -> str:
     """Check if count is valid"""
     if name is None:
-        name = n_name(invars)
+        name = _n_name(invars)
 
         if name != 'n':
             logger.warning(
@@ -165,7 +165,7 @@ def check_name(name: Optional[str], invars: Iterable[str]) -> str:
     return name
 
 
-def n_name(invars: Iterable[str]) -> str:
+def _n_name(invars: Iterable[str]) -> str:
     """Make sure that name does not exist in invars"""
     name = 'n'
     while name in invars:

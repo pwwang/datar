@@ -11,7 +11,7 @@ from ..core.contexts import Context
 from ..core.utils import vars_select
 from ..core.grouped import DataFrameGroupBy
 from .group_data import group_vars
-from .select import eval_select
+from .select import _eval_select
 
 @register_verb(DataFrame, context=Context.SELECT)
 def rename(
@@ -30,7 +30,7 @@ def rename(
     """
     gvars = group_vars(_data)
     all_columns = _data.columns
-    selected, new_names = eval_select(
+    selected, new_names = _eval_select(
         all_columns,
         _group_vars=gvars,
         **kwargs,
