@@ -7,6 +7,7 @@ from .constants import (
     NA_integer_,
     NA_real_
 )
+from .options import options, getOption, options_context
 from .verbs import (
     colnames, rownames, dim, nrow, ncol, diag, t, names,
     intersect, union, setdiff, setequal

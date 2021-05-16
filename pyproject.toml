@@ -12,6 +12,7 @@ repository = "https://github.com/pwwang/datar"
 python = "^3.7.1" # align with pandas
 pipda = "*"
 modkit = "*"
+diot="*"
 pandas = "^1.2"
 
 [tool.poetry.dev-dependencies]

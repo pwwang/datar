@@ -21,8 +21,9 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, logger
-from ..core.middlewares import Collection, WithDataEnv
+from ..core.utils import categorize, get_option, logger
+from ..core.middlewares import WithDataEnv
+from ..core.collections import Collection
 from ..core.types import (
     BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter,
     NumericOrIter,
@@ -399,14 +400,19 @@ def c(*elems: Any) -> Collection:
 @register_func(None, context=Context.EVAL)
 def seq_along(
         along_with: Iterable[Any],
-        _base0: bool = False
+        _base0: Optional[bool] = None
 ) -> SeriesLikeType:
     """Generate sequences along an iterable"""
+    _base0 = get_option('index.base.0', _base0)
     return numpy.array(range(len(along_with))) + int(not _base0)
 
 @register_func(None, context=Context.EVAL)
-def seq_len(length_out: IntOrIter, _base0: bool = False) -> SeriesLikeType:
+def seq_len(
+        length_out: IntOrIter,
+        _base0: Optional[bool] = None
+) -> SeriesLikeType:
     """Generate sequences with the length"""
+    _base0 = get_option('index.base.0', _base0)
     if is_scalar(length_out):
         return numpy.array(range(int(length_out))) + int(not _base0)
     if len(length_out) > 1:
@@ -425,7 +431,7 @@ def seq(
         by: IntType = None,
         length_out: IntType = None,
         along_with: IntType = None,
-        _base0: bool = False
+        _base0: Optional[bool] = None,
 ) -> SeriesLikeType:
     """Generate a sequence
 
@@ -434,6 +440,7 @@ def seq(
     Note:
         This API is consistent with r-base's seq. 1-based and inclusive.
     """
+    _base0 = get_option('index.base.0', _base0)
     if along_with is not None:
         return seq_along(along_with, _base0)
     if from_ is not None and not is_scalar(from_):

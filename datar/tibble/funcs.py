@@ -10,7 +10,10 @@ from varname import argname, varname
 from varname.utils import VarnameRetrievingError
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
-from ..core.utils import copy_attrs, df_assign_item, to_df, logger
+from ..core.utils import (
+    copy_attrs, df_assign_item, get_option, position_after,
+    position_at, to_df, logger
+)
 from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import is_scalar
@@ -227,7 +230,7 @@ def enframe(
         x: Optional[Union[Iterable, Mapping]],
         name: Optional[str] = "name",
         value: str = "value",
-        _base0: bool = False
+        _base0: Optional[bool] = None
 ) -> DataFrame:
     """Converts mappings or lists to one- or two-column data frames.
 
@@ -262,6 +265,7 @@ def enframe(
 
     elif name:
         if not isinstance(x, dict):
+            _base0 = get_option('index.base.0', _base0)
             names = (i + int(not _base0) for i in range(len(x)))
             values = x
         else:
@@ -302,7 +306,7 @@ def add_row(
         *args: Any,
         _before: Optional[int] = None,
         _after: Optional[int] = None,
-        _base0: bool = False,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Add one or more rows of data to an existing data frame.
@@ -369,7 +373,7 @@ def add_column(
         _before: Optional[Union[str, int]] = None,
         _after: Optional[Union[str, int]] = None,
         _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: bool = False,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Add one or more columns to an existing data frame.
@@ -382,6 +386,8 @@ def add_column(
         _after: Column index or name where to add the new columns
             (default to add after the last column)
         _base0: Whether `_before` and `_after` are 0-based if they are index.
+            if not given, will be determined by `getOption('index_base_0')`,
+            which is `False` by default.
 
     Returns:
         The dataframe with the added columns
@@ -539,25 +545,25 @@ def _pos_from_before_after_names(
         before: Optional[Union[str, int]],
         after: Optional[Union[str, int]],
         names: List[str],
-        base0: bool
+        base0: Optional[bool]
 ) -> int:
     """Get the position to insert from before and after"""
     if before is not None:
-        before = _check_names_before_after(before, names, base0)
+        before, base0 = _check_names_before_after(before, names, base0)
     if after is not None:
-        after = _check_names_before_after(after, names, base0)
+        after, base0 = _check_names_before_after(after, names, base0)
     return _pos_from_before_after(before, after, len(names), base0)
 
 def _check_names_before_after(
         pos: Union[str, int],
         names: List[str],
-        base0: bool
+        base0: Optional[bool]
 ) -> int:
     """Get position by given index or name"""
     if not isinstance(pos, str):
-        return pos
+        return pos, base0
     try:
-        return names.index(pos) + int(not base0)
+        return names.index(pos), True
     except ValueError:
         raise ColumnNotExistingError(
             f"Column `{pos}` does not exist."
@@ -589,11 +595,8 @@ def _pos_from_before_after(
         return length
 
     if after is not None:
-        after = after - int(not base0) if after >= 0 else length + after
-        return max(0, min(after + 1, length))
-
-    before = before - int(not base0) if before >= 0 else length + before
-    return max(0, min(before, length))
+        return position_after(after, length, base0)
+    return position_at(before, length, base0)
 
 def _rbind_at(data: DataFrame, df: DataFrame, pos: int) -> DataFrame:
     """Row bind at certain pos, 0-based"""

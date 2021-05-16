@@ -29,7 +29,6 @@ def mutate(
         _keep: str = 'all',
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> DataFrame:
     # pylint: disable=too-many-branches
@@ -53,7 +52,6 @@ def mutate(
         _after: Optionally, control where new columns should appear
             (the default is to add to the right hand side).
             See relocate() for more details.
-        _base0: When `_before` and `_after` are 0-based
         *args: and
         **kwargs: Name-value pairs. The name gives the name of the column
             in the output. The value can be:
@@ -95,7 +93,7 @@ def mutate(
     out = out[setdiff(out.columns, removed)]
     if _before is not None or _after is not None:
         new = setdiff(cols.columns, _data.columns)
-        out = relocate(out, *new, _before=_before, _after=_after, _base0=_base0)
+        out = relocate(out, *new, _before=_before, _after=_after)
 
     if keep == 'all':
         return out
@@ -126,7 +124,6 @@ def _(
         _keep: str = 'all',
         _before: Optional[str] = None,
         _after: Optional[str] = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Mutate on DataFrameGroupBy object"""
@@ -139,7 +136,6 @@ def _(
             _keep=_keep,
             _before=_before,
             _after=_after,
-            _base0=_base0,
             **kwargs
         )
         ret.index = rows
@@ -174,7 +170,6 @@ def transmute(
         *args: Any,
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> DataFrame:
     """Mutate with _keep='none'
@@ -186,7 +181,6 @@ def transmute(
         _keep='none',
         _before=_before,
         _after=_after,
-        _base0=_base0,
         **kwargs
     )
 

@@ -17,7 +17,7 @@ from varname import argname
 from .exceptions import (
     ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
 )
-from .types import DataFrameType, is_scalar
+from .types import is_scalar
 from .defaults import DEFAULT_COLUMN_PREFIX
 
 # logger
@@ -48,109 +48,35 @@ def check_column(column: Any) -> None:
             f'f.column, ~c() or ~f.column, got {type(column)}'
         )
 
-def expand_collections(
-        collections: Any,
-        pool: Optional[Iterable[Any]] = None
-) -> List[Any]:
-    """Expand and flatten all iterables in the collections
+# def expand_collections(
+#         collections: Any,
+#         pool: Optional[Union[Iterable, int]] = None
+# ) -> List[Any]:
+#     """Expand and flatten all iterables in the collections
 
-    Args:
-        collections: The collections of elements or iterables
+#     Args:
+#         collections: The collections of elements or iterables
 
-    Returns:
-        The flattened list
-    """
-    from .middlewares import Negated
-    if isinstance(collections, Negated):
-        return collections.evaluate(pool)
-    if isinstance(collections, slice):
-        return sanitize_slice(collections, pool, raise_nonexists=False)
-    if is_scalar(collections) or isinstance(collections, Series):
-        return [collections]
-    ret = []
-    for collection in collections:
-        ret.extend(expand_collections(collection, pool))
-    return ret
-
-def sanitize_slice(
-        slc: slice,
-        all_columns: Optional[List[Union[str, int]]] = None,
-        raise_nonexists: bool = True
-) -> List[int]:
-    """Sanitize slice objects, and compile it into a list of indexes
-
-    Args:
-        slc: The slice object
-        all_columns: All columns used to convert names into indexes
-            If it is not provided, the slice is expected to be all integers
-        raise_nonexists: Raise error when a column doesnot exist?
-            Requires `all_columns`.
-
-    Returns:
-        A list of indexes
-
-    Raises:
-        ColumnNotExistingError: When a column does not exist
-    """
-    start, stop, step = slc.start, slc.stop, slc.step
-    if all_columns is None:
-        # Treated as plain slice
-        if isinstance(start, str) or isinstance(stop, str):
-            raise ValueError(
-                '`all_columns` is required when start/stop of slice is '
-                'column name.'
-            )
-        step = 1 if step is None else step
-        if start is None:
-            start = 0
-        if stop is None:
-            stop = 0
-
-        out = []
-        out_append = out.append
-        i = start
-        while (i < stop) if step > 0 else (i > stop):
-            out_append(i)
-            i += step
-        return out
-
-    # all_columns defined
-    if isinstance(start, str):
-        if start not in all_columns:
-            raise ColumnNotExistingError(f'Column `{start}` does not exist.')
-        start = all_columns.index(start)
-    if isinstance(stop, str):
-        if stop not in all_columns:
-            raise ColumnNotExistingError(f'Column `{stop}` does not exist.')
-        stop = all_columns.index(stop) + 1
-
-    all_len = len(all_columns)
-    start = 0 if start is None else start
-    if start < 0:
-        start += all_len
-
-    stop = len(all_columns) if stop is None else stop
-    if stop < 0:
-        stop += all_len + 1
-
-    if step == 0:
-        stop -= 1
-        step = 1
-
-    out = sanitize_slice(slice(start, stop, step))
-    if raise_nonexists:
-        for i in out:
-            if i >= all_len:
-                raise ColumnNotExistingError(
-                    f'Column at location {i} does not exist.'
-                )
-
-    return out
+#     Returns:
+#         The flattened list
+#     """
+#     from .middlewares import Negated
+#     if isinstance(collections, Negated):
+#         return collections.evaluate(pool)
+#     if isinstance(collections, slice):
+#         return sanitize_slice(collections, pool)
+#     if is_scalar(collections) or isinstance(collections, Series):
+#         return [collections]
+#     ret = []
+#     for collection in collections:
+#         ret.extend(expand_collections(collection, pool))
+#     return ret
 
 def vars_select(
         all_columns: Iterable[str],
         *columns: Any,
-        raise_nonexists: bool = True
+        raise_nonexists: bool = True,
+        base0: Optional[bool] = None
 ) -> List[int]:
     """Select columns
 
@@ -159,58 +85,28 @@ def vars_select(
         *columns: arguments to select from the pool
         raise_nonexist: Whether raise exception when column not exists
             in the pool
-        return_indexes: Whether return indexes instead of column names
-            This is useful when there are duplicated names
+        base0: Whether indexes are 0-based if columns are selected by indexes.
+            If not given, will use `datar.base.getOption('index.base.0')`
 
     Returns:
         The selected indexes for columns
 
     Raises:
-        ColumnNameInvalidError: When the column is invalid to select
         ColumnNotExistingError: When the column does not exist in the pool
+            and raise_nonexists is True.
     """
-    from .middlewares import Inverted
-    all_columns = list(all_columns)
-
-    selected = []
-    selected_append = selected.append
-    for column in columns:
-        if column is None:
-            continue
-
-        check_column(column)
-        if isinstance(column, int): # 1, -1
-            # -1 will do select instead of removal
-            if column not in selected:
-                selected_append(column)
-        elif isinstance(column, (list, tuple)): # ['x','y'] or [0,2]
-            idxes = vars_select(
-                all_columns,
-                *column,
-                raise_nonexists=raise_nonexists
-            )
-            for idx in idxes:
-                if idx not in selected:
-                    selected_append(idx)
-        elif isinstance(column, Inverted):
-            selected.extend(column.evaluate(all_columns, raise_nonexists))
-        elif isinstance(column, slice):
-            idxes = sanitize_slice(column, all_columns, raise_nonexists)
-            for idx in idxes:
-                if idx not in selected:
-                    selected_append(idx)
-        else:
-            if isinstance(column, Series):
-                column = column.name
-            if column not in all_columns and raise_nonexists:
-                raise ColumnNotExistingError(
-                    f"Column `{column}` does not exist."
-                )
-
-            selected_append(
-                all_columns.index(column) if column in all_columns else column
-            )
-    return selected
+    from .collections import Collection
+    from ..base import unique
+    columns = (
+        column.name if isinstance(column, Series) else column
+        for column in columns
+    )
+    selected = Collection(*columns, pool=list(all_columns), base0=base0)
+    if raise_nonexists and selected.unmatched and selected.unmatched != {None}:
+        raise ColumnNotExistingError(
+            f"Columns `{selected.unmatched}` do not exist."
+        )
+    return unique(selected).astype(int)
 
 def series_expandable(
         df_or_series: Union[DataFrame, Series],
@@ -242,7 +138,7 @@ def series_expand(series: Union[DataFrame, Series], df: DataFrame):
 
 def align_value(
         value: Any,
-        data: DataFrameType
+        data: DataFrame
 ) -> Any:
     """Normalize possible series data to add to the data or compare with
     other series of the data"""
@@ -469,3 +365,54 @@ def copy_attrs(
 def nargs(fun: Callable) -> int:
     """Get the number of arguments of a function"""
     return len(inspect.signature(fun).parameters)
+
+def position_at(pos: int, length: int, base0: Optional[bool] = None) -> int:
+    """Get the 0-based position right at the given pos
+
+    When `pos` is negative, it acts like 0-based, meaning `-1` will anyway
+    represent the last position regardless of `base0`
+
+    Args:
+        pos: The given position
+        length: The length of the pool
+
+    Returns:
+        The 0-based position
+    """
+    base0 = get_option('index.base.0', base0)
+    if not base0 and pos == 0:
+        raise IndexError('Index 0 given for 1-based indexing.')
+    return pos - int(not base0) if pos >= 0 else pos + length
+
+def position_after(pos: int, length: int, base0: Optional[bool] = None) -> int:
+    """Get the 0-based position right at the given pos
+
+    Args:
+        pos: The given position
+        length: The length of the pool
+
+    Returns:
+        The position before the given position
+    """
+    base0 = get_option('index.base.0', base0)
+    # after 0 with 1-based, should insert to first column
+    if not base0 and pos == 0:
+        return 0
+
+    return position_at(pos, length, base0) + 1
+
+def get_option(key: str, value: Any = None) -> Any:
+    """Get the option with key.
+
+    This is for interal use mostly.
+
+    This is a shortcut for:
+    >>> if value is not None:
+    >>>     return value
+    >>> from datar.base import getOption
+    >>> return getOption(key)
+    """
+    if value is not None:
+        return value
+    from ..base import getOption
+    return getOption(key)

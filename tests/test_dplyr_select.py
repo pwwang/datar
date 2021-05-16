@@ -63,9 +63,9 @@ def test_negating_empty_match_returns_everything():
 def test_can_select_with_duplicate_columns():
 
     df = tibble(tibble(x=1), x=2, y=1, _name_repair="minimal")
-    out = select(df, 0, 2)
+    out = select(df, 1, 3)
     assert out.columns.tolist() == ['x', 'y']
-    out = select(df, 2, 0)
+    out = select(df, 3, 1)
     assert out.columns.tolist() == ['y', 'x']
 
     out = select(df, f.y)
@@ -165,7 +165,7 @@ def test_select_rename_with_dup_names():
     ):
         df >> select(y=f.x)
 
-    with pytest.raises(IndexError):
+    with pytest.raises(ColumnNotExistingError):
         df >> select(y=3)
 
 def test_tidyselect_funs():

@@ -2,7 +2,7 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/group-by.r
 """
 
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, Union
 
 from pandas import DataFrame
 from pipda import register_verb
@@ -13,14 +13,13 @@ from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
 from ..core.defaults import f
 from ..core.utils import (
-    copy_attrs, name_mutatable_args, vars_select,
-    check_column_uniqueness
+    copy_attrs, name_mutatable_args,
+    check_column_uniqueness, vars_select
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..base import setdiff, union
 
 from .group_data import group_vars
-
 
 @register_verb(DataFrame, context=Context.PENDING)
 def group_by(
@@ -33,9 +32,19 @@ def group_by(
     """Takes an existing tbl and converts it into a grouped tbl where
     operations are performed "by group"
 
+    See https://dplyr.tidyverse.org/reference/group_by.html
+
     Args:
         _data: The dataframe
+        _add: When False, the default, `group_by()` will override
+            existing groups. To add to the existing groups, use `_add=True`.
+        _drop: Drop groups formed by factor levels that don't appear in the
+            data? The default is True except when `_data` has been previously
+            grouped with `_drop=False`.
         *args: variables or computations to group by.
+            Note that columns here cannot be selected by indexes. As they are
+            treated as computations to be added as new columns.
+            So no `_base0` argument is supported.
         **kwargs: Extra variables to group the dataframe
 
     Return:
@@ -54,7 +63,11 @@ def group_by(
     return out
 
 @register_verb(DataFrame, context=Context.SELECT)
-def rowwise(_data: DataFrame, *columns: str) -> DataFrameRowwise:
+def rowwise(
+        _data: DataFrame,
+        *columns: Union[str, int],
+        _base0: Optional[bool] = None
+) -> DataFrameRowwise:
     """Compute on a data frame a row-at-a-time
 
     Args:
@@ -62,51 +75,90 @@ def rowwise(_data: DataFrame, *columns: str) -> DataFrameRowwise:
         *columns:  Variables to be preserved when calling summarise().
             This is typically a set of variables whose combination
             uniquely identify each row.
+        _base0: Whether indexes are 0-based if columns are selected by indexes.
+            If not given, will use `datar.base.getOption('index.base.0')`
 
     Returns:
         A row-wise data frame
     """
     check_column_uniqueness(_data)
-    columns = vars_select(_data.columns, columns)
-    if not columns:
+    idxes = vars_select(_data.columns, *columns, base0=_base0)
+    if len(idxes) == 0:
         return DataFrameRowwise(_data)
-    return DataFrameRowwise(_data, _group_vars=_data.columns[columns].tolist())
+    return DataFrameRowwise(_data, _group_vars=_data.columns[idxes].tolist())
 
 @rowwise.register(DataFrameGroupBy, context=Context.SELECT)
-def _(_data: DataFrameGroupBy, *columns: str) -> DataFrameRowwise:
+def _(
+        _data: DataFrameGroupBy,
+        *columns: str,
+        _base0: Optional[bool] = None
+) -> DataFrameRowwise:
     # grouped dataframe's columns are unique already
     if columns:
         raise ValueError(
             "Can't re-group when creating rowwise data. "
             "Either first `ungroup()` or call `rowwise()` without arguments."
         )
+    # copy_attrs?
     return DataFrameRowwise(_data, _group_vars=group_vars(_data))
 
-@rowwise.register(DataFrameRowwise, context=Context.SELECT)
-def _(_data: DataFrameRowwise, *columns: str) -> DataFrameRowwise:
-    # grouped dataframe's columns are unique already
-    return DataFrameRowwise(_data, _group_vars=list(columns))
 
+@rowwise.register(DataFrameRowwise, context=Context.SELECT)
+def _(
+        _data: DataFrameRowwise,
+        *columns: str,
+        _base0: Optional[bool] = None
+) -> DataFrameRowwise:
+    idxes = vars_select(_data.columns, *columns, base0=_base0)
+    if len(idxes) == 0:
+        # copy_attrs?
+        return DataFrameRowwise(_data)
+    # copy_attrs?
+    return DataFrameRowwise(_data, _group_vars=_data.columns[idxes].to_list())
 
 @register_verb(DataFrame, context=Context.SELECT)
-def ungroup(x: DataFrame, *cols: str) -> DataFrame:
-    """Ungroup a grouped data"""
+def ungroup(
+        x: DataFrame,
+        *cols: Union[str, int],
+        _base0: Optional[bool] = None
+) -> DataFrame:
+    """Ungroup a grouped data
+
+    See https://dplyr.tidyverse.org/reference/group_by.html
+
+    Args:
+        x: The data frame
+        *cols: Variables to remove from the grouping variables.
+        _base0: If columns are selected with indexes, whether they are 0-based.
+            If not given, will use `datar.base.getOption('index.base.0')`
+
+    Returns:
+        A data frame with selected columns removed from the grouping variables.
+    """
     if cols:
         raise ValueError(f'`*cols` is not empty.')
     return x
 
 @ungroup.register(DataFrameGroupBy, context=Context.SELECT)
-def _(x: DataFrameGroupBy, *cols: str) -> DataFrame:
+def _(
+        x: DataFrameGroupBy,
+        *cols: Union[str, int],
+        _base0: Optional[bool] = None
+) -> DataFrame:
     if not cols:
         return DataFrame(x, index=x.index)
     old_groups = group_vars(x)
-    to_remove = vars_select(x.columns, *cols)
+    to_remove = vars_select(x.columns, *cols, base0=_base0)
     new_groups = setdiff(old_groups, x.columns[to_remove])
 
     return group_by(x, *new_groups)
 
 @ungroup.register(DataFrameRowwise, context=Context.SELECT)
-def _(x: DataFrameRowwise, *cols: str) -> DataFrame:
+def _(
+        x: DataFrameRowwise,
+        *cols: Union[str, int],
+        _base0: Optional[bool] = None
+) -> DataFrame:
     if cols:
         raise ValueError(f'`*cols` is not empty.')
     return DataFrame(x)

@@ -9,8 +9,8 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import StringOrIter
-from ..core.utils import vars_select, logger
-from ..core.middlewares import Inverted
+from ..core.utils import position_at, vars_select, logger
+from ..core.collections import Inverted
 from ..core.grouped import DataFrameGroupBy
 from ..base import setdiff, union
 from .group_by import group_by_drop_default
@@ -101,7 +101,7 @@ def _eval_select(
         else: # int
             # try:
             #   If out of bounds, it should be raised at getting missing
-            val = _all_columns[val]
+            val = _all_columns[position_at(val, len(_all_columns))]
             # except IndexError:
             #     raise ColumnNotExistingError(
             #         f'Location {val} does not exist.'
