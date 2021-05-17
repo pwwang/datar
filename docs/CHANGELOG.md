@@ -1,3 +1,7 @@
+## 0.0.5
+- Add option index.base.0;
+- Refactor Collection families
+
 ## 0.0.4
 - Finish port of tibble.
 
