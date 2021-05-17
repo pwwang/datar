@@ -131,7 +131,7 @@ def test_rowwise():
     res = df >> rowwise() >> filter(grepl(f.First, f.Second))
     assert nrow(res) == 1
 
-    df1 = df >> slice(0)
+    df1 = df >> slice(1)
     df2 = ungroup(res)
     assert df1.equals(df2)
 
@@ -207,7 +207,7 @@ def test_handles_df_cols():
         x = [1,2],
         z = tibble(A=[1,2], B=[3,4])
     )
-    expect = df >> slice(0)
+    expect = df >> slice(1)
 
     out = filter(df, f.x == 1)
     assert out.equals(expect)

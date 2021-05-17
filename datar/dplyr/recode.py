@@ -11,7 +11,7 @@ from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.utils import logger
+from ..core.utils import logger, get_option
 from ..core.types import is_scalar
 from ..base import NA, unique, c, intersect, NA_integer_, NA_character_
 
@@ -25,11 +25,11 @@ def get_first(x: Iterable[Any]) -> Any:
 
 def args_to_recodings(
         *args: Any,
-        _base0: bool = False,
         _force_index: bool = False,
         **kwargs: Any
 ) -> Mapping[Any, Any]:
     """Convert arguments to replaceable"""
+    _base0 = get_option('index.base.0')
     values = {}
     for i, arg in enumerate(args):
         if isinstance(arg, dict):
@@ -140,14 +140,12 @@ def recode_numeric(
         *args: Any,
         _default: Any = None,
         _missing: Any = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> numpy.ndarray:
     """Recode numeric vectors"""
 
     values = args_to_recodings(
         *args, **kwargs,
-        _base0=_base0,
         _force_index=True
     )
     check_args(values, _default, _missing)
@@ -188,11 +186,10 @@ def recode_character(
         *args: Any,
         _default: Any = None,
         _missing: Any = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> numpy.ndarray:
     """Recode character vectors"""
-    values = args_to_recodings(*args, **kwargs, _base0=_base0)
+    values = args_to_recodings(*args, **kwargs)
     check_args(values, _default, _missing)
     if not all(isinstance(val, str) for val in values):
         raise ValueError("All values must be named.")
@@ -238,7 +235,6 @@ def recode(
         *args: Any,
         _default: Any = None,
         _missing: Any = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> Iterable[Any]:
     """Recode a vector, replacing elements in it
@@ -254,7 +250,6 @@ def recode(
             not compatible, unmatched values are replaced with NA.
         _missing: If supplied, any missing values in .x will be replaced
             by this value.
-        _base0: Whether the positional argument replacement is 0-based.
 
     Returns:
         The vector with values replaced
@@ -278,7 +273,6 @@ def recode(
             _x, *args,
             _default=_default,
             _missing=_missing,
-            _base0=_base0,
             **kwargs
         )
 
@@ -286,7 +280,6 @@ def recode(
         _x, *args,
         _default=_default,
         _missing=_missing,
-        _base0=_base0,
         **kwargs
     )
 
@@ -296,7 +289,6 @@ def _(
         *args: Any,
         _default: Any = None,
         _missing: Any = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> Categorical:
     """Recode factors"""
@@ -306,13 +298,12 @@ def _(
             *args,
             _default=_default,
             _missing=_missing,
-            _base0=_base0,
             **kwargs
         )
     if isinstance(_x, Series):
         _x = _x.values # get the Categorical object
 
-    values = args_to_recodings(*args, **kwargs, _base0=_base0)
+    values = args_to_recodings(*args, **kwargs)
     if not values:
         raise ValueError("No replacements provided.")
 
@@ -358,19 +349,17 @@ def recode_factor(
         _default: Any = None,
         _missing: Any = None,
         _ordered: bool = False,
-        _base0: bool = False,
         **kwargs: Any
 ) -> Iterable[Any]:
     """Recode a factor
 
     see recode().
     """
-    values = args_to_recodings(*args, **kwargs, _base0=_base0)
+    values = args_to_recodings(*args, **kwargs)
     recoded = recode(
         _x, values,
         _default=_default,
-        _missing=_missing,
-        _base0=_base0
+        _missing=_missing
     )
 
     out_type = type(get_first(recoded))

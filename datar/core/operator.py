@@ -8,8 +8,8 @@ from pandas import Series
 from pipda import register_operator, Operator
 from pipda.context import ContextBase
 
-from .utils import align_value, vars_select
-from .middlewares import Collection, Inverted, Negated
+from .utils import align_value
+from .collections import Collection, Inverted, Negated, Intersect
 from .types import BoolOrIter
 
 @register_operator
@@ -53,12 +53,10 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        from ..base import intersect
-        if isinstance(left, (list, Inverted)):
-            left = vars_select(self.data.columns, left)
-            right = vars_select(self.data.columns, right)
-            out = intersect(left, right)
-            return list(self.data.columns[out])
+        if isinstance(left, list):
+            # induce an intersect with Collection
+            return Intersect(left, right)
+
         return self._arithmetize2(left, right, 'and_')
 
     def or_(self, left: Any, right: Any) -> Any:
@@ -73,12 +71,12 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        from ..base import union
-        if isinstance(left, (list, Inverted)):
-            left = vars_select(self.data.columns, left)
-            right = vars_select(self.data.columns, right)
-            out = union(left, right)
-            return list(self.data.columns[out])
+        if isinstance(left, list):
+            return Collection(left, right)
+            # left = vars_select(self.data.columns, left)
+            # right = vars_select(self.data.columns, right)
+            # out = union(left, right)
+            # return list(self.data.columns[out])
         return self._arithmetize2(left, right, 'or_')
 
     # def eq(self, left: Any, right: Any) -> BoolOrIter:

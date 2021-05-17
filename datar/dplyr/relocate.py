@@ -15,7 +15,6 @@ def relocate(
         *args: Any,
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
-        _base0: bool = False,
         **kwargs: Any
 ) -> DataFrame:
     """change column positions
@@ -27,7 +26,6 @@ def relocate(
         _before: and
         _after: Destination. Supplying neither will move columns to
             the left-hand side; specifying both is an error.
-        _base0: Whether `_before` and `_after` are 0-based.
 
     Returns:
         An object of the same type as .data. The output has the following
@@ -51,19 +49,18 @@ def relocate(
             "Must supply only one of `_before` and `_after`."
         )
 
-    base = int(not _base0)
-    length = len(all_columns)
+    # length = len(all_columns)
     if _before is not None:
-        if isinstance(_before, int):
-            _before = _before - base if _before >= 0 else length + _before
-        where = min(_eval_select(all_columns, _before, _group_vars=[])[0])
+        where = min(_eval_select(
+            all_columns, _before, _group_vars=[]
+        )[0])
         if where not in to_move:
             to_move.append(where)
 
     elif _after is not None:
-        if isinstance(_after, int):
-            _after = _after - base if _after >= 0 else length + _after
-        where = max(_eval_select(all_columns, _after, _group_vars=[])[0])
+        where = max(_eval_select(
+            all_columns, _after, _group_vars=[]
+        )[0])
         if where not in to_move:
             to_move.insert(0, where)
     else:

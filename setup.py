@@ -36,6 +36,6 @@ setup(
               'datar.dplyr', 'datar.stats', 'datar.tibble', 'datar.tidyr', 'datar.utils'],
     package_dir={"": "."},
     package_data={"datar.datasets": ["*.gz"]},
-    install_requires=['modkit', 'pandas==1.*,>=1.2.0', 'pipda'],
+    install_requires=['diot', 'modkit', 'pandas==1.*,>=1.2.0', 'pipda'],
     extras_require={"dev": ["pytest", "pytest-cov"]},
 )

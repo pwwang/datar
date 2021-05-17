@@ -9,11 +9,11 @@ from pandas import DataFrame, RangeIndex
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.middlewares import Collection, Inverted, Negated
+from ..core.collections import Collection
 from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy
 from ..base.constants import NA
-from ..base import intersect, unique
+from ..base import unique
 from .filter import _filter_groups
 from .group_by import group_by_drop_default
 from .group_data import group_vars
@@ -23,7 +23,8 @@ from .group_data import group_vars
 def slice( # pylint: disable=redefined-builtin
         _data: DataFrame,
         *rows: Any,
-        _preserve: bool = False
+        _preserve: bool = False,
+        _base0: Optional[bool] = None
 ) -> DataFrame:
     """Index rows by their (integer) locations
 
@@ -40,10 +41,14 @@ def slice( # pylint: disable=redefined-builtin
             To exclude a single row, you can't do this directly: `slice(df, ~1)`
             since `~1` is directly compiled into a number. You can do this
             instead: `slice(df, ~c(1))`
+            Exclusive and inclusive expressions are allowed to be mixed, unlike
+            in `dplyr`. They are expanded in the order they are passed in.
         _preserve: Relevant when the _data input is grouped.
             If _preserve = FALSE (the default), the grouping structure is
             recalculated based on the resulting data,
             otherwise the grouping is kept as is.
+        _base0: If rows are selected by indexes, whether they are 0-based.
+            If not provided, `datar.base.getOption('index.base.0')` is used.
 
     Returns:
         The sliced dataframe
@@ -51,7 +56,7 @@ def slice( # pylint: disable=redefined-builtin
     if not rows:
         return _data
 
-    rows = _sanitize_rows(rows, _data.shape[0])
+    rows = _sanitize_rows(rows, _data.shape[0], _base0)
     out = _data.iloc[rows, :]
     if isinstance(_data.index, RangeIndex):
         out.reset_index(drop=True, inplace=True)
@@ -62,11 +67,12 @@ def slice( # pylint: disable=redefined-builtin
 def _(
         _data: DataFrameGroupBy,
         *rows: Any,
-        _preserve: bool = False
+        _preserve: bool = False,
+        _base0: Optional[bool] = None
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
     out = _data.group_apply(
-        lambda df: slice(df, *rows)
+        lambda df: slice(df, *rows, _base0=_base0)
     )
     out = _data.__class__(
         out,
@@ -104,7 +110,7 @@ def slice_head(
         The sliced dataframe
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(_data, builtins.slice(None, n))
+    return slice(_data, builtins.slice(None, n), _base0=True)
 
 
 @register_verb(DataFrame)
@@ -119,7 +125,7 @@ def slice_tail(
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(_data, builtins.slice(-n, None))
+    return slice(_data, builtins.slice(-n, None), _base0=True)
 
 
 @register_verb(DataFrame, extra_contexts={'order_by': Context.EVAL})
@@ -283,29 +289,21 @@ def _n_from_prop(
     return min(n, total)
 
 def _sanitize_rows(
-        rows: Iterable[Union[int, list, tuple, Collection, Inverted, Negated]],
-        nrow: int
+        rows: Iterable,
+        nrow: int,
+        base0: Optional[bool] = None
 ) -> List[int]:
     """Sanitize rows passed to slice"""
-    indexes = list(range(nrow))
-    rows = Collection(rows, pool=indexes) # flatten everything
-    if all(row is NA for row in rows):
-        return []
-    rows = [row for row in rows if row is not NA]
-    all_inverted = [isinstance(row, Inverted) for row in rows]
-    if any(all_inverted) and not all(all_inverted):
-        raise ValueError(
-            "`slice()` expressions should return either "
-            "all inclusive or all exclusive."
+    rows = Collection(*rows, pool=nrow, base0=base0)
+    if rows.error:
+        # pylint: disable=raising-bad-type
+        raise rows.error from None
+    invalid_type_rows = [
+        row for row in rows.unmatched
+        if not isinstance(row, (int, type(None), type(NA)))
+    ]
+    if invalid_type_rows:
+        raise TypeError(
+            f"`slice()` expressions should return indices."
         )
-
-    if all(all_inverted):
-        all_elems = Collection((row.elems for row in rows), pool=indexes)
-        all_elems = [nrow + elem if elem < 0 else elem for elem in all_elems]
-        rows = Inverted(all_elems).evaluate(
-            all_columns=indexes,
-            raise_nonexists=False
-        )
-
-    rows = unique([nrow + row if row < 0 else row for row in rows])
-    return intersect(rows, indexes)
+    return unique(rows)

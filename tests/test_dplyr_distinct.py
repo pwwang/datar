@@ -87,7 +87,7 @@ def test_on_iter_type():
     )
 
     out = df >> distinct()
-    expect = df >> slice([0,2,4])
+    expect = df >> slice([1,3,5])
     assert out.equals(expect)
 
     out2 = df2 >> distinct()

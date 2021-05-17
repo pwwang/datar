@@ -23,7 +23,7 @@ def test_rename_preserve_grouping():
 
 def test_can_rename_with_duplicate_columns():
     df = tibble(tibble(x=1), x=2, y=1, _name_repair='minimal')
-    out = df >> rename(x2=1) >> names()
+    out = df >> rename(x2=2) >> names()
     assert out == ['x', 'x2', 'y']
 
 # # rename_with -------------------------------------------------------------
@@ -32,7 +32,7 @@ def test_can_select_columns():
     df = tibble(x=1, y=2)
     out = df >> rename_with(str.upper) >> names()
     assert out == ['X', 'Y']
-    out = df >> rename_with(str.upper, 0) >> names()
+    out = df >> rename_with(str.upper, 1) >> names()
     assert out == ['X', 'y']
     out = df >> rename_with(str.upper, f.x) >> names()
     assert out == ['X', 'y']

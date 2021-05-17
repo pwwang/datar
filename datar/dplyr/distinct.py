@@ -12,7 +12,7 @@ from ..core.contexts import Context
 from ..core.utils import copy_attrs
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import is_scalar
-from ..core.middlewares import Collection
+from ..core.collections import Collection
 from ..base import union, setdiff, intersect
 from .mutate import mutate
 from .group_by import group_by_drop_default, ungroup

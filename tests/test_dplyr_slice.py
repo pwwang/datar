@@ -1,5 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-slice.r
+from pandas.testing import assert_frame_equal
 from pipda.context import ContextError
 import pytest
 from datar.all import *
@@ -14,54 +15,52 @@ def test_slice_handles_numeric_input():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
     res = g >> slice(1)
     assert nrow(res) == 3
-    exp = g >> filter(row_number() == 2)
-    assert res.equals(exp)
+    exp = g >> filter(row_number() == 1)
+    assert_frame_equal(res, exp)
 
     res1 = mtcars >> slice(1)
-    res2 = mtcars >> filter(row_number() == 2)
-    assert res1.equals(res2)
+    res2 = mtcars >> filter(row_number() == 1)
+    assert_frame_equal(res1, res2)
 
 def test_slice_silently_ignores_out_of_range_values():
     res1 = slice(mtcars, c(2, 100))
     res2 = slice(mtcars, 2)
-    assert res1.equals(res2)
+    assert_frame_equal(res1, res2)
 
     g = group_by(mtcars, f.cyl)
     res1 = slice(g, c(2, 100))
     res2 = slice(g, 2)
-    assert res1.equals(res2)
+    assert_frame_equal(res1, res2)
 
 
 def test_slice_works_with_negative_indices():
     res = slice(mtcars, ~f[:2])
-    # wait for tail
-    # exp = tail(mtcars, -2) # tail with negative?
-    # exp = tail(mtcars, nrow(mtcars)-2)
-    # assert res.equals(exp)
+    exp = tail(mtcars, -2)
+    assert_frame_equal(res, exp)
 
 def test_slice_works_with_grouped_data():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
 
     res = slice(g, f[:2])
     exp = filter(g, row_number() < 3)
-    assert res.equals(exp)
+    assert_frame_equal(res, exp)
 
     res = slice(g, ~f[:2])
     exp = filter(g, row_number() >= 3)
     assert res.equals(exp)
 
     g = group_by(tibble(x=c(1,1,2,2,2)), f.x)
-    out = group_keys(slice(g, 2, _preserve=True)) >> pull(f.x, to='list')
+    out = group_keys(slice(g, 3, _preserve=True)) >> pull(f.x, to='list')
     assert out == [1,2]
-    out = group_keys(slice(g, 2, _preserve=False)) >> pull(f.x, to='list')
+    out = group_keys(slice(g, 3, _preserve=False)) >> pull(f.x, to='list')
     assert out == [2]
 
 def test_slice_gives_correct_rows():
     a = tibble(value=[f"row{i}" for i in range(1,11)])
-    out = slice(a, [0, 1,2]) >> pull(f.value, to='list')
+    out = slice(a, c(1,2,3)) >> pull(f.value, to='list')
     assert out == ['row1', 'row2', 'row3']
 
-    out = slice(a, [3,5,8]) >> pull(f.value, to='list')
+    out = slice(a, c(4,6,9)) >> pull(f.value, to='list')
     assert out == ['row4', 'row6', 'row9']
 
     a = tibble(
@@ -69,22 +68,22 @@ def test_slice_gives_correct_rows():
         group=rep([1,2], each=5)
     ) >> group_by(f.group)
 
-    out = slice(a, [0,1,2]) >> pull(f.value, to='list')
+    out = slice(a, f[1:3]) >> pull(f.value, to='list')
     assert out == [f'row{i}' for i in [1,2,3, 6,7,8]]
 
-    out = slice(a, c(1,3)) >> pull(f.value, to='list')
+    out = slice(a, c(2,4)) >> pull(f.value, to='list')
     assert out == [f'row{i}' for i in [2,4,7,9]]
 
 def test_slice_handles_na():
     df = tibble(x=[1,2,3])
     assert nrow(slice(df, NA)) == 0
-    assert nrow(slice(df, c(0, NA))) == 1
-    out = df >> slice(c(~c(0), NA)) >> nrow()
+    assert nrow(slice(df, c(1, NA))) == 1
+    out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
     df = tibble(x=[1,2,3,4], g=rep([1,2], 2)) >> group_by(f.g)
-    assert nrow(slice(df, c(0, NA))) == 2
-    out = df >> slice(c(~c(0), NA)) >> nrow()
+    assert nrow(slice(df, c(1, NA))) == 2
+    out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
 def test_slice_handles_logical_NA():
@@ -99,23 +98,23 @@ def test_slice_handles_empty_df():
 
 def test_slice_works_fine_if_n_gt_nrow():
     by_slice = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
-    slice_res = by_slice >> slice(7)
+    slice_res = by_slice >> slice(8)
     filter_res = by_slice >> group_by(f.cyl) >> filter(row_number() == 8)
     assert slice_res.equals(filter_res)
 
 def test_slice_strips_grouped_indices():
-    res = mtcars >> group_by(f.cyl) >> slice(0) >> mutate(mpgplus=f.mpg+1)
+    res = mtcars >> group_by(f.cyl) >> slice(1) >> mutate(mpgplus=f.mpg+1)
     assert nrow(res) == 3
     assert group_rows(res) == [[0], [1], [2]]
 
 def test_slice_works_with_0col_dfs():
-    out = tibble(a=[1,2,3]) >> select(~f.a) >> slice(0) >> nrow()
+    out = tibble(a=[1,2,3]) >> select(~f.a) >> slice(1) >> nrow()
     assert out == 1
 
 def test_slice_correctly_computes_positive_indices_from_negative_indices():
     x = tibble(y=range(1,11))
     # negative in dplyr meaning exclusive
-    assert slice(x, ~f[9:32]).equals(tibble(y=range(1,10)))
+    assert slice(x, ~f[10:30]).equals(tibble(y=range(1,10)))
 
 def test_slice_accepts_star_args():
     out1 = slice(mtcars, 1, 2)
@@ -147,16 +146,16 @@ def test_slice_does_not_evaluate_the_expression_in_empty_groups():
 
 def test_slice_handles_df_columns():
     df = tibble(x=[1,2], y=tibble(a=[1,2], b=[3,4]), z=tibble(A=[1,2], B=[3,4]))
-    out = slice(df, 0)
+    out = slice(df, 1)
     assert out.equals(df.iloc[[0], :])
 
     gdf = group_by(df, f.x)
-    assert slice(gdf, 0).equals(gdf)
+    assert slice(gdf, 1).equals(gdf)
     # TODO: group_by a stacked df is not supported yet
     gdf = group_by(df, f['y$a'], f['y$b'])
-    assert slice(gdf, 0).equals(gdf)
+    assert slice(gdf, 1).equals(gdf)
     gdf = group_by(df, f['z$A'], f['z$B'])
-    assert slice(gdf, 0).equals(gdf)
+    assert slice(gdf, 1).equals(gdf)
 
 # # Slice variants ----------------------------------------------------------
 
@@ -322,17 +321,26 @@ def test_mixed_rows():
     df = tibble(x=range(5))
 
     # order kept
-    out = slice(df, c(-c(1,3), 3)) >> pull(f.x, to='list')
-    assert out == [4, 2, 3]
+    # 0   1   2   3   4
+    #        -3      -1
+    #         3  # 1-based
+    out = slice(df, c(-c(1,3), 4)) >> pull(f.x, to='list')
+    assert out == [2, 4, 3]
 
-    out = slice(df, c(-f[:2], 3)) >> pull(f.x, to='list')
+    # 0   1   2   3   4
+    #            -2  -1
+    #             4
+    out = slice(df, c(-f[:2], 4)) >> pull(f.x, to='list')
     assert out == [3, 4]
 
-    out = slice(df, c(~c(1,3), ~c(0))) >> pull(f.x, to='list')
-    assert out == [2, 4]
+    # 0   1   2   3   4
+    # 1       3
+    #                -1
+    out = slice(df, c(~c(1,3), ~c(-1))) >> pull(f.x, to='list')
+    assert out == [1, 3]
 
-    out = slice(df, c(~f[3:], ~c(0))) >> pull(f.x, to='list')
-    assert out == [1, 2]
+    out = df >> slice(c(~f[3:], ~c(1))) >> pull(f.x, to='list')
+    assert out == [1]
 
 def test_slice_sample_n_defaults_to_1():
     df = tibble(

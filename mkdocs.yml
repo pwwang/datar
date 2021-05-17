@@ -33,6 +33,7 @@ nav:
     - 'Import': 'import.md'
     - 'The f': 'f.md'
     - 'Piping vs regular calling': 'piping_vs_regular.md'
+    - 'Indexing/Selection': 'indexing.md'
     - 'Datasets': 'datasets.md'
     - 'API': 'mkapi/api/datar'
     - 'Examples':

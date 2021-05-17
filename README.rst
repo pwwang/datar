@@ -36,7 +36,7 @@ Unlike other similar packages in python that just mimic the piping sign, ``datar
    :alt: Codacy coverage
  <https://app.codacy.com/gh/pwwang/datar>`_
 
-`Documentation <https://pwwang.github.io/datar/>`_ | `Reference Maps <https://pwwang.github.io/datar/reference_maps/ALL/>`_ | `Notebook Examples <https://pwwang.github.io/datar/notebooks/across/>`_ | `API <https://pwwang.github.io/datar/api/datar/>`_
+`Documentation <https://pwwang.github.io/datar/>`_ | `Reference Maps <https://pwwang.github.io/datar/reference-maps/ALL/>`_ | `Notebook Examples <https://pwwang.github.io/datar/notebooks/across/>`_ | `API <https://pwwang.github.io/datar/api/datar/>`_
 
 Installtion
 -----------

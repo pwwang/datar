@@ -45,6 +45,7 @@ def rename(
         if i in selected else col
         for i, col in enumerate(all_columns)
     ]
+
     if isinstance(out, DataFrameGroupBy):
         out._group_vars = [new_names.get(name, name) for name in gvars]
         out._group_data.columns = out._group_vars + ['_rows']
@@ -63,8 +64,9 @@ def rename_with(
     Args:
         _data: The dataframe
         _fn: The function to rename a column
-        _cols: the columns to rename. If not specified, all columns are
+        *args: the columns to rename. If not specified, all columns are
             considered
+        **kwargs: keyword arguments for `_fn`
 
     Returns:
         The dataframe with new names

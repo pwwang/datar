@@ -6,7 +6,7 @@ from pandas import Series
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.middlewares import Collection
+from ..core.collections import Collection
 
 @register_func(None, context=Context.EVAL)
 def itemgetter(data: Iterable[Any], *subscripts) -> numpy.ndarray:

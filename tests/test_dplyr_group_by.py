@@ -377,7 +377,7 @@ def test_rowwise_preserved_by_major_verbs():
 def test_rowwise_preserved_by_subsetting():
     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
 
-    out = get(rf, [0])
+    out = get(rf, [1])
     assert isinstance(out, DataFrameRowwise)
     assert group_vars(out) == ['x']
 

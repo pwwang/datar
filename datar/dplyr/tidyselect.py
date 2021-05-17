@@ -8,7 +8,7 @@ from pipda import register_func
 from pipda.utils import functype
 
 from ..core.contexts import Context
-from ..core.utils import vars_select
+from ..core.utils import get_option, vars_select
 from ..core.types import StringOrIter
 from ..base import setdiff, intersect
 from .group_data import group_vars
@@ -221,7 +221,8 @@ def all_of(
 def any_of(
         _data: DataFrame,
         x: Iterable[Union[int, str]],
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+        # pylint: disable=redefined-builtin
+        vars: Optional[Iterable[str]] = None
 ) -> List[str]:
     """Select but doesn't check for missing variables.
 
@@ -250,7 +251,7 @@ def num_range(
         prefix: str,
         range_: Iterable[int], # pylint: disable=redefined-builtin
         width: Optional[int] = None,
-        _base0: bool = False
+        _base0: Optional[bool] = None
 ) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
 
@@ -265,6 +266,7 @@ def num_range(
     Returns:
         A list of ranges with prefix.
     """
+    _base0 = get_option('index.base.0', _base0)
     zfill = lambda elem: (
         elem + int(not _base0)
         if not width
