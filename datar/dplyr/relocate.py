@@ -5,7 +5,6 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-# from ..core.utils import position_after, position_at
 from ..base import setdiff, union
 from .group_data import group_vars
 from .select import _eval_select
@@ -52,8 +51,6 @@ def relocate(
 
     # length = len(all_columns)
     if _before is not None:
-        # if isinstance(_before, int):
-        #     _before = position_at(_before, length)
         where = min(_eval_select(
             all_columns, _before, _group_vars=[]
         )[0])
@@ -61,8 +58,6 @@ def relocate(
             to_move.append(where)
 
     elif _after is not None:
-        # if isinstance(_after, int):
-        #     _after = position_after(_after, length)
         where = max(_eval_select(
             all_columns, _after, _group_vars=[]
         )[0])

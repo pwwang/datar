@@ -7,16 +7,13 @@ from copy import deepcopy
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import numpy
-from pandas import DataFrame, Index, Series
-from pandas.core.groupby import SeriesGroupBy
+from pandas import DataFrame, Series
 from pandas.core.dtypes.common import is_categorical_dtype
 from pipda.symbolic import Reference
 
 from varname import argname
 
-from .exceptions import (
-    ColumnNameInvalidError, ColumnNotExistingError, NameNonUniqueError
-)
+from .exceptions import ColumnNotExistingError, NameNonUniqueError
 from .types import is_scalar
 from .defaults import DEFAULT_COLUMN_PREFIX
 
@@ -29,48 +26,6 @@ stream_handler.setFormatter(logging.Formatter(
     datefmt='%Y-%m-%d %H:%M:%S'
 ))
 logger.addHandler(stream_handler)
-
-def check_column(column: Any) -> None:
-    """Check if a column is valid
-
-    Args:
-        column: The column
-
-    Raises:
-        ColumnNameInvalidError: When the column name is invalid
-    """
-    from .middlewares import Inverted
-    if not isinstance(column, (
-            (int, str, list, set, tuple, Inverted, slice, Series, Index)
-    )):
-        raise ColumnNameInvalidError(
-            'Invalid column, expected int, str, list, tuple, c(), '
-            f'f.column, ~c() or ~f.column, got {type(column)}'
-        )
-
-# def expand_collections(
-#         collections: Any,
-#         pool: Optional[Union[Iterable, int]] = None
-# ) -> List[Any]:
-#     """Expand and flatten all iterables in the collections
-
-#     Args:
-#         collections: The collections of elements or iterables
-
-#     Returns:
-#         The flattened list
-#     """
-#     from .middlewares import Negated
-#     if isinstance(collections, Negated):
-#         return collections.evaluate(pool)
-#     if isinstance(collections, slice):
-#         return sanitize_slice(collections, pool)
-#     if is_scalar(collections) or isinstance(collections, Series):
-#         return [collections]
-#     ret = []
-#     for collection in collections:
-#         ret.extend(expand_collections(collection, pool))
-#     return ret
 
 def vars_select(
         all_columns: Iterable[str],
@@ -243,10 +198,10 @@ def _(data: Series, name: Optional[str] = None) -> DataFrame:
     name = name or data.name
     return data.to_frame(name=name)
 
-@to_df.register(SeriesGroupBy)
-def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
-    name = name or data.obj.name
-    return data.obj.to_frame(name=name).groupby(data.grouper, dropna=False)
+# @to_df.register(SeriesGroupBy)
+# def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
+#     name = name or data.obj.name
+#     return data.obj.to_frame(name=name).groupby(data.grouper, dropna=False)
 
 def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
     """Check if column names are unique of a dataframe"""
@@ -379,10 +334,12 @@ def position_at(pos: int, length: int, base0: Optional[bool] = None) -> int:
     Returns:
         The 0-based position
     """
-    base0 = get_option('index.base.0', base0)
-    if not base0 and pos == 0:
-        raise IndexError('Index 0 given for 1-based indexing.')
-    return pos - int(not base0) if pos >= 0 else pos + length
+    from .collections import Collection
+    return Collection(pos, pool=length, base0=base0)[0]
+    # base0 = get_option('index.base.0', base0)
+    # if not base0 and pos == 0:
+    #     raise IndexError('Index 0 given for 1-based indexing.')
+    # return pos - int(not base0) if pos >= 0 else pos + length
 
 def position_after(pos: int, length: int, base0: Optional[bool] = None) -> int:
     """Get the 0-based position right at the given pos
