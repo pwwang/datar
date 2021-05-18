@@ -58,7 +58,7 @@ def test_names_output():
         where(is_numeric),
         [mean, sum]
     ))
-    assert out.columns.tolist() == ["x", "y_0", "y_1", "z_0", "z_1"]
+    assert out.columns.tolist() == ["x", "y_1", "y_2", "z_1", "z_2"]
 
     out = gf >> summarise(across(
         where(is_numeric),

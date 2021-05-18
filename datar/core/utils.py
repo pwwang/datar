@@ -52,10 +52,11 @@ def vars_select(
     """
     from .collections import Collection
     from ..base import unique
-    columns = (
+
+    columns = [
         column.name if isinstance(column, Series) else column
         for column in columns
-    )
+    ]
     selected = Collection(*columns, pool=list(all_columns), base0=base0)
     if raise_nonexists and selected.unmatched and selected.unmatched != {None}:
         raise ColumnNotExistingError(

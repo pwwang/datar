@@ -1,4 +1,5 @@
 """Provide DataFrameGroupBy class"""
+import re
 from typing import Any, Callable, List, Optional
 from itertools import product
 from collections import defaultdict
@@ -227,6 +228,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
 
     def _repr_html_(self) -> str:
         out = super()._repr_html_()
+        out = re.sub(r'\[(?:Groups|Rowwise): .+? \(n=\d+\)\]', '', out)
         ngroups = self._group_data.shape[0]
         return f"{out}[Groups: {self._group_vars} (n={ngroups})]"
 
@@ -288,5 +290,6 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
 
     def _repr_html_(self) -> str:
         out = super()._repr_html_()
+        out = re.sub(r'\[(?:Groups|Rowwise): .+? \(n=\d+\)\]', '', out)
         ngroups = self._group_data.shape[0]
         return f"{out}[Rowwise: {self._group_vars} (n={ngroups})]"
