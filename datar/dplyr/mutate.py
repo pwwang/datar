@@ -19,9 +19,9 @@ from .group_data import group_vars, group_data
 from .relocate import relocate
 
 @register_verb(
-        DataFrame,
-        context=Context.PENDING,
-        extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
+    DataFrame,
+    context=Context.PENDING,
+    extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
 )
 def mutate(
         _data: DataFrame,

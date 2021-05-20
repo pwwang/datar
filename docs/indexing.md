@@ -14,6 +14,12 @@ options(index_base_0=False)
 In most cases, indexes/column names are ignored, or reset as `r-dplyr/r-tidyr` does.
 When using 1-based indexing selection, `1` will always select the first row, even when the indexes of data frames are ranging from 0.
 
+## Negative indexes
+
+In `R`, negative indexes mean removal. However, here negative indexes are still
+selection, as `-1` for the last column, `-2` for the second last, etc. It is
+the same for both 0-based and 1-based indexing.
+
 ## Temporary index base change
 
 For example:

@@ -2,7 +2,7 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/rename.R
 """
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from pandas import DataFrame
 from pipda import register_verb
@@ -16,6 +16,7 @@ from .select import _eval_select
 @register_verb(DataFrame, context=Context.SELECT)
 def rename(
         _data: DataFrame,
+        _base0: Optional[bool] = None,
         **kwargs: str
 ) -> DataFrame:
     """Changes the names of individual variables using new_name = old_name
@@ -24,6 +25,8 @@ def rename(
     Args:
         _data: The dataframe
         **kwargs: The new_name = old_name pairs
+        _base0: Whether the old_name is 0-based if given by indexes.
+            If not provided, will use `datar.base.getOption('index.base.0')`
 
     Returns:
         The dataframe with new names
@@ -33,6 +36,7 @@ def rename(
     selected, new_names = _eval_select(
         all_columns,
         _group_vars=gvars,
+        _base0=_base0,
         **kwargs,
     )
 
@@ -57,6 +61,7 @@ def rename_with(
         _data: DataFrame,
         _fn: Callable[[str], str],
         *args: Any,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Renames columns using a function.
@@ -64,9 +69,13 @@ def rename_with(
     Args:
         _data: The dataframe
         _fn: The function to rename a column
-        *args: the columns to rename. If not specified, all columns are
-            considered
+        *args: the columns to rename and non-keyword arguments for the `_fn`.
+            If `*args` is not provided, then assuming all columns, and
+            no non-keyword arguments are allowed to pass to the function, use
+            keyword arguments instead.
         **kwargs: keyword arguments for `_fn`
+        _base0: Whether the old_name is 0-based if given by indexes.
+            If not provided, will use `datar.base.getOption('index.base.0')`
 
     Returns:
         The dataframe with new names
@@ -77,6 +86,6 @@ def rename_with(
         cols = args[0]
         args = args[1:]
 
-    cols = _data.columns[vars_select(_data.columns, cols)]
+    cols = _data.columns[vars_select(_data.columns, cols, base0=_base0)]
     new_columns = {_fn(col, *args, **kwargs): col for col in cols}
-    return rename(_data, **new_columns)
+    return rename(_data, **new_columns, _base0=True)

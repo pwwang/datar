@@ -2,7 +2,7 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/select.R
 """
-from typing import Any, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from pandas import DataFrame, Index, Series
 from pipda import register_verb
@@ -20,9 +20,13 @@ from .group_data import group_data, group_vars
 def select(
         _data: DataFrame,
         *args: Union[StringOrIter, Inverted],
+        _base0: Optional[bool] = None,
         **kwargs: Mapping[str, str]
 ) -> DataFrame:
     """Select (and optionally rename) variables in a data frame
+
+    See original API
+    https://dplyr.tidyverse.org/reference/select.html
 
     To exclude columns use `~` instead of `-`. For example, to exclude last
     column: `select(df, ~c(-1))`.
@@ -33,6 +37,8 @@ def select(
     Args:
         *columns: The columns to select
         **renamings: The columns to rename and select in new => old column way.
+        _base0: Whether the columns are 0-based if given by indexes
+            If not provided, will use `datar.base.getOption('index.base.0')`
 
     Returns:
         The dataframe with select columns
@@ -43,7 +49,8 @@ def select(
         all_columns,
         *args,
         **kwargs,
-        _group_vars=gvars
+        _group_vars=gvars,
+        _base0=_base0
     )
     out = _data.iloc[:, selected].copy()
 
@@ -66,6 +73,7 @@ def _eval_select(
         _all_columns: Index,
         *args: Any,
         _group_vars: Iterable[str],
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> Tuple[List[int], Mapping[str, str]]:
     """Evaluate selections to get locations
@@ -73,7 +81,7 @@ def _eval_select(
     Returns:
         A tuple of (selected columns, dict of old-to-new renaming columns)
     """
-    selected = vars_select(_all_columns, *args, *kwargs.values())
+    selected = vars_select(_all_columns, *args, *kwargs.values(), base0=_base0)
     missing = setdiff(_group_vars, _all_columns[selected])
     if missing:
         logger.info(
@@ -101,7 +109,9 @@ def _eval_select(
         else: # int
             # try:
             #   If out of bounds, it should be raised at getting missing
-            val = _all_columns[position_at(val, len(_all_columns))]
+            val = _all_columns[
+                position_at(val, len(_all_columns), base0=_base0)
+            ]
             # except IndexError:
             #     raise ColumnNotExistingError(
             #         f'Location {val} does not exist.'
