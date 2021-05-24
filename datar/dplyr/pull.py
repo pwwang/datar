@@ -10,34 +10,51 @@ from pipda import register_verb, evaluate_expr
 
 from ..core.defaults import f
 from ..core.contexts import Context
-from ..core.utils import arg_match
+from ..core.utils import arg_match, position_at
 from ..core.types import StringOrIter, SeriesLikeType, is_scalar
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(
+    DataFrame,
+    context=Context.SELECT,
+    extra_contexts={'name': Context.EVAL}
+)
 def pull(
         _data: DataFrame,
         var: Union[int, str] = -1,
         name: Optional[StringOrIter] = None,
-        to: Optional[str] = None
+        to: Optional[str] = None,
+        _base0: Optional[bool] = None
 ) -> Union[DataFrame, SeriesLikeType, Mapping[str, SeriesLikeType]]:
+    # pylint: disable=too-many-branches
     """Pull a series or a dataframe from a dataframe
 
     Args:
         _data: The dataframe
-        var: The column to pull
-        name: If specified, a zip object will be return with the name-value
-            pairs. It can be a column name or a list of strs with the same
-            length as the series
-            Only works when pulling `a` for name `a$b`
+        var: The column to pull, either the name or the index
+        name: The name of the pulled value
+            - If `to` is frame, or the value pulled is data frame, it will be
+              the column names
+            - If `to` is series, it will be the series name. If multiple names
+              are given, only the first name will be used.
+            - If `to` is series, but value pulled is a data frame, then a
+              dictionary of series with the series names as keys or given `name`
+              as keys.
         to: Type of data to return.
             Only works when pulling `a` for name `a$b`
             - series: Return a pandas Series object
               Group information will be lost
+              If pulled value is a dataframe, it will return a dict of series,
+              with the series names or the `name` provided.
             - array: Return a numpy.ndarray object
             - frame: Return a DataFrame with that column
             - list: Return a python list
-            - If not provided: `series` when pulled data has only one columns,
-                otherwise `frame`.
+            - dict: Return a dict with `name` as keys and pulled value as values
+              Only a single column is allowed to pull
+            - If not provided: `series` when pulled data has only one columns.
+                `dict` if `name` provided and has the same length as the pulled
+                single column. Otherwise `frame`.
+        _base0: Whether `var` is 0-based if given by index
+            If not provided, `datar.base.getOption('index.base.0')` is used.
 
     Returns:
         The data according to `to`
@@ -45,11 +62,12 @@ def pull(
     # make sure pull(df, 'x') pulls a dataframe for columns
     # x$a, x$b in df
 
-    to = arg_match(to, ['list', 'array', 'frame', 'series', None])
-    if name and is_scalar(name):
+    to = arg_match(to, ['list', 'array', 'frame', 'series', 'dict', None])
+    if name is not None and is_scalar(name):
         name = [name]
 
     if isinstance(var, int):
+        var = position_at(var, _data.shape[1], base0=_base0)
         var = _data.columns[var]
         var = var.split('$', 1)[0]
 
@@ -58,8 +76,17 @@ def pull(
     #     pulled = pulled.iloc[:, 0]
 
     if to is None:
-        to = 'frame' if isinstance(pulled, DataFrame) else 'series'
+        if name is not None and len(name) == len(pulled):
+            to = 'dict'
+        else:
+            to = 'frame' if isinstance(pulled, DataFrame) else 'series'
 
+    if to == 'dict':
+        if name is None or len(name) != len(pulled):
+            raise ValueError(
+                'No `name` provided or length mismatches with the values.'
+            )
+        return dict(zip(name, pulled))
     if to == 'list':
         return pulled.values.tolist()
     if to == 'array':
