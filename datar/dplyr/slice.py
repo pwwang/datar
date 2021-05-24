@@ -28,6 +28,8 @@ def slice( # pylint: disable=redefined-builtin
 ) -> DataFrame:
     """Index rows by their (integer) locations
 
+    Original APIs https://dplyr.tidyverse.org/reference/slice.html
+
     Args:
         _data: The dataframe
         rows: The indexes
@@ -112,6 +114,23 @@ def slice_head(
     n = _n_from_prop(_data.shape[0], n, prop)
     return slice(_data, builtins.slice(None, n), _base0=True)
 
+@slice_head.register(DataFrameGroupBy, context=Context.PENDING)
+def _(
+        _data: DataFrame,
+        n: Optional[int] = None,
+        prop: Optional[float] = None
+) -> DataFrameGroupBy:
+    """Slice on grouped dataframe"""
+    out = _data.group_apply(
+        lambda df: slice_head(df, n, prop)
+    )
+    out = _data.__class__(
+        out,
+        _group_vars=group_vars(_data),
+        _drop=group_by_drop_default(_data)
+    )
+    copy_attrs(out, _data)
+    return out
 
 @register_verb(DataFrame)
 def slice_tail(
@@ -127,6 +146,23 @@ def slice_tail(
     n = _n_from_prop(_data.shape[0], n, prop)
     return slice(_data, builtins.slice(-n, None), _base0=True)
 
+@slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
+def _(
+        _data: DataFrame,
+        n: Optional[int] = None,
+        prop: Optional[float] = None
+) -> DataFrameGroupBy:
+    """Slice on grouped dataframe"""
+    out = _data.group_apply(
+        lambda df: slice_tail(df, n, prop)
+    )
+    out = _data.__class__(
+        out,
+        _group_vars=group_vars(_data),
+        _drop=group_by_drop_default(_data)
+    )
+    copy_attrs(out, _data)
+    return out
 
 @register_verb(DataFrame, extra_contexts={'order_by': Context.EVAL})
 def slice_min(

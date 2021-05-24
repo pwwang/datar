@@ -362,3 +362,9 @@ def test_slicex_on_grouped_data():
     assert out.equals(tibble(g=[1,2], x=[3,6]))
     out = gf >> slice_sample()
     assert dim(out) == (2, 2)
+
+
+def test_n_from_prop():
+    assert _n_from_prop(1, prop=.5) == 0
+    assert _n_from_prop(2, prop=.5) == 1
+    assert _n_from_prop(4, prop=.5) == 2
