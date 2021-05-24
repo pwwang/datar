@@ -132,7 +132,8 @@ class IfAll(IfCross):
 @register_func(
     context=None,
     extra_contexts={'args': Context.SELECT},
-    verb_arg_only=True
+    verb_arg_only=True,
+    summarise_prefers_input=True
 )
 def across(
         _data: DataFrame,
@@ -213,7 +214,8 @@ def c_across(
 @register_func(
     context=None,
     extra_contexts={'args': Context.SELECT},
-    verb_arg_only=True
+    verb_arg_only=True,
+    summarise_prefers_input=True
 )
 def if_any(
         _data: DataFrame,
@@ -243,7 +245,8 @@ def if_any(
 @register_func(
     context=None,
     extra_contexts={'args': Context.SELECT},
-    verb_arg_only=True
+    verb_arg_only=True,
+    summarise_prefers_input=True
 )
 def if_all(
         _data: DataFrame,

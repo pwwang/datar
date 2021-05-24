@@ -255,3 +255,19 @@ def test_errors(caplog):
     x = 1
     with pytest.raises(NameNonUniqueError):
         tibble(x, x, _name_repair="minimal") >> summarise(f.x)
+
+def test_summarise_with_multiple_acrosses():
+    """https://stackoverflow.com/questions/63200530/python-pandas-equivalent-to-dplyr-1-0-0-summarizeacross"""
+    out = mtcars >> group_by(f.cyl) >> summarize(
+        across(ends_with('p'), sum),
+        across(ends_with('t'), mean)
+    )
+
+    exp = tibble(
+        cyl=[4,6,8],
+        disp=[1156.5, 1283.2, 4943.4],
+        hp=[909, 856, 2929],
+        drat=[4.070909, 3.585714, 3.229286],
+        wt=[2.285727, 3.117143, 3.999214]
+    )
+    assert_frame_equal(out, exp)

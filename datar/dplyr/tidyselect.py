@@ -304,4 +304,5 @@ def _filter_columns(
                     column.lower() if ignore_case else column
             )):
                 ret.append(column)
+
     return ret

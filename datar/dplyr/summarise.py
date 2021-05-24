@@ -93,7 +93,7 @@ def _(
     else:
         def apply_func(df):
             nonlocal allone
-            out = summarise(df, *args, **kwargs)
+            out = df >> summarise(*args, **kwargs)
             if out.shape[0] != 1:
                 allone = False
             return out
