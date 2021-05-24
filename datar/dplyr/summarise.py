@@ -9,7 +9,7 @@ from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.utils import (
     align_value, arg_match, check_column_uniqueness, df_assign_item,
-    name_mutatable_args, logger
+    name_mutatable_args, logger, get_option
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -29,7 +29,7 @@ def summarise(
 
     Both input and the summarised data can be recycled, but separately.
 
-    Aliases: `summarize`
+    Aliases - `summarize`
 
     Examples:
         >>> df = tibble(x=[1,2,3,4])
@@ -109,7 +109,7 @@ def _(
 
     if _groups == "drop_last":
         if len(g_keys) > 1:
-            if summarise.inform:
+            if get_option('dplyr_summarise_inform'):
                 logger.info(
                     '`summarise()` has grouped output by '
                     '%s (override with `_groups` argument)',
@@ -121,7 +121,7 @@ def _(
                 _drop=group_by_drop_default(_data)
             )
     elif _groups == "keep" and g_keys:
-        if summarise.inform:
+        if get_option('dplyr_summarise_inform'):
             logger.info(
                 '`summarise()` has grouped output by '
                 '%s (override with `_groups` argument)',
@@ -138,7 +138,10 @@ def _(
             _group_vars=g_keys,
             _drop=group_by_drop_default(_data)
         )
-    elif isinstance(_data, DataFrameRowwise) and summarise.inform:
+    elif (
+            isinstance(_data, DataFrameRowwise) and
+            get_option('dplyr_summarise_inform')
+    ):
         logger.info(
             '`summarise()` has ungrouped output. '
             'You can override using the `_groups` argument.'
@@ -146,7 +149,6 @@ def _(
     # else: # drop
     return out
 
-summarise.inform = True
 summarize = summarise # pylint: disable=invalid-name
 
 def _summarise_build(
