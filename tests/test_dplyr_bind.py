@@ -45,12 +45,12 @@ def test_bind_col_null():
 
 def test_repair_names():
     df = tibble(a = 1, b = 2)
-    bound = bind_cols(df, df)
+    bound = bind_cols(df, df, _base0=True)
     assert bound.columns.tolist() == ['a__0', 'b__1', 'a__2', 'b__3']
 
     t1 = tibble(a=1)
     t2 = tibble(a=2)
-    bound = bind_cols(t1, t2)
+    bound = bind_cols(t1, t2, _base0=True)
     assert bound.columns.tolist() == ['a__0', 'a__1']
 
 def test_incompatible_size_fill_with_NA():
@@ -174,9 +174,9 @@ def test_create_id_col():
     df1 = df >> head(3)
     df2 = df >> tail(2)
     out = df1 >> bind_rows(df2, _id='col')
-    assert out.col.tolist() == [0,0,0,1,1]
+    assert out.col.tolist() == [1,1,1,2,2]
 
-    out = bind_rows([df1, df2], _id='col')
+    out = bind_rows([df1, df2], _id='col', _base0=True)
     assert out.col.tolist() == [0,0,0,1,1]
 
     out = bind_rows(None, one=df1, two=df2, _id="col")
