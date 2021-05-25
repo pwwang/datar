@@ -25,7 +25,8 @@ def if_else(
 
     Args:
         condition: the conditions
-        true, false: Values to use for TRUE and FALSE values of condition.
+        true: and
+        false: Values to use for TRUE and FALSE values of condition.
             They must be either the same length as condition, or length 1.
         missing: If not None, will be used to replace missing values
 
@@ -44,10 +45,9 @@ def if_else(
 
 @register_func(None, context=Context.EVAL)
 def case_when(*when_cases: Any) -> Series:
-    """Vectorise multiple if_else() statements.
+    """Vectorise multiple `if_else()` statements.
 
     Args:
-        _data: The data frame.
         *when_cases: A even-size sequence, with 2n-th element values to match,
             and 2(n+1)-th element the values to replace.
             When matching value is True, then next value will be default to

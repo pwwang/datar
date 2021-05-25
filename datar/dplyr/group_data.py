@@ -16,12 +16,13 @@ def group_data(_data: DataFrame) -> DataFrame:
 
     Returns:
         The columns give the values of the grouping variables. The last column,
-        always called `.rows`, is a list of integer vectors that gives the
+        always called `_rows`, is a list of integer vectors that gives the
         location of the rows in each group.
+
+        Note that `_rows` are always 0-based.
     """
-    return DataFrame({
-        '_rows': [list(range(_data.shape[0]))]
-    })
+    rows = list(range(_data.shape[0]))
+    return DataFrame({'_rows': [rows]})
 
 @group_data.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> DataFrame:
@@ -49,9 +50,12 @@ def _(_data: DataFrameGroupBy) -> DataFrame:
     return group_data(_data).iloc[:, :-1].copy()
 
 @register_verb(DataFrame)
-def group_rows(_data: DataFrame) -> List[List[int]]:
-    """The locations of grouping structure"""
-    return [list(range(_data.shape[0]))]
+def group_rows(
+        _data: DataFrame
+) -> List[List[int]]:
+    """The locations of grouping structure, always 0-based."""
+    rows = list(range(_data.shape[0]))
+    return [rows]
 
 @group_rows.register(DataFrameGroupBy)
 def _(_data: DataFrame) -> List[List[int]]:
@@ -59,7 +63,10 @@ def _(_data: DataFrame) -> List[List[int]]:
 
 @register_verb(DataFrame)
 def group_indices(_data: DataFrame) -> List[int]:
-    """Returns an integer vector the same length as `_data`"""
+    """Returns an integer vector the same length as `_data`.
+
+    Always 0-based.
+    """
     return [0] * _data.shape[0]
 
 @group_indices.register(DataFrameGroupBy)

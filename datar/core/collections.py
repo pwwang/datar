@@ -187,13 +187,11 @@ class Collection(CollectionBase, list):
 
             pool = len(self.pool) if is_iterable(self.pool) else self.pool
             out = elem - int(not base0) if elem >= 0 else elem + pool
-
-            pool = list(range(pool))
-            try:
-                pool[out]
-            except IndexError:
+            # then the index should be 0 ~ len-1
+            if not 0 <= out < pool:
                 self.unmatched.add(elem)
                 return UNMATCHED
+
             return out
 
         pool = range(self.pool) if is_scalar(self.pool) else self.pool

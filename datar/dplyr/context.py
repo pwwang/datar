@@ -47,8 +47,17 @@ def cur_group_id(_data: DataFrame) -> int:
     return _data.attrs.get('group_index', 1)
 
 @register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
-def cur_group_rows(_data: DataFrame) -> List[int]:
-    """gives the row indices for the current group."""
+def cur_group_rows(
+        _data: DataFrame
+) -> List[int]:
+    """Gives the row indices for the current group.
+
+    Args:
+        _data: The dataFrame.
+
+    Returns:
+        The `_rows` from group data or row indexes (always 0-based).
+    """
     index = _data.attrs.get('group_index', None)
     if index is None:
         return list(range(_data.shape[0]))
