@@ -211,6 +211,8 @@ def all_of(
     """
     all_columns = _data.columns
     x = all_columns[vars_select(all_columns, x, base0=_base0)]
+    # where do errors raise?
+
     # nonexists = setdiff(x, all_columns)
     # if nonexists:
     #     raise ColumnNotExistingError(
@@ -244,13 +246,14 @@ def any_of(
     """
     vars = vars or _data.columns
     x = vars_select(vars, x, raise_nonexists=False, base0=_base0)
-    exists = []
-    for idx in x:
-        try:
-            exists.append(vars[idx])
-        except IndexError:
-            ...
-    return intersect(vars, exists)
+    # exists = []
+    # for idx in x:
+    #     try:
+    #         exists.append(vars[idx])
+    #     except IndexError:
+    #         ...
+    # do we need intersect?
+    return intersect(vars, [vars[idx] for idx in x])
 
 @register_func(None)
 def num_range(

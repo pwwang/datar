@@ -1,7 +1,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-bind.R
-from pipda.utils import Expression
 import pytest
 
+from pandas.testing import assert_frame_equal
 from datar.all import *
 
 def test_handle_dict():
@@ -138,6 +138,9 @@ def test_bind_factors():
     out = df1 >> bind_rows(df2)
     assert out.a.cat.categories.tolist() == ["a"]
     assert out.a.astype(object).fillna("NA").tolist() == ["a", "NA"]
+
+    out2 = bind_rows(None, [df1, df2])
+    assert_frame_equal(out2, out)
 
 def test_bind_na_cols():
     df1 = tibble(x=factor(["foo", "bar"]))

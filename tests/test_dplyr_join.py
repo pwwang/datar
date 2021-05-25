@@ -2,6 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-join.r
 from pandas.core.frame import DataFrame
 import pytest
+from pandas.testing import assert_frame_equal
 from datar.all import *
 
 def test_mutating_joins_preserve_row_and_column_order():
@@ -266,3 +267,22 @@ def test_nest_join_by_multiple():
     out = nest_join(df1, df2, copy=True)
     assert out.df2.values[0].equals(tibble(z=5))
     assert out.df2.values[1].equals(tibble(z=6))
+
+def test_join_by_none():
+    df1 = tibble(x=[1,2,3], y=[3,4,5])
+    df2 = tibble(x=[2,3,4], z=[5,6,7])
+    out = inner_join(df1, df2, keep=True)
+
+    assert_frame_equal(out, tibble(
+        x_x=[2,3],
+        y=[4,5],
+        x_y=[2,3],
+        z=[5,6]
+    ))
+
+    out = inner_join(df1, df2, keep=False)
+    assert_frame_equal(out, tibble(
+        x=[2,3],
+        y=[4,5],
+        z=[5,6]
+    ))

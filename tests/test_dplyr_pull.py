@@ -41,3 +41,12 @@ def test_pull_df():
     assert len(out) == 2
     assert out['c'].values.tolist() == [1]
     assert out['d'].values.tolist() == [2]
+
+def test_pull_a_flat_dict():
+    df = tibble(x=[1,2], y=[3,4])
+    out = df >> pull(f.y, f.x)
+    assert out == {1:3, 2:4}
+
+    with pytest.raises(ValueError):
+        # length mismatches
+        df >> pull(f.y, name=[3,4,5], to='dict')
