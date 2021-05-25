@@ -33,6 +33,11 @@ from datar import dplyr
 df >> dplyr.mutate(y=2)
 ```
 
+If you feel those namespaces are annoying, you can always use `datar.all`:
+```python
+from datar.all import mutate
+```
+
 ## Import datasets from datar
 
 Note that `from datar.all import *` will not import datasets

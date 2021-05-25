@@ -30,6 +30,7 @@ nav:
         'ALL': 'reference-maps/ALL.md'
         'dplyr': 'reference-maps/dplyr.md'
         'tibble': 'reference-maps/tibble.md'
+        'datasets': 'reference-maps/datasets.md'
     - 'Import': 'import.md'
     - 'The f': 'f.md'
     - 'Piping vs regular calling': 'piping_vs_regular.md'
