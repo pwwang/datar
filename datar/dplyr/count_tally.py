@@ -13,7 +13,7 @@ from ..core.types import NumericOrIter, NumericType
 from ..core.utils import copy_attrs, logger
 from ..core.defaults import f
 from ..core.grouped import DataFrameGroupBy
-from ..base.funcs import sum # pylint: disable=redefined-builtin
+from ..base import options_context, sum # pylint: disable=redefined-builtin
 from .context import n
 from .group_by import group_by_drop_default, group_by
 from .group_data import group_data, group_vars
@@ -81,12 +81,10 @@ def tally(
     tallyn = _tally_n(wt)
 
     name = _check_name(name, group_vars(x))
-    # TODO: thread-safety
-    summarise_inform = summarise.inform
-    summarise.inform = False
-    # pylint: disable=no-value-for-parameter
-    out = x >> summarise({name: n() if tallyn is None else tallyn})
-    summarise.inform = summarise_inform
+    # thread-safety?
+    with options_context(dplyr_summarise_inform=False):
+        # pylint: disable=no-value-for-parameter
+        out = x >> summarise({name: n() if tallyn is None else tallyn})
 
     # keep attributes
     copy_attrs(out, x)

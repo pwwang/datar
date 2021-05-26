@@ -1,6 +1,6 @@
 ## The `Symbolic` object `f`
 
-You can import it by `from datar.core import f`, or `from datar.all import *`
+You can import it by `from datar import f`, or `from datar.all import *`
 
 `f` is a universal `Symbolic` object, which does the magic to connect the expressions in verb arguments so that they can be delayed to execute.
 
@@ -36,4 +36,9 @@ from pipda.symbolic import Symbolic
 g = Symbolic()
 
 # f and g make no difference in execution technically
+```
+
+You can also alias `f` by:
+```python
+from datar import f as g
 ```

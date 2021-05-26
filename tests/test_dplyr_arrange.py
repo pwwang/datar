@@ -74,7 +74,7 @@ def test_across():
     expect = df >> arrange(f.x, f.y)
     assert out.equals(expect)
 
-    out = df >> arrange(across(_fns=desc))
+    out = df >> arrange(across(None, desc))
     expect = df >> arrange(desc(f.x), desc(f.y))
     assert out.equals(expect)
 

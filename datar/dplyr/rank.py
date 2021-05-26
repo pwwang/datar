@@ -17,12 +17,21 @@ from ..base.funcs import NA
 @register_func(context=Context.EVAL)
 def row_number(
         _data: Iterable[Any],
-        series: Optional[Iterable[Any]] = None
+        x: Optional[Iterable[Any]] = None
 ) -> numpy.ndarray:
-    """Gives the row number, 1-based."""
-    if series is None:
+    """Gives the row number
+
+    See https://dplyr.tidyverse.org/reference/ranking.html
+
+    Args:
+        x: a vector of values to rank
+
+    Returns:
+        The row number of `x` or the data frame (1-based)
+    """
+    if x is None:
         return numpy.array(range(len(_data))) + 1
-    return _rank(series, na_last="keep", method="first")
+    return _rank(x, na_last="keep", method="first")
 
 @register_func(context=Context.EVAL)
 def ntile(

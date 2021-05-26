@@ -19,9 +19,9 @@ from .group_data import group_vars, group_data
 from .relocate import relocate
 
 @register_verb(
-        DataFrame,
-        context=Context.PENDING,
-        extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
+    DataFrame,
+    context=Context.PENDING,
+    extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
 )
 def mutate(
         _data: DataFrame,
@@ -29,6 +29,7 @@ def mutate(
         _keep: str = 'all',
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     # pylint: disable=too-many-branches
@@ -52,6 +53,8 @@ def mutate(
         _after: Optionally, control where new columns should appear
             (the default is to add to the right hand side).
             See relocate() for more details.
+        _base0: Whether `_before` and `_after` are 0-based if given by indexes.
+            If not provided, will use `datar.base.getOption('index.base.0')`
         *args: and
         **kwargs: Name-value pairs. The name gives the name of the column
             in the output. The value can be:
@@ -93,7 +96,7 @@ def mutate(
     out = out[setdiff(out.columns, removed)]
     if _before is not None or _after is not None:
         new = setdiff(cols.columns, _data.columns)
-        out = relocate(out, *new, _before=_before, _after=_after)
+        out = relocate(out, *new, _before=_before, _after=_after, _base0=_base0)
 
     if keep == 'all':
         return out
@@ -124,6 +127,7 @@ def _(
         _keep: str = 'all',
         _before: Optional[str] = None,
         _after: Optional[str] = None,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrameGroupBy:
     """Mutate on DataFrameGroupBy object"""
@@ -136,6 +140,7 @@ def _(
             _keep=_keep,
             _before=_before,
             _after=_after,
+            _base0=_base0,
             **kwargs
         )
         ret.index = rows
@@ -170,17 +175,20 @@ def transmute(
         *args: Any,
         _before: Optional[Union[int, str]] = None,
         _after: Optional[Union[int, str]] = None,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Mutate with _keep='none'
 
-    See mutate().
+    See Also:
+        [`mutate()`](datar.dplyr.mutate.mutate).
     """
     return _data >> mutate(
         *args,
         _keep='none',
         _before=_before,
         _after=_after,
+        _base0=_base0,
         **kwargs
     )
 

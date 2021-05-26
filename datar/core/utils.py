@@ -52,10 +52,11 @@ def vars_select(
     """
     from .collections import Collection
     from ..base import unique
-    columns = (
+
+    columns = [
         column.name if isinstance(column, Series) else column
         for column in columns
-    )
+    ]
     selected = Collection(*columns, pool=list(all_columns), base0=base0)
     if raise_nonexists and selected.unmatched and selected.unmatched != {None}:
         raise ColumnNotExistingError(
@@ -321,7 +322,12 @@ def nargs(fun: Callable) -> int:
     """Get the number of arguments of a function"""
     return len(inspect.signature(fun).parameters)
 
-def position_at(pos: int, length: int, base0: Optional[bool] = None) -> int:
+def position_at(
+        pos: int,
+        length: int,
+        base0: Optional[bool] = None,
+        raise_exc: bool = True
+) -> int:
     """Get the 0-based position right at the given pos
 
     When `pos` is negative, it acts like 0-based, meaning `-1` will anyway
@@ -330,16 +336,18 @@ def position_at(pos: int, length: int, base0: Optional[bool] = None) -> int:
     Args:
         pos: The given position
         length: The length of the pool
+        base0: Whether the given `pos` is 0-based
+        raise_exc: Raise error if `pos` is out of range?
 
     Returns:
         The 0-based position
     """
     from .collections import Collection
-    return Collection(pos, pool=length, base0=base0)[0]
-    # base0 = get_option('index.base.0', base0)
-    # if not base0 and pos == 0:
-    #     raise IndexError('Index 0 given for 1-based indexing.')
-    # return pos - int(not base0) if pos >= 0 else pos + length
+    coll = Collection(pos, pool=length, base0=base0)
+    if raise_exc and coll.error:
+        # pylint: disable=raising-bad-type
+        raise coll.error
+    return coll[0]
 
 def position_after(pos: int, length: int, base0: Optional[bool] = None) -> int:
     """Get the 0-based position right at the given pos

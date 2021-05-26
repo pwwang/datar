@@ -1,9 +1,12 @@
 
 |Module|Description|Reference|
 |-|-|-|
-||||
-|`dplyr`|APIs ported from `tidyvers/dplyr`|[:octicons-cross-reference-16:][2]|
-|`tibble`|APIs ported from `tidyvers/tibble`|[:octicons-cross-reference-16:][1]|
+|#|#|#|
+|`dplyr`|APIs ported from `tidyverse/dplyr`|[:octicons-cross-reference-16:][2]|
+|`tibble`|APIs ported from `tidyverse/tibble`|[:octicons-cross-reference-16:][1]|
+|#|#|#|
+|`datasets`|Datasets collected from `tidyverse` or other related packages|[:octicons-cross-reference-16:][3]|
 
 [1]: ../tibble
 [2]: ../dplyr
+[3]: ../datasets

@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Optional, Union
 
 import pandas
+from pipda.context import ContextAnnoType
+from pipda.utils import evaluate_args
 
 from .utils import get_option
 from .types import is_iterable, is_scalar
@@ -30,6 +32,17 @@ class CollectionBase(ABC):
             self.expand(pool=pool, base0=self.base0)
         except (ValueError, ColumnNotExistingError) as exc:
             self.error = exc
+
+    def _pipda_eval(
+            self,
+            data: Any,
+            context: ContextAnnoType,
+            level: int = 0
+    ) -> Any:
+        """Defines how the object should be evaluated when evaluated by
+        pipda's evaluation"""
+        self.elems = evaluate_args(self.elems, data, context, level)
+        return self
 
     @abstractmethod
     def expand(
@@ -174,13 +187,11 @@ class Collection(CollectionBase, list):
 
             pool = len(self.pool) if is_iterable(self.pool) else self.pool
             out = elem - int(not base0) if elem >= 0 else elem + pool
-
-            pool = list(range(pool))
-            try:
-                pool[out]
-            except IndexError:
+            # then the index should be 0 ~ len-1
+            if not 0 <= out < pool:
                 self.unmatched.add(elem)
                 return UNMATCHED
+
             return out
 
         pool = range(self.pool) if is_scalar(self.pool) else self.pool
@@ -267,7 +278,6 @@ class Intersect(Collection):
     ) -> None:
         if len(args) != 2:
             raise ValueError("Intersect can only accept two collections.")
-
         self.elems = args
         self.base0 = base0
         self.pool = pool

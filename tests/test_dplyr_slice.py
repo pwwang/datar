@@ -362,3 +362,18 @@ def test_slicex_on_grouped_data():
     assert out.equals(tibble(g=[1,2], x=[3,6]))
     out = gf >> slice_sample()
     assert dim(out) == (2, 2)
+
+
+def test_n_from_prop():
+    assert _n_from_prop(1, prop=.5) == 0
+    assert _n_from_prop(2, prop=.5) == 1
+    assert _n_from_prop(4, prop=.5) == 2
+
+# slice_head/tail on grouped data
+
+def test_slice_head_tail_on_grouped_data():
+    df = tibble(g=[1,1,1,2,2,2], x=[1,2,3,4,5,6]) >> group_by(f.g)
+    out = slice_head(df, 1) >> ungroup()
+    assert_frame_equal(out, tibble(g=[1,2], x=[1,4]))
+    out = slice_tail(df, 1) >> ungroup()
+    assert_frame_equal(out, tibble(g=[1,2], x=[3,6]))

@@ -403,6 +403,9 @@ def test_can_re_rowwise():
     rf2 = rowwise(rf1, f.y)
     assert group_vars(rf2) == ['y']
 
+    rf3 = rowwise(rf2)
+    assert group_vars(rf3) == []
+
 def test_compound_ungroup():
     df = tibble(x=1, y=2) >> group_by(f.x, f.y)
     out = ungroup(df)

@@ -34,6 +34,11 @@ def group_by(
 
     See https://dplyr.tidyverse.org/reference/group_by.html
 
+    Note that this does not return `pandas.DataFrameGroupBy` object but a
+    `datar.core.grouped.DataFrameGroupBy` object, which is a subclass of
+    `DataFrame`. This way, it will be easier to implement the APIs that related
+    to grouped data.
+
     Args:
         _data: The dataframe
         _add: When False, the default, `group_by()` will override
@@ -48,7 +53,7 @@ def group_by(
         **kwargs: Extra variables to group the dataframe
 
     Return:
-        A DataFrameGroupBy object
+        A `datar.core.grouped.DataFrameGroupBy` object
     """
     if _drop is None:
         _drop = group_by_drop_default(_data)
@@ -69,6 +74,8 @@ def rowwise(
         _base0: Optional[bool] = None
 ) -> DataFrameRowwise:
     """Compute on a data frame a row-at-a-time
+
+    See https://dplyr.tidyverse.org/reference/rowwise.html
 
     Args:
         _data: The dataframe

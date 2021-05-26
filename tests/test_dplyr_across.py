@@ -5,6 +5,7 @@ import numpy
 from pipda import register_func
 import pytest
 
+from pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.contexts import Context
 
@@ -58,7 +59,7 @@ def test_names_output():
         where(is_numeric),
         [mean, sum]
     ))
-    assert out.columns.tolist() == ["x", "y_0", "y_1", "z_0", "z_1"]
+    assert out.columns.tolist() == ["x", "y_1", "y_2", "z_1", "z_2"]
 
     out = gf >> summarise(across(
         where(is_numeric),
@@ -347,3 +348,17 @@ def test_nb_fail_c_across():
 
     assert isinstance(out, DataFrameRowwise)
     assert nrow(out) == 4
+
+def test_if_any_if_all_no_args():
+    with pytest.raises(TypeError):
+        tibble(x=1, y=2) >> mutate(if_any())
+    with pytest.raises(TypeError):
+        tibble(x=1, y=2) >> mutate(if_all())
+
+def test_if_any_if_all_single_arg():
+    df = tibble(x=[True, False], y=[True, True])
+    out = df >> filter(if_any(c(f.x, f.y)))
+    assert_frame_equal(out, df)
+
+    out = df >> filter(if_all(c(f.x, f.y)))
+    assert_frame_equal(out, df.iloc[[0], :])

@@ -55,7 +55,7 @@ Reference map of `r-tidyverse-dplyr` can be found [here][1].
 |API|Description|Notebook example|
 |---|---|---:|
 |[group_by()][65] [ungroup()][66]|Group by one or more variables|[:material-notebook:][67]|
-|[group_cols() group_vars][68]|Select grouping variables|[:material-notebook:][69]|
+|[group_cols() group_vars()][68]|Select grouping variables|[:material-notebook:][69]|
 |[rowwise()][70]|Group input by rows|[:material-notebook:][71]|
 
 ### Vector functions

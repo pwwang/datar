@@ -24,6 +24,7 @@ def tibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
         _rows: Optional[int] = None,
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     # pylint: disable=too-many-statements,too-many-branches
@@ -41,6 +42,8 @@ def tibble(
             - a function: apply custom name repair
         _rows: Number of rows of a 0-col dataframe when args and kwargs are
             not provided. When args or kwargs are provided, this is ignored.
+        _base0: Whether the suffixes of repaired names should be 0-based.
+            If not provided, will use `datar.base.getOption('index.base.0')`.
 
     Returns:
         A constructed dataframe
@@ -69,7 +72,7 @@ def tibble(
         names.append(name)
         values.append(value)
 
-    names = repair_names(names, repair=_name_repair)
+    names = repair_names(names, repair=_name_repair, _base0=_base0)
     df = None
 
     for name, arg in zip(names, values):
@@ -119,6 +122,7 @@ def tibble(
 def tibble_row(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
+        _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Constructs a data frame that is guaranteed to occupy one row.
@@ -135,6 +139,8 @@ def tibble_row(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
+        _base0: Whether the suffixes of repaired names should be 0-based.
+            If not provided, will use `datar.base.getOption('index.base.0')`.
 
     Returns:
         A constructed dataframe
@@ -142,7 +148,7 @@ def tibble_row(
     if not args and not kwargs:
         df = DataFrame(index=[0]) # still one row
     else:
-        df = tibble(*args, **kwargs, _name_repair=_name_repair)
+        df = tibble(*args, **kwargs, _name_repair=_name_repair, _base0=_base0)
 
     if df.shape[0] > 1:
         raise ValueError("All arguments must be size one, use `[]` to wrap.")
@@ -156,6 +162,7 @@ def tibble_row(
 def fibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
+        _base0: Optional[bool] = None,
         _rows: Optional[int] = None,
         **kwargs: Any
 ) -> DataFrame:
@@ -172,10 +179,16 @@ def fibble(
     argument so `f` refers to the data of the verb. Note that in such a case,
     the items coming in previously cannot be recycled.
 
-    See `tibble` for details.
+    See Also:
+        [`tibble`](datar.tibble.funcs.tibble)
 
     """
-    return tibble(*args, **kwargs, _name_repair=_name_repair, _rows=_rows)
+    return tibble(
+        *args, **kwargs,
+        _name_repair=_name_repair,
+        _rows=_rows,
+        _base0=_base0
+    )
 
 def tribble(*dummies: Any) -> DataFrame:
     """Create dataframe using an easier to read row-by-row layout

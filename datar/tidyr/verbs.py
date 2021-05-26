@@ -395,6 +395,7 @@ def _(
 def expand_grid(
         _data: Iterable[Any] = None,
         _name_repair: str = "check_unique",
+        _base0: Optional[bool] = None,
         **kwargs: Iterable[Any]
 ) -> DataFrame:
     """Expand elements into a new dataframe
@@ -406,6 +407,15 @@ def expand_grid(
             name in the output.
             For _data, will try to fetch name via `_data.__dfname__`. If failed
             `_data` will be used.
+        _name_repair: treatment of problematic column names:
+            - "minimal": No name repair or checks, beyond basic existence,
+            - "unique": Make sure names are unique and not empty,
+            - "check_unique": (default value), no name repair,
+                but check they are unique,
+            - "universal": Make the names unique and syntactic
+            - a function: apply custom name repair
+        _base0: Whether the suffixes of repaired names should be 0-based.
+            If not provided, will use `datar.base.getOption('index.base.0')`.
 
     Returns:
         The expanded dataframe
@@ -429,7 +439,7 @@ def expand_grid(
     return DataFrame(
         (itertools.chain.from_iterable(row)
          for row in itertools.product(*product_args)),
-        columns=repair_names(names, _name_repair)
+        columns=repair_names(names, _name_repair, _base0=_base0)
     )
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)

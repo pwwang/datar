@@ -11,7 +11,7 @@ from pipda import register_verb
 
 from ..core.types import NoneType
 from ..core.contexts import Context
-from ..core.utils import copy_attrs, logger
+from ..core.utils import copy_attrs, get_option, logger
 from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy
 from ..base.funcs import is_categorical
@@ -25,21 +25,29 @@ def bind_rows(
         _data: Optional[Union[DataFrame, list, dict]],
         *datas: Optional[Union[DataFrame, dict]],
         _id: Optional[str] = None,
+        _base0: Optional[bool] = None,
         **kwargs: Union[DataFrame, dict]
 ) -> DataFrame:
     # pylint: disable=too-many-branches
     """Bind rows of give dataframes
+
+    Original APIs https://dplyr.tidyverse.org/reference/bind.html
 
     Args:
         _data: The seed dataframe to bind others
             Could be a dict or a list, keys/indexes will be used for _id col
         *datas: Other dataframes to combine
         _id: The name of the id columns
+        _base0: Whether `_id` starts from 0 or not, if no keys are provided.
+            If `_base0` is not provided, will use
+            `datar.base.getOption('index.base.0')`
         **kwargs: A mapping of dataframe, keys will be used as _id col.
 
     Returns:
         The combined dataframe
     """
+    base = int(not get_option('index.base.0', _base0))
+
     if _id is not None and not isinstance(_id, str):
         raise ValueError("`_id` must be a scalar string.")
 
@@ -55,13 +63,16 @@ def bind_rows(
     if isinstance(_data, list):
         for i, dat in enumerate(_data):
             if dat is not None:
-                key_data[i] = data_to_df(dat)
+                key_data[i+base] = data_to_df(dat)
     elif _data is not None:
-        key_data[0] = data_to_df(_data)
+        key_data[base] = data_to_df(_data)
 
     for i, dat in enumerate(datas):
-        if dat is not None:
-            key_data[len(key_data)] = data_to_df(dat)
+        if isinstance(dat, list):
+            for df in dat:
+                key_data[len(key_data) + base] = data_to_df(df)
+        elif dat is not None:
+            key_data[len(key_data) + base] = data_to_df(dat)
 
     for key, val in kwargs.items():
         if val is not None:
@@ -118,12 +129,27 @@ def _(
 def bind_cols(
         _data: Optional[Union[DataFrame, dict]],
         *datas: Optional[Union[DataFrame, dict]],
-        _name_repair: Union[str, Callable] = "unique"
+        _name_repair: Union[str, Callable] = "unique",
+        _base0: Optional[bool] = None
 ) -> DataFrame:
     """Bind columns of give dataframes
 
+    Note that unlike `dplyr`, mismatched dimensions are allowed and
+    missing rows will be filled with `NA`s
+
     Args:
-        _data, *datas: Dataframes to combine
+        _data: The seed dataframe to bind others
+            Could be a dict, keys will be used for _id col
+        *datas: other dataframes to bind
+        _name_repair: treatment of problematic column names:
+            - "minimal": No name repair or checks, beyond basic existence,
+            - "unique": Make sure names are unique and not empty,
+            - "check_unique": (default value), no name repair,
+                but check they are unique,
+            - "universal": Make the names unique and syntactic
+            - a function: apply custom name repair
+        _base0: Whether the numeric suffix starts from 0 or not.
+            If not specified, will use `datar.base.getOption('index.base.0')`.
 
     Returns:
         The combined dataframe
@@ -141,5 +167,9 @@ def bind_cols(
     if not more_data:
         return DataFrame()
     ret = pandas.concat(more_data, axis=1)
-    ret.columns = repair_names(ret.columns.tolist(), repair=_name_repair)
+    ret.columns = repair_names(
+        ret.columns.tolist(),
+        repair=_name_repair,
+        _base0=_base0
+    )
     return ret

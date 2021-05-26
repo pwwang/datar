@@ -11,6 +11,7 @@ from ..core.types import (
     is_iterable, is_scalar
 )
 from ..core.contexts import Context
+from ..core.utils import position_at
 from ..base.constants import NA
 
 @register_func(None, context=Context.EVAL)
@@ -19,7 +20,18 @@ def between(
         left: NumericType,
         right: NumericType
 ) -> BoolOrIter:
-    """Function version of `left <= x <= right`, which cannot do it rowwisely
+    """Function version of `left <= x <= right`, works for both scalar and
+    vector data
+
+    See https://dplyr.tidyverse.org/reference/between.html
+
+    Args:
+        x: The data to test
+        left: and
+        right: The boundary values (must be scalars)
+
+    Returns:
+        A bool value of `x` is scalar, otherwise a `Series` of boolean values
     """
     if not is_scalar(left) or not is_scalar(right):
         raise ValueError(f"`{between}` expects scalars for `left` and `right`.")
@@ -145,18 +157,34 @@ def nth(
         x: Iterable[Any],
         n: int,
         order_by: Optional[Iterable[Any]] = None,
-        default: Any = NA
+        default: Any = NA,
+        _base0: Optional[bool] = None
 ) -> Any:
-    """Get the nth element of x"""
+    """Get the nth element of x
+
+    See https://dplyr.tidyverse.org/reference/nth.html
+
+    Args:
+        x: A collection of elements
+        n: The order of the elements.
+        order_by: An optional vector used to determine the order
+        default: A default value to use if the position does not exist
+            in the input.
+        _base0: Whether `n` is 0-based or not.
+
+    Returns:
+        A single element of x at `n'th`
+    """
     x = numpy.array(x)
     if order_by is not None:
         order_by = numpy.array(order_by)
         x = x[order_by.argsort()]
     if not isinstance(n, int):
         raise TypeError("`nth` expects `n` to be an integer")
+
     try:
-        return x[n]
-    except IndexError:
+        return x[position_at(n, len(x), base0=_base0)]
+    except (ValueError, IndexError, TypeError):
         return default
 
 @register_func(None, context=Context.EVAL)
