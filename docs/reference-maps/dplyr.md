@@ -94,7 +94,7 @@ See [datasets][125]
 |[group_trim()][130]|Trim grouping structure|[:material-notebook:][131]|
 |[group_split()][132]|Split data frame by groups|[:material-notebook:][133]|
 |[with_groups()][134]|Perform an operation with temporary groups|[:material-notebook:][135]|
-|[_rows_insert()_][136] [_rows_update()_][137] [_rows_patch()_][138] [_rows_upsert()_][139] [_rows_delete()_][140]|Manipulate individual rows|[:material-notebook:][141]|
+|[rows_insert()][136] [rows_update()][137] [rows_patch()][138] [rows_upsert()][139] [rows_delete()][140]|Manipulate individual rows|[:material-notebook:][141]|
 
 ### <s>Questioning</s>
 
@@ -236,9 +236,9 @@ See [datasets][125]
 [133]: ../../notebooks/group_split
 [134]: ../../api/datar.dplyr.group_iter/#datar.dplyr.group_iter.with_groups
 [135]: ../../notebooks/with_groups
-[136]: #
-[137]: #
-[138]: #
-[139]: #
-[140]: #
-[141]: #
+[136]: ../../api/datar.dplyr.rows/#datar.dplyr.rows.rows_insert
+[137]: ../../api/datar.dplyr.rows/#datar.dplyr.rows.rows_update
+[138]: ../../api/datar.dplyr.rows/#datar.dplyr.rows.rows_patch
+[139]: ../../api/datar.dplyr.rows/#datar.dplyr.rows.rows_upsert
+[140]: ../../api/datar.dplyr.rows/#datar.dplyr.rows.rows_delete
+[141]: ../../notebooks/rows

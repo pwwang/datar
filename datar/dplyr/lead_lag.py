@@ -38,7 +38,7 @@ def lead(
     if order_by is not None:
         return with_order(order_by, lead, series, n=n, default=default)
 
-    series, cats, default = lead_lag_prepare(series, n, default)
+    series, cats, default = _lead_lag_prepare(series, n, default)
     index = series.index
 
     ret = default * len(series)
@@ -65,7 +65,7 @@ def lag(
     if order_by is not None:
         return with_order(order_by, lag, series, n=n, default=default)
 
-    series, cats, default = lead_lag_prepare(series, n, default)
+    series, cats, default = _lead_lag_prepare(series, n, default)
     index = series.index
 
     ret = default * len(series)
@@ -75,7 +75,7 @@ def lag(
         ret = Categorical(ret, categories=cats)
     return Series(ret, index=index)
 
-def lead_lag_prepare(
+def _lead_lag_prepare(
         data: Iterable[Any],
         n: int,
         default: Any

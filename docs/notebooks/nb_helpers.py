@@ -1,4 +1,6 @@
 """helpers for notebooks"""
+from contextlib import contextmanager
+
 from IPython.display import display, Markdown, HTML
 from IPython.core.interactiveshell import InteractiveShell
 import pardoc
@@ -29,3 +31,11 @@ def nb_header(*funcs, book=None):
         )
         display(Markdown(f'{"#"*3} # {func.__name__}  '))
         display(Markdown(formatted))
+
+@contextmanager
+def try_catch():
+    """Catch the error and print it out"""
+    try:
+        yield
+    except Exception as exc:
+        print(f"[{type(exc).__name__}] {exc}")
