@@ -12,7 +12,7 @@ from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    copy_attrs, vars_select, logger
+    arg_match, copy_attrs, vars_select, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
@@ -703,7 +703,8 @@ def unite(
 @register_verb(DataFrame, context=Context.SELECT)
 def drop_na(
         _data: DataFrame,
-        *columns: str
+        *columns: str,
+        how: str = 'any'
 ) -> DataFrame:
     """Drop rows containing missing values
 
@@ -712,14 +713,22 @@ def drop_na(
     Args:
         data: A data frame.
         *columns: Columns to inspect for missing values.
+        how: How to select the rows to drop
+            - all: All columns of `columns` to be `NA`s
+            - any: Any columns of `columns` to be `NA`s
+            (tidyr doesn't support this argument)
 
     Returns:
         Dataframe with rows with NAs dropped
     """
+    arg_match(how, ['any', 'all'])
     all_columns = _data.columns
-    columns = vars_select(all_columns, *columns)
-    columns = all_columns[columns]
-    out = _data.dropna(subset=columns)
+    if columns:
+        columns = vars_select(all_columns, *columns)
+        columns = all_columns[columns]
+        out = _data.dropna(subset=columns, how=how)
+    else:
+        out = _data.dropna(how=how)
 
     if isinstance(_data, DataFrameGroupBy):
         out = _data.__class__(

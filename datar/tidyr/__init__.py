@@ -6,3 +6,4 @@ from .verbs import (
     expand_grid, extract, separate, separate_rows, unite,
     drop_na, expand
 )
+from .chop import chop, unchop

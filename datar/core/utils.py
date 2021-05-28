@@ -14,7 +14,7 @@ from pipda.symbolic import Reference
 from varname import argname
 
 from .exceptions import ColumnNotExistingError, NameNonUniqueError
-from .types import is_scalar
+from .types import StringOrIter, is_scalar
 from .defaults import DEFAULT_COLUMN_PREFIX
 
 # logger
@@ -381,3 +381,21 @@ def get_option(key: str, value: Any = None) -> Any:
         return value
     from ..base import getOption
     return getOption(key)
+
+def apply_dtypes(
+        df: DataFrame,
+        dtypes: Optional[
+            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
+        ]
+) -> None:
+    """Apply dtypes to data frame"""
+    if dtypes is None:
+        return
+
+    if not isinstance(dtypes, dict):
+        dtypes = dict(zip(df.columns, [dtypes]*df.shape[1]))
+
+    for column, dtype in dtypes.items():
+        if column not in df:
+            continue
+        df[column] = df[column].astype(dtype)

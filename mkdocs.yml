@@ -46,6 +46,7 @@ nav:
         'between': 'notebooks/between.ipynb'
         'bind': 'notebooks/bind.ipynb'
         'case_when': 'notebooks/case_when.ipynb'
+        'chop': 'notebooks/chop.ipynb'
         'coalesce': 'notebooks/coalesce.ipynb'
         'context': 'notebooks/context.ipynb'
         'count': 'notebooks/count.ipynb'
