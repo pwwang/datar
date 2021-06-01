@@ -16,7 +16,8 @@ from ..core.contexts import Context
 @register_verb(DataFrame, context=Context.EVAL)
 def colnames(
         df: DataFrame,
-        names: Optional[Iterable[str]] = None
+        names: Optional[Iterable[str]] = None,
+        stack: bool = True
 ) -> Union[List[Any], DataFrame]:
     """Get or set the column names of a dataframe
 
@@ -30,10 +31,42 @@ def colnames(
         if the input dataframe is grouped, the structure is kept.
     """
     from ..stats.verbs import setNames
-    if names is not None:
-        return setNames(df, names)
+    if not stack:
+        if names is not None:
+            return setNames(df, names)
+        return df.columns.tolist()
 
-    return df.columns.tolist()
+    if names is not None:
+        namei = 0
+        newnames = []
+        for colname in df.columns:
+            parts = colname.split('$', 1)
+            if not newnames:
+                if len(parts) < 2:
+                    newnames.append(names[namei])
+                    namei += 1
+                else:
+                    newnames.append(f"{names[namei]}${parts[1]}")
+            elif len(parts) < 2:
+                newnames.append(names[namei])
+                namei += 1
+            elif newnames[-1].startswith(f"{parts[0]}$"):
+                newnames.append(f"{names[namei]}${parts[1]}")
+            else:
+                namei += 1
+                newnames.append(f"{names[namei]}${parts[1]}")
+        return setNames(df, newnames)
+
+    cols = [
+        col.split('$', 1)[0] if isinstance(col, str) else col
+        for col in df.columns
+    ]
+    out = []
+    for col in cols:
+        if col not in out:
+            out.append(col)
+    return out
+
 
 @register_verb(DataFrame, context=Context.EVAL)
 def rownames(

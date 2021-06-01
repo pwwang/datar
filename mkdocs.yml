@@ -75,6 +75,7 @@ nav:
         'near': 'notebooks/near.ipynb'
         'nest-join': 'notebooks/nest-join.ipynb'
         'nth': 'notebooks/nth.ipynb'
+        'pack': 'notebooks/pack.ipynb'
         'pivot_longer': 'notebooks/pivot_longer.ipynb'
         'pivot_wider': 'notebooks/pivot_wider.ipynb'
         'pull': 'notebooks/pull.ipynb'

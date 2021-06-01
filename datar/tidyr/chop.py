@@ -2,20 +2,20 @@
 
 https://github.com/tidyverse/tidyr/blob/master/R/chop.R
 """
-from typing import Mapping, Optional, Union, Iterable
+from typing import Mapping, Optional, Union
 
 import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
 
-from ..core.types import IntOrIter, StringOrIter
+from ..core.types import IntOrIter, StringOrIter, DTypeType
 from ..core.utils import vars_select, copy_attrs, apply_dtypes
 from ..core.exceptions import ColumnNotExistingError
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
 
 from ..dplyr import (
-    bind_cols, group_by, mutate, pull,
+    bind_cols, group_by, mutate, pull, arrange,
     group_data, group_by_drop_default, group_vars
 )
 
@@ -51,17 +51,21 @@ def chop(
 
     vals = data[cols]
     keys = data[key_cols]
-    split = _vec_split(vals, keys)
-
-    try:
-        split_key = split >> pull('key', to='frame')
-    except ColumnNotExistingError:
-        split_key = None
-    split_val = split >> pull('val', to='list')
 
     compacted = []
-    for val in split_val:
-        compacted.append(_compact_df(val))
+    if data.shape[0] == 0:
+        split_key = keys
+    else:
+        split = _vec_split(vals, keys)
+        try:
+            split_key = split >> pull('key', to='frame')
+        except ColumnNotExistingError:
+            split_key = None
+        split_val = split >> pull('val', to='list')
+
+        for val in split_val:
+            compacted.append(_compact_df(val))
+
     if not compacted:
         vals = DataFrame(columns=cols)
     else:
@@ -83,9 +87,7 @@ def unchop(
         data: DataFrame,
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
         keep_empty: bool = False,
-        dtypes: Optional[
-            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
-        ] = None,
+        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """Makes df longer by expanding list-columns so that each element
@@ -156,8 +158,16 @@ def _vec_split(
     Returns a data frame with columns `key` and `val`. `key` is a stacked column
     with data from by.
     """
-    df = bind_cols(x, by) >> group_by(*by.columns)
+    if isinstance(x, Series):
+        x = x.to_frame()
+    if isinstance(by, Series):
+        by = by.to_frame()
+    df = bind_cols(x, by)
+    if df.shape[0] == 0:
+        return DataFrame(columns=['key', 'val'])
+    df = df >> group_by(*by.columns)
     gdata = group_data(df)
+    gdata = arrange(gdata, gdata._rows)
     out = DataFrame(index=gdata.index)
     return mutate(
         out,

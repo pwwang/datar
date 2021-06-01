@@ -23,6 +23,7 @@ DoubleOrIter = Union[numpy.double, Iterable[numpy.double]]
 BoolOrIter = Union[bool, Iterable[bool]]
 FloatOrIter = Union[FloatType, Iterable[FloatType]]
 NumericOrIter = Union[NumericType, Iterable[NumericType]]
+DTypeType = Union[str, type, numpy.dtype]
 
 NoneType = type(None)
 # used for type checks
