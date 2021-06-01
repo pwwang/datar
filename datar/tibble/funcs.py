@@ -6,6 +6,7 @@ from pandas import DataFrame, Series, RangeIndex
 from pipda import Context, register_func, register_verb
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
+from pipda.function import Function
 from varname import argname, varname
 from varname.utils import VarnameRetrievingError
 
@@ -20,7 +21,7 @@ from ..core.types import is_scalar
 from ..core.exceptions import ColumnNotExistingError
 from ..core.collections import Collection
 from ..core.types import StringOrIter
-from ..base import setdiff
+from ..base import setdiff, c
 
 def tibble(
         *args: Any,
@@ -88,6 +89,11 @@ def tibble(
             # allow f[1:3] to work
             if isinstance(arg, DirectRefItem) and isinstance(arg.ref, slice):
                 arg = Collection(arg.ref, base0=_base0)
+            elif (
+                    isinstance(arg, Function) and
+                    arg.func.__qualname__ == c.__qualname__
+            ):
+                arg = arg(df, Context.SELECT.value)
             else:
                 arg = arg(df, Context.EVAL.value)
 
