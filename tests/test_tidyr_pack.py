@@ -69,6 +69,11 @@ def test_can_unpack_0row_dfs():
     out = df >> unpack(f.y)
     assert out.columns.tolist() == ['x', 'a']
 
+def test_unpack_0row_df():
+    df = tibble(x=[], y=[])
+    out = df >> unpack(f.y)
+    assert_frame_equal(out, df)
+
 def test_unpack_can_choose_separator():
     df = tibble(x = 1, y = tibble(a = 2), z = tibble(a = 3))
     out = df >> unpack([f.y, f.z], names_sep='_')

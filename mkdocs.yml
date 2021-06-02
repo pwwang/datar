@@ -73,6 +73,7 @@ nav:
         'n_distinct': 'notebooks/n_distinct.ipynb'
         'na_if': 'notebooks/na_if.ipynb'
         'near': 'notebooks/near.ipynb'
+        'nest': 'notebooks/nest.ipynb'
         'nest-join': 'notebooks/nest-join.ipynb'
         'nth': 'notebooks/nth.ipynb'
         'pack': 'notebooks/pack.ipynb'

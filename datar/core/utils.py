@@ -394,6 +394,27 @@ def apply_dtypes(
         dtypes = dict(zip(df.columns, [dtypes]*df.shape[1]))
 
     for column, dtype in dtypes.items():
-        if column not in df:
-            continue
-        df[column] = df[column].astype(dtype)
+        if column in df:
+            df[column] = df[column].astype(dtype)
+        else:
+            for col in df:
+                if col.startswith(f"{column}$"):
+                    df[col] = df[col].astype(dtype)
+
+def keep_column_order(df: DataFrame, order: Iterable[str]):
+    """Keep the order of columns as given `order`
+
+    We cannot do `df[order]` directly, since `df` may have nested df columns.
+    """
+    out_columns = []
+    for col in order:
+        if col in df:
+            out_columns.append(col)
+        else:
+            out_columns.extend(
+                (dfcol for dfcol in df.columns if dfcol.startswith(f"{col}$"))
+            )
+    if set(out_columns) != set(df.columns):
+        raise ValueError("Given `order` does not select all columns.")
+
+    return df[out_columns]

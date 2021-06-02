@@ -726,9 +726,9 @@ def drop_na(
     if columns:
         columns = vars_select(all_columns, *columns)
         columns = all_columns[columns]
-        out = _data.dropna(subset=columns, how=how)
+        out = _data.dropna(subset=columns, how=how).reset_index(drop=True)
     else:
-        out = _data.dropna(how=how)
+        out = _data.dropna(how=how).reset_index(drop=True)
 
     if isinstance(_data, DataFrameGroupBy):
         out = _data.__class__(

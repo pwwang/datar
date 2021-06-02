@@ -2,18 +2,23 @@
 
 https://github.com/tidyverse/tidyr/blob/master/R/chop.R
 """
-from typing import Mapping, Optional, Union
+from collections import defaultdict
+from typing import Iterable, List, Mapping, Optional, Tuple, Union
 
+import numpy
 import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
 
-from ..core.types import IntOrIter, StringOrIter, DTypeType
-from ..core.utils import vars_select, copy_attrs, apply_dtypes
+from ..core.types import IntOrIter, StringOrIter, DTypeType, is_scalar
+from ..core.utils import (
+    vars_select, copy_attrs, apply_dtypes, keep_column_order
+)
 from ..core.exceptions import ColumnNotExistingError
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
 
+from ..base import union, NA
 from ..dplyr import (
     bind_cols, group_by, mutate, pull, arrange,
     group_data, group_by_drop_default, group_vars
@@ -93,6 +98,8 @@ def unchop(
     """Makes df longer by expanding list-columns so that each element
     of the list-column gets its own row in the output.
 
+    See https://tidyr.tidyverse.org/reference/chop.html
+
     Recycling size-1 elements might be different from `tidyr`
         >>> df = tibble(x=[1, [2,3]], y=[[2,3], 1])
         >>> df >> unchop([f.x, f.y])
@@ -114,6 +121,9 @@ def unchop(
             Could be a single dtype, which will be applied to all columns, or
             a dictionary of dtypes with keys for the columns and values the
             dtypes.
+            For nested data frames, we need to specify `col$a` as key. If `col`
+            is used as key, all columns of the nested data frames will be casted
+            into that dtype.
         _base0: Whether `cols` are 0-based
             if not provided, will use `datar.base.getOption('index.base.0')`
 
@@ -123,22 +133,14 @@ def unchop(
     all_columns = data.columns
     cols = vars_select(all_columns, cols, base0=_base0)
 
-    if len(cols) == 0:
+    if len(cols) == 0 or data.shape[0] == 0:
         return data.copy()
 
     cols = all_columns[cols]
     key_cols = all_columns.difference(cols).tolist()
-    if key_cols:
-        out = data.set_index(key_cols).apply(Series.explode)
-    else:
-        out = data.apply(Series.explode, ignore_index=True)
-    if not keep_empty:
-        out = drop_na(out, how='all')
+    out = _unchopping(data, cols, key_cols, keep_empty)
 
-    # keep order
-    out = out.reset_index()[all_columns]
     apply_dtypes(out, dtypes)
-
     if isinstance(data, DataFrameGroupBy):
         out = data.__class__(
             out,
@@ -181,3 +183,113 @@ def _compact_df(data: DataFrame) -> DataFrame:
     for col in data.columns:
         out.loc[0, col] = data[col].values.tolist()
     return out
+
+def _unchopping(
+        data: DataFrame,
+        data_cols: Iterable[str],
+        key_cols: Iterable[str],
+        keep_empty: bool
+) -> DataFrame:
+    # pylint: disable=line-too-long
+    """Unchop the data frame
+
+    See https://stackoverflow.com/questions/53218931/how-to-unnest-explode-a-column-in-a-pandas-dataframe
+    """
+    # pylint: enable=line-too-long
+    # key_cols could be empty
+    rsize = None
+    val_data = {}
+    for dcol in data_cols:
+        # check dtype first so that we don't need to check
+        # other types of columns element by element
+        is_df_col = data_cols.dtype == object and all(
+            # it's either null or a dataframe
+            (is_scalar(val) and pandas.isnull(val))
+            or isinstance(val, DataFrame)
+            for val in data[dcol]
+        )
+        if is_df_col:
+            vdata, sizes, dtypes = _unchopping_df_column(data[dcol])
+        else:
+            vdata, sizes, dtypes = _unchopping_nondf_column(data[dcol])
+        val_data.update(vdata)
+
+        if rsize is None:
+            rsize = sizes
+        else:
+            tmpsize = []
+            for prevsize, cursize in zip(rsize, sizes):
+                if prevsize != cursize and 1 not in (prevsize, cursize):
+                    raise ValueError(
+                        f"Incompatible lengths: {prevsize}, {cursize}."
+                    )
+                tmpsize.append(max(prevsize, cursize))
+            rsize = tmpsize
+
+    key_data = {key: numpy.repeat(data[key].values, rsize) for key in key_cols}
+    key_data.update(val_data)
+    # DataFrame(key_data) may have nested dfs
+    # say y$a, then ['y'] will not select it
+    out = keep_column_order(DataFrame(key_data), data.columns)
+    if not keep_empty:
+        out = drop_na(out, *val_data, how='all')
+    apply_dtypes(out, dtypes)
+    copy_attrs(out, data)
+    return out
+
+def _unchopping_df_column(
+        series: Series
+) -> Tuple[Mapping[str, List], List[int], Mapping[str, DTypeType]]:
+    """Unchopping dataframe column"""
+    # Get union column names
+    union_cols = []
+    # try to keep the same dtype
+    dtypes = None
+    for val in series:
+        if isinstance(val, DataFrame):
+            union_cols = union(union_cols, val.columns)
+            if dtypes is None:
+                dtypes = {col: val[col].dtype for col in val}
+            else:
+                for col in val:
+                    # pylint: disable=unsupported-membership-test
+                    # pylint: disable=unsupported-delete-operation
+                    if col in dtypes and dtypes[col] != val[col].dtype:
+                        del dtypes[col]
+
+    sizes = []
+    val_data = defaultdict(list)
+    # add missing columns to each df
+    for val in series:
+        if isinstance(val, DataFrame):
+            for col in union_cols:
+                val_data[f"{series.name}${col}"].extend(
+                    val[col] if col in val
+                    else [NA] * val.shape[0]
+                )
+            sizes.append(val.shape[0])
+        else: # null
+            for col in union_cols:
+                val_data[f"{series.name}${col}"].append(NA)
+            sizes.append(1)
+
+    return val_data, sizes, dtypes
+
+def _unchopping_nondf_column(
+        series: Series
+) -> Tuple[Mapping[str, List], List[int], Mapping[str, DTypeType]]:
+    """Unchopping non-dataframe column"""
+    val_data = {}
+    vals = [
+        [val] if is_scalar(val) else val
+        for val in series
+    ]
+    val_data[series.name] = Series(
+        numpy.concatenate(
+            vals,
+            axis=None,
+            # casting="no" # only for numpy 1.20.0+
+        ),
+        dtype=series.dtype
+    )
+    return val_data, [len(val) for val in vals], {}

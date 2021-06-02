@@ -56,7 +56,8 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 |API|Description|Notebook example|
 |---|---|---:|
 |[`chop()`][3] [`unchop()`][4]|Chop and unchop|[:material-notebook:][5]|
-|[`pack()`][6] [`unpack()`][7]|Chop and unchop|[:material-notebook:][8]|
+|[`nest()`][9] [`unnest()`][10]|Nest and unnest|[:material-notebook:][11]|
+|[`pack()`][6] [`unpack()`][7]|Pack and unpack|[:material-notebook:][8]|
 
 ### Data
 
@@ -70,3 +71,6 @@ See [datasets][2]
 [6]: ../../api/datar.tidyr.pack/#datar.tidyr.pack.pack
 [7]: ../../api/datar.tidyr.pack/#datar.tidyr.pack.unpack
 [8]: ../../notebooks/chop
+[9]: ../../api/datar.tidyr.nest/#datar.tidyr.nest.nest
+[10]: ../../api/datar.tidyr.nest/#datar.tidyr.nest.unnest
+[11]: ../../notebooks/nest

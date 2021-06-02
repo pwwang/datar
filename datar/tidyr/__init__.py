@@ -7,5 +7,5 @@ from .verbs import (
     drop_na, expand
 )
 from .chop import chop, unchop
-from .nest import nest
+from .nest import nest, unnest
 from .pack import pack, unpack

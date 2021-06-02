@@ -80,6 +80,8 @@ def unpack(
 ) -> DataFrame:
     """Makes df wider by expanding df-columns back out into individual columns.
 
+    For empty columns, the column is kept asis, instead of removing it.
+
     Args:
         data: A data frame
         cols: Columns to unpack
@@ -106,7 +108,11 @@ def unpack(
         cols = [cols]
 
     all_columns = data.columns
-    cols = _check_present(cols, all_columns, _base0)
+    cols = _check_present(
+        data, cols, all_columns,
+        base0=_base0,
+    )
+
     out = data.copy()
     new_cols = []
     for col in data.columns:
@@ -117,6 +123,9 @@ def unpack(
             else:
                 replace = "" if names_sep is None else f"{parts[0]}{names_sep}"
                 new_cols.append(f"{replace}{parts[1]}")
+        # elif col in cols: # empty list column
+        #     # remove it from out
+        #     out.drop(columns=col, inplace=True)
         else:
             new_cols.append(col)
 
@@ -128,6 +137,7 @@ def unpack(
 
 
 def _check_present(
+        data: DataFrame,
         cols: Iterable[Union[int, str]],
         all_columns: Iterable[str],
         base0: Optional[bool] = None
@@ -142,7 +152,7 @@ def _check_present(
             columns = [col]
 
         for column in columns:
-            if not any(
+            if not (column in data and len(data[column]) == 0) and not any(
                     allcol.startswith(f"{column}$") for allcol in all_columns
             ):
                 raise ValueError(f"`{column}` must be a data frame column.")

@@ -2,21 +2,23 @@
 
 https://github.com/tidyverse/tidyr/blob/master/R/nest.R
 """
-from typing import Mapping, Optional, Union, Iterable, List
+from typing import Callable, Mapping, Optional, Union, Iterable, List
 import re
 
 import pandas
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pipda import register_verb
 
-from ..core.utils import vars_select, align_value
-from ..core.grouped import DataFrameGroupBy
+from ..core.types import DTypeType, is_scalar
+from ..core.utils import vars_select, align_value, to_df
+from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
 
-from ..base import setdiff, intersect
+from ..base import setdiff, intersect, NA
 from ..dplyr import distinct, bind_cols, group_vars, group_by_drop_default
 
-from .chop import _vec_split
+from .chop import unchop, _vec_split
+from .pack import unpack
 
 @register_verb(DataFrame, context=Context.SELECT)
 def nest(
@@ -103,70 +105,95 @@ def _(
         _drop=group_by_drop_default(_data)
     )
 
-# @register_verb(DataFrame, context=Context.SELECT)
-# def unnest(
-#         data: DataFrame,
-#         *cols: Union[str, int],
-#         keep_empty: bool = False,
-#         dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
-#         names_sep: Optional[str] = None,
-#         names_repair: Union[str, Callable] = 'check_unique',
-#         _base0: Optional[bool] = None
-# ) -> DataFrame:
-#     """Flattens list-column of data frames back out into regular columns.
+@register_verb(DataFrame, context=Context.SELECT)
+def unnest(
+        data: DataFrame,
+        *cols: Union[str, int],
+        keep_empty: bool = False,
+        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        names_sep: Optional[str] = None,
+        names_repair: Union[str, Callable] = 'check_unique',
+        _base0: Optional[bool] = None
+) -> DataFrame:
+    """Flattens list-column of data frames back out into regular columns.
 
-#     Args:
-#         data: A data frame to flatten.
-#         *cols: Columns to unnest.
-#         keep_empty: By default, you get one row of output for each element
-#             of the list your unchopping/unnesting.
-#             This means that if there's a size-0 element
-#             (like NULL or an empty data frame), that entire row will be
-#             dropped from the output.
-#             If you want to preserve all rows, use `keep_empty` = `True` to
-#             replace size-0 elements with a single row of missing values.
-#         dtypes: NOT `ptype`. Providing the dtypes for the output columns.
-#             Could be a single dtype, which will be applied to all columns, or
-#             a dictionary of dtypes with keys for the columns and values the
-#             dtypes.
-#         names_sep: If `None`, the default, the names will be left as is.
-#             Inner names will come from the former outer names
-#             If a string, the inner and outer names will be used together.
-#             The names of the new outer columns will be formed by pasting
-#             together the outer and the inner column names, separated by
-#             `names_sep`.
-#         names_repair: treatment of problematic column names:
-#             - "minimal": No name repair or checks, beyond basic existence,
-#             - "unique": Make sure names are unique and not empty,
-#             - "check_unique": (default value), no name repair,
-#                 but check they are unique,
-#             - "universal": Make the names unique and syntactic
-#             - a function: apply custom name repair
-#         _base0: Whether `cols` are 0-based
-#             if not provided, will use `datar.base.getOption('index.base.0')`
+    Args:
+        data: A data frame to flatten.
+        *cols: Columns to unnest.
+        keep_empty: By default, you get one row of output for each element
+            of the list your unchopping/unnesting.
+            This means that if there's a size-0 element
+            (like NULL or an empty data frame), that entire row will be
+            dropped from the output.
+            If you want to preserve all rows, use `keep_empty` = `True` to
+            replace size-0 elements with a single row of missing values.
+        dtypes: NOT `ptype`. Providing the dtypes for the output columns.
+            Could be a single dtype, which will be applied to all columns, or
+            a dictionary of dtypes with keys for the columns and values the
+            dtypes.
+        names_sep: If `None`, the default, the names will be left as is.
+            Inner names will come from the former outer names
+            If a string, the inner and outer names will be used together.
+            The names of the new outer columns will be formed by pasting
+            together the outer and the inner column names, separated by
+            `names_sep`.
+        names_repair: treatment of problematic column names:
+            - "minimal": No name repair or checks, beyond basic existence,
+            - "unique": Make sure names are unique and not empty,
+            - "check_unique": (default value), no name repair,
+                but check they are unique,
+            - "universal": Make the names unique and syntactic
+            - a function: apply custom name repair
+        _base0: Whether `cols` are 0-based
+            if not provided, will use `datar.base.getOption('index.base.0')`
 
-#     Returns:
-#         Data frame with selected columns unnested.
-#     """
-#     if not cols:
-#         raise ValueError("`*cols` is required when using unnest().")
+    Returns:
+        Data frame with selected columns unnested.
+    """
+    if not cols:
+        raise ValueError("`*cols` is required when using unnest().")
 
-#     all_columns = data.columns
-#     cols = vars_select(all_columns, cols, base0=_base0)
-#     cols = all_columns[cols]
+    all_columns = data.columns
+    cols = vars_select(all_columns, cols, base0=_base0)
+    cols = all_columns[cols]
 
-#     out = {}
-#     for col in cols:
-#         out[col] = _as_df(data[col])
+    out = data.copy()
+    for col in cols:
+        out[col] = _as_df(data[col])
 
-#     out = unchop(
-#         data, cols,
-#         keep_empty=keep_empty, dtypes=dtypes, _base0=_base0
-#     )
-#     return unpack(
-#         data, cols,
-#         names_sep=names_sep, names_repair=names_repair
-#     )
+    out = unchop(
+        out, cols,
+        keep_empty=keep_empty, dtypes=dtypes, _base0=_base0
+    )
+    return unpack(
+        out, cols,
+        names_sep=names_sep, names_repair=names_repair
+    )
+
+@unnest.register(DataFrameRowwise, context=Context.SELECT)
+def _(
+        data: DataFrameRowwise,
+        *cols: Union[str, int],
+        keep_empty: bool = False,
+        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        names_sep: Optional[str] = None,
+        names_repair: Union[str, Callable] = 'check_unique',
+        _base0: Optional[bool] = None
+) -> DataFrame:
+    """Unnest rowwise dataframe"""
+    out = unnest.dispatch(DataFrame)(
+        data, *cols,
+        keep_empty=keep_empty,
+        dtypes=dtypes,
+        names_sep=names_sep,
+        names_repair=names_repair,
+        _base0=_base0
+    )
+    return DataFrameGroupBy(
+        out,
+        _group_vars=group_vars(data),
+        _drop=group_by_drop_default(data)
+    )
 
 def _strip_names(names: Iterable[str], base: str, sep: str) -> List[str]:
     """Strip the base names with sep"""
@@ -179,5 +206,21 @@ def _strip_names(names: Iterable[str], base: str, sep: str) -> List[str]:
             out.append(parts[1] if parts[0] == base else name)
     return out
 
-# def _as_df(*args, **kwargs): ...
-# def unpack(*args, **kwargs): ...
+def _as_df(series: Series) -> List[Optional[DataFrame]]:
+    """Convert series to dataframe"""
+    out = []
+    for val in series:
+        if isinstance(val, DataFrame):
+            if val.shape[1] == 0: # no columns
+                out.append(NA)
+            elif val.shape[0] == 0:
+                out.append(
+                    DataFrame([[NA] * val.shape[1]], columns=val.columns)
+                )
+            else:
+                out.append(val)
+        elif is_scalar(val) and pandas.isnull(val):
+            out.append(val)
+        else:
+            out.append(to_df(val, name=series.name))
+    return out
