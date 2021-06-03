@@ -904,7 +904,7 @@ def lengths(x: Any) -> List[int]:
 # ---------------------------------
 
 def factor(
-        x: Iterable[Any],
+        x: Optional[Iterable[Any]] = None,
         # pylint: disable=redefined-outer-name
         levels: Optional[Iterable[Any]] = None,
         exclude: Any = NA,
@@ -925,6 +925,9 @@ def factor(
         ordered: logical flag to determine if the levels should be regarded
             as ordered (in the order given).
     """
+    if x is None:
+        x = []
+
     if is_categorical_dtype(x):
         x = x.to_numpy()
     ret = Categorical(

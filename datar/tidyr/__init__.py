@@ -10,3 +10,4 @@ from .chop import chop, unchop
 from .nest import nest, unnest
 from .pack import pack, unpack
 from .expand import expand_grid, expand, nesting, crossing
+from .complete import complete

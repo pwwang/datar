@@ -48,6 +48,7 @@ nav:
         'case_when': 'notebooks/case_when.ipynb'
         'chop': 'notebooks/chop.ipynb'
         'coalesce': 'notebooks/coalesce.ipynb'
+        'complete': 'notebooks/complete.ipynb'
         'context': 'notebooks/context.ipynb'
         'count': 'notebooks/count.ipynb'
         'cumall': 'notebooks/cumall.ipynb'

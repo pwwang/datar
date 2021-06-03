@@ -308,27 +308,36 @@ def _(
 )
 def replace_na(
         _data: Iterable[Any],
-        series_or_replace: Any,
+        data_or_replace: Optional[Any] = None,
         replace: Any = None
 ) -> Any:
     """Replace NA with a value
 
     This function can be also used not as a verb. As a function called as
     an argument in a verb, _data is passed implicitly. Then one could
-    pass series_or_replace as the data to replace.
+    pass data_or_replace as the data to replace.
 
     Args:
         _data: The data piped in
-        series_or_replace: When called as argument of a verb, this is the
+        data_or_replace: When called as argument of a verb, this is the
             data to replace. Otherwise this is the replacement.
         replace: The value to replace with
 
     Returns:
         Corresponding data with NAs replaced
     """
-    if replace is not None:
-        return _replace_na(series_or_replace, replace)
-    return _replace_na(_data, series_or_replace)
+    if data_or_replace is None and replace is None:
+        return _data.copy()
+
+    if replace is None:
+        # no replace, then data_or_replace should be replace
+        replace = data_or_replace
+    else:
+        # replace specified, determine data
+        # If data_or_replace is specified, it's data
+        _data = _data if data_or_replace is None else data_or_replace
+
+    return _replace_na(_data, data_or_replace)
 
 @register_verb(
     DataFrame,
