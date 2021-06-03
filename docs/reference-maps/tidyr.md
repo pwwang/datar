@@ -50,6 +50,9 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 
 |API|Description|Notebook example|
 |---|---|---:|
+|[`expand()`][12] [`crossing()`][13] [`nesting()`][14]|Expand data frame to include all possible combinations of values|[:material-notebook:][15]|
+|[`expand_grid()`][16]|
+Create a tibble from all combinations of inputs|[:material-notebook:][17]|
 
 ### Miscellanea
 
@@ -74,3 +77,9 @@ See [datasets][2]
 [9]: ../../api/datar.tidyr.nest/#datar.tidyr.nest.nest
 [10]: ../../api/datar.tidyr.nest/#datar.tidyr.nest.unnest
 [11]: ../../notebooks/nest
+[12]: ../../api/datar.tidyr.expand/#datar.tidyr.expand.expand
+[13]: ../../api/datar.tidyr.expand/#datar.tidyr.expand.crossing
+[14]: ../../api/datar.tidyr.expand/#datar.tidyr.expand.nesting
+[15]: ../../notebooks/expand
+[16]: ../../api/datar.tidyr.expand/#datar.tidyr.expand.expand_grid
+[17]: ../../notebooks/expand_grid

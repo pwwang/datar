@@ -156,7 +156,7 @@ def df_assign_item(
     else:
         df.insert(df.shape[1], item, value, allow_duplicates=True)
 
-def categorize(data: Any) -> Any:
+def categorized(data: Any) -> Any:
     """Get the Categorical object"""
     if not is_categorical_dtype(data):
         return data

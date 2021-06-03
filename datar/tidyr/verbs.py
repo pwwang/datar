@@ -1,6 +1,5 @@
 """Verbs from R-tidyr"""
 import re
-import itertools
 from functools import singledispatch
 from typing import Any, Callable, Iterable, Mapping, Optional, Type, Union
 
@@ -18,12 +17,9 @@ from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
     is_scalar
 )
-from ..core.middlewares import Nesting
 from ..core.contexts import Context
-from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy
-from ..base import NA, levels, setdiff
-from ..dplyr.distinct import distinct
+from ..base import NA, setdiff
 from ..dplyr.group_by import group_by_drop_default
 from ..dplyr.group_data import group_vars
 
@@ -392,55 +388,6 @@ def _(
     copy_attrs(out, _data)
     return out
 
-def expand_grid(
-        _data: Iterable[Any] = None,
-        _name_repair: str = "check_unique",
-        _base0: Optional[bool] = None,
-        **kwargs: Iterable[Any]
-) -> DataFrame:
-    """Expand elements into a new dataframe
-
-    See https://tidyr.tidyverse.org/reference/expand_grid.html
-
-    Args:
-        _data, **kwargs: Name-value pairs. The name will become the column
-            name in the output.
-            For _data, will try to fetch name via `_data.__dfname__`. If failed
-            `_data` will be used.
-        _name_repair: treatment of problematic column names:
-            - "minimal": No name repair or checks, beyond basic existence,
-            - "unique": Make sure names are unique and not empty,
-            - "check_unique": (default value), no name repair,
-                but check they are unique,
-            - "universal": Make the names unique and syntactic
-            - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
-
-    Returns:
-        The expanded dataframe
-    """
-    product_args = []
-    names = []
-    if isinstance(_data, DataFrame):
-        dataname = getattr(_data, '__dfname__', '_data')
-        product_args = [(row[1] for row in _data.iterrows())]
-        names = [f'{dataname}_{col}' for col in _data.columns]
-    elif _data is not None:
-        raise ValueError('Positional argument must be a DataFrame or None.')
-    for key, val in kwargs.items():
-        if isinstance(val, DataFrame):
-            product_args.append((row[1] for row in val.iterrows()))
-            names.extend(f'{key}_{col}' for col in val.columns)
-        else:
-            product_args.append(((value, ) for value in val))
-            names.append(key)
-
-    return DataFrame(
-        (itertools.chain.from_iterable(row)
-         for row in itertools.product(*product_args)),
-        columns=repair_names(names, _name_repair, _base0=_base0)
-    )
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def extract(
@@ -738,49 +685,3 @@ def drop_na(
         )
     copy_attrs(out, _data)
     return out
-
-@register_verb(DataFrame, context=Context.EVAL)
-def expand(
-        _data: DataFrame, # pylint: disable=no-value-for-parameter
-        *columns: Union[str, Nesting],
-        # _name_repair: Union[str, Callable] = None # todo
-        **kwargs: Iterable[Any]
-) -> DataFrame:
-    """See https://tidyr.tidyverse.org/reference/expand.html"""
-    iterables = []
-    names = []
-    for i, column in enumerate(columns):
-        if isinstance(column, Nesting):
-            iterables.append(zip(*column.columns))
-            names.extend(column.names)
-        else:
-            cats = levels(column)
-            iterables.append(zip(
-                column if cats is None else cats
-            ))
-
-            try:
-                name = column.name
-            except AttributeError:
-                name = f'_tmp{hex(id(column))[2:6]}_{i}'
-                logger.warning(
-                    'Temporary name used. Use keyword argument to '
-                    'specify the key as column name.'
-                )
-            names.append(name)
-
-    for key, val in kwargs.items():
-        if isinstance(val, Nesting):
-            iterables.append(zip(*val.columns))
-            names.extend(f'{key}_{name}' for name in val.names)
-        else:
-            cats = levels(val)
-            iterables.append(zip(
-                val if cats is None else cats
-            ))
-            names.append(key)
-
-    return DataFrame((
-        itertools.chain.from_iterable(row)
-        for row in itertools.product(*iterables)
-    ), columns=names) >> distinct() # pylint: disable=no-value-for-parameter
