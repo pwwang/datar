@@ -56,7 +56,7 @@ Extract a character column into multiple columns using regular expression groups
 |[`drop_na()`][20]|Drop rows containing missing values|[:material-notebook:][21]|
 |[`expand()`][12] [`crossing()`][13] [`nesting()`][14]|Expand data frame to include all possible combinations of values|[:material-notebook:][15]|
 |[`expand_grid()`][16]|
-Create a tibble from all combinations of inputs|[:material-notebook:][17]|
+|[`fill()`][24]|Fill in missing values with previous or next value|[:material-notebook:][25]|
 
 ### Miscellanea
 
@@ -93,3 +93,5 @@ See [datasets][2]
 [21]: ../../notebooks/drop_na
 [22]: ../../api/datar.tidyr.extract/#datar.tidyr.extract.extract
 [23]: ../../notebooks/extract
+[24]: ../../api/datar.tidyr.fill/#datar.tidyr.fill.fill
+[25]: ../../notebooks/fill

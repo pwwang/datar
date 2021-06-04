@@ -339,65 +339,6 @@ def replace_na(
 
     return _replace_na(_data, data_or_replace)
 
-@register_verb(
-    DataFrame,
-    context=Context.SELECT
-)
-def fill(
-        _data: DataFrame,
-        *columns: str,
-        _direction: str = "down"
-) -> DataFrame:
-    """Fills missing values in selected columns using the next or
-    previous entry.
-
-    See https://tidyr.tidyverse.org/reference/fill.html
-
-    Args:
-        _data: A dataframe
-        *columns: Columns to fill
-        _direction: Direction in which to fill missing values.
-            Currently either "down" (the default), "up",
-            "downup" (i.e. first down and then up) or
-            "updown" (first up and then down).
-
-    Returns:
-        The dataframe with NAs being replaced.
-    """
-    data = _data.copy()
-    if not columns:
-        data = data.fillna(
-            method='ffill' if _direction.startswith('down') else 'bfill',
-        )
-        if _direction in ('updown', 'downup'):
-            data = data.fillna(
-                method='ffill' if _direction.endswith('down') else 'bfill',
-            )
-    else:
-        columns = data.columns[vars_select(data.columns, *columns)]
-        subset = fill(data[columns], _direction=_direction)
-        data[columns] = subset
-    return data
-
-@fill.register(DataFrameGroupBy, context=Context.SELECT)
-def _(
-        _data: DataFrameGroupBy,
-        *columns: str,
-        _direction: str = "down"
-) -> DataFrameGroupBy:
-    # DataFrameGroupBy
-    out = _data.group_apply(
-        lambda df: fill(df, *columns, _direction=_direction)
-    )
-    out = _data.__class__(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
-    copy_attrs(out, _data)
-    return out
-
-
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def separate( # pylint: disable=too-many-branches
