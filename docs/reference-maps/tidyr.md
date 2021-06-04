@@ -45,6 +45,8 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 
 |API|Description|Notebook example|
 |---|---|---:|
+|[`extract()`][22]|
+Extract a character column into multiple columns using regular expression groups|[:material-notebook:][23]|
 
 ### Missing values
 
@@ -89,3 +91,5 @@ See [datasets][2]
 [19]: ../../notebooks/complete
 [20]: ../../api/datar.tidyr.drop_na/#datar.tidyr.drop_na.drop_na
 [21]: ../../notebooks/drop_na
+[22]: ../../api/datar.tidyr.extract/#datar.tidyr.extract.extract
+[23]: ../../notebooks/extract
