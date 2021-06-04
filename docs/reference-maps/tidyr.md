@@ -51,6 +51,7 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 |API|Description|Notebook example|
 |---|---|---:|
 |[`complete()`][18]|Complete a data frame with missing combinations of data|[:material-notebook:][19]|
+|[`drop_na()`][20]|Drop rows containing missing values|[:material-notebook:][21]|
 |[`expand()`][12] [`crossing()`][13] [`nesting()`][14]|Expand data frame to include all possible combinations of values|[:material-notebook:][15]|
 |[`expand_grid()`][16]|
 Create a tibble from all combinations of inputs|[:material-notebook:][17]|
@@ -86,3 +87,5 @@ See [datasets][2]
 [17]: ../../notebooks/expand_grid
 [18]: ../../api/datar.tidyr.complete/#datar.tidyr.complete.complete
 [19]: ../../notebooks/complete
+[20]: ../../api/datar.tidyr.drop_na/#datar.tidyr.drop_na.drop_na
+[21]: ../../notebooks/drop_na

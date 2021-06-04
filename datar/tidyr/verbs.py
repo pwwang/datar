@@ -11,7 +11,7 @@ from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    arg_match, copy_attrs, vars_select, logger
+    copy_attrs, vars_select, logger
 )
 from ..core.types import (
     DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
@@ -646,45 +646,6 @@ def unite(
     out[col] = out[columns].agg(unite_cols, axis=1)
     if remove:
         out.drop(columns=columns, inplace=True)
-
-    if isinstance(_data, DataFrameGroupBy):
-        out = _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
-    copy_attrs(out, _data)
-    return out
-
-@register_verb(DataFrame, context=Context.SELECT)
-def drop_na(
-        _data: DataFrame,
-        *columns: str,
-        how: str = 'any'
-) -> DataFrame:
-    """Drop rows containing missing values
-
-    See https://tidyr.tidyverse.org/reference/drop_na.html
-
-    Args:
-        data: A data frame.
-        *columns: Columns to inspect for missing values.
-        how: How to select the rows to drop
-            - all: All columns of `columns` to be `NA`s
-            - any: Any columns of `columns` to be `NA`s
-            (tidyr doesn't support this argument)
-
-    Returns:
-        Dataframe with rows with NAs dropped
-    """
-    arg_match(how, ['any', 'all'])
-    all_columns = _data.columns
-    if columns:
-        columns = vars_select(all_columns, *columns)
-        columns = all_columns[columns]
-        out = _data.dropna(subset=columns, how=how).reset_index(drop=True)
-    else:
-        out = _data.dropna(how=how).reset_index(drop=True)
 
     if isinstance(_data, DataFrameGroupBy):
         out = _data.__class__(

@@ -24,7 +24,7 @@ from ..dplyr import (
     group_data, group_by_drop_default, group_vars
 )
 
-from .verbs import drop_na
+from .drop_na import drop_na
 
 @register_verb(DataFrame, context=Context.SELECT)
 def chop(
