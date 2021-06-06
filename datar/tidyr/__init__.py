@@ -2,7 +2,7 @@
 
 from .funcs import full_seq
 from .verbs import (
-    pivot_longer, pivot_wider, uncount, replace_na,
+    pivot_wider, uncount, replace_na,
     separate, separate_rows, unite
 )
 from .chop import chop, unchop
@@ -13,3 +13,4 @@ from .complete import complete
 from .drop_na import drop_na
 from .extract import extract
 from .fill import fill
+from .pivot_long import pivot_longer
