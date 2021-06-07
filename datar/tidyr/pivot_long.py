@@ -21,7 +21,7 @@ from ..base import intersect, setdiff, union
 from ..dplyr import group_vars, group_by_drop_default, relocate
 
 from .extract import extract
-from .verbs import separate
+from .separate import separate
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements

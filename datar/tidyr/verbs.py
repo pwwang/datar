@@ -1,7 +1,6 @@
 """Verbs from R-tidyr"""
-import re
 from functools import singledispatch
-from typing import Any, Iterable, Mapping, Optional, Type, Union
+from typing import Any, Iterable, Optional, Union
 
 import numpy
 import pandas
@@ -11,67 +10,19 @@ from pandas.core.series import Series
 from pipda import register_verb
 
 from ..core.utils import (
-    copy_attrs, vars_select, logger
+    copy_attrs, vars_select
 )
 from ..core.types import (
-    DataFrameType, IntOrIter, SeriesLikeType, StringOrIter,
-    is_scalar
+    DataFrameType, SeriesLikeType
 )
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
-from ..base import NA, setdiff
+from ..base import NA
 from ..dplyr.group_by import group_by_drop_default
 from ..dplyr.group_data import group_vars
 
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.EVAL)
-def uncount(
-        _data: DataFrameType,
-        weights: IntOrIter,
-        _remove: bool = True,
-        _id: Optional[str] = None,
-) -> DataFrameType:
-    """Duplicating rows according to a weighting variable
-
-    Args:
-        _data: A data frame
-        weights: A vector of weights. Evaluated in the context of data
-        _remove: If TRUE, and weights is the name of a column in data,
-            then this column is removed.
-        _id: Supply a string to create a new variable which gives a
-            unique identifier for each created row (0-based).
-
-    Returns:
-        dataframe with rows repeated.
-    """
-    gnames = (
-        _data.grouper.names
-        if isinstance(_data, DataFrameGroupBy) else None
-    )
-    if is_scalar(weights):
-        weights = [weights] * _data.shape[0]
-
-    indexes = [
-        idx for i, idx in enumerate(_data.index)
-        for _ in range(weights[i])
-    ]
-
-    all_columns = _data.columns.tolist()
-    weight_name = getattr(weights, 'name', None)
-    if weight_name in all_columns and weights is _data[weight_name]:
-        rest_columns = setdiff(all_columns, [weight_name])
-    else:
-        rest_columns = all_columns
-
-    ret = _data.loc[indexes, rest_columns] if _remove else _data.loc[indexes, :]
-    if _id:
-        ret = ret.groupby(rest_columns).apply(
-            lambda df: df.assign(**{_id: range(df.shape[0])})
-        ).reset_index(drop=True, level=0)
-    if gnames:
-        return ret.groupby(gnames, dropna=False)
-    return ret
 
 @singledispatch
 def _replace_na(data: Iterable[Any], replace: Any) -> Iterable[Any]:
@@ -140,163 +91,8 @@ def replace_na(
     return _replace_na(_data, data_or_replace)
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def separate( # pylint: disable=too-many-branches
-        _data: DataFrameType,
-        col: str,
-        into: StringOrIter,
-        sep: Union[int, str] = r'[^0-9A-Za-z]+',
-        remove: bool = True,
-        convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False,
-        extra: str = "warn",
-        fill: str = "warn" # pylint: disable=redefined-outer-name
-) -> DataFrameType: # pylint: disable=too-many-nested-blocks
-    """Given either a regular expression or a vector of character positions,
-    turns a single character column into multiple columns.
-
-    Args:
-        _data: The dataframe
-        col: Column name or position.
-        into: Names of new variables to create as character vector.
-            Use None to omit the variable in the output.
-        sep: Separator between columns.
-            TODO: support index split (sep is an integer)
-        remove: If TRUE, remove input column from output data frame.
-        convert: The universal type for the extracted columns or a dict for
-            individual ones
-        extra: If sep is a character vector, this controls what happens when
-            there are too many pieces. There are three valid options:
-            - "warn" (the default): emit a warning and drop extra values.
-            - "drop": drop any extra values without a warning.
-            - "merge": only splits at most length(into) times
-        fill: If sep is a character vector, this controls what happens when
-            there are not enough pieces. There are three valid options:
-            - "warn" (the default): emit a warning and fill from the right
-            - "right": fill with missing values on the right
-            - "left": fill with missing values on the left
-
-    Returns:
-        Dataframe with separated columns.
-    """
-    if isinstance(_data, DataFrame):
-        if is_scalar(into):
-            into = [into]
-        colindex = [
-            i for i, outcol in enumerate(into)
-            if outcol not in (None, NA)
-        ]
-        non_na_elems = lambda row: [row[i] for i in colindex]
-        # series.str.split can do extra and fill
-        # extracted = _data[col].str.split(sep, expand=True).iloc[:, colindex]
-        nout = len(into)
-        outdata = []
-        extra_warns = []
-        missing_warns = []
-        for i, elem in enumerate(_data[col]):
-            if elem in (NA, None):
-                row = [NA] * nout
-                continue
-
-            row = re.split(sep, str(elem), nout - 1)
-            if len(row) < nout:
-                if fill == 'warn':
-                    missing_warns.append(i)
-                if fill in ('warn', 'right'):
-                    row += [NA] * (nout - len(row))
-                else:
-                    row = [NA] * (nout - len(row)) + row
-            else:
-                more_splits = re.split(sep, row[-1], 1)
-                if len(more_splits) > 1:
-                    if extra == 'warn':
-                        extra_warns.append(i)
-                    if extra in ('warn', 'drop'):
-                        row[-1] = more_splits[0]
-
-            outdata.append(non_na_elems(row))
-
-        if extra_warns:
-            logger.warning(
-                'Expected %s pieces. '
-                'Additional pieces discarded in %s rows %s.',
-                nout,
-                len(extra_warns),
-                extra_warns
-            )
-        if missing_warns:
-            logger.warning(
-                'Expected %s pieces. '
-                'Missing pieces filled with `NA` in %s rows %s.',
-                nout,
-                len(missing_warns),
-                missing_warns
-            )
-        separated = DataFrame(outdata, columns=non_na_elems(into))
-
-        if isinstance(convert, (str, Type)):
-            separated.astype(convert)
-        elif isinstance(convert, dict):
-            for key, conv in convert.items():
-                separated[key] = separated[key].astype(conv)
-        if remove:
-            _data = _data[_data.columns.difference([col])]
-
-        return pandas.concat([_data, separated], axis=1)
-
-    grouper = _data.grouper
-    return _data.apply(
-        lambda df: separate(df, col, into, sep, remove, convert, extra, fill)
-    ).groupby(grouper, dropna=False)
 
 
-@register_verb(DataFrame, context=Context.SELECT)
-def separate_rows(
-        _data: DataFrame,
-        *columns: str,
-        sep: str = r'[^0-9A-Za-z]+',
-        convert: Union[bool, str, Type, Mapping[str, Union[str, Type]]] = False,
-) -> DataFrame:
-    """Separates the values and places each one in its own row.
-
-    Args:
-        _data: The dataframe
-        *columns: The columns to separate on
-        sep: Separator between columns.
-        convert: The universal type for the extracted columns or a dict for
-            individual ones
-
-    Returns:
-        Dataframe with rows separated and repeated.
-    """
-    all_columns = _data.columns
-    selected = all_columns[vars_select(all_columns, *columns)]
-
-    weights = []
-    repeated = []
-    for row in _data[selected].iterrows():
-        row = row[1]
-        weights.append(None)
-        rdata = []
-        for col in selected:
-            splits = re.split(sep, row[col])
-            if weights[-1] and weights[-1] != len(splits):
-                raise ValueError(
-                    f'Error: Incompatible lengths: {weights[-1]}, '
-                    f'{len(splits)}.'
-                )
-            weights[-1] = len(splits)
-            rdata.append(splits)
-        repeated.extend(zip(*rdata))
-
-    ret = uncount(_data, weights)
-    ret[selected] = repeated
-
-    if isinstance(convert, (str, Type)):
-        ret.astype(convert)
-    elif isinstance(convert, dict):
-        for key, conv in convert.items():
-            ret[key] = ret[key].astype(conv)
-    return ret
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def unite(

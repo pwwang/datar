@@ -33,6 +33,7 @@ def vars_select(
         raise_nonexists: bool = True,
         base0: Optional[bool] = None
 ) -> List[int]:
+    # TODO: support selecting data-frame columns
     """Select columns
 
     Args:
@@ -384,10 +385,16 @@ def get_option(key: str, value: Any = None) -> Any:
 
 def apply_dtypes(
         df: DataFrame,
-        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]]
+        dtypes: Optional[Union[bool, DTypeType, Mapping[str, DTypeType]]]
 ) -> None:
     """Apply dtypes to data frame"""
-    if dtypes is None:
+    if dtypes is None or dtypes is False:
+        return
+
+    if dtypes is True:
+        inferred = df.convert_dtypes()
+        for col in df:
+            df[col] = inferred[col]
         return
 
     if not isinstance(dtypes, dict):

@@ -38,13 +38,16 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 
 |API|Description|Notebook example|
 |---|---|---:|
+|[`nest()`][9] [`unnest()`][10]|Nest and unnest|[:material-notebook:][11]|
 
 ### Character vectors
 
 |API|Description|Notebook example|
 |---|---|---:|
-|[`extract()`][22]|
-Extract a character column into multiple columns using regular expression groups|[:material-notebook:][23]|
+|[`extract()`][22]|Extract a character column into multiple columns using regular expression groups|[:material-notebook:][23]|
+|[`separate()`][30]|Separate a character column into multiple columns with a regular expression or numeric locations|[:material-notebook:][31]|
+|[`separate_rows()`][34]|
+Separate a collapsed column into multiple rows|[:material-notebook:][35]|
 
 ### Missing values
 
@@ -61,8 +64,8 @@ Extract a character column into multiple columns using regular expression groups
 |API|Description|Notebook example|
 |---|---|---:|
 |[`chop()`][3] [`unchop()`][4]|Chop and unchop|[:material-notebook:][5]|
-|[`nest()`][9] [`unnest()`][10]|Nest and unnest|[:material-notebook:][11]|
 |[`pack()`][6] [`unpack()`][7]|Pack and unpack|[:material-notebook:][8]|
+|[`uncount()`][32]|"Uncount" a data frame|[:material-notebook:][33]|
 
 ### Data
 
@@ -97,3 +100,9 @@ See [datasets][2]
 [27]: ../../notebooks/pivot_longer
 [28]: ../../api/datar.tidyr.pivot_wide/#datar.tidyr.pivot_wide.pivot_wider
 [29]: ../../notebooks/pivot_wider
+[30]: ../../api/datar.tidyr.separate/#datar.tidyr.separate.separate
+[31]: ../../notebooks/separate
+[32]: ../../api/datar.tidyr.uncount/#datar.tidyr.uncount.uncount
+[33]: ../../notebooks/uncount
+[34]: ../../api/datar.tidyr.separate/#datar.tidyr.separate.separate_rows
+[35]: ../../notebooks/separate

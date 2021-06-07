@@ -7,7 +7,6 @@ from pandas.core.arrays.categorical import Categorical
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
-from pipda.function import Function
 
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
