@@ -26,10 +26,8 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 
 |API|Description|Notebook example|
 |---|---|---:|
-|pivot_longer()|Pivot data from wide to long||
-|pivot_wider()|Pivot data from long to wide||
-|spread()|Spread a key-value pair across multiple columns||
-|gather()|Gather columns into key-value pairs||
+|[pivot_longer()][26]|Pivot data from wide to long|[:material-notebook:][27]|
+|[pivot_wider()][28]|Pivot data from long to wide|[:material-notebook:][29]|
 
 ### Rectangling
 
@@ -95,3 +93,7 @@ See [datasets][2]
 [23]: ../../notebooks/extract
 [24]: ../../api/datar.tidyr.fill/#datar.tidyr.fill.fill
 [25]: ../../notebooks/fill
+[26]: ../../api/datar.tidyr.pivot_long/#datar.tidyr.pivot_long.pivot_longer
+[27]: ../../notebooks/pivot_longer
+[28]: ../../api/datar.tidyr.pivot_wide/#datar.tidyr.pivot_wide.pivot_wider
+[29]: ../../notebooks/pivot_wider

@@ -266,11 +266,11 @@ def pivot_longer(
             isinstance(_data, DataFrameGroupBy) and
             not isinstance(_data, DataFrameRowwise)
     ):
-        gvars = intersect(group_vars(_data), ret.columns)
-        if len(gvars) > 0:
+        groupvars = intersect(group_vars(_data), ret.columns)
+        if len(groupvars) > 0:
             return DataFrameGroupBy(
                 ret,
-                _group_vars=gvars,
+                _group_vars=groupvars,
                 _drop=group_by_drop_default(_data)
             )
 
