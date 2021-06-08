@@ -11,7 +11,7 @@ from ..core.types import StringOrIter, is_scalar
 from ..core.utils import vars_select, reconstruct_tibble
 from ..core.exceptions import ColumnNotExistingError
 
-from ..base import NA
+from ..base import NA, identity
 from ..base.constants import NA_integer_
 
 ROWID_COLUMN = '_PIVOT_ROWID_'
@@ -30,7 +30,7 @@ def pivot_wider(
         # names_repair: str = "check_unique", # todo
         values_from: StringOrIter = "value",
         values_fill: Any = None,
-        values_fn: Optional[Union[Callable, Mapping[str, Callable]]] = None,
+        values_fn: Union[Callable, Mapping[str, Callable]] = identity,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """"widens" data, increasing the number of columns and decreasing
@@ -147,7 +147,7 @@ def pivot_wider(
         columns=names_from,
         fill_value=values_fill,
         values=values_from[0] if len(values_from) == 1 else values_from,
-        aggfunc=values_fn or 'mean'
+        aggfunc=values_fn
     )
 
     if len(id_cols) > 0:

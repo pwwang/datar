@@ -109,21 +109,15 @@ def test_can_override_default_keys():
 # instead of list-columns
 def test_duplicated_keys_aggregated_by_values_fn():
     df = tibble(a = c(1, 1, 2), key = c("x", "x", "x"), val = f[1:3])
-    pv = pivot_wider(df, names_from = f.key, values_from = f.val) # mean by default
+    pv = pivot_wider(df, names_from = f.key, values_from = f.val, values_fn=mean) # mean by default
     assert_iterable_equal(pv.x, [1.5, 3.0])
     pv = pivot_wider(df, names_from = f.key, values_from = f.val, values_fn=sum)
     assert_iterable_equal(pv.x, [3.0, 3.0])
 
-# test_that("duplicated keys produce list column with warning", {
-#   df <- tibble(a = c(1, 1, 2), key = c("x", "x", "x"), val = 1:3)
-#   expect_warning(
-#     pv <- pivot_wider(df, names_from = key, values_from = val),
-#     "list-col"
-#   )
-
-#   expect_equal(pv$a, c(1, 2))
-#   expect_equal(as.list(pv$x), list(c(1L, 2L), 3L))
-# })
+def test_duplicated_keys_produce_list_column_with_error():
+    df = tibble(a = c(1, 1, 2), key = c("x", "x", "x"), val = f[1:3])
+    with pytest.raises(ValueError, match="aggregated value"):
+        pivot_wider(df, names_from = f.key, values_from = f.val)
 
 def test_values_fn_can_keep_list():
     df = tibble(a = c(1, 1, 2), key = c("x", "x", "x"), val = f[1:3])
