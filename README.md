@@ -2,7 +2,7 @@
 
 Port of [dplyr][2] and other related R packages in python, using [pipda][3].
 
-Unlike other similar packages in python that just mimic the piping sign, `datar` follows the API designs from the original packages as possible. So that nearly no extra effort is needed for those who are familar with those R packages to transition to python.
+Unlike other similar packages in python that just mimic the piping sign, `datar` follows the API designs from the original packages as much as possible. So that minimal effort is needed for those who are familar with those R packages to transition to python.
 
 <!-- badges -->
 [![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13]

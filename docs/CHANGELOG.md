@@ -1,3 +1,9 @@
+## 0.0.7
+- Add dplyr rows verbs
+- Allow mixed numbering (with `c()` and `f[...]`) for tibble construction
+- Allow slice (`f[a:b]`) to be expanded into sequence for `EVAL` context
+- Finish tidyr porting.
+
 ## 0.0.6
 - Add `options`, `getOption` and `options_context` to `datar.base` to allow set/get global options
 - Add options: `dplyr.summarise.inform`
