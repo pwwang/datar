@@ -26,6 +26,7 @@ def bind_rows(
         *datas: Optional[Union[DataFrame, dict]],
         _id: Optional[str] = None,
         _base0: Optional[bool] = None,
+        _copy: bool = True,
         **kwargs: Union[DataFrame, dict]
 ) -> DataFrame:
     # pylint: disable=too-many-branches
@@ -41,6 +42,9 @@ def bind_rows(
         _base0: Whether `_id` starts from 0 or not, if no keys are provided.
             If `_base0` is not provided, will use
             `datar.base.getOption('index.base.0')`
+        _copy: If `False`, do not copy data unnecessarily.
+            Original API does not support this. This argument will be
+            passed by to `pandas.concat()` as `copy` argument.
         **kwargs: A mapping of dataframe, keys will be used as _id col.
 
     Returns:
@@ -107,10 +111,11 @@ def bind_rows(
         return pandas.concat(
             key_data.values(),
             keys=key_data.keys(),
-            names=[_id, None]
+            names=[_id, None],
+            copy=_copy
         ).reset_index(level=0).reset_index(drop=True)
 
-    return pandas.concat(key_data.values()).reset_index(drop=True)
+    return pandas.concat(key_data.values(), copy=_copy).reset_index(drop=True)
 
 @bind_rows.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
@@ -130,7 +135,8 @@ def bind_cols(
         _data: Optional[Union[DataFrame, dict]],
         *datas: Optional[Union[DataFrame, dict]],
         _name_repair: Union[str, Callable] = "unique",
-        _base0: Optional[bool] = None
+        _base0: Optional[bool] = None,
+        _copy: bool = True
 ) -> DataFrame:
     """Bind columns of give dataframes
 
@@ -150,6 +156,9 @@ def bind_cols(
             - a function: apply custom name repair
         _base0: Whether the numeric suffix starts from 0 or not.
             If not specified, will use `datar.base.getOption('index.base.0')`.
+        _copy: If `False`, do not copy data unnecessarily.
+            Original API does not support this. This argument will be
+            passed by to `pandas.concat()` as `copy` argument.
 
     Returns:
         The combined dataframe
@@ -166,7 +175,7 @@ def bind_cols(
         more_data.insert(0, _data)
     if not more_data:
         return DataFrame()
-    ret = pandas.concat(more_data, axis=1)
+    ret = pandas.concat(more_data, axis=1, copy=_copy)
     ret.columns = repair_names(
         ret.columns.tolist(),
         repair=_name_repair,

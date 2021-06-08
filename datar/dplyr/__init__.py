@@ -52,3 +52,4 @@ from .pull import pull
 from .lead_lag import lead, lag
 from .recode import recode, recode_factor, recode_categorical
 from .order_by import order_by, with_order
+from .rows import rows_insert, rows_update, rows_patch, rows_upsert, rows_delete

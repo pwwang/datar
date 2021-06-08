@@ -10,7 +10,7 @@ from .constants import (
 from .options import options, getOption, options_context
 from .verbs import (
     colnames, rownames, dim, nrow, ncol, diag, t, names,
-    intersect, union, setdiff, setequal
+    intersect, union, setdiff, setequal, duplicated
 )
 from .funcs import (
     as_date, as_character, as_double, as_factor, as_categorical,

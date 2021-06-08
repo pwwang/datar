@@ -16,6 +16,13 @@ from datar.dplyr import pull, mutate, group_by, rowwise
 from datar.datasets import iris, mtcars
 from .conftest import assert_iterable_equal
 
+
+def test_mixed_numbering():
+    df = tibble(a=f[1:5], b=seq(5), c=c(1,2,3,[4,5]), d=c(f[1:3], c(4, 5)))
+    exp = tibble(a=seq(1,5), b=f.a, c=f.a, d=f.a)
+    assert_frame_equal(df, exp)
+
+
 def test_correct_rows():
     out = tibble(value=range(1,11)) >> nrow()
     assert out == 10

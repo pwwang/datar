@@ -2,8 +2,6 @@
 from typing import Any, Mapping, Tuple
 from pipda.utils import DataEnv
 
-from .utils import logger
-
 class CurColumn:
     """Current column in across"""
     @classmethod
@@ -34,33 +32,3 @@ class WithDataEnv:
 
     def __exit__(self, *exc_info) -> None:
         self.data.delete()
-
-class Nesting:
-    """Nesting objects for calls from tidyr.nesting"""
-    def __init__(self, *columns: Any, **kwargs: Any) -> None:
-        self.columns = []
-        self.names = []
-
-        id_prefix = hex(id(self))[2:6]
-        for i, column in enumerate(columns):
-            self.columns.append(column)
-            if isinstance(column, str):
-                self.names.append(column)
-                continue
-            try:
-                # series
-                name = column.name
-            except AttributeError:
-                name = f'_tmp{id_prefix}_{i}'
-                logger.warning(
-                    'Temporary name used for a nesting column, use '
-                    'keyword argument instead to specify the key as name.'
-                )
-            self.names.append(name)
-
-        for key, val in kwargs.items():
-            self.columns.append(val)
-            self.names.append(key)
-
-    def __len__(self):
-        return len(self.columns)

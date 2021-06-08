@@ -14,7 +14,7 @@ from pipda.symbolic import Reference
 from varname import argname
 
 from .exceptions import ColumnNotExistingError, NameNonUniqueError
-from .types import is_scalar
+from .types import is_scalar, DTypeType
 from .defaults import DEFAULT_COLUMN_PREFIX
 
 # logger
@@ -33,6 +33,7 @@ def vars_select(
         raise_nonexists: bool = True,
         base0: Optional[bool] = None
 ) -> List[int]:
+    # TODO: support selecting data-frame columns
     """Select columns
 
     Args:
@@ -156,7 +157,7 @@ def df_assign_item(
     else:
         df.insert(df.shape[1], item, value, allow_duplicates=True)
 
-def categorize(data: Any) -> Any:
+def categorized(data: Any) -> Any:
     """Get the Categorical object"""
     if not is_categorical_dtype(data):
         return data
@@ -381,3 +382,78 @@ def get_option(key: str, value: Any = None) -> Any:
         return value
     from ..base import getOption
     return getOption(key)
+
+def apply_dtypes(
+        df: DataFrame,
+        dtypes: Optional[Union[bool, DTypeType, Mapping[str, DTypeType]]]
+) -> None:
+    """Apply dtypes to data frame"""
+    if dtypes is None or dtypes is False:
+        return
+
+    if dtypes is True:
+        inferred = df.convert_dtypes()
+        for col in df:
+            df[col] = inferred[col]
+        return
+
+    if not isinstance(dtypes, dict):
+        dtypes = dict(zip(df.columns, [dtypes]*df.shape[1]))
+
+    for column, dtype in dtypes.items():
+        if column in df:
+            df[column] = df[column].astype(dtype)
+        else:
+            for col in df:
+                if col.startswith(f"{column}$"):
+                    df[col] = df[col].astype(dtype)
+
+def keep_column_order(df: DataFrame, order: Iterable[str]):
+    """Keep the order of columns as given `order`
+
+    We cannot do `df[order]` directly, since `df` may have nested df columns.
+    """
+    out_columns = []
+    for col in order:
+        if col in df:
+            out_columns.append(col)
+        else:
+            out_columns.extend(
+                (dfcol for dfcol in df.columns if dfcol.startswith(f"{col}$"))
+            )
+    if set(out_columns) != set(df.columns):
+        raise ValueError("Given `order` does not select all columns.")
+
+    return df[out_columns]
+
+def reconstruct_tibble(
+        input: DataFrame, # pylint: disable=redefined-builtin
+        output: DataFrame,
+        ungrouped_vars: Optional[List[str]] = None,
+        keep_rowwise: bool = False
+) -> DataFrame:
+    """Reconstruct the output dataframe based on input"""
+    from ..base import setdiff, intersect
+    from ..dplyr import group_vars, group_by_drop_default
+    from .grouped import DataFrameGroupBy, DataFrameRowwise
+
+    if ungrouped_vars is None:
+        ungrouped_vars = []
+    old_groups = group_vars(input)
+    new_groups = intersect(setdiff(old_groups, ungrouped_vars), output.columns)
+
+    if isinstance(input, DataFrameRowwise):
+        return DataFrameRowwise(
+            output,
+            _group_vars=new_groups,
+            _drop=group_by_drop_default(input)
+        ) if keep_rowwise else output
+
+    if isinstance(input, DataFrameGroupBy):
+        return DataFrameGroupBy(
+            output,
+            _group_vars=new_groups,
+            _drop=group_by_drop_default(input)
+        )
+
+    return output

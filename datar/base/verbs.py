@@ -1,9 +1,11 @@
 """Function from R-base that can be used as verbs"""
 # TODO: add tests
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import (
+    Any, Iterable, List, Mapping, Optional, Tuple, Union
+)
 
 import numpy
-from pandas import DataFrame
+from pandas import DataFrame, Series, Categorical
 from pipda import register_verb
 
 from ..core.types import IntType, is_scalar
@@ -14,7 +16,8 @@ from ..core.contexts import Context
 @register_verb(DataFrame, context=Context.EVAL)
 def colnames(
         df: DataFrame,
-        names: Optional[Iterable[str]] = None
+        names: Optional[Iterable[str]] = None,
+        stack: bool = True
 ) -> Union[List[Any], DataFrame]:
     """Get or set the column names of a dataframe
 
@@ -28,10 +31,42 @@ def colnames(
         if the input dataframe is grouped, the structure is kept.
     """
     from ..stats.verbs import setNames
-    if names is not None:
-        return setNames(df, names)
+    if not stack:
+        if names is not None:
+            return setNames(df, names)
+        return df.columns.tolist()
 
-    return df.columns.tolist()
+    if names is not None:
+        namei = 0
+        newnames = []
+        for colname in df.columns:
+            parts = colname.split('$', 1)
+            if not newnames:
+                if len(parts) < 2:
+                    newnames.append(names[namei])
+                    namei += 1
+                else:
+                    newnames.append(f"{names[namei]}${parts[1]}")
+            elif len(parts) < 2:
+                newnames.append(names[namei])
+                namei += 1
+            elif newnames[-1].startswith(f"{parts[0]}$"):
+                newnames.append(f"{names[namei]}${parts[1]}")
+            else:
+                namei += 1
+                newnames.append(f"{names[namei]}${parts[1]}")
+        return setNames(df, newnames)
+
+    cols = [
+        col.split('$', 1)[0] if isinstance(col, str) else col
+        for col in df.columns
+    ]
+    out = []
+    for col in cols:
+        if col not in out:
+            out.append(col)
+    return out
+
 
 @register_verb(DataFrame, context=Context.EVAL)
 def rownames(
@@ -176,6 +211,14 @@ def names(x: DataFrame) -> List[str]:
     """Get the column names of a dataframe"""
     return x.columns.tolist()
 
+@names.register(dict)
+def _(x: Mapping[str, Any]) -> List[str]:
+    """Get the keys of a dict
+
+    dict is like a list in R, mimic `names(<list>)` in R.
+    """
+    return list(x)
+
 @register_verb(context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> List[Any]:
     """Diff of two iterables"""
@@ -216,3 +259,52 @@ def setequal(x: Any, y: Any) -> List[Any]:
     x = sorted(x)
     y = sorted(y)
     return x == y
+
+@register_verb((list, tuple, numpy.ndarray, Series, Categorical))
+def duplicated( # pylint: disable=invalid-name
+        x: Iterable[Any],
+        incomparables: Optional[Iterable[Any]] = None,
+        fromLast: bool = False
+) -> numpy.ndarray:
+    """Determine Duplicate Elements
+
+    Args:
+        x: The iterable to detect duplicates
+            Currently, elements in `x` must be hashable.
+        fromLast: Whether start to detect from the last element
+
+    Returns:
+        A bool array with the same length as `x`
+    """
+    dups = set()
+    out = []
+    out_append = out.append
+    if incomparables is None:
+        incomparables = []
+
+    if fromLast:
+        x = reversed(x)
+    for elem in x:
+        if elem in incomparables:
+            out_append(False)
+        if elem in dups:
+            out_append(True)
+        else:
+            dups.add(elem)
+            out_append(False)
+    if fromLast:
+        out = list(reversed(out))
+    return numpy.array(out, dtype=bool)
+
+@duplicated.register(DataFrame)
+def _( # pylint: disable=invalid-name,unused-argument
+        x: DataFrame,
+        incomparables: Optional[Iterable[Any]] = None,
+        fromLast: bool = False
+) -> numpy.ndarray:
+    """Check if rows in a data frame are duplicated
+
+    `incomparables` not working here
+    """
+    keep = 'first' if not fromLast else 'last'
+    return x.duplicated(keep=keep).values

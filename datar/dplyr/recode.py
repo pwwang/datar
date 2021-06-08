@@ -15,7 +15,7 @@ from ..core.utils import logger, get_option
 from ..core.types import is_scalar
 from ..base import NA, unique, c, intersect, NA_integer_, NA_character_
 
-def get_first(x: Iterable[Any]) -> Any:
+def _get_first(x: Iterable[Any]) -> Any:
     """Get first raw item from an iterable"""
     x = x[0]
     try:
@@ -23,7 +23,7 @@ def get_first(x: Iterable[Any]) -> Any:
     except AttributeError:
         return x
 
-def args_to_recodings(
+def _args_to_recodings(
         *args: Any,
         _force_index: bool = False,
         **kwargs: Any
@@ -44,7 +44,7 @@ def args_to_recodings(
                 values[int(key)] = values.pop(key)
     return values
 
-def check_length(val: numpy.ndarray, x: numpy.ndarray, name: str):
+def _check_length(val: numpy.ndarray, x: numpy.ndarray, name: str):
     """Check the length of the values to recode"""
     length_x = len(val)
     n = len(x)
@@ -59,20 +59,20 @@ def check_length(val: numpy.ndarray, x: numpy.ndarray, name: str):
         f"{name} must be length {n}, not {length_x}."
     )
 
-def check_type(val: numpy.ndarray, out_type: Optional[type], name: str):
+def _check_type(val: numpy.ndarray, out_type: Optional[type], name: str):
     """Check the type of the values to recode"""
     if val.dtype is numpy.dtype(object):
         if out_type and not all(isinstance(elem, out_type) for elem in val):
             raise TypeError(
                 f"{name} must be {out_type.__name__}, not {type(val[0])}."
             )
-    elif out_type and not isinstance(get_first(val), out_type):
+    elif out_type and not isinstance(_get_first(val), out_type):
         raise TypeError(
             f"{name} must be {out_type.__name__}, not {val.dtype.name}."
         )
 
 
-def replace_with(
+def _replace_with(
         # pylint: disable=invalid-name
         x: numpy.ndarray,
         out_type: Optional[type],
@@ -90,8 +90,8 @@ def replace_with(
     else:
         val = numpy.array(val)
 
-    check_length(val, x, name)
-    check_type(val, out_type, name)
+    _check_length(val, x, name)
+    _check_type(val, out_type, name)
     # check_class(val, x, name)
 
     i[pandas.isna(i)] = False
@@ -103,7 +103,7 @@ def replace_with(
 
     return x
 
-def validate_recode_default(
+def _validate_recode_default(
         default: Any,
         x: numpy.ndarray,
         out: numpy.ndarray,
@@ -111,7 +111,7 @@ def validate_recode_default(
         replaced: numpy.ndarray
 ) -> numpy.ndarray:
     """Validate default for recoding"""
-    default = recode_default(x, default, out_type)
+    default = _recode_default(x, default, out_type)
     if (
             default is None and
             sum(replaced & ~pandas.isna(x)) < len(out[~pandas.isna(x)])
@@ -123,19 +123,19 @@ def validate_recode_default(
 
     return default
 
-def recode_default(
+def _recode_default(
         x: numpy.ndarray,
         default: Any,
         out_type: Optional[type]
 ) -> Any:
     """Get right default for recoding"""
     if default is None and (
-            out_type is None or isinstance(get_first(x), out_type)
+            out_type is None or isinstance(_get_first(x), out_type)
     ):
         return x
     return default
 
-def recode_numeric(
+def _recode_numeric(
         _x: numpy.ndarray,
         *args: Any,
         _default: Any = None,
@@ -144,11 +144,11 @@ def recode_numeric(
 ) -> numpy.ndarray:
     """Recode numeric vectors"""
 
-    values = args_to_recodings(
+    values = _args_to_recodings(
         *args, **kwargs,
         _force_index=True
     )
-    check_args(values, _default, _missing)
+    _check_args(values, _default, _missing)
     if any(not isinstance(val, int) for val in values):
         raise ValueError(
             "All values must be unnamed (or named with integers)."
@@ -162,16 +162,16 @@ def recode_numeric(
     for val in values:
         if out_type is None:
             out_type = type(values[val])
-        out = replace_with(
+        out = _replace_with(
             out, out_type, _x == val, values[val], f"Element {val}"
         )
         replaced[_x == val] = True
 
-    _default = validate_recode_default(_default, _x, out, out_type, replaced)
-    out = replace_with(
+    _default = _validate_recode_default(_default, _x, out, out_type, replaced)
+    out = _replace_with(
         out, out_type, ~replaced & ~pandas.isna(_x), _default, "`_default`"
     )
-    out = replace_with(
+    out = _replace_with(
         out, out_type,
         pandas.isna(_x) | (_x == NA_integer_),
         _missing,
@@ -181,7 +181,7 @@ def recode_numeric(
         out = out.astype(out_type)
     return out
 
-def recode_character(
+def _recode_character(
         _x: Iterable[Any],
         *args: Any,
         _default: Any = None,
@@ -189,8 +189,8 @@ def recode_character(
         **kwargs: Any
 ) -> numpy.ndarray:
     """Recode character vectors"""
-    values = args_to_recodings(*args, **kwargs)
-    check_args(values, _default, _missing)
+    values = _args_to_recodings(*args, **kwargs)
+    _check_args(values, _default, _missing)
     if not all(isinstance(val, str) for val in values):
         raise ValueError("All values must be named.")
 
@@ -202,14 +202,14 @@ def recode_character(
     for val in values:
         if out_type is None:
             out_type = type(values[val])
-        out = replace_with(out, out_type, _x == val, values[val], f"`{val}`")
+        out = _replace_with(out, out_type, _x == val, values[val], f"`{val}`")
         replaced[_x == val] = True
 
-    _default = validate_recode_default(_default, _x, out, out_type, replaced)
-    out = replace_with(
+    _default = _validate_recode_default(_default, _x, out, out_type, replaced)
+    out = _replace_with(
         out, out_type, ~replaced & ~pandas.isna(_x), _default, "`_default`"
     )
-    out = replace_with(
+    out = _replace_with(
         out, out_type,
         pandas.isna(_x) | (_x == NA_character_),
         _missing,
@@ -219,7 +219,7 @@ def recode_character(
         out = out.astype(out_type)
     return out
 
-def check_args(
+def _check_args(
         values: Mapping[Any, Any],
         default: Any,
         missing: Any
@@ -269,14 +269,14 @@ def recode(
             _x[pandas.isna(_x_obj)] = NA_integer_
 
     if numpy.issubdtype(_x.dtype, numpy.number):
-        return recode_numeric(
+        return _recode_numeric(
             _x, *args,
             _default=_default,
             _missing=_missing,
             **kwargs
         )
 
-    return recode_character(
+    return _recode_character(
         _x, *args,
         _default=_default,
         _missing=_missing,
@@ -303,7 +303,7 @@ def _(
     if isinstance(_x, Series):
         _x = _x.values # get the Categorical object
 
-    values = args_to_recodings(*args, **kwargs)
+    values = _args_to_recodings(*args, **kwargs)
     if not values:
         raise ValueError("No replacements provided.")
 
@@ -316,7 +316,7 @@ def _(
         raise ValueError("`_missing` is not supported for factors.")
 
     n = len(_x)
-    check_args(values, _default, _missing)
+    _check_args(values, _default, _missing)
     out = numpy.array([NA] * n, dtype=object)
     replaced = numpy.array([False] * n)
     out_type = None
@@ -324,7 +324,7 @@ def _(
     for val in values:
         if out_type is None:
             out_type = type(values[val])
-        out = replace_with(
+        out = _replace_with(
             out,
             out_type,
             _x.categories == val,
@@ -333,8 +333,8 @@ def _(
         )
         replaced[_x.categories == val] = True
 
-    _default = validate_recode_default(_default, _x, out, out_type, replaced)
-    out = replace_with(
+    _default = _validate_recode_default(_default, _x, out, out_type, replaced)
+    out = _replace_with(
         out, out_type, ~replaced, _default, "`_default`"
     )
 
@@ -355,15 +355,15 @@ def recode_factor(
 
     see recode().
     """
-    values = args_to_recodings(*args, **kwargs)
+    values = _args_to_recodings(*args, **kwargs)
     recoded = recode(
         _x, values,
         _default=_default,
         _missing=_missing
     )
 
-    out_type = type(get_first(recoded))
-    _default = recode_default(_x, _default, out_type)
+    out_type = type(_get_first(recoded))
+    _default = _recode_default(_x, _default, out_type)
     all_levels = unique(c(
         list(values.values()),
         [] if _default is None else _default,

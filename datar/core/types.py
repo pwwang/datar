@@ -7,7 +7,6 @@ from pandas.core.arrays.categorical import Categorical
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
-from pipda.function import Function
 
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
@@ -23,6 +22,7 @@ DoubleOrIter = Union[numpy.double, Iterable[numpy.double]]
 BoolOrIter = Union[bool, Iterable[bool]]
 FloatOrIter = Union[FloatType, Iterable[FloatType]]
 NumericOrIter = Union[NumericType, Iterable[NumericType]]
+DTypeType = Union[str, type, numpy.dtype]
 
 NoneType = type(None)
 # used for type checks

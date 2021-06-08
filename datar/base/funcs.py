@@ -21,7 +21,7 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorize, get_option, logger
+from ..core.utils import categorized, get_option, logger
 from ..core.middlewares import WithDataEnv
 from ..core.collections import Collection
 from ..core.types import (
@@ -281,7 +281,7 @@ def as_int(x: Any) -> Union[int, Iterable[int]]:
         Otherwise, convert x to int.
     """
     if is_categorical_dtype(x):
-        return categorize(x).codes
+        return categorized(x).codes
     return _as_type(x, int)
 
 @register_func(None, context=Context.EVAL)
@@ -297,7 +297,7 @@ def as_integer(x: Any) -> Union[numpy.int64, Iterable[numpy.int64]]:
         Otherwise, convert x to numpy.int64.
     """
     if is_categorical_dtype(x):
-        return categorize(x).codes
+        return categorized(x).codes
     return _as_type(x, numpy.int64)
 
 as_int64 = as_integer
@@ -812,7 +812,7 @@ def droplevels(x: Categorical) -> Categorical:
     Returns:
         The categorical data with unused categories dropped.
     """
-    return categorize(x).remove_unused_categories()
+    return categorized(x).remove_unused_categories()
 
 @register_func(None, context=Context.EVAL)
 def levels(x: CategoricalLikeType) -> Optional[List[Any]]:
@@ -904,7 +904,7 @@ def lengths(x: Any) -> List[int]:
 # ---------------------------------
 
 def factor(
-        x: Iterable[Any],
+        x: Optional[Iterable[Any]] = None,
         # pylint: disable=redefined-outer-name
         levels: Optional[Iterable[Any]] = None,
         exclude: Any = NA,
@@ -925,6 +925,9 @@ def factor(
         ordered: logical flag to determine if the levels should be regarded
             as ordered (in the order given).
     """
+    if x is None:
+        x = []
+
     if is_categorical_dtype(x):
         x = x.to_numpy()
     ret = Categorical(

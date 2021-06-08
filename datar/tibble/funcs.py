@@ -6,25 +6,31 @@ from pandas import DataFrame, Series, RangeIndex
 from pipda import Context, register_func, register_verb
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefAttr, DirectRefItem
+from pipda.function import Function
 from varname import argname, varname
 from varname.utils import VarnameRetrievingError
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.utils import (
     copy_attrs, df_assign_item, get_option, position_after,
-    position_at, to_df, logger
+    position_at, to_df, logger, apply_dtypes
 )
 from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import is_scalar
 from ..core.exceptions import ColumnNotExistingError
-from ..base import setdiff
+from ..core.collections import Collection
+from ..core.types import StringOrIter
+from ..base import setdiff, c
 
 def tibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
         _rows: Optional[int] = None,
         _base0: Optional[bool] = None,
+        _dtypes: Optional[
+            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
+        ] = None,
         **kwargs: Any
 ) -> DataFrame:
     # pylint: disable=too-many-statements,too-many-branches
@@ -78,8 +84,18 @@ def tibble(
     for name, arg in zip(names, values):
         if arg is None:
             continue
+
         if isinstance(arg, Expression):
-            arg = arg(df, Context.EVAL.value)
+            # allow f[1:3] to work
+            if isinstance(arg, DirectRefItem) and isinstance(arg.ref, slice):
+                arg = Collection(arg.ref, base0=_base0)
+            elif (
+                    isinstance(arg, Function) and
+                    arg.func.__qualname__ == c.__qualname__
+            ):
+                arg = arg(df, Context.SELECT.value)
+            else:
+                arg = arg(df, Context.EVAL.value)
 
         if isinstance(arg, dict):
             arg = tibble(**arg)
@@ -117,12 +133,18 @@ def tibble(
 
     if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
         copy_attrs(df, args[0])
+
+    apply_dtypes(df, _dtypes)
     return df
+
 
 def tibble_row(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None,
+        _dtypes: Optional[
+            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
+        ] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Constructs a data frame that is guaranteed to occupy one row.
@@ -156,6 +178,8 @@ def tibble_row(
         df.__dfname__ = varname(raise_exc=False)
     except VarnameRetrievingError: # pragma: no cover
         df.__dfname__ = None
+
+    apply_dtypes(df, _dtypes)
     return df
 
 @register_func(None, context=Context.EVAL)
@@ -164,6 +188,9 @@ def fibble(
         _name_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None,
         _rows: Optional[int] = None,
+        _dtypes: Optional[
+            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
+        ] = None,
         **kwargs: Any
 ) -> DataFrame:
     """A function of tibble that can be used as an argument of verbs
@@ -187,10 +214,16 @@ def fibble(
         *args, **kwargs,
         _name_repair=_name_repair,
         _rows=_rows,
-        _base0=_base0
+        _base0=_base0,
+        _dtypes=_dtypes
     )
 
-def tribble(*dummies: Any) -> DataFrame:
+def tribble(
+        *dummies: Any,
+        _dtypes: Optional[
+            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
+        ] = None
+) -> DataFrame:
     """Create dataframe using an easier to read row-by-row layout
 
     Unlike original API that uses formula (`f.col`) to indicate the column
@@ -237,6 +270,8 @@ def tribble(*dummies: Any) -> DataFrame:
         ret.__dfname__ = varname(raise_exc=False)
     except VarnameRetrievingError: # pragma: no cover
         ret.__dfname__ = None
+
+    apply_dtypes(ret, _dtypes)
     return ret
 
 def enframe(
