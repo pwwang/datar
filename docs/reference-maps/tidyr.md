@@ -33,6 +33,7 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 
 |API|Description|Notebook example|
 |---|---|---:|
+|_`hoist()`_ _`unnest_longer()`_ _`unnest_wider()`_ _`unnest_auto()`_|Rectangle a nested list into a tidy tibble||
 
 ### Nesting
 
@@ -48,6 +49,8 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 |[`separate()`][30]|Separate a character column into multiple columns with a regular expression or numeric locations|[:material-notebook:][31]|
 |[`separate_rows()`][34]|
 Separate a collapsed column into multiple rows|[:material-notebook:][35]|
+|[`unite()`][36]|
+Unite multiple columns into one by pasting strings together|[:material-notebook:][37]|
 
 ### Missing values
 
@@ -106,3 +109,5 @@ See [datasets][2]
 [33]: ../../notebooks/uncount
 [34]: ../../api/datar.tidyr.separate/#datar.tidyr.separate.separate_rows
 [35]: ../../notebooks/separate
+[36]: ../../api/datar.tidyr.unite/#datar.tidyr.unite.unite
+[37]: ../../notebooks/unite

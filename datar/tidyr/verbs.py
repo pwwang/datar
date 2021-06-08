@@ -9,17 +9,11 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pandas.core.series import Series
 from pipda import register_verb
 
-from ..core.utils import (
-    copy_attrs, vars_select
-)
 from ..core.types import (
-    DataFrameType, SeriesLikeType
+    SeriesLikeType
 )
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
-from ..base import NA
-from ..dplyr.group_by import group_by_drop_default
-from ..dplyr.group_data import group_vars
 
 
 
@@ -89,53 +83,3 @@ def replace_na(
         _data = _data if data_or_replace is None else data_or_replace
 
     return _replace_na(_data, data_or_replace)
-
-
-
-
-
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def unite(
-        _data: DataFrameType,
-        col: str,
-        *columns: str,
-        sep: str = '_',
-        remove: bool = True,
-        na_rm: bool = False
-) -> DataFrameType:
-    """Unite multiple columns into one by pasting strings together
-
-    Args:
-        data: A data frame.
-        col: The name of the new column, as a string or symbol.
-        *columns: Columns to unite
-        sep: Separator to use between values.
-        remove: If True, remove input columns from output data frame.
-        na_rm: If True, missing values will be remove prior to uniting
-            each value.
-
-    Returns:
-        The dataframe with selected columns united
-    """
-    all_columns = _data.columns
-    columns = all_columns[vars_select(all_columns, *columns)]
-
-    out = _data.copy()
-
-    def unite_cols(row):
-        if na_rm:
-            row = [elem for elem in row if elem is not NA]
-        return sep.join(str(elem) for elem in row)
-
-    out[col] = out[columns].agg(unite_cols, axis=1)
-    if remove:
-        out.drop(columns=columns, inplace=True)
-
-    if isinstance(_data, DataFrameGroupBy):
-        out = _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
-    copy_attrs(out, _data)
-    return out

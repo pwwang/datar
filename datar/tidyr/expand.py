@@ -311,7 +311,14 @@ def _vec_repeat(
         return vec.loc[indexes, :].reset_index(drop=True)
 
     vec = categorized(vec)
-    out = numpy.tile(numpy.repeat(vec, each), times)
+    # numpy.repeat() turn [numpy.nan, 'A'] to ['nan', 'A']
+    vec_to_rep = vec
+    if (
+            any(isinstance(elem, str) for elem in vec) and
+            any(pandas.isnull(elem) for elem in vec)
+    ):
+        vec_to_rep = numpy.array(vec, dtype=object)
+    out = numpy.tile(numpy.repeat(vec_to_rep, each), times)
     if is_categorical_dtype(vec):
         return factor(out, levels(vec), ordered=vec.ordered)
     return out

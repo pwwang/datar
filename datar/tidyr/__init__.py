@@ -2,8 +2,7 @@
 
 from .funcs import full_seq
 from .verbs import (
-    replace_na,
-    unite
+    replace_na
 )
 from .chop import chop, unchop
 from .nest import nest, unnest
@@ -17,3 +16,4 @@ from .pivot_long import pivot_longer
 from .pivot_wide import pivot_wider
 from .separate import separate, separate_rows
 from .uncount import uncount
+from .unite import unite

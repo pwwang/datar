@@ -425,3 +425,35 @@ def keep_column_order(df: DataFrame, order: Iterable[str]):
         raise ValueError("Given `order` does not select all columns.")
 
     return df[out_columns]
+
+def reconstruct_tibble(
+        input: DataFrame, # pylint: disable=redefined-builtin
+        output: DataFrame,
+        ungrouped_vars: Optional[List[str]] = None,
+        keep_rowwise: bool = False
+) -> DataFrame:
+    """Reconstruct the output dataframe based on input"""
+    from ..base import setdiff, intersect
+    from ..dplyr import group_vars, group_by_drop_default
+    from .grouped import DataFrameGroupBy, DataFrameRowwise
+
+    if ungrouped_vars is None:
+        ungrouped_vars = []
+    old_groups = group_vars(input)
+    new_groups = intersect(setdiff(old_groups, ungrouped_vars), output.columns)
+
+    if isinstance(input, DataFrameRowwise):
+        return DataFrameRowwise(
+            output,
+            _group_vars=new_groups,
+            _drop=group_by_drop_default(input)
+        ) if keep_rowwise else output
+
+    if isinstance(input, DataFrameGroupBy):
+        return DataFrameGroupBy(
+            output,
+            _group_vars=new_groups,
+            _drop=group_by_drop_default(input)
+        )
+
+    return output
