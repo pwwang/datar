@@ -20,6 +20,10 @@ class ContextEval(ContextEvalPipda):
 
     def getitem(self, parent, ref):
         """Interpret f[ref]"""
+        if isinstance(ref, slice):
+            from .collections import Collection
+            return Collection(ref)
+
         self.used_refs[ref] += 1
         if isinstance(parent, DataFrame) and ref not in parent:
             cols = [col for col in parent.columns if col.startswith(f'{ref}$')]

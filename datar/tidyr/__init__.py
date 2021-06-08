@@ -1,9 +1,6 @@
 """APIs ported from R-tidyr"""
 
 from .funcs import full_seq
-from .verbs import (
-    replace_na
-)
 from .chop import chop, unchop
 from .nest import nest, unnest
 from .pack import pack, unpack
@@ -17,3 +14,4 @@ from .pivot_wide import pivot_wider
 from .separate import separate, separate_rows
 from .uncount import uncount
 from .unite import unite
+from .replace_na import replace_na

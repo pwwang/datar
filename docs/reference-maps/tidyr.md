@@ -61,6 +61,7 @@ Unite multiple columns into one by pasting strings together|[:material-notebook:
 |[`expand()`][12] [`crossing()`][13] [`nesting()`][14]|Expand data frame to include all possible combinations of values|[:material-notebook:][15]|
 |[`expand_grid()`][16]|
 |[`fill()`][24]|Fill in missing values with previous or next value|[:material-notebook:][25]|
+|[`replace_na()`][38]|Replace NAs with specified values|[:material-notebook:][39]|
 
 ### Miscellanea
 
@@ -111,3 +112,5 @@ See [datasets][2]
 [35]: ../../notebooks/separate
 [36]: ../../api/datar.tidyr.unite/#datar.tidyr.unite.unite
 [37]: ../../notebooks/unite
+[38]: ../../api/datar.tidyr.replace_na/#datar.tidyr.replace_na.replace_na
+[39]: ../../notebooks/replace_na

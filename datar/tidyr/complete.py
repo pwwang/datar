@@ -12,7 +12,7 @@ from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
 
 from ..dplyr import full_join, group_vars, group_by_drop_default
-from .verbs import replace_na
+from .replace_na import replace_na
 from .expand import expand
 
 @register_verb(DataFrame, context=Context.PENDING)
