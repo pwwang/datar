@@ -1,5 +1,7 @@
 ## API lifecycle
 
+- APIs with superseded lifecycle are not ported.
+
 ## Argument naming
 
 ## Extra arguments
