@@ -15,15 +15,13 @@ from pipda import register_func, register_verb
 from ..core.contexts import Context
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.types import is_scalar
-from ..core.utils import categorized, copy_attrs
+from ..core.utils import categorized, copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.names import repair_names
 
 from ..base import NA, NULL, factor, levels
 from ..tibble import tibble
-from ..dplyr import (
-    arrange, distinct, pull, group_by_drop_default, group_vars
-)
+from ..dplyr import arrange, distinct, pull
 
 @register_func(None, context=Context.EVAL)
 def expand_grid(
@@ -156,13 +154,7 @@ def _(
         )
 
     out = data.group_apply(apply_func)
-    out = DataFrameGroupBy(
-        out,
-        _group_vars=group_vars(data),
-        _drop=group_by_drop_default(data)
-    )
-    copy_attrs(out, data)
-    return out
+    return reconstruct_tibble(data, out)
 
 @expand.register(DataFrameRowwise, context=Context.EVAL)
 def _(

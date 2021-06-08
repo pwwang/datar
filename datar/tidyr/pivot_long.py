@@ -13,12 +13,11 @@ from pipda import register_verb
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.types import StringOrIter, DTypeType, is_scalar
-from ..core.utils import vars_select, apply_dtypes
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.utils import vars_select, apply_dtypes, reconstruct_tibble
 from ..core.names import repair_names
 
-from ..base import intersect, setdiff, union
-from ..dplyr import group_vars, group_by_drop_default, relocate
+from ..base import setdiff, union
+from ..dplyr import relocate
 
 from .extract import extract
 from .separate import separate
@@ -262,16 +261,4 @@ def pivot_longer(
     names = repair_names(ret.columns.tolist(), names_repair, _base0=_base0)
     ret.columns = names
 
-    if (
-            isinstance(_data, DataFrameGroupBy) and
-            not isinstance(_data, DataFrameRowwise)
-    ):
-        groupvars = intersect(group_vars(_data), ret.columns)
-        if len(groupvars) > 0:
-            return DataFrameGroupBy(
-                ret,
-                _group_vars=groupvars,
-                _drop=group_by_drop_default(_data)
-            )
-
-    return ret
+    return reconstruct_tibble(_data, ret)

@@ -9,7 +9,8 @@ from pipda import register_verb, evaluate_expr, ContextBase
 
 from ..core.contexts import Context, ContextEval
 from ..core.utils import (
-    align_value, arg_match, df_assign_item, name_mutatable_args
+    align_value, arg_match, df_assign_item,
+    name_mutatable_args, reconstruct_tibble
 )
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.grouped import DataFrameGroupBy
@@ -151,11 +152,8 @@ def _(
         # keep the original row order
         out.sort_index(inplace=True)
         # not only DataFrameGroupBy but also DataFrameRowwise
-        return _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
+        return reconstruct_tibble(_data, out, keep_rowwise=True)
+
     # 0-row
     named = name_mutatable_args(*args, **kwargs)
     df = DataFrame({key: [] for key in named})

@@ -7,14 +7,13 @@ from typing import Iterable, Set, Optional, Union, Callable
 from pandas import DataFrame
 from pipda import register_verb
 
-from ..core.utils import vars_select, copy_attrs
-from ..core.grouped import DataFrameGroupBy
+from ..core.utils import vars_select, copy_attrs, reconstruct_tibble
 from ..core.contexts import Context
 from ..core.types import StringOrIter, IntOrIter, is_scalar
 from ..core.names import repair_names
 
-from ..base import setdiff, intersect
-from ..dplyr import bind_cols, group_vars, group_by_drop_default
+from ..base import setdiff
+from ..dplyr import bind_cols
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pack(
@@ -60,15 +59,7 @@ def pack(
 
     asis = setdiff(_data.columns, usedcols)
     out = bind_cols(_data[asis], DataFrame(cols))
-    if isinstance(_data, DataFrameGroupBy):
-        out = _data.__class__(
-            out,
-            _group_vars=intersect(group_vars(_data), out.columns),
-            _drop=group_by_drop_default(_data)
-        )
-
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def unpack(

@@ -9,7 +9,8 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import StringOrIter, is_scalar
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DataFrameGroupBy
+from ..core.utils import reconstruct_tibble
 from ..base import intersect, setdiff, union
 from .group_by import group_by_drop_default
 from .group_data import group_data, group_vars
@@ -82,25 +83,7 @@ def _join(
                     )
                 )
 
-    if isinstance(x, DataFrameRowwise):
-        gvars = intersect(group_vars(x), ret.columns)
-        return DataFrameRowwise(
-            ret,
-            _group_vars=gvars,
-            _drop=group_by_drop_default(x)
-        )
-
-    if isinstance(x, DataFrameGroupBy):
-        gvars = intersect(group_vars(x), ret.columns)
-        if gvars:
-            return DataFrameGroupBy(
-                ret,
-                _group_vars=gvars,
-                _drop=group_by_drop_default(x)
-            )
-
-    return ret
-
+    return reconstruct_tibble(x, ret, keep_rowwise=True)
 
 @register_verb(
     DataFrame,
@@ -252,14 +235,7 @@ def semi_join(
     )
     ret = ret.loc[ret['__merge__'] == 'both', x.columns.tolist()]
 
-    if isinstance(x, DataFrameGroupBy):
-        return DataFrameGroupBy(
-            ret,
-            _group_vars=x._group_vars,
-            _drop=group_by_drop_default(x)
-        )
-
-    return ret
+    return reconstruct_tibble(x, ret)
 
 @register_verb(
     DataFrame,
@@ -287,14 +263,7 @@ def anti_join(
     )
     ret = ret.loc[ret._merge != 'both', x.columns.tolist()]
 
-    if isinstance(x, DataFrameGroupBy):
-        return DataFrameGroupBy(
-            ret,
-            _group_vars=x._group_vars,
-            _drop=group_by_drop_default(x)
-        )
-
-    return ret
+    return reconstruct_tibble(x, ret)
 
 @register_verb(
     DataFrame,
@@ -346,6 +315,7 @@ def nest_join(
         y_matched = y_matched.to_frame(name=y_name)
 
     out = pandas.concat([x, y_matched], axis=1)
+
     if isinstance(x, DataFrameGroupBy):
         return x.__class__(
             x,

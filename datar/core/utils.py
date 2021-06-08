@@ -432,7 +432,17 @@ def reconstruct_tibble(
         ungrouped_vars: Optional[List[str]] = None,
         keep_rowwise: bool = False
 ) -> DataFrame:
-    """Reconstruct the output dataframe based on input"""
+    """Reconstruct the output dataframe based on input dataframe
+
+    Args:
+        input: The input data frame
+        output: The output data frame
+        ungrouped_vars: Variables to exclude from grouping
+        keep_rowwise: Whether rowwise structure should be kept
+
+    Return:
+        The reconstructed dataframe.
+    """
     from ..base import setdiff, intersect
     from ..dplyr import group_vars, group_by_drop_default
     from .grouped import DataFrameGroupBy, DataFrameRowwise
@@ -443,17 +453,19 @@ def reconstruct_tibble(
     new_groups = intersect(setdiff(old_groups, ungrouped_vars), output.columns)
 
     if isinstance(input, DataFrameRowwise):
-        return DataFrameRowwise(
+        out = DataFrameRowwise(
             output,
             _group_vars=new_groups,
             _drop=group_by_drop_default(input)
         ) if keep_rowwise else output
-
-    if isinstance(input, DataFrameGroupBy):
-        return DataFrameGroupBy(
+    elif isinstance(input, DataFrameGroupBy) and len(new_groups) > 0:
+        out = DataFrameGroupBy(
             output,
             _group_vars=new_groups,
             _drop=group_by_drop_default(input)
         )
+    else:
+        out = output
 
-    return output
+    copy_attrs(out, input)
+    return out

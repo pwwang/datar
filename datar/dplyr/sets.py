@@ -9,10 +9,10 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
+from ..core.utils import reconstruct_tibble
+
 from ..base.verbs import intersect, union, setdiff, setequal
 from .bind import bind_rows
-from .group_by import group_by_drop_default
-from .group_data import group_vars
 
 def _check_xy(x: DataFrame, y: DataFrame) -> None:
     """Check the dimension and columns of x and y for set operations"""
@@ -56,11 +56,7 @@ def _(
         y: DataFrame
 ) -> DataFrameGroupBy:
     out = intersect.dispatch(DataFrame)(x, y)
-    return x.__class__(
-        out,
-        _group_vars=group_vars(x),
-        _drop=group_by_drop_default(x)
-    )
+    return reconstruct_tibble(x, out, keep_rowwise=True)
 
 @union.register(DataFrame, context=Context.EVAL)
 def _(
@@ -86,11 +82,7 @@ def _(
         y: DataFrame
 ) -> DataFrameGroupBy:
     out = union.dispatch(DataFrame)(x, y)
-    return x.__class__(
-        out,
-        _group_vars=group_vars(x),
-        _drop=group_by_drop_default(x)
-    )
+    return reconstruct_tibble(x, out, keep_rowwise=True)
 
 @setdiff.register(DataFrame, context=Context.EVAL)
 def _(
@@ -123,11 +115,7 @@ def _(
         y: DataFrame
 ) -> DataFrameGroupBy:
     out = setdiff.dispatch(DataFrame)(x, y)
-    return x.__class__(
-        out,
-        _group_vars=group_vars(x),
-        _drop=group_by_drop_default(x)
-    )
+    return reconstruct_tibble(x, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def union_all(
@@ -152,11 +140,7 @@ def _(
         y: DataFrame
 ) -> DataFrameGroupBy:
     out = union_all.dispatch(DataFrame)(x, y)
-    return x.__class__(
-        out,
-        _group_vars=group_vars(x),
-        _drop=group_by_drop_default(x)
-    )
+    return reconstruct_tibble(x, out, keep_rowwise=True)
 
 @setequal.register(DataFrame, context=Context.EVAL)
 def _(

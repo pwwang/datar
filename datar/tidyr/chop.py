@@ -12,16 +12,15 @@ from pipda import register_verb
 
 from ..core.types import IntOrIter, StringOrIter, DTypeType, is_scalar
 from ..core.utils import (
-    vars_select, copy_attrs, apply_dtypes, keep_column_order
+    vars_select, copy_attrs, apply_dtypes, keep_column_order,
+    reconstruct_tibble
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy
 
 from ..base import union, NA
 from ..dplyr import (
-    bind_cols, group_by, mutate, pull, arrange,
-    group_data, group_by_drop_default, group_vars
+    bind_cols, group_by, mutate, pull, arrange, group_data
 )
 
 from .drop_na import drop_na
@@ -77,15 +76,7 @@ def chop(
         vals = pandas.concat(compacted, ignore_index=True)
 
     out = bind_cols(split_key, vals)
-    if isinstance(data, DataFrameGroupBy):
-        out = data.__class__(
-            out,
-            _group_vars=group_vars(data),
-            _drop=group_by_drop_default(data)
-        )
-
-    copy_attrs(out, data)
-    return out
+    return reconstruct_tibble(data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def unchop(
@@ -141,15 +132,7 @@ def unchop(
     out = _unchopping(data, cols, key_cols, keep_empty)
 
     apply_dtypes(out, dtypes)
-    if isinstance(data, DataFrameGroupBy):
-        out = data.__class__(
-            out,
-            _group_vars=group_vars(data),
-            _drop=group_by_drop_default(data)
-        )
-
-    copy_attrs(out, data)
-    return out
+    return reconstruct_tibble(data, out, keep_rowwise=True)
 
 def _vec_split(
         x: Union[DataFrame, Series],

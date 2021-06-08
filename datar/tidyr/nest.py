@@ -10,11 +10,11 @@ from pandas import DataFrame, Series
 from pipda import register_verb
 
 from ..core.types import DTypeType, is_scalar
-from ..core.utils import vars_select, align_value, to_df
+from ..core.utils import vars_select, align_value, to_df, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
 
-from ..base import setdiff, intersect, NA
+from ..base import setdiff, NA
 from ..dplyr import distinct, bind_cols, group_vars, group_by_drop_default
 
 from .chop import unchop, _vec_split
@@ -98,12 +98,7 @@ def _(
     out = nest.dispatch(DataFrame)(
         _data, **cols, _names_sep=_names_sep, _base0=_base0
     )
-    gvars = intersect(out.columns, group_vars(_data))
-    return _data.__class__(
-        out,
-        _group_vars=gvars,
-        _drop=group_by_drop_default(_data)
-    )
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def unnest(

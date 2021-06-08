@@ -10,13 +10,12 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.collections import Collection
-from ..core.utils import copy_attrs
+from ..core.utils import copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
+
 from ..base.constants import NA
 from ..base import unique
 from .filter import _filter_groups
-from .group_by import group_by_drop_default
-from .group_data import group_vars
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -76,11 +75,7 @@ def _(
     out = _data.group_apply(
         lambda df: slice(df, *rows, _base0=_base0)
     )
-    out = _data.__class__(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
+    out = reconstruct_tibble(_data, out, keep_rowwise=True)
     gdata = _filter_groups(out, _data)
 
     if not _preserve and _data.attrs.get('groupby_drop', True):
@@ -124,13 +119,7 @@ def _(
     out = _data.group_apply(
         lambda df: slice_head(df, n, prop)
     )
-    out = _data.__class__(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame)
 def slice_tail(
@@ -156,13 +145,7 @@ def _(
     out = _data.group_apply(
         lambda df: slice_tail(df, n, prop)
     )
-    out = _data.__class__(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, extra_contexts={'order_by': Context.EVAL})
 def slice_min(
@@ -204,11 +187,7 @@ def _(
         prop=prop,
         with_ties=with_ties
     ))
-    return DataFrameGroupBy(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
+    return reconstruct_tibble(_data, out)
 
 @register_verb(DataFrame, extra_contexts={'order_by': Context.EVAL})
 def slice_max(
@@ -250,11 +229,7 @@ def _(
         prop=prop,
         with_ties=with_ties
     ))
-    return DataFrameGroupBy(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
+    return reconstruct_tibble(_data, out)
 
 @register_verb(DataFrame, extra_contexts={'weight_by': Context.EVAL})
 def slice_sample(
@@ -300,11 +275,7 @@ def _(
         replace=replace,
         random_state=random_state
     ))
-    return DataFrameGroupBy(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
+    return reconstruct_tibble(_data, out)
 
 def _n_from_prop(
         total: int,

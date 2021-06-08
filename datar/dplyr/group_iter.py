@@ -13,11 +13,13 @@ from pipda import register_verb, evaluate_expr
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.utils import copy_attrs, logger, vars_select, nargs
+from ..core.utils import (
+    copy_attrs, logger, vars_select, nargs, reconstruct_tibble
+)
 from ..core.types import StringOrIter
 from ..base import is_factor, droplevels, setdiff, intersect
 from .group_data import group_keys, group_rows, group_vars
-from .group_by import group_by, group_by_drop_default, ungroup
+from .group_by import group_by, ungroup
 from .select import select
 from .mutate import mutate
 from .across import across
@@ -89,11 +91,8 @@ def _(
 
     chunks = group_map(_data, fun, _keep=_keep)
     out = pandas.concat(chunks, axis=0)
-    return _data.__class__(
-        out,
-        _group_vars=gvars,
-        _drop=group_by_drop_default(_data)
-    )
+
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -120,22 +119,13 @@ def _(
         _data: DataFrame,
         _drop: Optional[bool] = None
 ) -> DataFrameGroupBy:
-    if _drop is None:
-        _drop = group_by_drop_default(_data)
-
-    gvars = group_vars(_data)
+    """Group trim on grouped data"""
     ungrouped = ungroup(_data)
     # pylint: disable=no-value-for-parameter
     fgroups = ungrouped >> select(where(is_factor))
     dropped = ungrouped >> mutate(across(fgroups.columns.tolist(), droplevels))
 
-    out = _data.__class__(
-        dropped,
-        _group_vars=gvars,
-        _drop=_drop
-    )
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, dropped, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.PENDING)
 def with_groups(

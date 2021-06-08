@@ -9,10 +9,11 @@ from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.utils import (
     align_value, arg_match, check_column_uniqueness, df_assign_item,
-    name_mutatable_args, logger, get_option
+    name_mutatable_args, logger, get_option, reconstruct_tibble
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+
 from .group_data import group_keys, group_vars, group_data
 from .group_by import group_by_drop_default
 
@@ -115,11 +116,7 @@ def _(
                     '%s (override with `_groups` argument)',
                     g_keys[:-1]
                 )
-            out = DataFrameGroupBy(
-                out,
-                _group_vars=g_keys[:-1],
-                _drop=group_by_drop_default(_data)
-            )
+            out = reconstruct_tibble(_data, out, [g_keys[-1]])
     elif _groups == "keep" and g_keys:
         if get_option('dplyr_summarise_inform'):
             logger.info(
@@ -133,11 +130,7 @@ def _(
             _drop=group_by_drop_default(_data)
         )
     elif _groups == "rowwise":
-        out = DataFrameRowwise(
-            out,
-            _group_vars=g_keys,
-            _drop=group_by_drop_default(_data)
-        )
+        out = reconstruct_tibble(_data, out, keep_rowwise=True)
     elif (
             isinstance(_data, DataFrameRowwise) and
             get_option('dplyr_summarise_inform')

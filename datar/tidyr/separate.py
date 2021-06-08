@@ -12,11 +12,12 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import DTypeType, StringOrIter, is_scalar
-from ..core.utils import logger, vars_select, apply_dtypes, position_at
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.utils import (
+    logger, vars_select, apply_dtypes, position_at, reconstruct_tibble
+)
 
-from ..base import NA, setdiff, intersect
-from ..dplyr import group_vars, group_by_drop_default, ungroup, mutate
+from ..base import NA
+from ..dplyr import ungroup, mutate
 
 from .chop import unchop
 
@@ -124,20 +125,7 @@ def separate(
     out = data.drop(columns=[col]) if remove else data
     out = mutate(out, separated)
 
-    if (
-            isinstance(data, DataFrameGroupBy) and
-            not isinstance(data, DataFrameRowwise)
-    ):
-        gvars = intersect(group_vars(data), out.columns)
-
-        if len(gvars) > 0:
-            return DataFrameGroupBy(
-                out,
-                _group_vars=gvars,
-                _drop=group_by_drop_default(data)
-            )
-
-    return out
+    return reconstruct_tibble(data, out)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def separate_rows(
@@ -177,19 +165,7 @@ def separate_rows(
         )
 
     out = unchop(out, selected, keep_empty=True, dtypes=convert, _base0=_base0)
-    gvars_exclude = intersect(selected, group_vars(out))
-    if len(gvars_exclude) > 0:
-        gvars = setdiff(group_vars(out), gvars_exclude)
-        if len(gvars) == 0:
-            return ungroup(out)
-
-        return out.__class__(
-            out,
-            _group_vars=gvars,
-            _drop=group_by_drop_default(data)
-        )
-
-    return out
+    return reconstruct_tibble(out, ungroup(out), selected, keep_rowwise=True)
 
 def _separate_col(
         elem: Any,

@@ -7,13 +7,9 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import IntOrIter, is_scalar
-from ..core.utils import get_option
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.utils import get_option, reconstruct_tibble
 
-from ..base import intersect
-from ..dplyr import (
-    group_by, mutate, row_number, group_vars, group_by_drop_default, ungroup
-)
+from ..dplyr import group_by, mutate, row_number, ungroup
 
 INDEX_COLUMN = '_UNCOUND_INDEX_'
 
@@ -71,22 +67,9 @@ def uncount(
             mutate(**{_id: row_number() + base - 1}) >>
             ungroup()
         )
+
     out.drop(columns=[INDEX_COLUMN], inplace=True)
-
-    if (
-            isinstance(data, DataFrameGroupBy) and
-            not isinstance(data, DataFrameRowwise)
-    ):
-        grpvars = intersect(group_vars(data), out.columns)
-
-        if len(grpvars) > 0:
-            return DataFrameGroupBy(
-                out,
-                _group_vars=grpvars,
-                _drop=group_by_drop_default(data)
-            )
-
-    return out
+    return reconstruct_tibble(data, out)
 
 def _check_weights(weights: Iterable[Any]) -> None:
     """Check if uncounting weights are valid"""

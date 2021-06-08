@@ -9,9 +9,9 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy
+from ..core.utils import reconstruct_tibble
 
-from ..dplyr import full_join, group_vars, group_by_drop_default
+from ..dplyr import full_join
 from .replace_na import replace_na
 from .expand import expand
 
@@ -47,10 +47,4 @@ def complete(
     full = full_join(full, data, by=full.columns.tolist())
     full = replace_na(full, fill)
 
-    if isinstance(full, DataFrameGroupBy):
-        return DataFrameGroupBy(
-            full,
-            _group_vars=group_vars(data),
-            _drop=group_by_drop_default(data)
-        )
-    return full
+    return reconstruct_tibble(data, full)

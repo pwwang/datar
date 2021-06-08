@@ -13,7 +13,7 @@ from varname.utils import VarnameRetrievingError
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.utils import (
     copy_attrs, df_assign_item, get_option, position_after,
-    position_at, to_df, logger, apply_dtypes
+    position_at, to_df, logger, apply_dtypes, reconstruct_tibble
 )
 from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -380,9 +380,6 @@ def add_row(
     ):
         raise ValueError("Can't add rows to grouped data frames.")
 
-    from ..dplyr.group_by import group_by_drop_default
-    from ..dplyr.group_data import group_vars
-
     if not args and not kwargs:
         df = DataFrame(index=[0], columns=_data.columns)
     else:
@@ -399,11 +396,7 @@ def add_row(
     out = _rbind_at(_data, df, pos)
 
     if isinstance(_data, DataFrameRowwise):
-        out = DataFrameRowwise(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
+        out = reconstruct_tibble(_data, out, keep_rowwise=True)
 
     copy_attrs(out, _data)
     return out
@@ -440,9 +433,6 @@ def add_column(
     Returns:
         The dataframe with the added columns
     """
-    from ..dplyr.group_by import group_by_drop_default
-    from ..dplyr.group_data import group_vars
-
     df = tibble(*args, **kwargs, _name_repair='minimal')
 
     if df.shape[1] == 0:
@@ -462,17 +452,9 @@ def add_column(
         _data.columns.tolist(),
         _base0
     )
+
     out = _cbind_at(_data, df, pos, _name_repair)
-
-    if isinstance(_data, DataFrameGroupBy):
-        out = _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
-
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame)
 def has_rownames(_data: DataFrame) -> bool:
