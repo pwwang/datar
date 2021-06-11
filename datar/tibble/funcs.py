@@ -93,9 +93,9 @@ def tibble(
                     isinstance(arg, Function) and
                     arg.func.__qualname__ == c.__qualname__
             ):
-                arg = arg(df, Context.SELECT.value)
+                arg = arg._pipda_eval(df, Context.SELECT.value)
             else:
-                arg = arg(df, Context.EVAL.value)
+                arg = arg._pipda_eval(df, Context.EVAL.value)
 
         if isinstance(arg, dict):
             arg = tibble(**arg)

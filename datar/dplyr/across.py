@@ -98,7 +98,7 @@ class Across:
                         *CurColumn.replace_args(self.args, column),
                         **CurColumn.replace_kwargs(self.kwargs, column),
                         _env='piping'
-                    )(self.data, context)
+                    )._pipda_eval(self.data, context)
 
                 # todo: check if it is proper
                 #       group information lost
