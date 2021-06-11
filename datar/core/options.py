@@ -1,6 +1,6 @@
 """Provide options"""
 
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Union, Optional, Callable
 from contextlib import contextmanager
 
 from diot import Diot
@@ -17,6 +17,12 @@ OPTIONS = Diot(
     # Otherwise, like python
     index_base_0=False,
     dplyr_summarise_inform=True,
+    add_option=True,
+    # allow 'a.b' to access 'a_b'
+    diot_transform=_key_transform
+)
+
+OPTION_CALLBACKS = Diot(
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform
 )
@@ -42,7 +48,16 @@ def options(*args: Union[str, Mapping[str, Any]], **kwargs: Any) -> None:
         name: value for name, value in OPTIONS.items()
         if name in names or name in pairs
     }, diot_transform=_key_transform)
-    OPTIONS.update(pairs)
+
+    for key, val in pairs.items():
+        oldval = OPTIONS[key]
+        if oldval == val:
+            continue
+        OPTIONS[key] = val
+        callback = OPTION_CALLBACKS.get(key)
+        if callable(callback):
+            callback(val)
+
     return out
 
 @contextmanager
@@ -66,3 +81,14 @@ def getOption(x: str, default: Any = None) -> Any:
         default: The default value if `x` is unset
     """
     return OPTIONS.get(x, default)
+
+def add_option(
+        x: str,
+        default: Any = None,
+        callback: Optional[Callable] = None
+) -> None:
+    """Add an option"""
+    OPTIONS[x] = default
+    if callback:
+        OPTION_CALLBACKS[x] = callback
+        callback(default)
