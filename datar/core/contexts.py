@@ -18,26 +18,31 @@ class ContextEval(ContextEvalPipda):
     def __init__(self):
         self.used_refs = defaultdict(lambda: 0)
 
-    def getitem(self, parent, ref):
+    # pylint: disable=arguments-differ
+    def getitem(self, parent, ref, _attr=False):
         """Interpret f[ref]"""
         if isinstance(ref, slice):
+            # Allow f[1:3] to be interpreted as 1:3
             from .collections import Collection
             return Collection(ref)
 
         self.used_refs[ref] += 1
-        if isinstance(parent, DataFrame) and ref not in parent:
-            cols = [col for col in parent.columns if col.startswith(f'{ref}$')]
-            if not cols:
-                raise ColumnNotExistingError(ref)
-            ret = parent.loc[:, cols]
-            ret.columns = [col[(len(ref)+1):] for col in cols]
-            return ret
-        try:
-            return super().getitem(parent, ref)
-        except KeyError as keyerr:
-            raise ColumnNotExistingError(str(keyerr)) from None
+        if isinstance(parent, DataFrame):
+            from .utils import df_getitem
+            try:
+                return df_getitem(parent, ref)
+            except KeyError as keyerr:
+                raise ColumnNotExistingError(str(keyerr)) from None
 
-    getattr = getitem # make sure f.size gets f['size']
+        return (
+            super().getitem(parent, ref)
+            if not _attr
+            else super().getattr(parent, ref)
+        )
+
+    def getattr(self, parent, ref):
+        """Evaluate f.a"""
+        return self.getitem(parent, ref, _attr=True)
 
 class ContextSelectSlice(ContextSelect):
     """Mark the context to interpret slice

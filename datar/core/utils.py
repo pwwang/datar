@@ -469,3 +469,18 @@ def reconstruct_tibble(
 
     copy_attrs(out, input)
     return out
+
+def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Series]:
+    """Select columns from a data frame
+
+    If the column is a data frame, select that data frame.
+    """
+    try:
+        return df[ref]
+    except KeyError:
+        cols = [col for col in df.columns if col.startswith(f'{ref}$')]
+        if not cols:
+            raise KeyError(ref)
+        ret = df.loc[:, cols]
+        ret.columns = [col[len(ref)+1:] for col in cols]
+        return ret
