@@ -14,7 +14,7 @@ from .verbs import (
 )
 from .funcs import (
     as_date, as_character, as_double, as_factor, as_categorical,
-    as_int, as_integer, as_logical, as_bool, table, as_numeric,
+    as_int, as_integer, as_logical, as_bool, as_numeric,
     c, ceiling, floor, cummax, cummin, cumprod, cumsum, cut, sample,
     is_categorical, is_character, is_double, is_factor, is_float,
     is_int, is_int64, is_integer, is_na, is_numeric, sum, mean, median,
@@ -24,3 +24,4 @@ from .funcs import (
 )
 # plain functions
 from .funcs import factor, rep, context
+from .table import table

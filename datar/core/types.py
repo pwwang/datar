@@ -7,6 +7,7 @@ from pandas.core.arrays.categorical import Categorical
 from pandas.core.frame import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 from pandas.core.series import Series
+from pandas.core.dtypes.common import is_categorical_dtype
 
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
@@ -53,3 +54,6 @@ def is_scalar(x: Any) -> bool:
 def is_iterable(x: Any) -> bool:
     """Check if a value is iterable, which is not a scalar"""
     return not is_scalar(x)
+
+# pylint: disable=invalid-name
+is_categorical = is_categorical_dtype

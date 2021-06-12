@@ -21,7 +21,7 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorized, get_option, logger
+from ..core.utils import categorized, get_option, logger, Array
 from ..core.middlewares import WithDataEnv
 from ..core.collections import Collection
 from ..core.types import (
@@ -645,137 +645,6 @@ def pmax(
 ) -> Iterable[float]:
     """Get the max value rowwisely"""
     return [max(elem, na_rm=na_rm) for elem in zip(*series)]
-
-@register_func(None, context=Context.EVAL)
-def table(
-        obj: Any,
-        *objs: Any,
-        exclude: Any = NA,
-        # not supported. use exclude instead
-        # use_na: str = "no",
-        dnn: Optional[Union[str, List[str]]] = None,
-        # not supported, varname.argname not working with wrappers having
-        # different signatures.
-        # deparse_level: int = 1
-) -> DataFrame:
-    # pylint: disable=too-many-statements,too-many-branches
-    """uses the cross-classifying factors to build a contingency table of
-    the counts at each combination of factor levels.
-
-    When used with DataFrameGroupBy data, groups are ignored.
-
-    Args:
-        obj, *objs: one or more objects which can be interpreted as factors
-            Only 1 or 2 variables allowed currently.
-            If obj or elements of objs is a DataFrame, each column is counted
-            as a variable.
-        exclude: levels to remove for all factors
-        dnn: the names to be given to the dimensions in the result.
-
-    Returns:
-        A contingency table (DataFrame)
-    """
-    obj1 = obj2 = None
-    obj_nvar = 1
-    if not isinstance(obj, DataFrame):
-        obj1 = list(obj) if isinstance(obj, str) else obj
-        obj_nvar = 1
-    elif obj.shape[1] == 1:
-        obj1 = obj.iloc[:, 0]
-        obj_nvar = 1
-    elif obj.shape[1] == 2:
-        obj1 = obj.iloc[:, 0]
-        obj2 = obj.iloc[:, 1]
-        obj_nvar = 2
-    else:
-        raise ValueError(
-            'At most 2 columns supported in the dataframe for `table`'
-        )
-
-    if obj_nvar == 2 and objs:
-        raise ValueError(
-            'At most 2 variables supported for `table`'
-        )
-    if objs:
-        obj = objs[0]
-        if isinstance(obj, DataFrame) and obj.shape[1] > 1:
-            raise ValueError(
-                'At most 2 variables supported for `table`'
-            )
-        if isinstance(obj, DataFrame):
-            obj2 = obj.iloc[:, 0]
-        elif isinstance(obj, str):
-            obj2 = list(obj)
-        else:
-            obj2 = obj
-
-    if obj2 is None:
-        obj2 = obj1
-
-    dn1 = dn2 = None
-    if isinstance(dnn, str):
-        dn1 = dn2 = dnn
-    elif is_iterable(dnn):
-        dnn = list(dnn)
-        if len(dnn) == 1:
-            dnn = dnn * 2
-        dn1, dn2 = dnn[:2]
-
-    if obj1 is obj2:
-        if not isinstance(obj1, (Series, Categorical)):
-            obj1 = obj2 = Series(obj1)
-    else:
-        if not isinstance(obj1, (Series, Categorical)):
-            obj1 = Series(obj1)
-        if not isinstance(obj2, (Series, Categorical)):
-            obj2 = Series(obj2)
-
-    if is_scalar(exclude):
-        exclude = [exclude]
-
-    if obj1 is obj2:
-        if isinstance(obj1, Series):
-            obj1 = obj2 = obj1[~obj1.isin(exclude)].reset_index(drop=True)
-        else:
-            obj1.remove_categories(
-                [exc for exc in exclude if exc in obj1.categories],
-                inplace=True
-            )
-    else:
-        if isinstance(obj1, Series):
-            obj1 = obj1[~obj1.isin(exclude)].reset_index(drop=True)
-        else:
-            obj1.remove_categories(
-                [exc for exc in exclude if exc in obj1.categories],
-                inplace=True
-            )
-        if isinstance(obj2, Series):
-            obj2 = obj2[~obj2.isin(exclude)].reset_index(drop=True)
-        else:
-            obj2.remove_categories(
-                [exc for exc in exclude if exc in obj2.categories],
-                inplace=True
-            )
-
-    if NA not in exclude:
-        if obj1 is obj2:
-            if not is_categorical_dtype(obj1):
-                obj1 = obj2 = obj1.fillna('<NA>')
-        else:
-            if not is_categorical_dtype(obj1):
-                obj1 = obj1.fillna('<NA>')
-            if not is_categorical_dtype(obj2):
-                obj2 = obj2.fillna('<NA>')
-
-    kwargs = {'dropna': False}
-    if dn1:
-        kwargs['rownames'] = [dn1]
-    if dn2:
-        kwargs['colnames'] = [dn2]
-    tab = pandas.crosstab(obj1, obj2, **kwargs)
-    if obj1 is obj2:
-        tab = DataFrame(dict(count=numpy.diag(tab)), index=tab.columns).T
-    return tab
 
 @register_func(None, context=Context.EVAL)
 def round(

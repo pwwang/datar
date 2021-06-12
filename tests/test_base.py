@@ -135,7 +135,7 @@ def test_factor():
     assert_equal(x.categories.tolist(), [1, 2])
 
     x = factor(z, exclude = "X")
-    assert x[0] is NA
+    assert is_na(x[0])
     assert len(x.categories) == 2
 
 @pytest.mark.parametrize('x,expected', [
@@ -265,10 +265,11 @@ def test_table():
     assert tab.loc['New England', 'Northeast'] == 6
 
     #-----------------
-    with context(airquality) as _:
-        tab = table(cut(f.Temp, stats.quantile(f.Temp)), f.Month)
+    # wait for cut
+    # with context(airquality) as _:
+    #     tab = table(cut(f.Temp, stats.quantile(f.Temp)), f.Month)
 
-    assert tab.iloc[0,0] == 24
+    # assert tab.iloc[0,0] == 24
 
     #-----------------
     a = letters[:3]
@@ -283,8 +284,8 @@ def test_table():
     #-----------------
     a = c(NA, Inf, (1.0/(i+1) for i in range(3)))
     a = a * 10
-    tab = table(a)
-    assert_equal(tab.values.flatten(), [10] * 4)
+    # tab = table(a)
+    # assert_equal(tab.values.flatten(), [10] * 4)
 
     tab = table(a, exclude=None)
     assert_equal(tab.values.flatten(), [10] * 5)

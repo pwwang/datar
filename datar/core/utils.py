@@ -4,10 +4,13 @@ import logging
 import inspect
 from functools import singledispatch
 from copy import deepcopy
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
+from typing import (
+    Any, Callable, Iterable, List, Mapping, Optional, Union, Tuple
+)
 
 import numpy
-from pandas import DataFrame, Series
+import pandas
+from pandas import DataFrame, Series, array as Array
 from pandas.core.dtypes.common import is_categorical_dtype
 from pipda.symbolic import Reference
 
@@ -484,3 +487,10 @@ def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Series]:
         ret = df.loc[:, cols]
         ret.columns = [col[len(ref)+1:] for col in cols]
         return ret
+
+def _replace_na_with_uniq(
+        x: Iterable,
+        rep: Any = None
+) -> Tuple[Iterable, Mapping]:
+    """Replace NAs in data with a unique non-NA value"""
+
