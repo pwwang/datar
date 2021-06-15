@@ -31,7 +31,7 @@ sum = _register_arithmetic('sum', "Sum of an iterable.")
 mean = _register_arithmetic('mean', 'Calculate mean of an iterable.')
 median = _register_arithmetic('median', 'Calculate median of an iterable.')
 min = _register_arithmetic('min', 'Get min of an iterable.')
-max = _register_arithmetic('min', 'Get max of an iterable.')
+max = _register_arithmetic('max', 'Get max of an iterable.')
 
 
 @register_func(None, context=Context.EVAL)
