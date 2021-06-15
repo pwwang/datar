@@ -19,7 +19,7 @@ from .funcs import (
     is_categorical, is_character, is_double, is_factor, is_float,
     is_int, is_int64, is_integer, is_na, is_numeric,
     as_int64, unique, Im, Re, is_in, is_element, length, lengths,
-    seq_along, seq_len, seq, abs, round, sqrt, rev,
+    seq_along, seq_len, seq, abs, round, sqrt, rev, which,
     droplevels, levels, sin, cos, identity, expandgrid, all, any
 )
 # plain functions

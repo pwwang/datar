@@ -21,7 +21,7 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorized, get_option, logger, Array
+from ..core.utils import categorized, get_option, logger, Array, length_of
 from ..core.middlewares import WithDataEnv
 from ..core.collections import Collection
 from ..core.types import (
@@ -714,12 +714,9 @@ def unique(x: Iterable[Any]) -> numpy.ndarray:
     # return numpy.unique(x)
     return pandas.unique(x) # keeps order
 
-@register_func(None, context=Context.EVAL)
-def length(x: Any) -> int:
-    """Length of an object"""
-    if is_scalar(x):
-        return 1
-    return len(x)
+which = register_func(None, context=Context.EVAL, func=numpy.flatnonzero)
+
+length = register_func(None, context=Context.EVAL, func=length_of)
 
 @register_func(None, context=Context.EVAL)
 def lengths(x: Any) -> List[int]:
