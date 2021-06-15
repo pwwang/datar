@@ -8,6 +8,7 @@ from datar.all import *
 from datar.datasets import mtcars, iris
 from datar.core.exceptions import ColumnNotExistingError
 from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
+from .conftest import assert_iterable_equal
 
 @pytest.fixture
 def df():
@@ -60,21 +61,22 @@ def test_mutate_does_not_loose_variables():
 def test_orders_by_groups():
     df = tibble(a = sample(range(1,11), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.a.tolist() == list(range(1,11))
+    assert_iterable_equal(out.a, range(1,11))
 
     df = tibble(a = sample(letters[:10], 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
-    assert out.a.tolist() == letters[:10].tolist()
+    assert_iterable_equal(out.a, letters[:10])
 
     df = tibble(a = sample(sqrt(range(1,11)), 3000, replace = TRUE)) >> group_by(f.a)
     out = df >> count()
     expect = list(sqrt(range(1,11)))
-    assert out.a.tolist() == expect
+    assert_iterable_equal(out.a, expect)
 
 def test_by_tuple_values():
     df = tibble(
         x=[1,2,3],
-        y=[(1,2), (1,2,3), (1,2)]
+        y=[(1,2), (1,2,3), (1,2)],
+        _dtypes={'y': object}
     ) >> group_by(f.y)
     out = df >> count()
     assert out.y.tolist() == [(1,2), (1,2,3)]

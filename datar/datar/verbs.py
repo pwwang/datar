@@ -6,13 +6,13 @@ from pandas import DataFrame
 from pandas.core.groupby.generic import DataFrameGroupBy
 from pipda import register_verb
 
-from ..core.types import DataFrameType, is_scalar
+from ..core.types import is_scalar
 from ..core.contexts import Context
 from ..dplyr import select, slice # pylint: disable=redefined-builtin
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def get(
-        _data: DataFrameType,
+        _data: DataFrame,
         rows: Any = None,
         cols: Any = None
 ) -> Any:
@@ -58,7 +58,7 @@ def get(
     return data
 
 @register_verb(DataFrame)
-def flatten(_data: DataFrameType, bycol: bool = False) -> List[Any]:
+def flatten(_data: DataFrame, bycol: bool = False) -> List[Any]:
     """Flatten a dataframe into a 1-d python list
 
     Args:

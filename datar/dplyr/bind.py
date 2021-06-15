@@ -9,13 +9,12 @@ from pandas import DataFrame, Categorical
 from pandas.api.types import union_categoricals
 from pipda import register_verb
 
-from ..core.types import NoneType
+from ..core.types import NoneType, is_null, is_categorical
 from ..core.contexts import Context
-from ..core.utils import copy_attrs, get_option, logger
+from ..core.utils import get_option, logger, reconstruct_tibble
 from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy
-from ..base.funcs import is_categorical
-from ..tibble.funcs import tibble
+from ..tibble import tibble
 
 @register_verb(
     (DataFrame, list, dict, NoneType),
@@ -92,7 +91,7 @@ def bind_rows(
             if col in dat and not dat[col].isna().all()
         ]
         all_categorical = [
-            is_categorical(ser) or all(pandas.isna(ser)) for ser in all_series
+            is_categorical(ser) or all(is_null(ser)) for ser in all_series
         ]
         if all(all_categorical):
             union_cat = union_categoricals(all_series)
@@ -126,9 +125,7 @@ def _(
 ) -> DataFrameGroupBy:
 
     data = bind_rows.dispatch(DataFrame)(_data, *datas, _id=_id, **kwargs)
-    out = DataFrameGroupBy.construct_from(data, _data)
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, data)
 
 @register_verb((DataFrame, dict, NoneType), context=Context.EVAL)
 def bind_cols(

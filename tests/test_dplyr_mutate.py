@@ -5,7 +5,7 @@ import pytest
 from pandas.core.frame import DataFrame
 from datar.all import *
 from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
-from datar.core.exceptions import ColumnNotExistingError
+from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable
 from datar.datasets import mtcars, iris
 
 def test_empty_mutate_returns_input():
@@ -46,9 +46,8 @@ def test_length1_vectors_are_recycled():
     out = mutate(df, y=1)
     assert out.y.tolist() == [1,1,1,1]
 
-    # we are able to recyle this when total_len % len == 0
-    out = mutate(df, y=[1,2])
-    assert out.y.tolist() == [1,2,1,2]
+    with pytest.raises(DataUnrecyclable, match="recycle"):
+        mutate(df, y=[1,2])
 
 def test_removes_vars_with_null():
     df = tibble(x=range(1,4), y=range(1,4))
@@ -291,15 +290,15 @@ def test_errors():
     tibble(x = 1) >> mutate(y = mean)
 
     # incompatible size
-    with pytest.raises(ValueError, match="Length"):
+    with pytest.raises(DataUnrecyclable, match="size 4"):
         tibble(x = c(2, 2, 3, 3)) >> mutate(i = range(1,6))
-    with pytest.raises(ValueError, match="Length"):
+    with pytest.raises(DataUnrecyclable, match="size 2"):
         tibble(x = c(2, 2, 3, 3)) >> group_by(f.x) >> mutate(i = range(1,6))
-    with pytest.raises(ValueError, match="Length"):
+    with pytest.raises(DataUnrecyclable, match="size 1"):
         tibble(x = c(2, 3, 3)) >> group_by(f.x) >> mutate(i = range(1,6))
-    with pytest.raises(ValueError, match="Length"):
+    with pytest.raises(DataUnrecyclable, match="size 1"):
         tibble(x = c(2, 2, 3, 3)) >> rowwise() >> mutate(i = range(1,6))
-    with pytest.raises(ValueError, match="Length"):
+    with pytest.raises(DataUnrecyclable, match="size 10"):
         tibble(x = range(1,11)) >> mutate(y=range(11,21), z=[1,2,3])
 
 # transmute -------------------------------------------------------------

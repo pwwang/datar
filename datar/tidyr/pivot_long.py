@@ -12,7 +12,7 @@ from pipda import register_verb
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
-from ..core.types import StringOrIter, DTypeType, is_scalar
+from ..core.types import StringOrIter, Dtype, is_scalar
 from ..core.utils import vars_select, apply_dtypes, reconstruct_tibble
 from ..core.names import repair_names
 
@@ -34,7 +34,7 @@ def pivot_longer(
         names_sep: Optional[str] = None,
         names_pattern: Optional[str] = None,
         names_ptypes: Optional[
-            Union[DTypeType, Mapping[str, DTypeType]]
+            Union[Dtype, Mapping[str, Dtype]]
         ] = None,
         names_transform: Optional[
             Union[Callable, Mapping[str, Callable]]
@@ -43,7 +43,7 @@ def pivot_longer(
         values_to: str = "value",
         values_drop_na: bool = False,
         values_ptypes: Optional[
-            Union[DTypeType, Mapping[str, DTypeType]]
+            Union[Dtype, Mapping[str, Dtype]]
         ] = None,
         values_transform: Optional[
             Union[Callable, Mapping[str, Callable]]

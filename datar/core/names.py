@@ -162,6 +162,7 @@ def repair_names(
             for name in names
         ]
 
+    names = list(names)
     return (
         repair(names, _base0=_base0)
         if '_base0' in parameters

@@ -5,12 +5,11 @@ https://github.com/tidyverse/dplyr/blob/master/R/rows.R
 from typing import List, Optional
 
 import numpy
-import pandas
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..base import setdiff
-from ..core.types import StringOrIter, is_scalar
+from ..core.types import StringOrIter, is_scalar, is_null, is_not_null
 from ..core.utils import logger
 from ..tibble import rownames_to_column
 
@@ -52,7 +51,7 @@ def rows_insert(
     _rows_check_key_df(y, key, df_name='y')
 
     idx = _rows_match(y[key], x[key])
-    bad = ~pandas.isna(idx)
+    bad = is_not_null(idx)
     if any(bad):
         raise ValueError("Attempting to insert duplicate rows.")
 
@@ -91,7 +90,7 @@ def rows_update(
     _rows_check_key_df(y, key, df_name='y')
 
     idx = _rows_match(y[key], x[key])
-    bad = pandas.isna(idx)
+    bad = is_null(idx)
     if any(bad):
         raise ValueError("Attempting to update missing rows.")
 
@@ -134,7 +133,7 @@ def rows_patch(
     _rows_check_key_df(y, key, df_name='y')
 
     idx = _rows_match(y[key], x[key])
-    bad = pandas.isna(idx)
+    bad = is_null(idx)
     if any(bad):
         raise ValueError("Attempting to patch missing rows.")
 
@@ -183,7 +182,7 @@ def rows_upsert(
     _rows_check_key_df(y, key, df_name='y')
 
     idx = _rows_match(y[key], x[key])
-    new = pandas.isna(idx)
+    new = is_null(idx)
     # idx of x
     idx_existing = idx[~new]
 
@@ -227,7 +226,7 @@ def rows_delete(
         logger.info("Ignoring extra columns: %s", extra_cols)
 
     idx = _rows_match(y[key], x[key])
-    bad = pandas.isna(idx)
+    bad = is_null(idx)
 
     if any(bad):
         raise ValueError("Attempting to delete missing rows.")

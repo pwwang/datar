@@ -2,8 +2,9 @@
 1. add dtypes next to column names when printing
 2. collapse data frames when they are elements of a parent data frame.
 """
+from typing import Optional
 from pandas import DataFrame
-from pandas.io.formats import format as fmt, html
+from pandas.io.formats import format as fmt, html, string as stringf
 from pandas.io.formats.html import (
     HTMLFormatter,
     NotebookFormatter,
@@ -29,6 +30,9 @@ from pandas.io.formats.format import (
     format_array,
     _trim_zeros_single_float
 )
+from pandas.io.formats.string import (
+    StringFormatter
+)
 from pandas.io.formats.printing import pprint_thing
 from pandas.core.dtypes.common import is_scalar
 from pandas.core.dtypes.missing import isna
@@ -42,10 +46,27 @@ from .options import add_option
 # pylint: disable=consider-using-enumerate
 # pylint: disable=too-many-nested-blocks
 
+# TODO: patch more formatters
+
 class DatarDataFrameFormatter(DataFrameFormatter):
     """Custom formatter for DataFrame
-
     """
+    @property
+    def grouping_info(self) -> Optional[str]:
+        """Get the string representation of grouping info"""
+        from .grouped import DataFrameGroupBy, DataFrameRowwise
+
+        if isinstance(self.frame, DataFrameRowwise):
+            return f"\n[Rowwise: {', '.join(self.frame._group_vars)}]"
+
+        if isinstance(self.frame, DataFrameGroupBy):
+            ngroups = self.frame._group_data.shape[0]
+            return (
+                f"\n[Groups: {', '.join(self.frame._group_vars)} (n={ngroups})]"
+            )
+
+        return None
+
     def get_strcols(self) -> List[List[str]]:
         """
         Render a DataFrame to a list of columns (as lists of strings).
@@ -380,8 +401,52 @@ class DatarHTMLFormatter(HTMLFormatter):
                     nindex_levels=frame.index.nlevels,
                 )
 
+    def render(self) -> List[str]:
+        """Render the df"""
+        from .grouped import DataFrameGroupBy, DataFrameRowwise
+
+        self._write_table()
+
+        if isinstance(self.frame, DataFrameRowwise):
+            self.write(
+                f"<p>Rowwise: {self.frame._group_vars}</p>"
+            )
+        elif isinstance(self.frame, DataFrameGroupBy):
+            ngroups = self.frame._group_data.shape[0]
+            self.write(
+                f"<p>Groups: {self.frame._group_vars} (n={ngroups})</p>"
+            )
+
+        if self.should_show_dimensions:
+            by = chr(215)  # ×
+            self.write(
+                f"<p>{len(self.frame)} rows {by} {len(self.frame.columns)} "
+                "columns</p>"
+            )
+
+        return self.elements
+
 class DatarNotebookFormatter(DatarHTMLFormatter, NotebookFormatter):
     """Notebook Formatter"""
+
+class DatarStringFormatter(StringFormatter):
+    """String Formatter"""
+    def to_string(self) -> str:
+        """To string representation"""
+        text = self._get_string_representation()
+        grouping_info = getattr(self.fmt, 'grouping_info')
+
+        if grouping_info and self.fmt.should_show_dimensions:
+            return "".join([
+                # self.fmt.dimensions_info has two leading "\n"
+                text, "\n", grouping_info, self.fmt.dimensions_info[1:]
+            ])
+        if grouping_info:
+            return "".join([text, "\n", grouping_info])
+        if self.fmt.should_show_dimensions:
+            return "".join([text, self.fmt.dimensions_info])
+
+        return text
 
 def _patch(option: bool) -> None:
     """Patch pandas?"""
@@ -391,10 +456,12 @@ def _patch(option: bool) -> None:
         fmt.GenericArrayFormatter = DatarGenericArrayFormatter
         html.HTMLFormatter = DatarHTMLFormatter
         html.NotebookFormatter = DatarNotebookFormatter
+        stringf.StringFormatter = DatarStringFormatter
     else:
         fmt.DataFrameFormatter = DataFrameFormatter
         fmt.GenericArrayFormatter = GenericArrayFormatter
         html.HTMLFormatter = HTMLFormatter
         html.NotebookFormatter = NotebookFormatter
+        stringf.StringFormatter = StringFormatter
 
 add_option('frame_format_patch', True, _patch)

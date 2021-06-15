@@ -7,12 +7,11 @@ from typing import Any, Iterable, Mapping, Optional
 import numpy
 import pandas
 from pandas import Categorical, Series
-from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.utils import logger, get_option
-from ..core.types import is_scalar
+from ..core.utils import logger, get_option, Array
+from ..core.types import is_not_null, is_scalar, is_null, is_categorical
 from ..base import NA, unique, c, intersect, NA_integer_, NA_character_
 
 def _get_first(x: Iterable[Any]) -> Any:
@@ -94,7 +93,7 @@ def _replace_with(
     _check_type(val, out_type, name)
     # check_class(val, x, name)
 
-    i[pandas.isna(i)] = False
+    i[is_null(i)] = False
 
     if len(val) == 1:
         x[i] = val[0]
@@ -114,7 +113,7 @@ def _validate_recode_default(
     default = _recode_default(x, default, out_type)
     if (
             default is None and
-            sum(replaced & ~pandas.isna(x)) < len(out[~pandas.isna(x)])
+            sum(replaced & is_not_null(x)) < len(out[is_not_null(x)])
     ):
         logger.warning(
             "Unreplaced values treated as NA as `_x` is not compatible. "
@@ -169,15 +168,15 @@ def _recode_numeric(
 
     _default = _validate_recode_default(_default, _x, out, out_type, replaced)
     out = _replace_with(
-        out, out_type, ~replaced & ~pandas.isna(_x), _default, "`_default`"
+        out, out_type, ~replaced & is_not_null(_x), _default, "`_default`"
     )
     out = _replace_with(
         out, out_type,
-        pandas.isna(_x) | (_x == NA_integer_),
+        is_null(_x) | (_x == NA_integer_),
         _missing,
         "`_missing`"
     )
-    if out_type and not any(pandas.isna(out)):
+    if out_type and not is_null(out).any():
         out = out.astype(out_type)
     return out
 
@@ -207,15 +206,15 @@ def _recode_character(
 
     _default = _validate_recode_default(_default, _x, out, out_type, replaced)
     out = _replace_with(
-        out, out_type, ~replaced & ~pandas.isna(_x), _default, "`_default`"
+        out, out_type, ~replaced & is_not_null(_x), _default, "`_default`"
     )
     out = _replace_with(
         out, out_type,
-        pandas.isna(_x) | (_x == NA_character_),
+        is_null(_x) | (_x == NA_character_),
         _missing,
         "`_missing`"
     )
-    if out_type and not any(pandas.isna(out)):
+    if out_type and not is_null(out).any():
         out = out.astype(out_type)
     return out
 
@@ -231,7 +230,7 @@ def _check_args(
 
 @register_func(context=Context.EVAL)
 def recode(
-        _x: Iterable[Any],
+        _x: Iterable,
         *args: Any,
         _default: Any = None,
         _missing: Any = None,
@@ -264,11 +263,15 @@ def recode(
             na_len = len(NA_character_)
             if (_x.dtype.itemsize >> 2) < na_len: # length not enough
                 _x = _x.astype(f'<U{na_len}')
-            _x[pandas.isna(_x_obj)] = NA_character_
+            _x[is_null(_x_obj)] = NA_character_
         elif numpy.issubdtype(_x.dtype, numpy.integer):
-            _x[pandas.isna(_x_obj)] = NA_integer_
+            _x[is_null(_x_obj)] = NA_integer_
 
-    if numpy.issubdtype(_x.dtype, numpy.number):
+    if (
+            numpy.issubdtype(_x.dtype, numpy.number) or
+            numpy.issubdtype(Array(_x[is_not_null(_x)].tolist()).dtype,
+                             numpy.number)
+    ):
         return _recode_numeric(
             _x, *args,
             _default=_default,
@@ -292,7 +295,7 @@ def _(
         **kwargs: Any
 ) -> Categorical:
     """Recode factors"""
-    if not is_categorical_dtype(_x): # non-categorical Series
+    if not is_categorical(_x): # non-categorical Series
         return recode(
             _x.values,
             *args,

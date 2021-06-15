@@ -82,10 +82,10 @@ def group_vars(_data: DataFrame) -> List[str]:
     """Gives names of grouping variables as character vector"""
     # If it is a subdf of a DataFrameGroupBy, still be able to
     # return the group_vars
-    index = _data.attrs.get('group_index', None)
+    index = _data.attrs.get('_group_index', None)
     if index is None:
         return []
-    gdata = _data.attrs['group_data']
+    gdata = _data.attrs['_group_data']
     return setdiff(gdata.columns, ['_rows'])
 
 @group_vars.register(DataFrameGroupBy)

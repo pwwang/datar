@@ -36,4 +36,8 @@ def tail(_data: Any, n: int = 6) -> DataFrame:
         raise TypeError("`tail` only works with iterable data.")
     if isinstance(_data, DataFrame):
         return _data.tail(n)
-    return _data[-n:]
+
+    try:
+        return _data[-n:].reset_index(drop=True)
+    except AttributeError:
+        return _data[-n:]

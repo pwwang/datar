@@ -13,3 +13,6 @@ class DataUnalignableError(DatarException):
 
 class NameNonUniqueError(DatarException):
     """When check_unique fails"""
+
+class DataUnrecyclable(DatarException):
+    """When data is not recyclable"""

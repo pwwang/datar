@@ -11,7 +11,7 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.types import DTypeType, StringOrIter, is_scalar
+from ..core.types import Dtype, StringOrIter, is_scalar
 from ..core.utils import (
     logger, vars_select, apply_dtypes, position_at, reconstruct_tibble
 )
@@ -28,7 +28,7 @@ def separate(
         into: StringOrIter,
         sep: Union[int, str] = r'[^0-9A-Za-z]+',
         remove: bool = True,
-        convert: Union[bool, DTypeType, Mapping[str, DTypeType]] = False,
+        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
         extra: str = "warn",
         fill: str = "warn",
         _base0: Optional[bool] = None
@@ -132,7 +132,7 @@ def separate_rows(
         data: DataFrame,
         *columns: str,
         sep: str = r'[^0-9A-Za-z]+',
-        convert: Union[bool, DTypeType, Mapping[str, DTypeType]] = False,
+        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """Separates the values and places each one in its own row.

@@ -1,7 +1,8 @@
 """APIs for R-tibble"""
-
-from .funcs import (
-    tibble, tibble_row, tribble, fibble,
+from .tibble import (
+    tibble, tibble_row, tribble, fibble, zibble
+)
+from .verbs import (
     enframe, deframe,
     add_row, add_case, add_column,
     has_rownames, has_index, remove_index, remove_rownames, drop_index,

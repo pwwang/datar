@@ -320,7 +320,7 @@ def nest_join(
         return x.__class__(
             x,
             _group_vars=group_vars(x),
-            _drop=group_by_drop_default(x),
+            _group_drop=group_by_drop_default(x),
             _group_data=group_data(x)
         )
     return out

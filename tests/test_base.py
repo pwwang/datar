@@ -222,7 +222,7 @@ def test_diag():
     x = diag(TRUE, 3)
     assert sum(x.values.flatten()) == 3
     x = diag(c(2,1), 4)
-    assert_equal(diag(x).values.flatten(), [2,1,2,1])
+    assert_iterable_equal(diag(x), [2,1,2,1])
 
 def test_sample():
     x = sample(range(1, 13))
@@ -340,7 +340,7 @@ def test_table_error():
     (1, 7, None, 1, [1,1,1,1,1,1,1]),
 ])
 def test_rep(x, times, length, each, expected):
-    assert rep(x, times=times, length=length, each=each).tolist() == expected
+    assert_iterable_equal(rep(x, times=times, length=length, each=each), expected)
 
 def test_rep_error():
     with pytest.raises(ValueError):

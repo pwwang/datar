@@ -6,11 +6,10 @@ https://github.com/tidyverse/dplyr/blob/master/R/pull.R
 from typing import Mapping, Optional, Union
 
 from pandas import DataFrame, Series
-from pipda import register_verb, evaluate_expr
+from pipda import register_verb
 
-from ..core.defaults import f
 from ..core.contexts import Context
-from ..core.utils import arg_match, position_at
+from ..core.utils import arg_match, df_getitem, position_at
 from ..core.types import StringOrIter, SeriesLikeType, is_scalar
 
 @register_verb(
@@ -71,7 +70,7 @@ def pull(
         var = _data.columns[var]
         var = var.split('$', 1)[0]
 
-    pulled = evaluate_expr(f[var], _data, Context.EVAL)
+    pulled = df_getitem(_data, var)
     # if var in _data.columns and isinstance(pulled, DataFrame):
     #     pulled = pulled.iloc[:, 0]
 

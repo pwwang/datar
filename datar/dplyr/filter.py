@@ -5,15 +5,14 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/filter.R
 from functools import singledispatch
 from typing import Iterable, Optional
 
-import numpy
 from pandas import DataFrame, RangeIndex
 from pipda import register_verb
 from pipda.utils import Expression
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.types import is_scalar
-from ..core.utils import copy_attrs, reconstruct_tibble
+from ..core.types import is_scalar, is_null
+from ..core.utils import copy_attrs, reconstruct_tibble, Array
 from .group_data import group_data, group_vars
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -41,11 +40,13 @@ def filter( # pylint: disable=redefined-builtin
     if _data.shape[0] == 0:
         return _data
     # check condition, conditions
-    condition = numpy.array([True] * _data.shape[0])
+    condition = Array([True] * _data.shape[0])
     for cond in conditions:
         if is_scalar(cond):
-            cond = numpy.array([cond] * _data.shape[0])
+            cond = Array([cond] * _data.shape[0])
         condition = condition & cond
+
+    condition[is_null(condition)] = False
     try:
         condition = condition.values.flatten()
     except AttributeError:
@@ -69,7 +70,7 @@ def _(
 ) -> DataFrameGroupBy:
     """Filter on DataFrameGroupBy object"""
     if _data.shape[0] > 0:
-        out = _data.group_apply(
+        out = _data.datar_apply(
             lambda df: filter(df, *conditions, _drop_index=False),
             _drop_index=False
         ).sort_index()
@@ -79,7 +80,7 @@ def _(
     out = reconstruct_tibble(_data, out, keep_rowwise=True)
     gdata = _filter_groups(out, _data)
 
-    if not _preserve and _data.attrs.get('groupby_drop', True):
+    if not _preserve and _data.attrs.get('_group_drop', True):
         out._group_data = gdata[gdata['_rows'].map(len) > 0]
 
     return out

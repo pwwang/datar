@@ -65,7 +65,7 @@ def _(
         **kwargs: Any
 ) -> DataFrameGroupBy:
 
-    out = _data.group_apply(
+    out = _data.datar_apply(
         lambda df: distinct(df, *args, **kwargs, _keep_all=_keep_all)
     )
 

@@ -10,7 +10,7 @@ import pandas
 from pandas import DataFrame
 from pipda import register_verb
 
-from ..core.types import StringOrIter, DTypeType, is_scalar
+from ..core.types import StringOrIter, Dtype, is_scalar
 from ..core.contexts import Context
 from ..core.utils import vars_select, reconstruct_tibble
 
@@ -22,7 +22,7 @@ def extract(
         into: StringOrIter,
         regex: str = r'(\w+)',
         remove: bool = True,
-        convert: Union[bool, DTypeType, Mapping[str, DTypeType]] = False,
+        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """Given a regular expression with capturing groups, extract() turns each

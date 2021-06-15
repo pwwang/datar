@@ -2,8 +2,7 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/across.R
 """
-import builtins
-from abc import ABC
+from abc import ABC, abstractstaticmethod
 from typing import Any, Callable, Iterable, Mapping, Optional, Tuple, Union
 
 import numpy
@@ -13,7 +12,9 @@ from pipda.utils import functype
 from pipda.context import ContextBase
 from pipda.symbolic import DirectRefAttr
 
-from ..core.utils import df_assign_item, to_df, vars_select, get_option
+from ..core.utils import (
+    df_setitem, length_of, recycle_df, to_df, vars_select, get_option
+)
 from ..core.middlewares import CurColumn
 from ..core.contexts import Context
 from .tidyselect import everything
@@ -70,7 +71,6 @@ class Across:
         """Evaluate object with context"""
         if not self.fns:
             self.fns = [{'fn': lambda x: x}]
-
         ret = None
         for column in self.cols:
             for fn_info in self.fns:
@@ -100,34 +100,43 @@ class Across:
                         _env='piping'
                     )._pipda_eval(self.data, context)
 
-                # todo: check if it is proper
-                #       group information lost
                 if ret is None:
                     ret = to_df(value, name)
+                elif length_of(ret) == 1:
+                    ret, value = recycle_df(ret, value)
+                    ret = df_setitem(ret, name, value)
                 else:
-                    df_assign_item(ret, name, value)
+                    ret = df_setitem(ret, name, value)
         return DataFrame() if ret is None else ret
 
 class IfCross(Across, ABC):
     """Base class for IfAny and IfAll"""
-    if_type = None
+    @abstractstaticmethod
+    def aggregate(values: Series) -> bool:
+        """How to aggregation by rows"""
 
     def evaluate(self, context: Optional[ContextBase] = None) -> DataFrame:
         """Evaluate the object with context"""
-        agg_func = getattr(builtins, self.__class__.if_type)
-        return super().evaluate(context).fillna(
-            False
-        ).astype(
-            'boolean'
-        ).apply(agg_func, axis=1)
+        # Fill NA first and then do and/or
+        # Since NA | True -> False for pandas
+        return super().evaluate(context).apply(
+            self.__class__.aggregate,
+            axis=1
+        ).astype(bool)
 
 class IfAny(IfCross):
     """For calls from dplyr's if_any"""
-    if_type = 'any'
+    @staticmethod
+    def aggregate(values: Series) -> bool:
+        """How to aggregation by rows"""
+        return values.fillna(False).astype(bool).any()
 
 class IfAll(IfCross):
     """For calls from dplyr's if_all"""
-    if_type = 'all'
+    @staticmethod
+    def aggregate(values: Series) -> bool:
+        """How to aggregation by rows"""
+        return values.fillna(False).astype(bool).all()
 
 @register_func(
     context=None,

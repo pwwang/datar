@@ -15,6 +15,10 @@ def test_all_missing_left_unchanged():
     down = fill(df, f.a, f.b, f.c)
     up = fill(df, f.a, f.b, f.c, _direction="up")
 
+    # DataFrame.fill() shrinks dtype
+    up['b'] = up.b.astype(object)
+    up['c'] = up.b.astype(object)
+
     assert_frame_equal(down, df)
     assert_frame_equal(up, df)
 
@@ -38,7 +42,7 @@ def test_missings_filled_down_for_each_atomic_vector():
         lgl = c(True, NA),
         int = c(1, NA),
         dbl = c(1.0, NA),
-        chr = c("a", NA),
+        chr = c("a", NaN),
         lst = [seq(1,5), NULL]
     )
     out = fill(df, everything())
@@ -53,7 +57,7 @@ def test_missings_filled_up_for_each_atomic_vector():
         lgl = c(NA, True),
         int = c(NA, 1),
         dbl = c(NA, 1.0),
-        chr = c(NA, "a"),
+        chr = c(NaN, "a"),
         lst = [NULL, seq(1,5)]
     )
     out = fill(df, everything(), _direction="up")

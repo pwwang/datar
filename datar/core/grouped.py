@@ -1,72 +1,62 @@
 """Provide DataFrameGroupBy class"""
-import re
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Mapping
 from itertools import product
-from collections import defaultdict
 
 import pandas
-from pandas.core.arrays.categorical import Categorical
-from pandas.core.dtypes.common import is_categorical_dtype
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, Index
+from pandas.core.groupby.grouper import Grouping
 
-from ..base.constants import NA
+from .utils import fillna_safe, na_if_safe
+from .types import Dtype, is_categorical
 
-class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
+# pylint: disable=too-many-ancestors
+# pylint: disable=too-many-branches
+
+class DataFrameGroupBy(DataFrame):
     """GroupBy data frame, instead of the one from pandas
 
     Because
     1. Pandas DataFrameGroupBy cannot handle mutilpe categorical columns as
         groupby variables with non-obserable values
     2. It is very hard to retrieve group indices and data when doing apply
+    3. NAs unmatched in grouping variables
 
     Args:
-        *args: and
-        **kwargs: The values used to construct the data frame
+        data: and
+        **kwargs: The values used to pass to the original constructor to
+            construct the data frame
         _group_vars: The grouping variables
-        _drop: Whether to drop non-observable rows
+        _group_drop: Whether to drop non-observable rows
         _group_data: Reuse other group data so we don't re-compute
     """
     def __init__(
             self,
-            *args: Any,
+            data: Any,
             _group_vars: Optional[List[str]] = None,
-            _drop: Optional[bool] = None,
+            _group_drop: Optional[bool] = None,
             _group_data: Optional[DataFrame] = None,
             **kwargs: Any
     ) -> None:
-        # drop args[0]'s index as well, if it is a DataFrame.
-        # self.reset_index(drop=True, inplace=True)
-        if args and not kwargs and isinstance(args[0], DataFrame):
-            super().__init__(args[0].copy())
-        else:
-            super().__init__(*args, **kwargs)
+        if isinstance(data, DataFrame):
+            kwargs['copy'] = True
+        super().__init__(data, **kwargs)
+        # drop index to align to tidyverse's APIs
         self.reset_index(drop=True, inplace=True)
 
-        if _drop is None:
-            _drop = self.attrs.get('groupby_drop', True)
-        self.attrs['groupby_drop'] = _drop
+        if _group_drop is None:
+            _group_drop = self.attrs.get('_group_drop', True)
+        self.attrs['_group_drop'] = _group_drop
 
-        self.__dict__['_group_vars'] = _group_vars or []
+        if _group_vars is None:
+            _group_vars = []
+        _group_vars = list(_group_vars)
+        self.__dict__['_group_vars'] = _group_vars
         if _group_data is None:
-            self.__dict__['_group_data'] = self._compute_group_data()
+            self.__dict__['_group_data'] = self._compute_groups()
         else:
             self.__dict__['_group_data'] = _group_data
 
-    @classmethod
-    def construct_from(
-            cls,
-            data: DataFrame,
-            template: "DataFrameGroupBy"
-    ) -> "DataFrameGroupBy":
-        """Construct from a template dataframe"""
-        return cls(
-            data,
-            _group_vars=template._group_vars,
-            _drop=template.attrs.get('groupby_drop', True),
-            _group_data=template._group_data
-        )
-
-    def _compute_group_data(self): # pylint: disable=too-many-branches
+    def _compute_groups(self):
         """Compute group data"""
         # group by values have to be hashable
         if not self._group_vars:
@@ -74,84 +64,86 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
                 '_rows': [list(range(self.shape[0]))]
             })
 
-        gdata = self[self._group_vars].sort_values(self._group_vars)
-        if self.attrs['groupby_drop']:
-            rows_dict = defaultdict(lambda: [])
-            for row in gdata.iterrows():
-                # NAs not equal
-                elems = tuple(
-                    None if pandas.isna(elem) else elem
-                    for elem in row[1]
-                )
-                rows_dict[elems].append(row[0])
-        else:
-            vardata_list = []
-            # make sure the value and the value of left column are observed
-            # if current column is NA
-            var_prevs = [set()]
-            var_hasnas = []
-            # Try to put NA's last
-            # and use the categories if data is Categorical
-            for i, var in enumerate(self._group_vars):
-                vardata = gdata[var]
-                has_na = vardata.isna().any()
-                var_hasnas.append(has_na)
-                if i > 0:
-                    var_prevs.append(set(
-                        gdata[vardata.isna()][self._group_vars[i-1]]
-                    ))
+        if len(self._group_vars) == 1:
+            return self._compute_single_var_groups()
 
-                if is_categorical_dtype(vardata):
-                    vardata = vardata.cat.categories
+        return self._compute_multiple_var_groups()
 
-                vardata = vardata[~pandas.isna(vardata)].unique()
+    def _compute_single_var_groups(self):
+        """Compute groups for a single variable
 
-                if has_na:
-                    vardata = vardata.tolist() + [NA]
-                vardata_list.append(vardata)
+        NAs are always exluded in pandas groupby operation
+        We replace NAs with NA_REPR, do the grouping and then replace it back
+        """
+        var = self.loc[:, self._group_vars[0]]
+        dtype = var.dtype
+        var = fillna_safe(var)
+        groups = Grouping(
+            self.index,
+            var,
+            sort=False,
+            observed=self.attrs['_group_drop']
+        ).groups
 
-            rows_dict = {}
-            for row in product(*vardata_list):
-                row_pass = True
-                for i, elem in enumerate(row):
-                    if i == 0 or not pandas.isna(elem):
-                        continue
-                    # require previous elems to be observed or NA
-                    for x in range(i):
-                        if (
-                                (var_hasnas[x] and not pandas.isna(row[x])) or
-                                (
-                                    not var_hasnas[x] and
-                                    row[x] not in var_prevs[x+1]
-                                )
-                        ):
-                            row_pass = False
-                            break
-
-                if row_pass:
-                    rows_dict[row] = []
-
-            for row in gdata.itertuples():
-                rows_dict[row[1:]].append(row.Index)
-
-        # sort the rows to try to keep the order in original data
-        for key, val in rows_dict.items():
-            rows_dict[key] = sorted(val)
-
-        ret = DataFrame(
-            rows_dict.keys(),
-            columns=self._group_vars
+        return _groups_to_group_data(
+            groups,
+            dtypes={self._group_vars[0]: dtype},
+            na_if=True
         )
-        for gvar in self._group_vars:
-            if is_categorical_dtype(self[gvar]):
-                ret[gvar] = Categorical(
-                    ret[gvar],
-                    categories=self[gvar].cat.categories
-                )
-        ret['_rows'] = Series(rows_dict.values(), dtype=object)
-        return ret
 
-    def group_apply(
+    def _compute_multiple_var_groups(self):
+        """Compute groups for multiple vars"""
+        from ..base import NA
+
+        dtypes = {}
+        groupings = []
+        for gvar in self._group_vars:
+            dtypes[gvar] = self[gvar].dtype
+            groupings.append(
+                Grouping(
+                    self.index,
+                    self[gvar],
+                    sort=False,
+                    observed=self.attrs['_group_drop']
+                )
+            )
+
+        to_groupby = zip(*(
+            # grouper renamed to grouping_vector in future version of pandas
+            getattr(ping, 'grouping_vector', getattr(ping, 'grouper', None))
+            for ping in groupings
+        ))
+        # tupleize_cols = False
+        # makes nan equals
+        index = Index(to_groupby, tupleize_cols=False)
+        groups = self.index.groupby(index)
+        # pandas not including unused categories for multiple variables
+        # even with observed=False
+        # #
+        # This is a simplied version to include those unobserved values
+        # Find a better way to implement the dplyr way?
+        if not self.attrs['_group_drop']:
+            unobserved = [
+                self[gvar].values.categories.difference(self[gvar])
+                if is_categorical(dtype)
+                else []
+                for gvar, dtype in dtypes.items()
+            ]
+            maxlen = max((len(unobs) for unobs in unobserved))
+            if maxlen > 0:
+                unobserved = [
+                    [NA] if len(unobs) == 0 else unobs
+                    for unobs in unobserved
+                ]
+                for row in product(*unobserved):
+                    groups[row] = []
+
+        return _groups_to_group_data(
+            groups,
+            dtypes=dtypes
+        )
+
+    def datar_apply(
             self,
             func: Callable,
             *args: Any,
@@ -182,8 +174,8 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
             subdf = self.iloc[gdata_row[1]['_rows'], :]
             if _drop_index:
                 subdf.reset_index(drop=True, inplace=True)
-            subdf.attrs['group_index'] = index
-            subdf.attrs['group_data'] = groupdata
+            subdf.attrs['_group_index'] = index
+            subdf.attrs['_group_data'] = groupdata
             ret = func(subdf, *args, **kwargs)
             if ret is None:
                 return ret
@@ -207,14 +199,7 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         if _drop_index:
             ret.reset_index(drop=True, inplace=True)
 
-        ret.attrs['groupby_drop'] = self.attrs['groupby_drop']
-        return ret
-
-    def __repr__(self) -> str:
-        """Including grouping information when printed"""
-        ret = super().__repr__()
-        ngroups = self._group_data.shape[0]
-        ret = f"{ret}\n[Groups: {self._group_vars} (n={ngroups})]"
+        ret.attrs['_group_drop'] = self.attrs['_group_drop']
         return ret
 
     def copy(self, deep: bool = True) -> "DataFrameGroupBy":
@@ -222,19 +207,13 @@ class DataFrameGroupBy(DataFrame): # pylint: disable=too-many-ancestors
         return DataFrameGroupBy(
             super().copy() if deep else self,
             _group_vars=self._group_vars,
-            _drop=self.attrs.get('groupby_drop', True),
+            _group_drop=self.attrs.get('_group_drop', True),
             _group_data=self._group_data.copy() if deep else self._group_data
         )
 
-    def _repr_html_(self) -> str:
-        out = super()._repr_html_()
-        out = re.sub(r'\[(?:Groups|Rowwise): .+? \(n=\d+\)\]', '', out)
-        ngroups = self._group_data.shape[0]
-        return f"{out}[Groups: {self._group_vars} (n={ngroups})]"
-
-class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
+class DataFrameRowwise(DataFrameGroupBy):
     """Group data frame rowwisely"""
-    def _compute_group_data(self):
+    def _compute_groups(self):
         _rows = Series(
             [[i] for i in range(self.shape[0])],
             name='_rows',
@@ -247,7 +226,7 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
         gdata['_rows'] = _rows
         return gdata
 
-    def group_apply(
+    def datar_apply(
             self,
             func: Callable,
             *args: Any,
@@ -264,7 +243,7 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
             gdata = self.copy()
             gdata['_rows'] = self._group_data
 
-        return super().group_apply(
+        return super().datar_apply(
             func,
             *args,
             _groupdata=_groupdata,
@@ -273,23 +252,49 @@ class DataFrameRowwise(DataFrameGroupBy): # pylint: disable=too-many-ancestors
             **kwargs
         )
 
-    # pylint: disable=bad-super-call
-    def __repr__(self) -> str:
-        """Including grouping information when printed"""
-        ret = super(DataFrameGroupBy, self).__repr__()
-        ret = f"{ret}\n[Rowwise: {self._group_vars}]"
-        return ret
-
     def copy(self, deep: bool = True) -> "DataFrameRowwise":
         return DataFrameRowwise(
-            super(DataFrameGroupBy, self).copy() if deep else self,
+            DataFrame.copy(self) if deep else self,
             _group_vars=self._group_vars,
-            _drop=self.attrs.get('groupby_drop', True),
+            _group_drop=self.attrs.get('_group_drop', True),
             _group_data=self._group_data.copy() if deep else self._group_data
         )
 
-    def _repr_html_(self) -> str:
-        out = super()._repr_html_()
-        out = re.sub(r'\[(?:Groups|Rowwise): .+? \(n=\d+\)\]', '', out)
-        ngroups = self._group_data.shape[0]
-        return f"{out}[Rowwise: {self._group_vars} (n={ngroups})]"
+def _groups_to_group_data(
+        groups: Mapping[Any, Index],
+        dtypes: Mapping[str, Dtype],
+        na_if: bool = False
+) -> DataFrame:
+    """Convert pandas groups dict to group data
+
+    From
+        >>> {1: [0], 2: [1]}
+    To
+        >>> DataFrame({'a': [1, [0]], 'b': [2, [1]]})
+    """
+    out = DataFrame(
+        [
+            (grp, ) if len(dtypes) == 1 else grp
+            for grp in groups
+        ],
+        columns=list(dtypes)
+    )
+
+    for gvar, dtype in dtypes.items():
+        if na_if:
+            out[gvar] = na_if_safe(out[gvar], dtype=dtype)
+        else:
+            try:
+                same_dtype = out[gvar].dtype != dtype
+            except TypeError:
+                # Cannot interpret 'CategoricalDtype(categories=[1, 2],
+                # ordered=False)' as a data type
+                same_dtype = False
+            if not same_dtype:
+                out[gvar] = out[gvar].astype(dtype)
+
+    out['_rows'] = Series(
+        [list(rows) for rows in groups.values()],
+        dtype=object # get rid of numpy warning
+    )
+    return out.sort_values(list(dtypes)).reset_index(drop=True)

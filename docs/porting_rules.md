@@ -19,3 +19,9 @@ For example, `how` for `drop_na`.
 ## `ptypes`
 
 ## Grouped/rowwise data frame
+
+## `NA` caveats
+
+- dtype
+- string
+- `NaN`

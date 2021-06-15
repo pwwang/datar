@@ -9,16 +9,19 @@ from typing import (
 )
 
 import numpy
+from numpy import array as Array
+
 import pandas
-from pandas import DataFrame, Series, array as Array
-from pandas.core.dtypes.common import is_categorical_dtype
+from pandas import Categorical, DataFrame, Series
 from pipda.symbolic import Reference
 
 from varname import argname
 
-from .exceptions import ColumnNotExistingError, NameNonUniqueError
-from .types import is_scalar, DTypeType
-from .defaults import DEFAULT_COLUMN_PREFIX
+from .exceptions import (
+    ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
+)
+from .types import is_iterable, is_scalar, Dtype, is_categorical, is_null
+from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
 # logger
 logger = logging.getLogger('datar') # pylint: disable=invalid-name
@@ -96,73 +99,102 @@ def series_expand(series: Union[DataFrame, Series], df: DataFrame):
         series = series.iloc[:, 0]
     return df[series.index.name].map(series)
 
-def align_value(
+def recycle_value(
         value: Any,
-        data: DataFrame
-) -> Any:
-    """Normalize possible series data to add to the data or compare with
-    other series of the data"""
-    from ..base.constants import NA
+        size: int,
+        name: Optional[str] = None
+) -> Union[DataFrame, numpy.ndarray]:
+    """Recycle a value based on a dataframe
+
+    Args:
+        value: The value to be recycled
+        size: The size to recycle to
+        name: The name to show in the error if failed to recycle
+
+    Returns:
+        The recycled value
+    """
+    from ..base import NA
 
     if is_scalar(value):
+        value = [value]
+
+    length = len(value)
+
+    if length not in (0, 1, size):
+        name = 'value' if not name else f'`{name}`'
+        expect = '1' if size == 1 else f'(1, {size})'
+        raise DataUnrecyclable(
+            f"Cannot recycle {name} to size {size}, "
+            f"expect {expect}, got {length}."
+        )
+
+    if isinstance(value, DataFrame):
+        if length == size == 0:
+            return DataFrame(columns=value.columns)
+        if length == 0:
+            value = DataFrame([[NA] * value.shape[1]], columns=value.columns)
+        if length == 1 and size > length:
+            return value.iloc[[0] * size, :].reset_index(drop=True)
         return value
 
-    if series_expandable(value, data):
-        return series_expand(value, data)
+    cats = categorized(value).categories if is_categorical(value) else None
 
-    len_series = (
-        value.shape[0] if isinstance(value, (DataFrame, Series))
-        else len(value)
-    )
+    if length == size == 0:
+        return [] if cats is None else Categorical([], categories=cats)
 
-    if len_series == data.shape[0]:
+    if length == 0:
+        value = [NA]
+
+    if isinstance(value, Series):
+        # try to keep Series class
+        # some operators can only do with it or with it correctly
+        # For example:
+        # Series([True, True]) & Series([False, NA]) -> [False, Fa.se]
+        # But with numpy.array, it raises error, since NA is a float
+        if length == 1 and size > length:
+            value = value.iloc[[0] * size].reset_index(drop=True)
         return value
-    if len_series == 0:
-        return NA
 
-    if data.shape[0] % len_series == 0:
-        nrepeat = data.shape[0] // len_series
-        if isinstance(value, (list, tuple)):
-            return value * nrepeat
-        # numpy.ndarray
-        return value.repeat(nrepeat)
-    return value
+    if isinstance(value, tuple):
+        value = list(value)
 
-def df_assign_item(
+    # dtype = getattr(value, 'dtype', None)
+    if length == 1 and size > length:
+        value = list(value) * size
+
+    if cats is not None:
+        return Categorical(value, categories=cats)
+
+    is_elem_iter = any(is_iterable(val) for val in value)
+    if is_elem_iter:
+        # without dtype: VisibleDeprecationWarning
+        # return Array(value, dtype=object)
+        # The above does not keep [DataFrame()] structure
+        return value
+
+    # Avoid numpy.nan to be converted into 'nan' when other elements are string
+    out = Array(value)
+    if numpy.issubdtype(out.dtype, numpy.str_) and is_null(value).any():
+        return Array(value, dtype=object)
+    return out
+
+
+def recycle_df(
         df: DataFrame,
-        item: str,
         value: Any,
-        allow_dups: bool = False,
-        allow_incr: bool = True
-) -> None:
-    """Assign an item to a dataframe"""
-    value = align_value(value, df)
-    try:
-        value = value.values
-    except AttributeError:
-        ...
-
-    lenval = 1 if is_scalar(value) else len(value)
-
-    if allow_incr and df.shape[0] == 1 and lenval > 1:
-        if df.shape[1] == 0: # 0-column df
-            # Otherwise, cannot set a frame with no defined columns
-            df['__assign_placeholder__'] = 1
-        # add rows inplace
-        for i in range(lenval - 1):
-            df.loc[i+1] = df.iloc[0, :]
-
-        if '__assign_placeholder__' in df:
-            df.drop(columns=['__assign_placeholder__'], inplace=True)
-
-    if not allow_dups:
-        df[item] = value
-    else:
-        df.insert(df.shape[1], item, value, allow_duplicates=True)
+        df_name: Optional[str] = None,
+        value_name: Optional[str] = None
+) -> Tuple[DataFrame, Any]:
+    """Recycle the dataframe based on value"""
+    if length_of(df) == 1:
+        df = recycle_value(df, length_of(value), df_name)
+    value = recycle_value(value, length_of(df), value_name)
+    return df, value
 
 def categorized(data: Any) -> Any:
     """Get the Categorical object"""
-    if not is_categorical_dtype(data):
+    if not is_categorical(data):
         return data
     if isinstance(data, Series):
         return data.values
@@ -259,12 +291,12 @@ def name_mutatable_args(
 
         >>> s = Series([1], name='a')
         >>> name_mutatable_args(s, b=2)
-        >>> # {'a': s, b: 2}
+        >>> # {'a': s, 'b': 2}
         >>> df = DataFrame({'x': [3], 'y': [4]})
         >>> name_mutatable_args(df)
-        >>> # {'x': Series([3]), 'y': Series([4])}
+        >>> # {'x': [3], 'y': [4]}
         >>> name_mutatable_args(d=df)
-        >>> # {'d$x': Series([3]), 'd$y': Series([4])}
+        >>> # {'d$x': [3], 'd$y': [4]}
     """
     ret = {} # order kept
 
@@ -314,13 +346,13 @@ def arg_match(arg: Any, values: Iterable[Any], errmsg=Optional[str]) -> Any:
 def copy_attrs(
         df1: DataFrame,
         df2: DataFrame,
-        deep: bool = False,
-        group: bool = False
+        deep: bool = True
 ) -> None:
     """Copy attrs from df2 to df1"""
     for key, val in df2.attrs.items():
-        if group or not key.startswith('group_'):
-            df1.attrs[key] = deepcopy(val) if deep else val
+        if key.startswith('_'):
+            continue
+        df1.attrs[key] = deepcopy(val) if deep else val
 
 def nargs(fun: Callable) -> int:
     """Get the number of arguments of a function"""
@@ -388,7 +420,7 @@ def get_option(key: str, value: Any = None) -> Any:
 
 def apply_dtypes(
         df: DataFrame,
-        dtypes: Optional[Union[bool, DTypeType, Mapping[str, DTypeType]]]
+        dtypes: Optional[Union[bool, Dtype, Mapping[str, Dtype]]]
 ) -> None:
     """Apply dtypes to data frame"""
     if dtypes is None or dtypes is False:
@@ -459,13 +491,13 @@ def reconstruct_tibble(
         out = DataFrameRowwise(
             output,
             _group_vars=new_groups,
-            _drop=group_by_drop_default(input)
+            _group_drop=group_by_drop_default(input)
         ) if keep_rowwise else output
     elif isinstance(input, DataFrameGroupBy) and len(new_groups) > 0:
         out = DataFrameGroupBy(
             output,
             _group_vars=new_groups,
-            _drop=group_by_drop_default(input)
+            _group_drop=group_by_drop_default(input)
         )
     else:
         out = output
@@ -473,7 +505,7 @@ def reconstruct_tibble(
     copy_attrs(out, input)
     return out
 
-def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Series]:
+def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Array]:
     """Select columns from a data frame
 
     If the column is a data frame, select that data frame.
@@ -488,9 +520,123 @@ def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Series]:
         ret.columns = [col[len(ref)+1:] for col in cols]
         return ret
 
-def _replace_na_with_uniq(
-        x: Iterable,
-        rep: Any = None
-) -> Tuple[Iterable, Mapping]:
-    """Replace NAs in data with a unique non-NA value"""
+def df_setitem(
+        df: DataFrame,
+        name: str,
+        value: Any,
+        allow_dups: bool = False
+) -> DataFrame:
+    """Assign an item to a dataframe
 
+    Args:
+        df: The data frame
+        name: The name of the item
+        value: The value to insert
+        allow_dups: Allow duplicated names
+
+    Returns:
+        df itself or a merged df
+    """
+    value = recycle_value(value, df.shape[0])
+    if isinstance(value, DataFrame):
+        # nested df
+        value.columns = [f'{name}${col}' for col in value.columns]
+
+        if allow_dups:
+            return pandas.concat([df, value], axis=1)
+
+        for col in value.columns:
+            df[col] = value[col]
+        return df
+
+    if isinstance(value, numpy.ndarray) and value.ndim > 1:
+        # keep the list structure
+        # otherwise, keep array to have dtype kept
+        value = value.tolist()
+
+    # drop the index/match the index of df
+    if isinstance(value, Series):
+        value = value.values
+
+    if isinstance(value, tuple):
+        # ('A', array([1,2,3]))
+        # VisibleDeprecationWarning
+        value = list(value)
+
+    if not allow_dups:
+        df[name] = value
+
+    else:
+        df.insert(
+            df.shape[1],
+            name,
+            value,
+            allow_duplicates=True
+        )
+
+    return df
+
+def fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
+    """Safely replace NA in data, as we can't just fillna for
+    a Categorical data directly.
+
+    Args:
+        data: The data to fill NAs
+        rep: The replacement for NAs
+
+    Returns:
+        Data itself if it has no NAs.
+        For Categorical data, `rep` will be added to categories
+        Otherwise a Array object with NAs replaced with `rep` is returned with
+        dtype object.
+
+    Raises:
+        ValueError: when `rep` exists in data
+    """
+    if rep in data:
+        raise ValueError("The value to replace NAs is already present in data.")
+
+    if not is_null(data).any():
+        return data
+
+    if is_categorical(data):
+        data = categorized(data)
+        data = data.add_categories(rep)
+        return data.fillna(rep)
+
+    # rep may not be the same dtype as data
+    return Series(data).fillna(rep).values
+
+def na_if_safe(
+        data: Iterable,
+        value: str = NA_REPR,
+        dtype: Optional[Dtype] = None
+) -> Iterable:
+    """Replace value with NA
+
+    Args:
+        data: The data to replace value with NA
+        value: The value to match
+        dtype: Convert the data to dtype after replacement
+            If data is Categorical, this is ignored
+
+    Return:
+        Array or categorical
+    """
+    if is_categorical(data):
+        # ignore dtype
+        data = categorized(data)
+        # value to NA, value in categories removed
+        return data.replace(value, None)
+
+    from ..base import NA
+
+    out = Series(data).replace(value, NA)
+    return out if dtype is None else out.astype(dtype)
+
+def length_of(x: Any) -> int:
+    """Get the length of a value, scalar gets 1"""
+    if is_scalar(x):
+        return 1
+
+    return len(x)

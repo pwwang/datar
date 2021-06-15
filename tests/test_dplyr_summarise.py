@@ -8,7 +8,8 @@ from datar.core.contexts import Context
 import pytest
 from datar.all import *
 from datar.datasets import mtcars
-from datar.core.exceptions import ColumnNotExistingError, NameNonUniqueError
+from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
+from .conftest import assert_iterable_equal
 
 def test_freshly_create_vars():
     df = tibble(x=range(1,11))
@@ -129,7 +130,7 @@ def test_allows_names():
 def test_list_output_columns():
     df = tibble(x = range(1,11), g = rep([1,2], each = 5))
     res = df >> group_by(f.g) >> summarise(y = [f.x]) >> pull(f.y, to='list')
-    assert res[0].tolist() == [1,2,3,4,5]
+    assert_iterable_equal(res[0], [1,2,3,4,5])
 
 def test_unnamed_tibbles_are_unpacked():
     df = tibble(x = [1,2])
@@ -160,7 +161,7 @@ def test_groups_arg(caplog):
     caplog.clear()
 
     out = repr(df >> rowwise(f.x, f.y) >> summarise())
-    assert "[Groups: ['x', 'y'] (n=1)]" in out
+    assert "[Groups: x, y (n=1)]" in out
 
     df = tibble(x = 1, y = 2)
     df1 = df >> summarise(z = 3, _groups= "rowwise")
@@ -237,11 +238,11 @@ def test_errors(caplog):
     tibble(x = 1, y = c(1, 2, 2), z = runif(3)) >> summarise(a=object())
 
     # incompatible size
-    with pytest.raises(ValueError):
+    with pytest.raises(DataUnrecyclable):
         tibble(z = 1) >> summarise(x = [1,2,3], y = [1,2])
-    with pytest.raises(ValueError):
+    with pytest.raises(DataUnrecyclable):
         tibble(z = [1,2]) >> group_by(f.z) >> summarise(x = [1,2,3], y = [1,2])
-    with pytest.raises(ValueError):
+    with pytest.raises(DataUnrecyclable):
         tibble(z=c(1, 3)) >> group_by(f.z) >> summarise(x=seq_len(f.z), y=[1,2])
 
     # Missing variable

@@ -9,7 +9,7 @@ from pipda import register_verb, evaluate_expr, ContextBase
 
 from ..core.contexts import Context, ContextEval
 from ..core.utils import (
-    align_value, arg_match, df_assign_item,
+    recycle_value, arg_match, df_setitem,
     name_mutatable_args, reconstruct_tibble
 )
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
@@ -84,7 +84,6 @@ def mutate(
     )
 
     context = ContextEval()
-
     cols, removed = _mutate_cols(_data, context, *args, **kwargs)
     if cols is None:
         cols = DataFrame(index=_data.index)
@@ -100,8 +99,8 @@ def mutate(
         out = relocate(out, *new, _before=_before, _after=_after, _base0=_base0)
 
     if keep == 'all':
-        return out
-    if keep == 'unused':
+        keep = out.columns
+    elif keep == 'unused':
         used = context.used_refs.keys()
         unused = setdiff(_data.columns, used)
         keep = intersect(
@@ -119,7 +118,9 @@ def mutate(
             setdiff(group_vars(_data), cols.columns),
             intersect(cols.columns, out.columns)
         )
-    return out[keep]
+
+    out = out[keep]
+    return out.loc[[], :] if len(_data) == 0 else out
 
 @mutate.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
@@ -133,8 +134,8 @@ def _(
 ) -> DataFrameGroupBy:
     """Mutate on DataFrameGroupBy object"""
     def apply_func(df):
-        index = df.attrs['group_index']
-        rows = df.attrs['group_data'].loc[index, '_rows']
+        index = df.attrs['_group_index']
+        rows = df.attrs['_group_data'].loc[index, '_rows']
         ret = mutate(
             df,
             *args,
@@ -147,7 +148,7 @@ def _(
         ret.index = rows
         return ret
 
-    out = _data.group_apply(apply_func, _drop_index=False)
+    out = _data.datar_apply(apply_func, _drop_index=False)
     if out is not None:
         # keep the original row order
         out.sort_index(inplace=True)
@@ -162,7 +163,7 @@ def _(
     return _data.__class__(
         out,
         _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data),
+        _group_drop=group_by_drop_default(_data),
         _group_data=group_data(_data)
     )
 
@@ -199,7 +200,6 @@ def _mutate_cols(
     """Mutate columns"""
     if not args and not kwargs:
         return None, []
-
     data = data.copy()
     named_mutatables = name_mutatable_args(*args, **kwargs)
     new_columns = []
@@ -218,8 +218,8 @@ def _mutate_cols(
                     mutatable.shape[1] == 0 and
                     not name.startswith(DEFAULT_COLUMN_PREFIX)
             ):
-                df_assign_item(
-                    data, name, [NA] * mutatable.shape[0], allow_incr=False
+                data = df_setitem(
+                    data, name, [NA] * max(mutatable.shape[0], 1)
                 )
                 new_columns.append(name)
             else:
@@ -228,12 +228,12 @@ def _mutate_cols(
                         col if name.startswith(DEFAULT_COLUMN_PREFIX)
                         else f'{name}${col}'
                     )
-                    coldata = align_value(mutatable[col], data)
-                    df_assign_item(data, new_name, coldata, allow_incr=False)
+                    coldata = recycle_value(mutatable[col], data.shape[0], name)
+                    data = df_setitem(data, new_name, coldata)
                     new_columns.append(new_name)
         else:
-            mutatable = align_value(mutatable, data)
-            df_assign_item(data, name, mutatable, allow_incr=False)
+            mutatable = recycle_value(mutatable, data.shape[0], name)
+            data = df_setitem(data, name, mutatable)
             new_columns.append(name)
 
     # keep column order

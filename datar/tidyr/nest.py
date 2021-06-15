@@ -9,8 +9,8 @@ import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
 
-from ..core.types import DTypeType, is_scalar
-from ..core.utils import vars_select, align_value, to_df, reconstruct_tibble
+from ..core.types import Dtype, is_scalar
+from ..core.utils import vars_select, recycle_value, to_df, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
 
@@ -83,7 +83,7 @@ def nest(
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
-    return bind_cols(u_keys, align_value(out, u_keys))
+    return bind_cols(u_keys, recycle_value(out, u_keys.shape[0]))
 
 @nest.register(DataFrameGroupBy, context=Context.SELECT)
 def _(
@@ -105,7 +105,7 @@ def unnest(
         data: DataFrame,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None
@@ -170,7 +170,7 @@ def _(
         data: DataFrameRowwise,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None
@@ -187,7 +187,7 @@ def _(
     return DataFrameGroupBy(
         out,
         _group_vars=group_vars(data),
-        _drop=group_by_drop_default(data)
+        _group_drop=group_by_drop_default(data)
     )
 
 def _strip_names(names: Iterable[str], base: str, sep: str) -> List[str]:

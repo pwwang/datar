@@ -7,7 +7,7 @@ datar
 
 Port of `dplyr <https://dplyr.tidyverse.org/index.html>`_ and other related R packages in python, using `pipda <https://github.com/pwwang/pipda>`_.
 
-Unlike other similar packages in python that just mimic the piping sign, ``datar`` follows the API designs from the original packages as possible. So that nearly no extra effort is needed for those who are familar with those R packages to transition to python.
+Unlike other similar packages in python that just mimic the piping sign, ``datar`` follows the API designs from the original packages as much as possible. So that minimal effort is needed for those who are familar with those R packages to transition to python.
 
 :raw-html-m2r:`<!-- badges -->`
 `
@@ -55,6 +55,8 @@ Example usage
    from datar import f
    from datar.dplyr import mutate, filter, if_else
    from datar.tibble import tibble
+   # or
+   # from datar.all import f, mutate, filter, if_else, tibble
 
    df = tibble(
        x=range(4),
@@ -62,38 +64,43 @@ Example usage
    )
    df >> mutate(z=f.x)
    """# output
-      x      y  z
-   0  0   zero  0
-   1  1    one  1
-   2  2    two  2
-   3  3  three  3
+           x        y       z
+     <int64> <object> <int64>
+   0       0     zero       0
+   1       1      one       1
+   2       2      two       2
+   3       3    three       3
    """
 
    df >> mutate(z=if_else(f.x>1, 1, 0))
    """# output:
-      x      y  z
-   0  0   zero  0
-   1  1    one  0
-   2  2    two  1
-   3  3  three  1
+           x        y        z
+     <int64> <object> <object>
+   0       0     zero        0
+   1       1      one        0
+   2       2      two        1
+   3       3    three        1
    """
 
    df >> filter(f.x>1)
    """# output:
-      x      y
-   0  2    two
-   1  3  three
+           x        y
+     <int64> <object>
+   0       2      two
+   1       3    three
    """
 
    df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
    """# output:
-      x      y  z
-   0  2    two  1
-   1  3  three  1
+           x        y        z
+     <int64> <object> <object>
+   0       2      two        1
+   1       3    three        1
    """
 
 .. code-block:: python
 
+   # works with plotnine
    # works with plotnine
    import numpy
    from datar.base import sin, pi
@@ -101,9 +108,10 @@ Example usage
 
    df = tibble(x=numpy.linspace(0, 2*pi, 500))
    (df >>
-      mutate(y=sin(f.x), sign=if_else(f.y>=0, "positive", "negative")) >>
-      ggplot(aes(x='x', y='y')) + theme_classic()
-   ) + geom_line(aes(color='sign'), size=1.2)
+     mutate(y=sin(f.x), sign=if_else(f.y>=0, "positive", "negative")) >>
+     ggplot(aes(x='x', y='y')) +
+     theme_classic() +
+     geom_line(aes(color='sign'), size=1.2))
 
 
 .. image:: ./example.png
@@ -113,7 +121,7 @@ Example usage
 
 .. code-block:: python
 
-   # very easy to integrate with other libraries
+   # easy to integrate with other libraries
    # for example: klib
    import klib
    from pipda import register_verb

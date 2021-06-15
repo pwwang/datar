@@ -2,6 +2,7 @@
 
 from typing import Any, Iterable, Optional
 
+import numpy
 from pandas import DataFrame
 from pipda import register_verb
 
@@ -74,7 +75,7 @@ def uncount(
 def _check_weights(weights: Iterable[Any]) -> None:
     """Check if uncounting weights are valid"""
     for weight in weights:
-        if not isinstance(weight, (int, float)):
+        if not isinstance(weight, (int, float, numpy.number)):
             raise ValueError("`weights` must evaluate to numerics.")
         if weight < 0:
             raise ValueError("All elements in `weights` must be >= 0.")

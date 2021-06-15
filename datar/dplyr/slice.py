@@ -72,13 +72,13 @@ def _(
         _base0: Optional[bool] = None
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.group_apply(
+    out = _data.datar_apply(
         lambda df: slice(df, *rows, _base0=_base0)
     )
     out = reconstruct_tibble(_data, out, keep_rowwise=True)
     gdata = _filter_groups(out, _data)
 
-    if not _preserve and _data.attrs.get('groupby_drop', True):
+    if not _preserve and _data.attrs.get('_group_drop', True):
         out._group_data = gdata[gdata['_rows'].map(len) > 0]
 
     copy_attrs(out, _data)
@@ -116,7 +116,7 @@ def _(
         prop: Optional[float] = None
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.group_apply(
+    out = _data.datar_apply(
         lambda df: slice_head(df, n, prop)
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
@@ -142,7 +142,7 @@ def _(
         prop: Optional[float] = None
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.group_apply(
+    out = _data.datar_apply(
         lambda df: slice_tail(df, n, prop)
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
@@ -180,7 +180,7 @@ def _(
         with_ties: Union[bool, str] = True
 ) -> DataFrameGroupBy:
     """slice_min for DataFrameGroupBy object"""
-    out = _data.group_apply(lambda df: slice_min(
+    out = _data.datar_apply(lambda df: slice_min(
         df,
         order_by=order_by,
         n=n,
@@ -222,7 +222,7 @@ def _(
         with_ties: Union[bool, str] = True
 ) -> DataFrameGroupBy:
     """slice_min for DataFrameGroupBy object"""
-    out = _data.group_apply(lambda df: slice_max(
+    out = _data.datar_apply(lambda df: slice_max(
         df,
         order_by=order_by,
         n=n,
@@ -267,7 +267,7 @@ def _(
         replace: bool = False,
         random_state: Any = None
 ) -> DataFrameGroupBy:
-    out = _data.group_apply(lambda df: slice_sample(
+    out = _data.datar_apply(lambda df: slice_sample(
         df,
         n=n,
         prop=prop,

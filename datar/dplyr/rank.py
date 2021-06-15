@@ -11,7 +11,8 @@ from pipda import register_func
 from pipda.utils import Expression
 
 from ..core.contexts import Context
-# from ..core.types import is_scalar
+from ..core.types import is_null
+from ..core.utils import Array
 from ..base.funcs import NA
 
 @register_func(context=Context.EVAL)
@@ -30,7 +31,7 @@ def row_number(
         The row number of `x` or the data frame (1-based)
     """
     if x is None:
-        return numpy.array(range(len(_data))) + 1
+        return Array(range(len(_data))) + 1
     return _rank(x, na_last="keep", method="first")
 
 @register_func(context=Context.EVAL)
@@ -47,7 +48,7 @@ def ntile(
         >>> ntile(c(1,2,NA,1,0,NA), 2) # dplyr
         >>> # 1 2 NA 2 1 NA
         >>> ntile([1,2,NA,1,0,NA], n=2) # datar
-        >>> # [0, 1, NaN, 0, 0, NaN]
+        >>> # [0, 1, NA, 0, 0, NA]
         >>> # Categories (2, int64): [0 < 1]
     """
     if isinstance(series, int) and n is None:
@@ -70,7 +71,7 @@ def ntile(
 
     if len(series) == 0:
         return pandas.Categorical([])
-    if all(pandas.isna(series)):
+    if all(is_null(series)):
         return pandas.Categorical([NA] * len(series))
     n = min(n, len(series))
     return pandas.cut(series, n, labels=range(n))
