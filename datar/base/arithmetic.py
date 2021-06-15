@@ -32,7 +32,7 @@ mean = _register_arithmetic('mean', 'Calculate mean of an iterable.')
 median = _register_arithmetic('median', 'Calculate median of an iterable.')
 min = _register_arithmetic('min', 'Get min of an iterable.')
 max = _register_arithmetic('max', 'Get max of an iterable.')
-
+var = _register_arithmetic('var', 'Compute the variance of an iterable')
 
 @register_func(None, context=Context.EVAL)
 def pmin(
