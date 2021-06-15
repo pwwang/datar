@@ -1,9 +1,10 @@
 """Provides specific contexts for datar"""
 from collections import defaultdict
 from enum import Enum
-from typing import ClassVar
+from typing import Any, ClassVar
 from pandas.core.frame import DataFrame
 from pipda.context import (
+    ContextBase,
     ContextEval as ContextEvalPipda,
     ContextMixed,
     ContextPending,
@@ -19,14 +20,22 @@ class ContextEval(ContextEvalPipda):
         self.used_refs = defaultdict(lambda: 0)
 
     # pylint: disable=arguments-differ
-    def getitem(self, parent, ref, _attr=False):
+    def getitem(
+            self,
+            parent: Any,
+            ref: Any,
+            is_direct: bool = False,
+            _attr=False
+    ) -> Any:
         """Interpret f[ref]"""
-        if isinstance(ref, slice):
+
+        if is_direct and isinstance(ref, slice):
             # Allow f[1:3] to be interpreted as 1:3
             from .collections import Collection
             return Collection(ref)
 
-        self.used_refs[ref] += 1
+        if is_direct:
+            self.used_refs[ref] += 1
         if isinstance(parent, DataFrame):
             from .utils import df_getitem
             try:
@@ -40,16 +49,17 @@ class ContextEval(ContextEvalPipda):
             else super().getattr(parent, ref)
         )
 
-    def getattr(self, parent, ref):
+    def getattr(self, parent: Any, ref: Any, is_direct: bool = False) -> Any:
         """Evaluate f.a"""
-        return self.getitem(parent, ref, _attr=True)
+        return self.getitem(parent, ref, is_direct, _attr=True)
 
-class ContextSelectSlice(ContextSelect):
-    """Mark the context to interpret slice
 
-    Whether turn f[:3] to first 3 columns or just the slice itself.
-    """
-    name: ClassVar[str] = 'select-slice'
+    @property
+    def ref(self) -> ContextBase:
+        """Defines how `item` in `f[item]` is evaluated.
+
+        This function should return a `ContextBase` object."""
+        return self
 
 class Context(Enum):
     """Context enumerator for types of contexts"""

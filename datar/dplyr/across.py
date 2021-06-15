@@ -7,7 +7,7 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Tuple, Union
 
 import numpy
 from pandas import DataFrame, Series
-from pipda import register_func
+from pipda import register_func, evaluate_expr, evaluate_args, evaluate_kwargs
 from pipda.utils import functype
 from pipda.context import ContextBase
 from pipda.symbolic import DirectRefAttr
@@ -67,8 +67,14 @@ class Across:
         self.args = args or ()
         self.kwargs = kwargs or {}
 
-    def evaluate(self, context: Optional[ContextBase] = None) -> DataFrame:
+    def evaluate(
+            self,
+            context: Optional[Union[Context, ContextBase]] = None
+    ) -> DataFrame:
         """Evaluate object with context"""
+        if isinstance(context, Context):
+            context = context.value
+
         if not self.fns:
             self.fns = [{'fn': lambda x: x}]
         ret = None
@@ -85,18 +91,20 @@ class Across:
                     )
 
                 name = name_format.format(**render_data)
+                args = CurColumn.replace_args(self.args, column)
+                kwargs = CurColumn.replace_kwargs(self.kwargs, column)
                 if functype(fn) == 'plain':
                     value = fn(
                         self.data[column],
-                        *CurColumn.replace_args(self.args, column),
-                        **CurColumn.replace_kwargs(self.kwargs, column)
+                        *evaluate_args(args, self.data, context),
+                        **evaluate_kwargs(kwargs, self.data, context)
                     )
                 else:
                     # use fn's own context
                     value = fn(
                         DirectRefAttr(self.data, column),
-                        *CurColumn.replace_args(self.args, column),
-                        **CurColumn.replace_kwargs(self.kwargs, column),
+                        *args,
+                        **kwargs,
                         _env='piping'
                     )._pipda_eval(self.data, context)
 
@@ -139,22 +147,15 @@ class IfAll(IfCross):
         return values.fillna(False).astype(bool).all()
 
 @register_func(
-    context=None,
-    extra_contexts={'args': Context.SELECT},
+    context=Context.PENDING,
     verb_arg_only=True,
     summarise_prefers_input=True
 )
 def across(
         _data: DataFrame,
-        # _cols: Optional[Iterable[str]] = None,
-        # _fns: Optional[Union[
-        #     Callable,
-        #     Iterable[Callable],
-        #     Mapping[str, Callable]
-        # ]] = None,
         *args: Any,
         _names: Optional[str] = None,
-        _context: Optional[ContextBase] = None,
+        _fn_context: Optional[Union[Context, ContextBase]] = Context.EVAL,
         _base0: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
@@ -179,6 +180,9 @@ def across(
         _base0: Indicating whether the columns are 0-based if selected
             by indexes. if not provided, will use
             `datar.base.getOption('index.base.0')`.
+        _fn_context: Defines the context to evaluate the arguments for functions
+            if they are plain functions.
+            Note that registered functions will use its own context
         **kwargs: Keyword arguments for the functions
 
     Returns:
@@ -189,10 +193,11 @@ def across(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
+    _cols = evaluate_expr(_cols, _data, Context.SELECT)
 
     return Across(
         _data, _cols, _fns, _names, _base0, args, kwargs
-    ).evaluate(_context)
+    ).evaluate(_fn_context)
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(

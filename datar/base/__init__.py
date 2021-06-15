@@ -10,7 +10,7 @@ from .constants import (
 from ..core.options import options, getOption, options_context
 from .verbs import (
     colnames, rownames, dim, nrow, ncol, diag, t, names,
-    intersect, union, setdiff, setequal, duplicated
+    intersect, union, setdiff, setequal, duplicated, cov
 )
 from .funcs import (
     as_date, as_character, as_double, as_factor, as_categorical,
@@ -19,10 +19,10 @@ from .funcs import (
     is_categorical, is_character, is_double, is_factor, is_float,
     is_int, is_int64, is_integer, is_na, is_numeric,
     as_int64, unique, Im, Re, is_in, is_element, length, lengths,
-    seq_along, seq_len, seq, abs, round, sqrt, rev,
+    seq_along, seq_len, seq, abs, round, sqrt, rev, which,
     droplevels, levels, sin, cos, identity, expandgrid, all, any
 )
 # plain functions
 from .funcs import factor, rep, context
 from .table import table
-from .arithmetic import sum, mean, median, min, max, pmin, pmax
+from .arithmetic import sum, mean, median, min, max, pmin, pmax, var
