@@ -1,3 +1,11 @@
+## 0.1.1
+- Adopt `pipda` 0.2.8
+- Allow `f.col1[f.col2==max(f.col2)]` like expression
+- Add `base.which/cov/var`
+- Fix `base.max`
+- Add `datasets.ChickWeight`
+- Allow `dplyr.across` to have plain functions passed with default `EVAL` context.
+
 ## 0.1.0
 Added:
 - `pandas.NA` as `NaN`

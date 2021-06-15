@@ -74,12 +74,12 @@ Example usage
 
    df >> mutate(z=if_else(f.x>1, 1, 0))
    """# output:
-           x        y        z
-     <int64> <object> <object>
-   0       0     zero        0
-   1       1      one        0
-   2       2      two        1
-   3       3    three        1
+           x        y       z
+     <int64> <object> <int64>
+   0       0     zero       0
+   1       1      one       0
+   2       2      two       1
+   3       3    three       1
    """
 
    df >> filter(f.x>1)
@@ -92,10 +92,10 @@ Example usage
 
    df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
    """# output:
-           x        y        z
-     <int64> <object> <object>
-   0       2      two        1
-   1       3    three        1
+           x        y       z
+     <int64> <object> <int64>
+   0       2      two       1
+   1       3    three       1
    """
 
 .. code-block:: python
