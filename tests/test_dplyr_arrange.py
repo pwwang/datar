@@ -3,7 +3,7 @@
 import pytest
 from datar.all import *
 from datar.core.grouped import DataFrameGroupBy
-from datar.core.exceptions import ColumnNotExistingError, NameNonUniqueError
+from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
 
 def test_empty_returns_self():
     df = tibble(x=range(1,11), y=range(1,11))
@@ -38,12 +38,12 @@ def test_errors():
     with pytest.raises(ColumnNotExistingError):
         df >> arrange(f.y)
 
-    with pytest.raises(ValueError, match="Length"):
+    with pytest.raises(DataUnrecyclable, match="expect 1"):
         df >> arrange(rep(f.x, 2))
 
 def test_df_cols():
     df = tibble(x = [1,2,3], y = tibble(z = [3,2,1]))
-    out = df >> arrange(f['y$z'])
+    out = df >> arrange(f.y)
     expect = tibble(x=[3,2,1], y=tibble(z=[1,2,3]))
     assert out.reset_index(drop=True).equals(expect)
 

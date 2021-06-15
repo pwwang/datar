@@ -115,7 +115,7 @@ def test_unchop_empty_list():
     df = tibble(x=[], y=tibble(z=[]))
     # support nested df?
     out = unchop(df, f['y$z']) >> pull(f.y)
-    assert_frame_equal(out, tibble(z=[]))
+    assert_frame_equal(out >> drop_index(), tibble(z=[], _dtypes=object))
 
 def test_unchop_recycles_size_1_inputs():
     df = tibble(x=[[1], [2,3]], y=[[2,3], [1]])

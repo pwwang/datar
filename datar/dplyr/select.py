@@ -64,7 +64,7 @@ def select(
         return _data.__class__(
             out,
             _group_vars=gvars,
-            _drop=group_by_drop_default(_data),
+            _group_drop=group_by_drop_default(_data),
             _group_data=gdata
         )
     return out

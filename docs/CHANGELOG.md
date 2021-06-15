@@ -1,3 +1,17 @@
+## 0.1.0
+Added:
+- `pandas.NA` as `NaN`
+- Dtypes display when printing a dataframe (string, html, notebook)
+- `zibble` to construct dataframes with names specified together, and values together.
+
+Fixed:
+- `base.diag()` on dataframes
+- Data recycling when length is different from original data
+- `datar.itemgetter()` not public
+
+Changed:
+- Behavior of `group_by()` with `_drop=False`. Invisible values will not mix with visible values of other columns
+
 ## 0.0.7
 - Add dplyr rows verbs
 - Allow mixed numbering (with `c()` and `f[...]`) for tibble construction

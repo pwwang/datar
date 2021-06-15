@@ -21,14 +21,14 @@ from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
 from .constants import NA
-from ..core.utils import categorized, get_option, logger
+from ..core.utils import categorized, get_option, logger, Array
 from ..core.middlewares import WithDataEnv
 from ..core.collections import Collection
 from ..core.types import (
-    BoolOrIter, CategoricalLikeType, DataFrameType, DoubleOrIter, IntOrIter,
+    BoolOrIter, CategoricalLikeType, DoubleOrIter, IntOrIter,
     NumericOrIter,
     NumericType, SeriesLikeType, StringOrIter, is_scalar_int, IntType,
-    is_iterable, is_series_like, is_scalar
+    is_iterable, is_series_like, is_scalar, is_null
 )
 from ..core.contexts import Context
 
@@ -110,30 +110,6 @@ def _(
         "character string is not in a standard unambiguous format"
     )
 
-@register_func(None, context=Context.EVAL)
-def sum(series: Iterable[Any], na_rm: bool = False) -> float:
-    """Get the sum of input"""
-    return numpy.nansum(series) if na_rm else numpy.sum(series)
-
-@register_func(None, context=Context.EVAL)
-def mean(series: Iterable[NumericType], na_rm: bool = False) -> NumericType:
-    """Get the mean of input"""
-    return numpy.nanmean(series) if na_rm else numpy.mean(series)
-
-@register_func(None, context=Context.EVAL)
-def median(series: Iterable[NumericType], na_rm: bool = False) -> NumericType:
-    """Get the median of input"""
-    return numpy.nanmedian(series) if na_rm else numpy.median(series)
-
-@register_func(None, context=Context.EVAL)
-def min(series: Iterable[Any], na_rm: bool = False) -> float:
-    """Get the min of input"""
-    return numpy.nanmin(series) if na_rm else numpy.min(series)
-
-@register_func(None, context=Context.EVAL)
-def max(series: Iterable[Any], na_rm: bool = False) -> float:
-    """Get the max of input"""
-    return numpy.nanmax(series) if na_rm else numpy.max(series)
 
 @_as_date_dummy.register(Series)
 def _(
@@ -177,7 +153,7 @@ def _(
 
 @register_func(None, context=Context.EVAL)
 def as_date(
-        x: DataFrameType,
+        x: DataFrame,
         format: Optional[str] = None,
         try_formats: Optional[List[str]] = None,
         optional: bool = False,
@@ -191,7 +167,7 @@ def as_date(
     Args:
         x: Object that can be converted into a datetime.date object
         format:  If not specified, it will try try_formats one by one on
-            the first non-NaN element, and give an error if none works.
+            the first non-NA element, and give an error if none works.
             Otherwise, the processing is via strptime
         try_formats: vector of format strings to try if format is not specified.
         optional: indicating to return NA (instead of signalling an error)
@@ -234,7 +210,7 @@ def as_character(x: Any) -> StringOrIter:
         x: The object
 
     Returns:
-        When x is a numpy.ndarray or a series, return x.astype(str).
+        When x is an array or a series, return x.astype(str).
         When x is iterable, convert elements of it into strings
         Otherwise, convert x to string.
     """
@@ -248,7 +224,7 @@ def as_double(x: Any) -> DoubleOrIter:
         x: The object
 
     Returns:
-        When x is a numpy.ndarray or a series, return x.astype(float).
+        When x is an array or a series, return x.astype(float).
         When x is iterable, convert elements of it into floats
         Otherwise, convert x to float.
     """
@@ -276,7 +252,7 @@ def as_int(x: Any) -> Union[int, Iterable[int]]:
         x: The object
 
     Returns:
-        When x is a numpy.ndarray or a series, return x.astype(int).
+        When x is an array or a series, return x.astype(int).
         When x is iterable, convert elements of it into ints
         Otherwise, convert x to int.
     """
@@ -292,7 +268,7 @@ def as_integer(x: Any) -> Union[numpy.int64, Iterable[numpy.int64]]:
         x: The object
 
     Returns:
-        When x is a numpy.ndarray or a series, return x.astype(numpy.int64).
+        When x is an array or a series, return x.astype(numpy.int64).
         When x is iterable, convert elements of it into numpy.int64s
         Otherwise, convert x to numpy.int64.
     """
@@ -318,7 +294,7 @@ def as_logical(x: Any) -> BoolOrIter:
         x: The object
 
     Returns:
-        When x is a numpy.ndarray or a series, return x.astype(bool).
+        When x is an array or a series, return x.astype(bool).
         When x is iterable, convert elements of it into bools
         Otherwise, convert x to bool.
     """
@@ -333,7 +309,7 @@ def is_numeric(x: Any) -> BoolOrIter:
         return isinstance(x, (int, float, complex, numpy.number))
     if isinstance(x, Series):
         return is_numeric_dtype(x)
-    return numpy.array([is_numeric(elem) for elem in x])
+    return Array([is_numeric(elem) for elem in x])
 
 @register_func(None, context=Context.EVAL)
 def is_character(x: Any) -> BoolOrIter:
@@ -381,7 +357,7 @@ def is_double(x: Any) -> BoolOrIter:
 
 is_float = is_double
 
-is_na = register_func(None, context=Context.EVAL)(pandas.isna)
+is_na = register_func(None, context=Context.EVAL)(is_null)
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
@@ -404,7 +380,7 @@ def seq_along(
 ) -> SeriesLikeType:
     """Generate sequences along an iterable"""
     _base0 = get_option('index.base.0', _base0)
-    return numpy.array(range(len(along_with))) + int(not _base0)
+    return Array(range(len(along_with))) + int(not _base0)
 
 @register_func(None, context=Context.EVAL)
 def seq_len(
@@ -414,14 +390,14 @@ def seq_len(
     """Generate sequences with the length"""
     _base0 = get_option('index.base.0', _base0)
     if is_scalar(length_out):
-        return numpy.array(range(int(length_out))) + int(not _base0)
+        return Array(range(int(length_out))) + int(not _base0)
     if len(length_out) > 1:
         logger.warning(
             "In seq_len(%r) : first element used of 'length_out' argument",
             length_out
         )
     length_out = int(list(length_out)[0])
-    return numpy.array(range(length_out)) + int(not _base0)
+    return Array(range(length_out)) + int(not _base0)
 
 
 @register_func(None, context=Context.EVAL)
@@ -463,7 +439,7 @@ def seq(
         length_out = to - from_ + base if to > from_ else from_ - to + base
     else:
         length_out = (to - from_ + .1 * by + float(base) * by) // by
-    return numpy.array([from_ + n * by for n in range(int(length_out))])
+    return Array([from_ + n * by for n in range(int(length_out))])
 
 @register_func(None, context=Context.EVAL)
 def abs(x: Any) -> NumericOrIter:
@@ -508,12 +484,12 @@ def cumx(x: Any, how: str) -> numpy.ndarray:
         x = [x]
 
     if len(x) == 0:
-        return numpy.array([])
+        return Array([])
 
     out = []
     out_append = out.append
     def append(elem):
-        if pandas.isna(out[-1]) or pandas.isna(elem):
+        if is_null(out[-1]) or is_null(elem):
             out_append(NA)
         elif how == 'sum':
             out_append(out[-1] + elem)
@@ -529,7 +505,7 @@ def cumx(x: Any, how: str) -> numpy.ndarray:
             out_append(elem)
         else:
             append(elem)
-    return numpy.array(out)
+    return Array(out)
 
 @register_func(None, context=Context.EVAL)
 def cumsum(x: Any) -> numpy.ndarray:
@@ -631,153 +607,6 @@ def sample(
     return numpy.random.choice(x, int(size), replace=replace, p=prob)
 
 @register_func(None, context=Context.EVAL)
-def pmin(
-        *series: Union[Series, SeriesGroupBy],
-        na_rm: bool = False
-) -> Iterable[float]:
-    """Get the min value rowwisely"""
-    return [min(elem, na_rm=na_rm) for elem in zip(*series)]
-
-@register_func(None, context=Context.EVAL)
-def pmax(
-        *series: Union[Series, SeriesGroupBy],
-        na_rm: bool = False
-) -> Iterable[float]:
-    """Get the max value rowwisely"""
-    return [max(elem, na_rm=na_rm) for elem in zip(*series)]
-
-@register_func(None, context=Context.EVAL)
-def table(
-        obj: Any,
-        *objs: Any,
-        exclude: Any = NA,
-        # not supported. use exclude instead
-        # use_na: str = "no",
-        dnn: Optional[Union[str, List[str]]] = None,
-        # not supported, varname.argname not working with wrappers having
-        # different signatures.
-        # deparse_level: int = 1
-) -> DataFrame:
-    # pylint: disable=too-many-statements,too-many-branches
-    """uses the cross-classifying factors to build a contingency table of
-    the counts at each combination of factor levels.
-
-    When used with DataFrameGroupBy data, groups are ignored.
-
-    Args:
-        obj, *objs: one or more objects which can be interpreted as factors
-            Only 1 or 2 variables allowed currently.
-            If obj or elements of objs is a DataFrame, each column is counted
-            as a variable.
-        exclude: levels to remove for all factors
-        dnn: the names to be given to the dimensions in the result.
-
-    Returns:
-        A contingency table (DataFrame)
-    """
-    obj1 = obj2 = None
-    obj_nvar = 1
-    if not isinstance(obj, DataFrame):
-        obj1 = list(obj) if isinstance(obj, str) else obj
-        obj_nvar = 1
-    elif obj.shape[1] == 1:
-        obj1 = obj.iloc[:, 0]
-        obj_nvar = 1
-    elif obj.shape[1] == 2:
-        obj1 = obj.iloc[:, 0]
-        obj2 = obj.iloc[:, 1]
-        obj_nvar = 2
-    else:
-        raise ValueError(
-            'At most 2 columns supported in the dataframe for `table`'
-        )
-
-    if obj_nvar == 2 and objs:
-        raise ValueError(
-            'At most 2 variables supported for `table`'
-        )
-    if objs:
-        obj = objs[0]
-        if isinstance(obj, DataFrame) and obj.shape[1] > 1:
-            raise ValueError(
-                'At most 2 variables supported for `table`'
-            )
-        if isinstance(obj, DataFrame):
-            obj2 = obj.iloc[:, 0]
-        elif isinstance(obj, str):
-            obj2 = list(obj)
-        else:
-            obj2 = obj
-
-    if obj2 is None:
-        obj2 = obj1
-
-    dn1 = dn2 = None
-    if isinstance(dnn, str):
-        dn1 = dn2 = dnn
-    elif is_iterable(dnn):
-        dnn = list(dnn)
-        if len(dnn) == 1:
-            dnn = dnn * 2
-        dn1, dn2 = dnn[:2]
-
-    if obj1 is obj2:
-        if not isinstance(obj1, (Series, Categorical)):
-            obj1 = obj2 = Series(obj1)
-    else:
-        if not isinstance(obj1, (Series, Categorical)):
-            obj1 = Series(obj1)
-        if not isinstance(obj2, (Series, Categorical)):
-            obj2 = Series(obj2)
-
-    if is_scalar(exclude):
-        exclude = [exclude]
-
-    if obj1 is obj2:
-        if isinstance(obj1, Series):
-            obj1 = obj2 = obj1[~obj1.isin(exclude)].reset_index(drop=True)
-        else:
-            obj1.remove_categories(
-                [exc for exc in exclude if exc in obj1.categories],
-                inplace=True
-            )
-    else:
-        if isinstance(obj1, Series):
-            obj1 = obj1[~obj1.isin(exclude)].reset_index(drop=True)
-        else:
-            obj1.remove_categories(
-                [exc for exc in exclude if exc in obj1.categories],
-                inplace=True
-            )
-        if isinstance(obj2, Series):
-            obj2 = obj2[~obj2.isin(exclude)].reset_index(drop=True)
-        else:
-            obj2.remove_categories(
-                [exc for exc in exclude if exc in obj2.categories],
-                inplace=True
-            )
-
-    if NA not in exclude:
-        if obj1 is obj2:
-            if not is_categorical_dtype(obj1):
-                obj1 = obj2 = obj1.fillna('<NA>')
-        else:
-            if not is_categorical_dtype(obj1):
-                obj1 = obj1.fillna('<NA>')
-            if not is_categorical_dtype(obj2):
-                obj2 = obj2.fillna('<NA>')
-
-    kwargs = {'dropna': False}
-    if dn1:
-        kwargs['rownames'] = [dn1]
-    if dn2:
-        kwargs['colnames'] = [dn2]
-    tab = pandas.crosstab(obj1, obj2, **kwargs)
-    if obj1 is obj2:
-        tab = DataFrame(dict(count=numpy.diag(tab)), index=tab.columns).T
-    return tab
-
-@register_func(None, context=Context.EVAL)
 def round(
         number: NumericOrIter,
         ndigits: int = 0
@@ -863,9 +692,9 @@ def rep(
             )
 
     if is_scalar_int(times):
-        x = numpy.array([elem for elem in x for _ in range(each)] * int(times))
+        x = Array([elem for elem in x for _ in range(each)] * int(times))
     else:
-        x = numpy.array([elem for n, elem in zip(times, x) for _ in range(n)])
+        x = Array([elem for n, elem in zip(times, x) for _ in range(n)])
     if length is None:
         return x
     repeats = length // len(x) + 1
@@ -876,7 +705,7 @@ def rep(
 def rev(x: Iterable[Any]) -> numpy.ndarray:
     """Get reversed vector"""
     dtype = getattr(x, 'dtype', None)
-    return numpy.array(list(reversed(x)), dtype=dtype)
+    return Array(list(reversed(x)), dtype=dtype)
 
 
 @register_func(None, context=Context.EVAL)
@@ -940,7 +769,7 @@ def factor(
 
     return ret.remove_categories(exclude)
 
-def context(data: DataFrameType) -> Any:
+def context(data: DataFrame) -> Any:
     """Evaluate verbs, functions in the
     possibly modifying (a copy of) the original data.
 
@@ -986,8 +815,7 @@ def Re(numbers: NumericOrIter) -> numpy.ndarray:
     """Real part of complex numbers"""
     if is_scalar(numbers):
         return numbers.real
-    ret = numpy.real(numbers)
-    return ret
+    return numpy.real(numbers)
 
 @register_func(None)
 def Im(numbers: NumericOrIter) -> numpy.ndarray:

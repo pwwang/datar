@@ -9,14 +9,13 @@ from pandas import DataFrame
 from pipda import register_verb, register_func
 
 from ..core.contexts import Context
-from ..core.utils import copy_attrs
+from ..core.utils import copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import is_scalar
 from ..core.collections import Collection
 from ..base import union, setdiff, intersect
 from .mutate import mutate
-from .group_by import group_by_drop_default, ungroup
-from .group_data import group_vars
+from .group_by import ungroup
 
 @register_verb(DataFrame, context=Context.PENDING)
 def distinct(
@@ -66,14 +65,11 @@ def _(
         **kwargs: Any
 ) -> DataFrameGroupBy:
 
-    out = _data.group_apply(
+    out = _data.datar_apply(
         lambda df: distinct(df, *args, **kwargs, _keep_all=_keep_all)
     )
-    return DataFrameGroupBy(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
+
+    return reconstruct_tibble(_data, out)
 
 @distinct.register(DataFrameRowwise, context=Context.PENDING)
 def _(
@@ -88,11 +84,8 @@ def _(
         **kwargs,
         _keep_all=_keep_all
     )
-    return DataFrameRowwise(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
+
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_func(None, context=Context.EVAL)
 def n_distinct(*data: Any, na_rm: bool = False) -> int:

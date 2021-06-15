@@ -1,278 +1,19 @@
 """Functions ported from tidyverse-tibble"""
-import itertools
 from typing import Any, Callable, Iterable, List, Mapping, Union, Optional
 
 from pandas import DataFrame, Series, RangeIndex
-from pipda import Context, register_func, register_verb
-from pipda.utils import Expression
-from pipda.symbolic import DirectRefAttr, DirectRefItem
-from pipda.function import Function
-from varname import argname, varname
-from varname.utils import VarnameRetrievingError
+from pipda import Context, register_verb
 
-from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.utils import (
-    copy_attrs, df_assign_item, get_option, position_after,
-    position_at, to_df, logger, apply_dtypes
+    copy_attrs, get_option, position_after,
+    position_at, recycle_value, logger, reconstruct_tibble
 )
-from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.types import is_scalar
+from ..core.types import is_scalar, Dtype
 from ..core.exceptions import ColumnNotExistingError
-from ..core.collections import Collection
-from ..core.types import StringOrIter
-from ..base import setdiff, c
+from ..base import setdiff
 
-def tibble(
-        *args: Any,
-        _name_repair: Union[str, Callable] = 'check_unique',
-        _rows: Optional[int] = None,
-        _base0: Optional[bool] = None,
-        _dtypes: Optional[
-            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
-        ] = None,
-        **kwargs: Any
-) -> DataFrame:
-    # pylint: disable=too-many-statements,too-many-branches
-    """Constructs a data frame
-
-    Args:
-        *args: and
-        **kwargs: A set of name-value pairs.
-        _name_repair: treatment of problematic column names:
-            - "minimal": No name repair or checks, beyond basic existence,
-            - "unique": Make sure names are unique and not empty,
-            - "check_unique": (default value), no name repair,
-                but check they are unique,
-            - "universal": Make the names unique and syntactic
-            - a function: apply custom name repair
-        _rows: Number of rows of a 0-col dataframe when args and kwargs are
-            not provided. When args or kwargs are provided, this is ignored.
-        _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
-
-    Returns:
-        A constructed dataframe
-    """
-    if not args and not kwargs:
-        df = DataFrame() if not _rows else DataFrame(index=range(_rows))
-        try:
-            df.__dfname__ = varname(raise_exc=False)
-        except VarnameRetrievingError: # pragma: no cover
-            df.__dfname__ = None
-        return df
-
-    try:
-        argnames = argname(args, vars_only=False, pos_only=True)
-        if len(argnames) != len(args):
-            raise VarnameRetrievingError
-    except VarnameRetrievingError:
-        argnames = [f"{DEFAULT_COLUMN_PREFIX}{i}" for i in range(len(args))]
-
-    name_values = zip(argnames, args)
-    name_values = itertools.chain(name_values, kwargs.items())
-    # cannot do it with Mappings, same keys will be lost
-    names = []
-    values = []
-    for name, value in name_values:
-        names.append(name)
-        values.append(value)
-
-    names = repair_names(names, repair=_name_repair, _base0=_base0)
-    df = None
-
-    for name, arg in zip(names, values):
-        if arg is None:
-            continue
-
-        if isinstance(arg, Expression):
-            # allow f[1:3] to work
-            if isinstance(arg, DirectRefItem) and isinstance(arg.ref, slice):
-                arg = Collection(arg.ref, base0=_base0)
-            elif (
-                    isinstance(arg, Function) and
-                    arg.func.__qualname__ == c.__qualname__
-            ):
-                arg = arg(df, Context.SELECT.value)
-            else:
-                arg = arg(df, Context.EVAL.value)
-
-        if isinstance(arg, dict):
-            arg = tibble(**arg)
-
-        elif isinstance(arg, Series) and name in argnames:
-            name = arg.name
-
-        if df is None:
-            if isinstance(arg, DataFrame):
-                # df = arg.copy()
-                # DataFrameGroupBy.copy copied into DataFrameGroupBy
-                df = DataFrame(arg).copy()
-                if name not in argnames:
-                    df.columns = [f'{name}${col}' for col in df.columns]
-
-            else:
-                df = to_df(arg, name)
-        elif isinstance(arg, DataFrame):
-            for col in arg.columns:
-                df_assign_item(
-                    df,
-                    f'{name}${col}' if name not in argnames else col,
-                    arg[col],
-                    allow_dups=True
-                )
-        else:
-            df_assign_item(df, name, arg, allow_dups=True)
-
-    if df is None:
-        df = DataFrame()
-    try:
-        df.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError: # pragma: no cover
-        df.__dfname__ = None # still raises in some cases
-
-    if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
-        copy_attrs(df, args[0])
-
-    apply_dtypes(df, _dtypes)
-    return df
-
-
-def tibble_row(
-        *args: Any,
-        _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None,
-        _dtypes: Optional[
-            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
-        ] = None,
-        **kwargs: Any
-) -> DataFrame:
-    """Constructs a data frame that is guaranteed to occupy one row.
-
-    Scalar values will be wrapped with `[]`
-
-    Args:
-        *args: and
-        **kwargs: A set of name-value pairs.
-        _name_repair: treatment of problematic column names:
-            - "minimal": No name repair or checks, beyond basic existence,
-            - "unique": Make sure names are unique and not empty,
-            - "check_unique": (default value), no name repair,
-                but check they are unique,
-            - "universal": Make the names unique and syntactic
-            - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
-
-    Returns:
-        A constructed dataframe
-    """
-    if not args and not kwargs:
-        df = DataFrame(index=[0]) # still one row
-    else:
-        df = tibble(*args, **kwargs, _name_repair=_name_repair, _base0=_base0)
-
-    if df.shape[0] > 1:
-        raise ValueError("All arguments must be size one, use `[]` to wrap.")
-    try:
-        df.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError: # pragma: no cover
-        df.__dfname__ = None
-
-    apply_dtypes(df, _dtypes)
-    return df
-
-@register_func(None, context=Context.EVAL)
-def fibble(
-        *args: Any,
-        _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None,
-        _rows: Optional[int] = None,
-        _dtypes: Optional[
-            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
-        ] = None,
-        **kwargs: Any
-) -> DataFrame:
-    """A function of tibble that can be used as an argument of verbs
-
-    Since `tibble` can recycle previous items, for example:
-        >>> df >> tibble(x=1, y=f.x+1)
-        >>> # x y
-        >>> # 1 2
-
-    It gets confused when it is used as an argument of a verb, the we can't tell
-    whether `f` if a proxy for the data of the verb or the data frame that
-    `tibble` is constructing. So then here is the function to be used as a verb
-    argument so `f` refers to the data of the verb. Note that in such a case,
-    the items coming in previously cannot be recycled.
-
-    See Also:
-        [`tibble`](datar.tibble.funcs.tibble)
-
-    """
-    return tibble(
-        *args, **kwargs,
-        _name_repair=_name_repair,
-        _rows=_rows,
-        _base0=_base0,
-        _dtypes=_dtypes
-    )
-
-def tribble(
-        *dummies: Any,
-        _dtypes: Optional[
-            Mapping[str, Union[StringOrIter, type, Iterable[type]]]
-        ] = None
-) -> DataFrame:
-    """Create dataframe using an easier to read row-by-row layout
-
-    Unlike original API that uses formula (`f.col`) to indicate the column
-    names, we use `f.col` to indicate them.
-
-    Args:
-        *dummies: Arguments specifying the structure of a dataframe
-            Variable names should be specified with `f.name`
-
-    Examples:
-        >>> tribble(
-        >>>     f.colA, f.colB,
-        >>>     "a",    1,
-        >>>     "b",    2,
-        >>>     "c",    3,
-        >>> )
-
-    Returns:
-        A dataframe
-    """
-    columns = []
-    data = []
-    for dummy in dummies:
-        # columns
-        if isinstance(dummy, (DirectRefAttr, DirectRefItem)):
-            columns.append(dummy.ref)
-        elif not columns:
-            raise ValueError(
-                'Must specify at least one column using the `f.<name>` syntax.'
-            )
-        else:
-            if not data:
-                data.append([])
-            if len(data[-1]) < len(columns):
-                data[-1].append(dummy)
-            else:
-                data.append([dummy])
-
-    ret = (
-        DataFrame(data, columns=columns) if data
-        else DataFrame(columns=columns)
-    )
-    try:
-        ret.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError: # pragma: no cover
-        ret.__dfname__ = None
-
-    apply_dtypes(ret, _dtypes)
-    return ret
+from .tibble import tibble
 
 def enframe(
         x: Optional[Union[Iterable, Mapping]],
@@ -380,9 +121,6 @@ def add_row(
     ):
         raise ValueError("Can't add rows to grouped data frames.")
 
-    from ..dplyr.group_by import group_by_drop_default
-    from ..dplyr.group_data import group_vars
-
     if not args and not kwargs:
         df = DataFrame(index=[0], columns=_data.columns)
     else:
@@ -399,13 +137,9 @@ def add_row(
     out = _rbind_at(_data, df, pos)
 
     if isinstance(_data, DataFrameRowwise):
-        out = DataFrameRowwise(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
-
-    copy_attrs(out, _data)
+        out = reconstruct_tibble(_data, out, keep_rowwise=True)
+    else:
+        copy_attrs(out, _data)
     return out
 
 add_case = add_row # pylint: disable=invalid-name
@@ -422,6 +156,7 @@ def add_column(
         _after: Optional[Union[str, int]] = None,
         _name_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None,
+        _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Add one or more columns to an existing data frame.
@@ -436,43 +171,29 @@ def add_column(
         _base0: Whether `_before` and `_after` are 0-based if they are index.
             if not given, will be determined by `getOption('index_base_0')`,
             which is `False` by default.
+        _dtypes: The dtypes for the new columns, either a uniform dtype or a
+            dict of dtypes with keys the column names
 
     Returns:
         The dataframe with the added columns
     """
-    from ..dplyr.group_by import group_by_drop_default
-    from ..dplyr.group_data import group_vars
-
-    df = tibble(*args, **kwargs, _name_repair='minimal')
+    df = tibble(*args, **kwargs, _name_repair='minimal', _dtypes=_dtypes)
 
     if df.shape[1] == 0:
         return _data.copy()
 
-    if df.shape[0] != _data.shape[0]:
-        if df.shape[0] != 1:
-            raise ValueError(
-                f"New columns have {df.shape[0]} rows, "
-                f"but `_data` has {_data.shape[0]}."
-            )
-        df = df.iloc[[0] * _data.shape[0], :].reset_index(drop=True)
-
+    df = recycle_value(df, len(_data), 'new columns')
     pos = _pos_from_before_after_names(
         _before,
         _after,
         _data.columns.tolist(),
         _base0
     )
+
     out = _cbind_at(_data, df, pos, _name_repair)
-
-    if isinstance(_data, DataFrameGroupBy):
-        out = _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
-
-    copy_attrs(out, _data)
-    return out
+    if len(_data) == 0:
+        out = out.loc[[], :]
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame)
 def has_rownames(_data: DataFrame) -> bool:

@@ -8,11 +8,12 @@ from pipda.function import Function
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.utils import (
-    align_value, arg_match, check_column_uniqueness, df_assign_item,
-    name_mutatable_args, logger, get_option
+    length_of, recycle_df, arg_match, check_column_uniqueness, df_setitem,
+    name_mutatable_args, logger, get_option, reconstruct_tibble
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+
 from .group_data import group_keys, group_vars, group_data
 from .group_by import group_by_drop_default
 
@@ -74,7 +75,7 @@ def summarise(
     _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
     out = _summarise_build(_data, *args, **kwargs)
     if _groups == 'rowwise':
-        return DataFrameRowwise(out, _drop=group_by_drop_default(_data))
+        return DataFrameRowwise(out, _group_drop=group_by_drop_default(_data))
     return out
 
 @summarise.register(DataFrameGroupBy, context=Context.PENDING)
@@ -89,7 +90,7 @@ def _(
 
     allone = True
     if group_data(_data).shape[0] == 0:
-        out = _summarise_build(_data, *args, **kwargs)
+        out = _summarise_build(_data, *args, **kwargs).iloc[[], :]
     else:
         def apply_func(df):
             nonlocal allone
@@ -98,7 +99,7 @@ def _(
                 allone = False
             return out
 
-        out = _data.group_apply(apply_func)
+        out = _data.datar_apply(apply_func)
 
     g_keys = group_vars(_data)
     if _groups is None:
@@ -115,11 +116,7 @@ def _(
                     '%s (override with `_groups` argument)',
                     g_keys[:-1]
                 )
-            out = DataFrameGroupBy(
-                out,
-                _group_vars=g_keys[:-1],
-                _drop=group_by_drop_default(_data)
-            )
+            out = reconstruct_tibble(_data, out, [g_keys[-1]])
     elif _groups == "keep" and g_keys:
         if get_option('dplyr_summarise_inform'):
             logger.info(
@@ -130,14 +127,10 @@ def _(
         out = DataFrameGroupBy(
             out,
             _group_vars=g_keys,
-            _drop=group_by_drop_default(_data)
+            _group_drop=group_by_drop_default(_data)
         )
     elif _groups == "rowwise":
-        out = DataFrameRowwise(
-            out,
-            _group_vars=g_keys,
-            _drop=group_by_drop_default(_data)
-        )
+        out = reconstruct_tibble(_data, out, keep_rowwise=True)
     elif (
             isinstance(_data, DataFrameRowwise) and
             get_option('dplyr_summarise_inform')
@@ -171,7 +164,7 @@ def _summarise_build(
 
         try:
             val = evaluate_expr(val, envdata, context)
-        except ColumnNotExistingError:
+        except (KeyError, ColumnNotExistingError):
             # also recycle input
             val = evaluate_expr(val, _data, context)
 
@@ -181,14 +174,18 @@ def _summarise_build(
         if key.startswith(DEFAULT_COLUMN_PREFIX) and isinstance(val, DataFrame):
             # ignore key
             for name, ser in val.to_dict('series').items():
-                ser = align_value(ser, out)
-                df_assign_item(out, name, ser)
+                if length_of(out) == 1:
+                    out, ser = recycle_df(out, ser, None, key)
+                out = df_setitem(out, name, ser)
         elif isinstance(val, DataFrame):
             for name, ser in val.to_dict('series').items():
-                ser = align_value(ser, out)
-                df_assign_item(out, f'{key}${name}', ser)
+                if length_of(out) == 1:
+                    out, ser = recycle_df(out, ser, None, key)
+                out = df_setitem(out, f'{key}${name}', ser)
+        elif length_of(out) == 1:
+            out, val = recycle_df(out, val, None, key)
+            out = df_setitem(out, key, val)
         else:
-            val = align_value(val, out)
-            df_assign_item(out, key, val)
+            out = df_setitem(out, key, val)
 
     return out

@@ -10,6 +10,7 @@ from pipda import register_verb
 
 from ..core.types import IntType, is_scalar
 from ..core.contexts import Context
+from ..core.utils import Array
 
 # pylint: disable=redefined-outer-name
 
@@ -172,26 +173,28 @@ def diag(
         nmax = nmax // len(x)
         x = x * nmax
 
-    series = numpy.array(x)
-    ret = DataFrame(numpy.diag(series))
+    x = Array(x)
+    try:
+        ret = DataFrame(numpy.diag(x), dtype=x.dtype)
+    except TypeError:
+        ret = DataFrame(numpy.diag(x), dtype=object)
     return ret.iloc[:nrow, :ncol]
 
-# @diag.register(DataFrame)
-# def _(
-#         x: DataFrame,
-#         nrow: Any = None, # pylint: disable=redefined-outer-name
-#         ncol: Optional[IntType] = None  # pylint: disable=redefined-outer-name
-# ) -> Union[DataFrame, numpy.ndarray]:
-#     """Diag when x is a dataframe"""
-#     if nrow is not None and ncol is not None:
-#         raise ValueError("Extra arguments received for diag.")
+@diag.register(DataFrame)
+def _(
+        x: DataFrame,
+        nrow: Any = None, # pylint: disable=redefined-outer-name
+        ncol: Optional[IntType] = None  # pylint: disable=redefined-outer-name
+) -> Union[DataFrame, numpy.ndarray]:
+    """Diag when x is a dataframe"""
+    if nrow is not None and ncol is not None:
+        raise ValueError("Extra arguments received for diag.")
 
-#     x = x.copy()
-#     if nrow is not None:
-#         numpy.fill_diagonal(x, nrow)
-
-#     return x
-
+    x = x.copy()
+    if nrow is not None:
+        numpy.fill_diagonal(x, nrow)
+        return x
+    return numpy.diag(x)
 
 @register_verb(DataFrame)
 def t(_data: DataFrame, copy: bool = False) -> DataFrame:
@@ -294,7 +297,7 @@ def duplicated( # pylint: disable=invalid-name
             out_append(False)
     if fromLast:
         out = list(reversed(out))
-    return numpy.array(out, dtype=bool)
+    return Array(out, dtype=bool)
 
 @duplicated.register(DataFrame)
 def _( # pylint: disable=invalid-name,unused-argument

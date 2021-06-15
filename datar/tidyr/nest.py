@@ -9,12 +9,12 @@ import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
 
-from ..core.types import DTypeType, is_scalar
-from ..core.utils import vars_select, align_value, to_df
+from ..core.types import Dtype, is_scalar
+from ..core.utils import vars_select, recycle_value, to_df, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
 
-from ..base import setdiff, intersect, NA
+from ..base import setdiff, NA
 from ..dplyr import distinct, bind_cols, group_vars, group_by_drop_default
 
 from .chop import unchop, _vec_split
@@ -83,7 +83,7 @@ def nest(
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
-    return bind_cols(u_keys, align_value(out, u_keys))
+    return bind_cols(u_keys, recycle_value(out, u_keys.shape[0]))
 
 @nest.register(DataFrameGroupBy, context=Context.SELECT)
 def _(
@@ -98,19 +98,14 @@ def _(
     out = nest.dispatch(DataFrame)(
         _data, **cols, _names_sep=_names_sep, _base0=_base0
     )
-    gvars = intersect(out.columns, group_vars(_data))
-    return _data.__class__(
-        out,
-        _group_vars=gvars,
-        _drop=group_by_drop_default(_data)
-    )
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def unnest(
         data: DataFrame,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None
@@ -175,7 +170,7 @@ def _(
         data: DataFrameRowwise,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None
@@ -192,7 +187,7 @@ def _(
     return DataFrameGroupBy(
         out,
         _group_vars=group_vars(data),
-        _drop=group_by_drop_default(data)
+        _group_drop=group_by_drop_default(data)
     )
 
 def _strip_names(names: Iterable[str], base: str, sep: str) -> List[str]:

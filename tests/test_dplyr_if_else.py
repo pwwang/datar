@@ -6,6 +6,7 @@ import pytest
 import numpy
 from datar.all import *
 from datar.datasets import mtcars
+from .conftest import assert_iterable_equal
 
 def test_scalar_true_false_are_vectorized():
     x = c(TRUE, TRUE, FALSE, FALSE)
@@ -22,9 +23,7 @@ def test_vector_true_false_ok():
 
 def test_missing_values_are_missing():
     out = if_else(c(TRUE, NA, FALSE), -1, 1)
-    assert out[0] == -1.
-    assert pandas.isna(out[1])
-    assert out[2] == 1.
+    assert_iterable_equal(out, [-1, NA, 1])
 
 def test_if_else_errors():
     # ok, numbers are able to be converted to booleans
@@ -54,21 +53,16 @@ def test_unmatched_gets_missing_value():
         x <= 1, 1,
         x <= 2, 2
     )
-    assert out[0] == 1.
-    assert out[1] == 2.
-    assert numpy.isnan(out[2])
+    assert_iterable_equal(out, [1,2,NA])
 
 def test_missing_values_can_be_replaced():
     x = numpy.array([1,2,3, NA])
     out = case_when(
         x <= 1, 1,
         x <= 2, 2,
-        numpy.isnan(x), 0
+        pandas.isna(x), 0
     )
-    assert out[0] == 1.
-    assert out[1] == 2.
-    assert numpy.isnan(out[2])
-    assert out[3] == 0.
+    assert_iterable_equal(out, [1,2,NA, 0])
 
 def test_na_conditions():
     out = case_when(

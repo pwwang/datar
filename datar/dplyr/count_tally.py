@@ -62,7 +62,7 @@ def count(
         out = DataFrameGroupBy(
             out,
             _group_vars=group_vars(x),
-            _drop=group_by_drop_default(x),
+            _group_drop=_drop,
             _group_data=group_data(x)
         )
     return out

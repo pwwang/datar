@@ -62,7 +62,7 @@ def group_by(
     out = DataFrameGroupBy(
         groups['data'],
         _group_vars=groups['group_names'],
-        _drop=_drop
+        _group_drop=_drop
     )
     copy_attrs(out, _data)
     return out
@@ -246,4 +246,4 @@ def _add_computed_columns(
 
 def group_by_drop_default(_tbl) -> bool:
     """Get the groupby _drop attribute of dataframe"""
-    return _tbl.attrs.get('groupby_drop', True)
+    return _tbl.attrs.get('_group_drop', True)

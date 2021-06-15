@@ -1,5 +1,5 @@
 """Operators for datar"""
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 from functools import partial
 import operator
 
@@ -8,8 +8,9 @@ from pandas import Series
 from pipda import register_operator, Operator
 from pipda.context import ContextBase
 
-from .utils import align_value
+from .utils import length_of, recycle_value
 from .collections import Collection, Inverted, Negated, Intersect
+from .exceptions import DataUnrecyclable
 from .types import BoolOrIter
 
 @register_operator
@@ -19,14 +20,14 @@ class DatarOperator(Operator):
     def _arithmetize1(self, operand: Any, op: str) -> Any:
         """Operator for single operand"""
         op_func = getattr(operator, op)
-        operand = align_value(operand, self.data)
+        # Data length might be changed after evaluation
+        # operand = recycle_value(operand, self.data.shape[0])
         return op_func(operand)
 
     def _arithmetize2(self, left: Any, right: Any, op: str) -> Any:
         """Operator for paired operands"""
         op_func = getattr(operator, op)
-        left = align_value(left, self.data)
-        right = align_value(right, self.data)
+        left, right = _recycle_left_right(left, right)
         return op_func(left, right)
 
     def invert(self, operand: Any, _context: Optional[ContextBase]) -> Any:
@@ -57,7 +58,10 @@ class DatarOperator(Operator):
             # induce an intersect with Collection
             return Intersect(left, right)
 
-        return self._arithmetize2(left, right, 'and_')
+        left, right = _recycle_left_right(left, right)
+        left = Series(left).fillna(False)
+        right = Series(right).fillna(False)
+        return left & right
 
     def or_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
@@ -73,44 +77,11 @@ class DatarOperator(Operator):
         """
         if isinstance(left, list):
             return Collection(left, right)
-            # left = vars_select(self.data.columns, left)
-            # right = vars_select(self.data.columns, right)
-            # out = union(left, right)
-            # return list(self.data.columns[out])
-        return self._arithmetize2(left, right, 'or_')
 
-    # def eq(self, left: Any, right: Any) -> BoolOrIter:
-    #     """Check equality of left and right"""
-    #     if is_categorical_dtype(left) and is_categorical_dtype(right):
-
-    #     if isinstance(left, Series):
-    #         left = left.values
-    #     if isinstance(right, Series):
-    #         right = right.values
-
-    #     # try to keep the dimensions
-    #     # make dim1 vector a scalar since series comparions require index
-    #     # to be the same
-    #     if (
-    #             isinstance(left, (Categorical, numpy.ndarray)) and
-    #             isinstance(right, (Categorical, numpy.ndarray)) and
-    #             len(left) != len(right)
-    #     ):
-    #         if len(left) == 1:
-    #             left = left[0]
-    #         elif len(right) == 1:
-    #             right = right[0]
-
-    #     out = self._arithmetize2(left, right, 'eq')
-    #     if isinstance(out, bool):
-    #         return out
-    #     # try keep NAs
-    #     if isinstance(left, numpy.ndarray):
-    #         out[pandas.isna(left)] = numpy.nan
-    #     if isinstance(right, numpy.ndarray):
-    #         out[pandas.isna(right)] = numpy.nan
-    #     # note adding NAs converts dtype to float
-    #     return out
+        left, right = _recycle_left_right(left, right)
+        left = Series(left).fillna(False)
+        right = Series(right).fillna(False)
+        return left | right
 
     # pylint: disable=invalid-name
     def ne(self, left: Any, right: Any) -> BoolOrIter:
@@ -129,3 +100,11 @@ class DatarOperator(Operator):
         attr = partial(self._arithmetize2, op=name)
         attr.__qualname__ = self._arithmetize2.__qualname__
         return attr
+
+def _recycle_left_right(left: Any, right: Any) -> Tuple:
+    """Recycle left right operands to each other"""
+    try:
+        left = recycle_value(left, length_of(right))
+    except DataUnrecyclable:
+        right = recycle_value(right, length_of(left))
+    return left, right

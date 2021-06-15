@@ -2,16 +2,15 @@
 from typing import Any, Iterable, Optional
 
 import numpy
-import pandas
 from pandas import DataFrame, Series
 from pipda import register_func
 
 from ..core.types import (
     BoolOrIter, NumericOrIter, NumericType,
-    is_iterable, is_scalar
+    is_iterable, is_scalar, is_null
 )
 from ..core.contexts import Context
-from ..core.utils import position_at
+from ..core.utils import position_at, Array
 from ..base.constants import NA
 
 @register_func(None, context=Context.EVAL)
@@ -36,7 +35,7 @@ def between(
     if not is_scalar(left) or not is_scalar(right):
         raise ValueError(f"`{between}` expects scalars for `left` and `right`.")
     if is_scalar(x):
-        if pandas.isna(x) or pandas.isna(left) or pandas.isna(right):
+        if is_null([x, left, right]).any():
             return NA
         return left <= x <= right
     return Series(between(elem, left, right) for elem in x)
@@ -111,7 +110,6 @@ def coalesce(x: Any, *replace: Any) -> Any:
         y = x.copy()
         for repl in replace:
             x = y.combine_first(repl)
-            # copy_flags(x, y)
             y = x
         return y
 
@@ -123,7 +121,7 @@ def coalesce(x: Any, *replace: Any) -> Any:
             )
         return x.values
 
-    return replace[0] if numpy.isnan(x) else x
+    return replace[0] if is_null(x) else x
 
 @register_func(None, context=Context.EVAL)
 def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
@@ -175,9 +173,9 @@ def nth(
     Returns:
         A single element of x at `n'th`
     """
-    x = numpy.array(x)
+    x = Array(x)
     if order_by is not None:
-        order_by = numpy.array(order_by)
+        order_by = Array(order_by)
         x = x[order_by.argsort()]
     if not isinstance(n, int):
         raise TypeError("`nth` expects `n` to be an integer")
@@ -194,9 +192,9 @@ def first(
         default: Any = NA
 ) -> Any:
     """Get the first element of x"""
-    x = numpy.array(x)
+    x = Array(x)
     if order_by is not None:
-        order_by = numpy.array(order_by)
+        order_by = Array(order_by)
         x = x[order_by.argsort()]
     try:
         return x[0]
@@ -210,9 +208,9 @@ def last(
         default: Any = NA
 ) -> Any:
     """Get the last element of x"""
-    x = numpy.array(x)
+    x = Array(x)
     if order_by is not None:
-        order_by = numpy.array(order_by)
+        order_by = Array(order_by)
         x = x[order_by.argsort()]
     try:
         return x[-1]
@@ -222,5 +220,5 @@ def last(
 def boolean(value: Any) -> BoolOrIter:
     """Convert value to bool, but keep NAs"""
     if is_scalar(value):
-        return NA if pandas.isna(value) else bool(value)
+        return NA if is_null(value) else bool(value)
     return [boolean(elem) for elem in value]

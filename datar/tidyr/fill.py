@@ -9,10 +9,9 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, copy_attrs
+from ..core.utils import vars_select, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
 
-from ..dplyr import group_vars, group_by_drop_default
 
 @register_verb(
     DataFrame,
@@ -63,13 +62,7 @@ def _(
         _direction: str = "down"
 ) -> DataFrameGroupBy:
     # DataFrameGroupBy
-    out = _data.group_apply(
+    out = _data.datar_apply(
         lambda df: fill(df, *columns, _direction=_direction)
     )
-    out = _data.__class__(
-        out,
-        _group_vars=group_vars(_data),
-        _drop=group_by_drop_default(_data)
-    )
-    copy_attrs(out, _data)
-    return out
+    return reconstruct_tibble(_data, out, keep_rowwise=True)

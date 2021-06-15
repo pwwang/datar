@@ -10,12 +10,9 @@ import pandas
 from pandas import DataFrame
 from pipda import register_verb
 
-from ..core.types import StringOrIter, DTypeType, is_scalar
+from ..core.types import StringOrIter, Dtype, is_scalar
 from ..core.contexts import Context
-from ..core.utils import vars_select, copy_attrs
-from ..core.grouped import DataFrameGroupBy
-
-from ..dplyr import group_vars, group_by_drop_default
+from ..core.utils import vars_select, reconstruct_tibble
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -25,7 +22,7 @@ def extract(
         into: StringOrIter,
         regex: str = r'(\w+)',
         remove: bool = True,
-        convert: Union[bool, DTypeType, Mapping[str, DTypeType]] = False,
+        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """Given a regular expression with capturing groups, extract() turns each
@@ -98,12 +95,4 @@ def extract(
 
     base = data[all_columns.difference([col])] if remove else data
     out = pandas.concat([base, out], axis=1)
-    if isinstance(data, DataFrameGroupBy):
-        out = data.__class__(
-            out,
-            _group_vars=group_vars(data),
-            _drop=group_by_drop_default(data)
-        )
-
-    copy_attrs(out, data)
-    return out
+    return reconstruct_tibble(data, out, keep_rowwise=True)

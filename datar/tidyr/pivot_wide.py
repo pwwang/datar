@@ -8,13 +8,11 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import StringOrIter, is_scalar
-from ..core.utils import vars_select
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.utils import vars_select, reconstruct_tibble
 from ..core.exceptions import ColumnNotExistingError
 
-from ..base import intersect, NA
+from ..base import NA, identity
 from ..base.constants import NA_integer_
-from ..dplyr import group_vars, group_by_drop_default
 
 ROWID_COLUMN = '_PIVOT_ROWID_'
 
@@ -32,7 +30,7 @@ def pivot_wider(
         # names_repair: str = "check_unique", # todo
         values_from: StringOrIter = "value",
         values_fill: Any = None,
-        values_fn: Optional[Union[Callable, Mapping[str, Callable]]] = None,
+        values_fn: Union[Callable, Mapping[str, Callable]] = identity,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """"widens" data, increasing the number of columns and decreasing
@@ -149,7 +147,7 @@ def pivot_wider(
         columns=names_from,
         fill_value=values_fill,
         values=values_from[0] if len(values_from) == 1 else values_from,
-        aggfunc=values_fn or 'mean'
+        aggfunc=values_fn
     )
 
     if len(id_cols) > 0:
@@ -172,19 +170,7 @@ def pivot_wider(
     if names_sort:
         ret = ret.loc[:, sorted(ret.columns)]
 
-    if (
-            isinstance(_data, DataFrameGroupBy) and
-            not isinstance(_data, DataFrameRowwise)
-    ):
-        gvars = intersect(group_vars(_data), ret.columns)
-        if len(gvars) > 0:
-            return DataFrameGroupBy(
-                ret,
-                _group_vars=gvars,
-                _drop=group_by_drop_default(_data)
-            )
-
-    return ret
+    return reconstruct_tibble(_data, ret)
 
 def _flatten_column_names(
         names: Index,

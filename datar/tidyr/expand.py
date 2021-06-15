@@ -14,16 +14,14 @@ from pipda import register_func, register_verb
 
 from ..core.contexts import Context
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
-from ..core.types import is_scalar
-from ..core.utils import categorized, copy_attrs
+from ..core.types import is_scalar, is_null, is_not_null
+from ..core.utils import categorized, copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.names import repair_names
 
 from ..base import NA, NULL, factor, levels
 from ..tibble import tibble
-from ..dplyr import (
-    arrange, distinct, pull, group_by_drop_default, group_vars
-)
+from ..dplyr import arrange, distinct, pull
 
 @register_func(None, context=Context.EVAL)
 def expand_grid(
@@ -155,14 +153,8 @@ def _(
             **kwargs
         )
 
-    out = data.group_apply(apply_func)
-    out = DataFrameGroupBy(
-        out,
-        _group_vars=group_vars(data),
-        _drop=group_by_drop_default(data)
-    )
-    copy_attrs(out, data)
-    return out
+    out = data.datar_apply(apply_func)
+    return reconstruct_tibble(data, out)
 
 @expand.register(DataFrameRowwise, context=Context.EVAL)
 def _(
@@ -390,9 +382,9 @@ def _sorted_unique(x: Iterable[Any]) -> Union[Categorical, numpy.ndarray]:
         out = pandas.unique(list(maps.keys()))
         out = numpy.array([maps[elem] for elem in out], dtype=object)
 
-    has_na = any(pandas.isna(out))
+    has_na = is_null(out).any()
     if has_na:
-        out = numpy.sort(out[~pandas.isna(out)])
+        out = numpy.sort(out[is_not_null(out)])
         return numpy.concatenate([out, [NA]])
     # numpy.sort() cannot do comparisons between string and NA
     return numpy.sort(out)

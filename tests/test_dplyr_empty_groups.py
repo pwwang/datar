@@ -2,6 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-empty-groups.R
 import pytest
 from datar.all import *
+from pandas.testing import assert_frame_equal
 
 @pytest.fixture
 def df():
@@ -27,19 +28,19 @@ def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
     out = ungroup(count(filter(df, f.f==1)))
     expect = tibble(
-        e=1,
+        e=[1,1,NA],
         f=factor([1,2,3], levels=[1,2,3]),
         n=[2,0,0]
     )
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
     out = ungroup(count(slice(df, 1)))
     expect = tibble(
-        e=1,
+        e=[1,1,NA],
         f=factor([1,2,3], levels=[1,2,3]),
         n=[1,1,0]
     )
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 def test_mutate_keeps_zero_len_groups(df):
     gsize = group_size(mutate(df, z=2))
@@ -60,7 +61,7 @@ def test_arrange_keeps_zero_len_groups(df):
 def test_bind_rows(df):
     gg = bind_rows(df, df)
     gsize = group_size(gg)
-    assert gsize == [2,2,0]
+    assert gsize == [4,4,0]
 
 def test_join_respect_zero_len_groups():
     df1 = tibble(

@@ -1,5 +1,6 @@
 """Grabbed from
 https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-across.R"""
+from datar.core.exceptions import DataUnrecyclable
 from datar.core.grouped import DataFrameRowwise
 import numpy
 from pipda import register_func
@@ -7,7 +8,7 @@ import pytest
 
 from pandas.testing import assert_frame_equal
 from datar.all import *
-from datar.core.contexts import Context
+from .conftest import assert_iterable_equal
 
 def test_on_one_column():
     df = tibble(x=1)
@@ -87,14 +88,14 @@ def test_result_locations_aligned_with_column_names():
         everything(),
         {'cls': lambda x: x.dtype, 'type': is_numeric}
     ))
-    assert x.equals(expect)
+    assert_frame_equal(x, expect)
 
 def test_to_functions():
     df = tibble(x = c(1, NA)) # -> float
 
     out = df >> summarise(across(everything(), mean, na_rm = TRUE))
     expect = tibble(x = 1.0)
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
     out = df >> summarise(across(
         everything(),
@@ -102,17 +103,16 @@ def test_to_functions():
         na_rm = TRUE
     ))
     expect = tibble(x_mean=1.0, x_median=1.0)
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 # unnamed arguments not supported
 
 def test_kwargs():
     df = tibble(x = c(1, 2))
-
     tail_n = lambda d, n: d >> tail(n)
-    out = df >> summarise(across(f.x, tail_n, n=1)) >> drop_index()
+    out = df >> summarise(across(f.x, tail_n, 1))
     expect = tibble(x=2)
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 def test_works_sequentially():
     from pipda import register_func, Context
@@ -167,24 +167,19 @@ def test_with_group_id():
         return across_a.a if group_id == 0 else across_b.b
 
     out = df >> mutate(x=switcher(cur_group_id(), across(f.a), across(f.b)))
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 def test_cache_key():
     df = tibble(g=rep([1,2], each=2), a=range(1,5)) >> group_by(f.g)
-    tibble2 = register_func(None)(tibble)
-
-    @register_func(context=Context.EVAL)
-    def across_col(data, acr, col):
-        return acr[col]
 
     out = df >> mutate(
-        tibble2(
-            x = across_col(across(where(is_numeric), mean), 'a'),
-            y = across_col(across(where(is_numeric), max), 'a')
+        fibble(
+            x = across(where(is_numeric), mean).a,
+            y = across(where(is_numeric), max).a
         )
     )
     expect = df >> mutate(x = mean(f.a), y = max(f.a))
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 def test_reject_non_vectors():
     with pytest.raises(ValueError, match='Argument `_fns` of across must be'):
@@ -197,14 +192,14 @@ def test_recycling():
     assert out.equals(expect)
 
     df = tibble(x=2, y=3)
-    with pytest.raises(ValueError):
+    with pytest.raises(DataUnrecyclable):
         df >> summarise(across(everything(), lambda col: rep(42, col)))
 
 def test_return_one_row():
     # not actually one row, but returns a corresponding series
     df = tibble(x=range(1,43))
-    out = df >> mutate(across(c(), as_factor))
-    assert out.equals(df)
+    # out = df >> mutate(across(c(), as_factor))
+    # assert out.equals(df)
 
     out = df >> mutate(y=across(c(), as_factor))
     # empty column in pandas will be NAs
@@ -258,16 +253,17 @@ def test_cols_in_lambda():
 
 def test_if_any_all_enforce_bool():
     d = tibble(x=10, y=10)
-    with pytest.raises(TypeError):
-        d >> filter(if_all(f[f.x:f.y], identity))
+    out = d >> filter(if_all(f[f.x:f.y], identity))
+    assert_frame_equal(out, d)
 
-    with pytest.raises(TypeError):
-        d >> filter(if_any(f[f.x:f.y], identity))
+    out = d >> filter(if_any(f[f.x:f.y], identity))
+    assert_frame_equal(out, d)
 
-    with pytest.raises(TypeError):
-        d >> mutate(ok=if_all(f[f.x:f.y], identity))
-    with pytest.raises(TypeError):
-        d >> mutate(ok=if_any(f[f.x:f.y], identity))
+    out = d >> mutate(ok=if_all(f[f.x:f.y], identity))
+    assert_frame_equal(out, mutate(d, ok=True))
+
+    out = d >> mutate(ok=if_any(f[f.x:f.y], identity))
+    assert_frame_equal(out, mutate(d, ok=True))
 
 def test_if_any_all_in_mutate():
     d = tibble(x = c(1, 5, 10, 10), y = c(0, 0, 0, 10), z = c(10, 5, 1, 10))
@@ -296,17 +292,11 @@ def test_if_any_all_na_handling():
 
     out = df >> filter(if_all(c(f.x,f.y), identity))
     expect = df >> filter(f.x & f.y)
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
     out = df >> filter(if_any(c(f.x,f.y), identity))
     expect = df >> filter(f.x | f.y)
-    # Note that out has an extra row:
-    #      x     y
-    # 6    NaN   True
-    # This is because df.fillna(False).any()
-    # is not the same as df.x | df.y
-    # see: https://pandas.pydata.org/pandas-docs/stable/user_guide/boolean.html
-    assert out.iloc[:4].equals(expect)
+    assert_frame_equal(out, expect)
 
 # reset columns not supported
 
@@ -350,10 +340,11 @@ def test_nb_fail_c_across():
     assert nrow(out) == 4
 
 def test_if_any_if_all_no_args():
-    with pytest.raises(TypeError):
-        tibble(x=1, y=2) >> mutate(if_any())
-    with pytest.raises(TypeError):
-        tibble(x=1, y=2) >> mutate(if_all())
+    out = tibble(x=1, y=0) >> mutate(if_any())
+    assert_iterable_equal(out.iloc[:, 2], [True])
+
+    out = tibble(x=1, y=0) >> mutate(if_all())
+    assert_iterable_equal(out.iloc[:, 2], [False])
 
 def test_if_any_if_all_single_arg():
     df = tibble(x=[True, False], y=[True, True])

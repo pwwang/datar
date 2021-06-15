@@ -7,11 +7,10 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import check_column_uniqueness
-from ..core.grouped import DataFrameGroupBy
+from ..core.utils import check_column_uniqueness, reconstruct_tibble
 from ..base import union
 from .group_data import group_vars
-from .group_by import ungroup, group_by_drop_default
+from .group_by import ungroup
 from .mutate import mutate
 
 @register_verb(DataFrame, context=Context.PENDING)
@@ -60,11 +59,5 @@ def arrange(
         sorting_df = sorting_df.sort_values(by=by)
 
     out = _data.loc[sorting_df.index, :].reset_index(drop=True)
-    if isinstance(_data, DataFrameGroupBy):
-        return _data.__class__(
-            out,
-            _group_vars=group_vars(_data),
-            _drop=group_by_drop_default(_data)
-        )
 
-    return out
+    return reconstruct_tibble(_data, out, keep_rowwise=True)

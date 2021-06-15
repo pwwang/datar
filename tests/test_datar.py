@@ -1,11 +1,12 @@
 from datar.datar.funcs import itemgetter
 from datar.all import *
+from pandas.testing import assert_frame_equal
 
 def test_itemgetter():
     arr = [1,2,3]
     df = tibble(x=2)
     out = df >> mutate(y=itemgetter(arr, f.x))
-    assert out.equals(tibble(x=2, y=3))
+    assert_frame_equal(out, tibble(x=2, y=3))
 
 def test_get():
     df = tibble(x=2)

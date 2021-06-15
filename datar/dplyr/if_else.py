@@ -10,7 +10,8 @@ from pandas import Series
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.types import is_iterable, is_scalar
+from ..core.types import is_iterable, is_scalar, is_null
+from ..core.utils import Array
 from ..base.constants import NA
 
 @register_func(None, context=Context.EVAL)
@@ -19,7 +20,7 @@ def if_else(
         true: Any,
         false: Any,
         missing: Any = None
-) -> Series:
+) -> numpy.ndarray:
     """Where condition is TRUE, the matching value from true, where it's FALSE,
     the matching value from false, otherwise missing.
 
@@ -33,8 +34,9 @@ def if_else(
     Returns:
         A series with values replaced.
     """
-    condition = numpy.array(condition)
-    na_indexes = numpy.isnan(condition)
+    condition = Array(condition)
+    na_indexes = is_null(condition)
+    condition[na_indexes] = False
     condition = condition.astype(bool)
     return case_when(
         na_indexes, missing,
@@ -64,24 +66,25 @@ def case_when(*when_cases: Any) -> Series:
         out_len = len(when_cases[0])
     elif is_iterable(when_cases[1]):
         out_len = len(when_cases[1])
-    out = numpy.array([NA] * out_len).astype(object)
+
+    out = Array([NA] * out_len, dtype=object)
     when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
     for case, rep in when_cases:
         if case is True:
             out[:] = rep
         elif case is not False and case is not NA: # skip atmoic False condition
-            case = numpy.array(case)
-            case[numpy.isnan(case)] = False
+            case = Array(case)
+            case[is_null(case)] = False
             case = case.astype(bool)
             index = numpy.where(case)
             if is_scalar(rep) or len(rep) == 1 or len(rep) == len(index):
                 out[index] = rep
             elif len(rep) == len(out):
-                out[index] = numpy.array(rep)[index]
+                out[index] = Array(rep)[index]
             else:
                 raise ValueError(
                     f"Values to replace must be length {out_len} "
                     f"(length of `condition`) or one, not {len(rep)}."
                 )
 
-    return out
+    return Array(out.tolist()) # shrink the dtype

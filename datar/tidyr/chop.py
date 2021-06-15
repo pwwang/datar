@@ -10,18 +10,17 @@ import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
 
-from ..core.types import IntOrIter, StringOrIter, DTypeType, is_scalar
+from ..core.types import IntOrIter, StringOrIter, Dtype, is_scalar
 from ..core.utils import (
-    vars_select, copy_attrs, apply_dtypes, keep_column_order
+    df_getitem, df_setitem, vars_select, copy_attrs, apply_dtypes,
+    keep_column_order, reconstruct_tibble
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy
 
 from ..base import union, NA
 from ..dplyr import (
-    bind_cols, group_by, mutate, pull, arrange,
-    group_data, group_by_drop_default, group_vars
+    bind_cols, group_by, arrange, group_data
 )
 
 from .drop_na import drop_na
@@ -63,10 +62,10 @@ def chop(
     else:
         split = _vec_split(vals, keys)
         try:
-            split_key = split >> pull('key', to='frame')
-        except ColumnNotExistingError:
+            split_key = df_getitem(split, 'key')
+        except (KeyError, ColumnNotExistingError):
             split_key = None
-        split_val = split >> pull('val', to='list')
+        split_val = df_getitem(split, 'val')
 
         for val in split_val:
             compacted.append(_compact_df(val))
@@ -77,22 +76,14 @@ def chop(
         vals = pandas.concat(compacted, ignore_index=True)
 
     out = bind_cols(split_key, vals)
-    if isinstance(data, DataFrameGroupBy):
-        out = data.__class__(
-            out,
-            _group_vars=group_vars(data),
-            _drop=group_by_drop_default(data)
-        )
-
-    copy_attrs(out, data)
-    return out
+    return reconstruct_tibble(data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
 def unchop(
         data: DataFrame,
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
         keep_empty: bool = False,
-        dtypes: Optional[Union[DTypeType, Mapping[str, DTypeType]]] = None,
+        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """Makes df longer by expanding list-columns so that each element
@@ -141,15 +132,7 @@ def unchop(
     out = _unchopping(data, cols, key_cols, keep_empty)
 
     apply_dtypes(out, dtypes)
-    if isinstance(data, DataFrameGroupBy):
-        out = data.__class__(
-            out,
-            _group_vars=group_vars(data),
-            _drop=group_by_drop_default(data)
-        )
-
-    copy_attrs(out, data)
-    return out
+    return reconstruct_tibble(data, out, keep_rowwise=True)
 
 def _vec_split(
         x: Union[DataFrame, Series],
@@ -164,6 +147,7 @@ def _vec_split(
         x = x.to_frame()
     if isinstance(by, Series):
         by = by.to_frame()
+
     df = bind_cols(x, by)
     if df.shape[0] == 0:
         return DataFrame(columns=['key', 'val'])
@@ -171,11 +155,8 @@ def _vec_split(
     gdata = group_data(df)
     gdata = arrange(gdata, gdata._rows)
     out = DataFrame(index=gdata.index)
-    return mutate(
-        out,
-        key=gdata[by.columns],
-        val=[x.iloc[rows, :] for rows in gdata._rows]
-    )
+    out = df_setitem(out, 'key', gdata[by.columns])
+    return df_setitem(out, 'val', [x.iloc[rows, :] for rows in gdata._rows])
 
 def _compact_df(data: DataFrame) -> DataFrame:
     """Compact each series as list in a data frame"""
@@ -239,7 +220,7 @@ def _unchopping(
 
 def _unchopping_df_column(
         series: Series
-) -> Tuple[Mapping[str, List], List[int], Mapping[str, DTypeType]]:
+) -> Tuple[Mapping[str, List], List[int], Mapping[str, Dtype]]:
     """Unchopping dataframe column"""
     # Get union column names
     union_cols = []
@@ -277,7 +258,7 @@ def _unchopping_df_column(
 
 def _unchopping_nondf_column(
         series: Series
-) -> Tuple[Mapping[str, List], List[int], Mapping[str, DTypeType]]:
+) -> Tuple[Mapping[str, List], List[int], Mapping[str, Dtype]]:
     """Unchopping non-dataframe column"""
     val_data = {}
     vals = [
