@@ -3,7 +3,7 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 """
 
-from typing import Any, Optional, Tuple, List, Union
+from typing import Any, Iterable, Optional, Tuple, List, Union
 from pandas import DataFrame
 from pipda import register_verb, evaluate_expr, ContextBase
 
@@ -204,37 +204,71 @@ def _mutate_cols(
     named_mutatables = name_mutatable_args(*args, **kwargs)
     new_columns = []
     removed = []
+    add_new_name = True
     for name, mutatable in named_mutatables.items():
+        dedup_name = _dedup_name(name, list(named_mutatables))
+        # if not a dedup name, it's a new name
+        add_new_name = dedup_name == name
+
         mutatable = evaluate_expr(mutatable, data, context)
         if mutatable is None:
-            if name in data:
-                removed.append(name)
-                data.drop(columns=[name], inplace=True)
+            if dedup_name in data:
+                removed.append(dedup_name)
+                data.drop(columns=[dedup_name], inplace=True)
             # be silent if name doesn't exist
             continue
 
         if isinstance(mutatable, DataFrame):
             if (
                     mutatable.shape[1] == 0 and
-                    not name.startswith(DEFAULT_COLUMN_PREFIX)
+                    not dedup_name.startswith(DEFAULT_COLUMN_PREFIX)
             ):
                 data = df_setitem(
-                    data, name, [NA] * max(mutatable.shape[0], 1)
+                    data, dedup_name, [NA] * max(mutatable.shape[0], 1)
                 )
-                new_columns.append(name)
+                if add_new_name:
+                    new_columns.append(dedup_name)
             else:
                 for col in mutatable.columns:
                     new_name = (
-                        col if name.startswith(DEFAULT_COLUMN_PREFIX)
-                        else f'{name}${col}'
+                        col if dedup_name.startswith(DEFAULT_COLUMN_PREFIX)
+                        else f'{dedup_name}${col}'
                     )
-                    coldata = recycle_value(mutatable[col], data.shape[0], name)
+                    coldata = recycle_value(
+                        mutatable[col], data.shape[0], dedup_name
+                    )
                     data = df_setitem(data, new_name, coldata)
-                    new_columns.append(new_name)
+
+                    if add_new_name:
+                        new_columns.append(new_name)
         else:
-            mutatable = recycle_value(mutatable, data.shape[0], name)
-            data = df_setitem(data, name, mutatable)
-            new_columns.append(name)
+            mutatable = recycle_value(mutatable, data.shape[0], dedup_name)
+            data = df_setitem(data, dedup_name, mutatable)
+
+            if add_new_name:
+                new_columns.append(dedup_name)
 
     # keep column order
     return data[new_columns], removed
+
+def _dedup_name(name: str, all_names: Iterable[str]):
+    """Check if a name is a duplicated name in all_names,
+    return the deduplicated name.
+
+    In other to support duplicated keyword arguments in R:
+        >>> df %>% mutate(a=1, a=a*2)
+
+    Now you can to it with datar:
+        >>> df >> mutate(a_=1, a=f.a*2)
+    """
+    if not name.endswith('_') or name[:-1] not in all_names:
+        return name
+
+    # now determine whehter the real name is name[:-1]
+    # because the name could be "a__" ("a_" is for sure in all_names)
+    # we need to check if "a" is also in all_names
+    # otherwise, the realname is "a_"
+    name = name[:-1]
+    while name.endswith('_') and name[:-1] in all_names:
+        name = name[:-1]
+    return name

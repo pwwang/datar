@@ -150,11 +150,15 @@ def _summarise_build(
         **kwargs: Any
 ) -> DataFrame:
     """Build summarise result"""
+    from .mutate import _dedup_name
     context = Context.EVAL.value
     named = name_mutatable_args(*args, **kwargs)
 
     out = group_keys(_data)
     for key, val in named.items():
+        # support: df %>% muate(a=1, a=a+1)
+        key = _dedup_name(key, list(named))
+
         envdata = out
         if out.shape[1] == 0 or (
                 isinstance(val, Function) and
