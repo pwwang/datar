@@ -84,7 +84,7 @@ def _repair_names_check_unique(names: Iterable[str]) -> Iterable[str]:
             raise NameNonUniqueError(f"Names must be unique: {name}")
         if name == "" or name is numpy.nan:
             raise NameNonUniqueError(f"Names can't be empty: {name}")
-        if re.search(r'(?:(?<!_)_{1,2}\d+|(?<!_)__)+$', name):
+        if re.search(r'(?:(?<!_)_{2}\d+|(?<!_)__)+$', name):
             raise NameNonUniqueError(
                 f"Names can't be of the form `__` or `_j`: {name}"
             )
