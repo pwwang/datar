@@ -714,8 +714,6 @@ def unique(x: Iterable[Any]) -> numpy.ndarray:
     # return numpy.unique(x)
     return pandas.unique(x) # keeps order
 
-which = register_func(None, context=Context.EVAL, func=numpy.flatnonzero)
-
 length = register_func(None, context=Context.EVAL, func=length_of)
 
 @register_func(None, context=Context.EVAL)
@@ -820,25 +818,3 @@ def Im(numbers: NumericOrIter) -> numpy.ndarray:
     if is_scalar(numbers):
         return numbers.imag
     return numpy.imag(numbers)
-
-@register_func(None)
-def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
-    """Alias for R's is.element.
-
-    We can't do `a %in% b` in python (in behaves differently), so
-    use this function instead
-    """
-    if is_scalar(elem):
-        return elem in elems
-    return numpy.isin(elem, elems)
-
-is_in = is_element
-
-# pylint: disable=unnecessary-lambda
-all = register_func(None, context=Context.EVAL)(
-    # can't set attributes to builtins.all, so wrap it.
-    lambda *args, **kwargs: builtins.all(*args, **kwargs)
-)
-any = register_func(None, context=Context.EVAL)(
-    lambda *args, **kwargs: builtins.any(*args, **kwargs)
-)

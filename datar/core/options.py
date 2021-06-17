@@ -16,6 +16,8 @@ OPTIONS = Diot(
     # Whether use 0-based numbers when index is involved, acts similar like R
     # Otherwise, like python
     index_base_0=False,
+    # Whether which, which_min, which_max is 0-based
+    which_base_0=True,
     dplyr_summarise_inform=True,
     add_option=True,
     # allow 'a.b' to access 'a_b'
