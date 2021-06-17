@@ -28,3 +28,6 @@ from .funcs import factor, rep, context
 from .table import table
 from .arithmetic import sum, mean, median, min, max, pmin, pmax, var
 from .which import which, which_min, which_max, is_element, is_in, all, any
+
+
+from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
