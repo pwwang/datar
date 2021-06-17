@@ -12,7 +12,7 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..core.types import is_iterable, is_scalar, is_null
 from ..core.utils import Array
-from ..base.constants import NA
+from ..base import NA
 
 @register_func(None, context=Context.EVAL)
 def if_else(

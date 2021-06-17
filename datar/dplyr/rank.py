@@ -13,7 +13,7 @@ from pipda.utils import Expression
 from ..core.contexts import Context
 from ..core.types import is_null
 from ..core.utils import Array
-from ..base.funcs import NA
+from ..base import NA
 
 @register_func(context=Context.EVAL)
 def row_number(

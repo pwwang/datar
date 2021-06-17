@@ -5,7 +5,7 @@ from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
 from datar.base.verbs import ncol
 import pandas
 from pandas.testing import assert_frame_equal
-from datar.base.funcs import as_character, c, levels, rev, seq_along
+from datar.base.funs import as_character, c, levels, rev, seq_along
 import pytest
 
 from datar import f

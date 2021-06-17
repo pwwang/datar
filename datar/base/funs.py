@@ -20,7 +20,7 @@ from pandas import Series, Categorical, DataFrame
 from pandas.core.groupby.generic import SeriesGroupBy
 from pipda import Context, register_func
 
-from .constants import NA
+from .na import NA
 from ..core.utils import categorized, get_option, logger, Array, length_of
 from ..core.middlewares import WithDataEnv
 from ..core.collections import Collection
@@ -356,8 +356,6 @@ def is_double(x: Any) -> BoolOrIter:
     return is_float_dtype(x)
 
 is_float = is_double
-
-is_na = register_func(None, context=Context.EVAL)(is_null)
 
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
@@ -818,3 +816,42 @@ def Im(numbers: NumericOrIter) -> numpy.ndarray:
     if is_scalar(numbers):
         return numbers.imag
     return numpy.imag(numbers)
+
+
+# Logic ----------------------------------------------------
+
+@register_func(None, context=Context.EVAL)
+def istrue(x: Any) -> bool:
+    """Check if a value is a scalar True, like `isTRUE()` in `R`.
+
+    If the value is non-scalar, will return False
+    This does not require exact True, but a value that passes
+    `if` test in python
+
+    Args:
+        x: The value to test
+
+    Returns:
+        True if x is True otherwise False
+    """
+    if not is_scalar(x):
+        return False
+    return bool(x)
+
+@register_func(None, context=Context.EVAL)
+def isfalse(x: Any) -> bool:
+    """Check if a value is a scalar False, like `isFALSE()` in `R`.
+
+    If the value is non-scalar, will return False
+    This does not require exact False, but a value that fails
+    `if` test in python
+
+    Args:
+        x: The value to test
+
+    Returns:
+        False if x is False otherwise True
+    """
+    if not is_scalar(x):
+        return False
+    return not bool(x)

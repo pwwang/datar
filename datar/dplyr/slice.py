@@ -13,8 +13,7 @@ from ..core.collections import Collection
 from ..core.utils import copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
 
-from ..base.constants import NA
-from ..base import unique
+from ..base import NA, unique
 from .filter import _filter_groups
 
 

@@ -12,7 +12,7 @@ from ..core.utils import vars_select, reconstruct_tibble
 from ..core.exceptions import ColumnNotExistingError
 
 from ..base import NA, identity
-from ..base.constants import NA_integer_
+from ..base.na import NA_integer_
 
 ROWID_COLUMN = '_PIVOT_ROWID_'
 

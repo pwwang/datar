@@ -11,7 +11,7 @@ from ..core.types import (
 )
 from ..core.contexts import Context
 from ..core.utils import position_at, Array
-from ..base.constants import NA
+from ..base import NA
 
 @register_func(None, context=Context.EVAL)
 def between(

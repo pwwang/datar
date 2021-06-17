@@ -4,7 +4,7 @@ from pandas import Series, Categorical
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..base.constants import NA
+from ..base import NA
 
 @register_func(None, context=Context.EVAL)
 def desc(x: Iterable[Any]) -> Series:
