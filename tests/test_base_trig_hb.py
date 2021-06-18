@@ -1,7 +1,7 @@
 import pytest
 
-from datar.base import NA
-from datar.base.trig import *
+from datar.base import NA, Inf
+from datar.base.trig_hb import *
 from datar.core.types import is_scalar
 from .conftest import assert_iterable_equal
 
@@ -16,6 +16,12 @@ from .conftest import assert_iterable_equal
     (cospi, 1, -1),
     (sinpi, 1, 0),
     (tanpi, 1, 0),
+    (cosh, 1, 1.543081),
+    (sinh, 1, 1.175201),
+    (tanh, 1, 0.7615942),
+    (acosh, 1, 0),
+    (asinh, 1, 0.8813736),
+    (atanh, .4, 0.4236489),
 ])
 def test_func_with_1arg(fun, x, exp):
     out = fun(x)

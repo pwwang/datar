@@ -35,6 +35,7 @@ from .special import (
     beta, lbeta, gamma, lgamma, digamma, trigamma, psigamma,
     choose, lchoose, factorial, lfactorial
 )
-from .trig import (
-    cos, sin, tan, acos, asin, atan, atan2, cospi, sinpi, tanpi
+from .trig_hb import (
+    cos, sin, tan, acos, asin, atan, atan2, cospi, sinpi, tanpi,
+    cosh, sinh, tanh, acosh, asinh, atanh
 )
