@@ -30,7 +30,7 @@ def assert_iterable_equal(x, y, na=8525.8525, approx=False):
     if approx is True:
         x = pytest.approx(x)
     elif approx:
-        x = pytest.approx(x, abs=approx)
+        x = pytest.approx(x, rel=approx)
     assert x == y
 
 def is_installed(pkg):

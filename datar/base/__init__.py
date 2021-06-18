@@ -30,3 +30,8 @@ from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .funs import istrue, isfalse
 from .na import NA, NaN, is_na, any_na
 from .null import NULL, is_null, as_null
+from .random import set_seed
+from .special import (
+    beta, lbeta, gamma, lgamma, digamma, trigamma, psigamma,
+    choose, lchoose, factorial, lfactorial
+)

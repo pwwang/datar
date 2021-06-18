@@ -8,7 +8,7 @@ from ..core.contexts import Context
 
 # pylint: disable=invalid-name
 
-def _import_bessel_from_scipy(name: str) -> Callable:
+def _get_special_func_from_scipy(name: str) -> Callable:
     """Import bessel functions from scipy on the fly
 
     In order to make scipy dependency optional
@@ -35,10 +35,10 @@ def _register_bessel_function(
             """Bessel function"""
             # use faster version for order 0 and 1
             if nu in faster_fun:
-                fun = _import_bessel_from_scipy(faster_fun[nu])
+                fun = _get_special_func_from_scipy(faster_fun[nu])
                 return fun(x)
 
-            fun = _import_bessel_from_scipy(common_fun)
+            fun = _get_special_func_from_scipy(common_fun)
             return fun(nu, x)
     else:
         @register_func(None, context=Context.EVAL)
@@ -50,14 +50,16 @@ def _register_bessel_function(
             """Modified bessel function"""
             # use faster version for order 0 and 1
             if (nu, expon_scaled) in faster_fun:
-                fun = _import_bessel_from_scipy(faster_fun[(nu, expon_scaled)])
+                fun = _get_special_func_from_scipy(
+                    faster_fun[(nu, expon_scaled)]
+                )
                 return fun(x)
 
             if expon_scaled:
-                fun = _import_bessel_from_scipy(exp_fun)
+                fun = _get_special_func_from_scipy(exp_fun)
                 return fun(nu, x)
 
-            fun = _import_bessel_from_scipy(common_fun)
+            fun = _get_special_func_from_scipy(common_fun)
             return fun(nu, x)
 
     bessel_fun.__name__ = name
@@ -71,14 +73,14 @@ bessel_j = _register_bessel_function(
     faster_fun={0.0: 'j0', 1.0: 'j1'},
     doc="""Bessel function of first kind
 
-        Args:
-            x: An iterable with numeric >= 0
-            nu: The order of the bessel function
+Args:
+    x: An iterable with numeric >= 0
+    nu: The order of the bessel function
 
-        Returns:
-            Numeric iterable with the values of the corresponding
-            Bessel function.
-    """
+Returns:
+    Numeric iterable with the values of the corresponding
+    Bessel function.
+"""
 )
 
 bessel_y = _register_bessel_function(
@@ -87,14 +89,14 @@ bessel_y = _register_bessel_function(
     faster_fun={0.0: 'y0', 1.0: 'y1'},
     doc="""Bessel function of second kind
 
-        Args:
-            x: An iterable with numeric >= 0
-            nu: The order of the bessel function
+Args:
+    x: An iterable with numeric >= 0
+    nu: The order of the bessel function
 
-        Returns:
-            Numeric iterable with the values of the corresponding
-            Bessel function.
-    """
+Returns:
+    Numeric iterable with the values of the corresponding
+    Bessel function.
+"""
 )
 
 bessel_i = _register_bessel_function(
@@ -109,16 +111,16 @@ bessel_i = _register_bessel_function(
     },
     doc="""Modified bessel function of first kind
 
-        Args:
-            x: An iterable with numeric >= 0
-            nu: The order of the bessel function
-            expon_scaled: if TRUE, the results are exponentially scaled
-                in order to avoid overflow
+Args:
+    x: An iterable with numeric >= 0
+    nu: The order of the bessel function
+    expon_scaled: if TRUE, the results are exponentially scaled
+        in order to avoid overflow
 
-        Returns:
-            Numeric iterable with scaled values of the corresponding
-            Bessel function.
-    """
+Returns:
+    Numeric iterable with scaled values of the corresponding
+    Bessel function.
+"""
 )
 
 bessel_k = _register_bessel_function(
@@ -133,14 +135,14 @@ bessel_k = _register_bessel_function(
     },
     doc="""Modified bessel function of first kind
 
-        Args:
-            x: An iterable with numeric >= 0
-            nu: The order of the bessel function
-            expon_scaled: if TRUE, the results are exponentially scaled
-                in order to avoid underflow
+Args:
+    x: An iterable with numeric >= 0
+    nu: The order of the bessel function
+    expon_scaled: if TRUE, the results are exponentially scaled
+        in order to avoid underflow
 
-        Returns:
-            Numeric iterable with scaled values of the corresponding
-            Bessel function.
-    """
+Returns:
+    Numeric iterable with scaled values of the corresponding
+    Bessel function.
+"""
 )
