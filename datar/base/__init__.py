@@ -17,7 +17,7 @@ from .funs import (
     as_int64, unique, Im, Re, length, lengths,
     seq_along, seq_len, seq, abs, round, sqrt, rev,
     droplevels, levels,
-    sin, cos, identity, expandgrid
+    identity, expandgrid
 )
 # plain functions
 from .funs import factor, rep, context
@@ -34,4 +34,7 @@ from .random import set_seed
 from .special import (
     beta, lbeta, gamma, lgamma, digamma, trigamma, psigamma,
     choose, lchoose, factorial, lfactorial
+)
+from .trig import (
+    cos, sin, tan, acos, asin, atan, atan2, cospi, sinpi, tanpi
 )

@@ -620,16 +620,6 @@ def sqrt(x: Any) -> bool:
     return numpy.sqrt(x)
 
 @register_func(None, context=Context.EVAL)
-def sin(x: Any) -> NumericOrIter:
-    """Get the sin of a number"""
-    return numpy.sin(x)
-
-@register_func(None, context=Context.EVAL)
-def cos(x: Any) -> NumericOrIter:
-    """Get the cos of a number"""
-    return numpy.cos(x)
-
-@register_func(None, context=Context.EVAL)
 def droplevels(x: Categorical) -> Categorical:
     """drop unused levels from a factor
 

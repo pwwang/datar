@@ -1,11 +1,9 @@
 """Special mathematical functions related to the beta and gamma functions."""
 
-from typing import  Union
-
 import numpy
 from pipda import register_func
 
-from ..core.types import FloatOrIter, IntOrIter, is_scalar
+from ..core.types import FloatOrIter, IntOrIter, NumericOrIter, is_scalar
 from ..core.contexts import Context
 from ..core.utils import Array
 from .bessel import _get_special_func_from_scipy
@@ -189,7 +187,7 @@ def trigamma(x: FloatOrIter) -> FloatOrIter:
 @register_func(None, context=Context.EVAL)
 def psigamma(
         x: FloatOrIter,
-        deriv: Union[IntOrIter, FloatOrIter]
+        deriv: NumericOrIter
 ) -> FloatOrIter:
     """The deriv-th derivatives of the logarithm of the gamma function
 
