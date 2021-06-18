@@ -3,7 +3,12 @@ import pytest
 
 from datar.base.special import *
 from datar.base import Inf
-from .conftest import assert_iterable_equal
+from .conftest import assert_iterable_equal, is_installed
+
+pytestmark = pytest.mark.skipif(
+    not is_installed('scipy'),
+    reason="'scipy' is not installed"
+)
 
 @pytest.mark.parametrize('a,b,log,exp', [
     (1, 2, False, 0.5),
