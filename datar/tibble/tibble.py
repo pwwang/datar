@@ -82,16 +82,13 @@ def tibble(
     names.extend(kwargs)
     values.extend(kwargs.values())
 
-    if not names:
-        out = DataFrame()
-    else:
-        out = zibble(
-            names,
-            values,
-            _name_repair=_name_repair,
-            _base0=_base0,
-            _dtypes=_dtypes
-        )
+    out = zibble(
+        names,
+        values,
+        _name_repair=_name_repair,
+        _base0=_base0,
+        _dtypes=_dtypes
+    )
 
     try:
         out.__dfname__ = varname(raise_exc=False)

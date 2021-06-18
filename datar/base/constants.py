@@ -7,7 +7,6 @@ import numpy
 # pylint: disable=invalid-name
 TRUE = True
 FALSE = False
-NULL = None
 
 pi = math.pi
 Inf = numpy.inf

@@ -640,3 +640,32 @@ def length_of(x: Any) -> int:
         return 1
 
     return len(x)
+
+def dedup_name(name: str, all_names: Iterable[str]):
+    """Check if a name is a duplicated name in all_names,
+    return the deduplicated name.
+
+    In other to support duplicated keyword arguments in R:
+        >>> df %>% mutate(a=1, a=a*2)
+
+    Now you can to it with datar:
+        >>> df >> mutate(a_=1, a=f.a*2)
+
+    Args:
+        name: The name to deduplicate
+        all_names: all names
+
+    Returns:
+        The deduplicated name
+    """
+    if not name.endswith('_') or name[:-1] not in all_names:
+        return name
+
+    # now determine whehter the real name is name[:-1]
+    # because the name could be "a__" ("a_" is for sure in all_names)
+    # we need to check if "a" is also in all_names
+    # otherwise, the realname is "a_"
+    name = name[:-1]
+    while name.endswith('_') and name[:-1] in all_names:
+        name = name[:-1]
+    return name

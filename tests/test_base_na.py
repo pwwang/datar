@@ -1,7 +1,7 @@
 import pytest
 
 from datar.base.na import *
-from datar.base.constants import *
+from datar.base.null import *
 from .conftest import assert_iterable_equal
 
 def test_is_na():

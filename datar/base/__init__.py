@@ -1,7 +1,7 @@
 """Public APIs from this submodule"""
 # pylint: disable=unused-import,redefined-builtin
 from .constants import (
-    TRUE, FALSE, NULL, pi, Inf, letters, LETTERS,
+    TRUE, FALSE, pi, Inf, letters, LETTERS,
 )
 from ..core.options import options, getOption, options_context
 from .verbs import (
@@ -29,3 +29,4 @@ from .which import which, which_min, which_max, is_element, is_in, all, any
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .funs import istrue, isfalse
 from .na import NA, NaN, is_na, any_na
+from .null import NULL, is_null, as_null

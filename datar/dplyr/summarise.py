@@ -9,7 +9,7 @@ from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.utils import (
     length_of, recycle_df, arg_match, check_column_uniqueness, df_setitem,
-    name_mutatable_args, logger, get_option, reconstruct_tibble
+    name_mutatable_args, logger, get_option, reconstruct_tibble, dedup_name
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -150,14 +150,13 @@ def _summarise_build(
         **kwargs: Any
 ) -> DataFrame:
     """Build summarise result"""
-    from .mutate import _dedup_name
     context = Context.EVAL.value
     named = name_mutatable_args(*args, **kwargs)
 
     out = group_keys(_data)
     for key, val in named.items():
         # support: df %>% muate(a=1, a=a+1)
-        key = _dedup_name(key, list(named))
+        key = dedup_name(key, list(named))
 
         envdata = out
         if out.shape[1] == 0 or (
