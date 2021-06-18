@@ -81,7 +81,7 @@ def test_complex_vec():
     out = filter(d, f.x < 4)
     assert out.y.tolist() == [i+2j for i in range(1,4)]
 
-    out = d >> filter(Re(f.y) < 4)
+    out = d >> filter(re(f.y) < 4)
     assert out.y.tolist() == [i+2j for i in range(1,4)]
 
 def test_contains():

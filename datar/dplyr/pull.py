@@ -10,7 +10,7 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import arg_match, df_getitem, position_at
-from ..core.types import StringOrIter, SeriesLikeType, is_scalar
+from ..core.types import StringOrIter, ArrayLikeType, is_scalar
 
 @register_verb(
     DataFrame,
@@ -23,7 +23,7 @@ def pull(
         name: Optional[StringOrIter] = None,
         to: Optional[str] = None,
         _base0: Optional[bool] = None
-) -> Union[DataFrame, SeriesLikeType, Mapping[str, SeriesLikeType]]:
+) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
     # pylint: disable=too-many-branches
     """Pull a series or a dataframe from a dataframe
 

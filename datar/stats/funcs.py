@@ -5,7 +5,7 @@ import numpy
 from pipda import register_func
 
 from ..core.types import (
-    FloatOrIter, NumericOrIter, NumericType, SeriesLikeType, is_scalar
+    FloatOrIter, NumericOrIter, NumericType, ArrayLikeType, is_scalar
 )
 from ..core.contexts import Context
 
@@ -59,7 +59,7 @@ def quantile(
         series: Iterable[Any],
         probs: FloatOrIter = (0.0, 0.25, 0.5, 0.75, 1.0),
         na_rm: bool = False
-) -> SeriesLikeType:
+) -> ArrayLikeType:
     """produces sample quantiles corresponding to the given probabilities.
 
     Args:

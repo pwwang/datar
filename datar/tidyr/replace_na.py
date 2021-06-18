@@ -8,7 +8,7 @@ from pandas import DataFrame
 from pandas.core.series import Series
 from pipda import register_verb
 
-from ..core.types import SeriesLikeType, is_scalar
+from ..core.types import ArrayLikeType, is_scalar
 from ..core.contexts import Context
 
 @singledispatch
@@ -21,7 +21,7 @@ def _replace_na(data: Iterable[Any], replace: Any) -> Iterable[Any]:
 
 @_replace_na.register(numpy.ndarray)
 @_replace_na.register(Series)
-def _(data: SeriesLikeType, replace: Any) -> SeriesLikeType:
+def _(data: ArrayLikeType, replace: Any) -> ArrayLikeType:
     """Replace NA for numpy.ndarray or Series"""
     ret = data.copy()
     ret[pandas.isnull(ret)] = replace

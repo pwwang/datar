@@ -47,9 +47,9 @@ def any_na(x: Any, recursive: bool = False) -> bool:
     if is_scalar(x):
         return is_na(x)
 
-    from .funs import istrue
+    from .logical import is_true
     if not recursive:
-        return any(istrue(is_na(elem)) for elem in x)
+        return any(is_true(is_na(elem)) for elem in x)
 
     out = False
     for elem in x:

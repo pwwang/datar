@@ -113,7 +113,7 @@ def test_int_to_float():
     out = df1 >> bind_rows(df2)
     a_type = is_float(out.a)
     assert a_type
-    b_type = is_int64(out.b)
+    b_type = is_int(out.b)
     assert b_type
 
 def test_factor_to_chars():

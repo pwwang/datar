@@ -248,7 +248,7 @@ def test_table():
     assert sum(x.values.flatten()) == 100
 
     #-----------------
-    with context(warpbreaks) as _:
+    with data_context(warpbreaks) as _:
         tab = table(f.wool, f.tension)
 
     assert tab.columns.tolist() == ['H', 'L', 'M']
@@ -315,7 +315,7 @@ def test_table():
     assert tab.shape == (3,3)
     assert sum(tab.values.flatten()) == 3
 
-    with context(airquality) as _:
+    with data_context(airquality) as _:
         tab = table(f.Ozone, f.Solar_R, exclude=None)
     assert '<NA>' in tab.columns
     assert '<NA>' in tab.index

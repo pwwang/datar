@@ -13,6 +13,7 @@ from numpy import array as Array
 
 import pandas
 from pandas import Categorical, DataFrame, Series
+from pipda import register_func
 from pipda.symbolic import Reference
 
 from varname import argname
@@ -20,6 +21,7 @@ from varname import argname
 from .exceptions import (
     ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
 )
+from .contexts import Context
 from .types import is_iterable, is_scalar, Dtype, is_categorical, is_null
 from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
@@ -669,3 +671,39 @@ def dedup_name(name: str, all_names: Iterable[str]):
     while name.endswith('_') and name[:-1] in all_names:
         name = name[:-1]
     return name
+
+def register_numpy_func_x(
+        name: str,
+        np_name: str,
+        trans_in: Optional[Callable] = None,
+        trans_out: Optional[Callable] = None,
+        doc: str = ""
+) -> Callable:
+    """Register numpy function with single argument x
+
+    Args:
+        name: The name of the function to be returned
+        np_name: The name of the function from numpy
+        trans_in: Transformation for input before sending to numpy function
+        trans_out: Transformation for output
+        doc: The docstring for the function
+
+    Returns:
+        The registered function
+    """
+    func = getattr(numpy, np_name)
+
+    @register_func(None, context=Context.EVAL)
+    def _func(x: Any) -> Any:
+        """Registered function from numpy"""
+        if trans_in:
+            x = trans_in(x)
+
+        out = func(x)
+        if trans_out:
+            out = trans_out(out)
+        return out
+
+    _func.__name__ = name
+    _func.__doc__ = doc
+    return _func

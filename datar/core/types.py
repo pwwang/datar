@@ -1,25 +1,31 @@
 """Types for convenience"""
-from typing import Any, Iterable, Union, List
+from typing import Any, Iterable, Union, List, Type, Tuple
 
 # pylint: disable=unused-import
 import numpy
 
 from pandas import Categorical, Series, isnull as is_null
+from pandas.api.types import is_scalar as is_scalar_, is_list_like
 from pandas.core.dtypes.common import is_categorical_dtype as is_categorical
 from pandas._typing import Dtype
 
 # used for type annotations
 NumericType = Union[int, float, complex, numpy.number]
 IntType = Union[int, numpy.integer]
-FloatType = Union[float, numpy.float64]
-SeriesLikeType = Union[Series, List, numpy.ndarray]
+FloatType = Union[float, numpy.float_]
+ComplexType = Union[complex, numpy.complex_]
+StringType = Union[str, numpy.str_]
+ArrayLikeType = Union[Series, List, Tuple, numpy.ndarray]
 CategoricalLikeType = Union[Series, Categorical]
-StringOrIter = Union[str, Iterable[str]]
+StringOrIter = Union[StringType, Iterable[StringType]]
 IntOrIter = Union[IntType, Iterable[IntType]]
 DoubleOrIter = Union[numpy.double, Iterable[numpy.double]]
 BoolOrIter = Union[bool, Iterable[bool]]
 FloatOrIter = Union[FloatType, Iterable[FloatType]]
 NumericOrIter = Union[NumericType, Iterable[NumericType]]
+ComplexOrIter = Union[ComplexType, Iterable[ComplexType]]
+TypeOrIter = Union[Type, Iterable[Type]]
+DtypeOrIter = Union[Dtype, Iterable[Dtype]]
 
 NoneType = type(None)
 # used for type checks
@@ -27,18 +33,12 @@ def is_scalar_int(x: Any) -> bool:
     """Check if a value is an integer"""
     return isinstance(x, (int, numpy.integer))
 
-def is_series_like(x: Any) -> bool:
-    """Check if a value is series like, which can do something in common.
-    For example: .astype, .cumsum, etc
-    """
-    return isinstance(x, (Series, numpy.ndarray))
-
 def is_scalar(x: Any) -> bool:
     """Check if a value is scalar.
 
     None will be counted as scalar
     """
-    ret = numpy.isscalar(x)
+    ret = is_scalar_(x)
     if ret:
         return ret
     try:
