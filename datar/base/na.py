@@ -3,7 +3,6 @@
 from typing import Any, Iterable
 
 import numpy
-import pandas
 from pipda import register_func
 
 from ..core.contexts import Context
@@ -12,7 +11,7 @@ from ..core.defaults import NA_REPR
 
 # pylint: disable=invalid-name
 NA = numpy.nan
-NaN = pandas.NA
+NaN = NA
 
 # Just for internal and testing uses
 NA_character_ = NA_REPR

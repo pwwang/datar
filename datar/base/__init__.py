@@ -13,7 +13,7 @@ from .funs import (
 )
 from .arithmetic import mean, median, pmin, pmax, var, ceiling, floor, sqrt
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
-from .casting import as_integer, as_double, as_int, as_numeric
+from .casting import as_integer, as_float, as_double, as_int, as_numeric
 from .complex import im, is_complex, as_complex
 from .cum import cumsum, cumprod, cummin, cummax
 from .date import as_date
