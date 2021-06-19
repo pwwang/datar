@@ -62,7 +62,7 @@ def cut(
         ordered=ordered_result
     )
 
-@register_func(None, context=None)
+@register_func(None, context=Context.EVAL)
 def identity(x: Any) -> Any:
     """Return whatever passed in
 
@@ -70,12 +70,17 @@ def identity(x: Any) -> Any:
     """
     return x
 
-@register_func(None)
+@register_func(None, context=Context.EVAL)
 def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
-    """Expand all combinations into a dataframe"""
+    """Expand all combinations into a dataframe. R's `expand.grid()`"""
     iters = {}
     for i, arg in enumerate(args):
-        iters[f'Var{i}'] = arg
+        name = getattr(
+            arg,
+            'name',
+            getattr(arg, '__name__', f'Var{i}')
+        )
+        iters[name] = arg
     iters.update(kwargs)
 
     return DataFrame(
