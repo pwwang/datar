@@ -14,7 +14,7 @@ from ..core.utils import copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
 
 from ..base import NA, unique
-from .filter import _filter_groups
+from .dfilter import _filter_groups
 
 
 @register_verb(DataFrame, context=Context.SELECT)

@@ -1,5 +1,5 @@
 """Public APIs from this submodule"""
-# pylint: disable=unused-import,redefined-builtin
+# pylint: disable=unused-import
 from .constants import (
     pi, Inf, letters, LETTERS, month_abb, month_name
 )
@@ -11,13 +11,10 @@ from .verbs import (
 from .funs import (
     cut, identity, expandgrid, data_context
 )
-from .arithmetic import (
-    sum, mean, median, min, max, pmin, pmax, var,
-    abs, ceiling, floor, round, sqrt,
-)
+from .arithmetic import mean, median, pmin, pmax, var, ceiling, floor, sqrt
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_integer, as_double, as_int, as_numeric
-from .complex import re, im, is_complex, as_complex
+from .complex import im, is_complex, as_complex
 from .cum import cumsum, cumprod, cummin, cummax
 from .date import as_date
 from .factor import (
@@ -47,10 +44,42 @@ from .string import (
 from .table import table
 from .testing import (
     is_double, is_float, is_int, is_integer, is_numeric,
-    is_atomic, is_element, is_in, all, any
+    is_atomic, is_element, is_in
 )
 from .trig_hb import (
     cos, sin, tan, acos, asin, atan, atan2, cospi, sinpi, tanpi,
     cosh, sinh, tanh, acosh, asinh, atanh
 )
 from .which import which, which_min, which_max
+
+__all__ = [name for name in locals() if not name.startswith('_')]
+__all__.extend([
+    "min",
+    "max",
+    "sum",
+    "abs",
+    "round",
+    "all",
+    "any",
+    "re",
+])
+
+# warn when builtin names are imported directly
+# pylint: disable=wrong-import-position
+from ..core.warn_builtin_names import warn_builtin_names
+from . import (
+    arithmetic as _arithmetic,
+    testing as _testing,
+    complex as _complex
+)
+
+__getattr__ = warn_builtin_names(
+    min=_arithmetic,
+    max=_arithmetic,
+    sum=_arithmetic,
+    abs=_arithmetic,
+    round=_arithmetic,
+    all=_testing,
+    any=_testing,
+    re=_complex
+)

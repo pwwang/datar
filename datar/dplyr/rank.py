@@ -1,6 +1,6 @@
 """Windowed rank functions.
 
-See https://github.com/tidyverse/dplyr/blob/master/R/slice.R
+See https://github.com/tidyverse/dplyr/blob/master/R/rank.R
 """
 from typing import Any, Iterable, Optional
 

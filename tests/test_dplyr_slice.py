@@ -5,7 +5,7 @@ from pipda.context import ContextError
 import pytest
 from datar.all import *
 from datar.datasets import mtcars
-from datar.dplyr.slice import _n_from_prop
+from datar.dplyr.dslice import _n_from_prop
 
 def test_empty_slice_returns_input():
     df = tibble(x=[1,2,3])
