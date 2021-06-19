@@ -19,12 +19,12 @@ re = register_numpy_func_x(
     'real',
     doc="""Real part of complex numbers
 
-Args:
-    x: The complex numbers
+    Args:
+        x: The complex numbers
 
-Returns:
-    The real part of the complex numbers
-"""
+    Returns:
+        The real part of the complex numbers
+    """
 )
 
 im = register_numpy_func_x(
@@ -32,12 +32,51 @@ im = register_numpy_func_x(
     'imag',
     doc="""Imaginary part of complex numbers
 
-Args:
-    x: The complex numbers
+    Args:
+        x: The complex numbers
 
-Returns:
-    The imaginary part of the complex numbers
-"""
+    Returns:
+        The imaginary part of the complex numbers
+    """
+)
+
+mod = register_numpy_func_x(
+    'mod',
+    'absolute',
+    doc="""Modulus of complex numbers
+
+    Args:
+        x: The complex numbers
+
+    Returns:
+        The Modulus of the complex numbers
+    """
+)
+
+arg = register_numpy_func_x(
+    'arg',
+    'angle',
+    doc="""Angles of complex numbers
+
+    Args:
+        x: The complex numbers
+
+    Returns:
+        The Angles of the complex numbers
+    """
+)
+
+conj = register_numpy_func_x(
+    'conj',
+    'conj',
+    doc="""conjugate of complex numbers
+
+    Args:
+        x: The complex numbers
+
+    Returns:
+        The conjugate of the complex numbers
+    """
 )
 
 @register_func(None, context=Context.EVAL)
@@ -65,10 +104,10 @@ is_complex = _register_type_testing(
     dtype_checker=is_complex_dtype,
     doc="""Test if a value is complexes
 
-Args:
-    x: The value to be checked
+    Args:
+        x: The value to be checked
 
-Returns:
-    True if the value is an complex or complexes; False otherwise.
-"""
+    Returns:
+        True if the value is an complex or complexes; False otherwise.
+    """
 )

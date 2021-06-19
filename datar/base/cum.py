@@ -58,7 +58,7 @@ Returns:
 
 
 @register_func(None, context=Context.EVAL)
-def cummin(x: Any) -> Series:
+def cummin(x: Any) -> Any:
     """Cummulative min along elements in x
 
     Args:
@@ -67,11 +67,13 @@ def cummin(x: Any) -> Series:
     Returns:
         An array of cumulative min of elements in x
     """
+    if is_scalar(x):
+        return x
     x = _ensure_nas_after_na(x)
     return Series(x).cummin()
 
 @register_func(None, context=Context.EVAL)
-def cummax(x: Any) -> Series:
+def cummax(x: Any) -> Any:
     """Cummulative max along elements in x
 
     Args:
@@ -80,5 +82,7 @@ def cummax(x: Any) -> Series:
     Returns:
         An array of cumulative max of elements in x
     """
+    if is_scalar(x):
+        return x
     x = _ensure_nas_after_na(x)
     return Series(x).cummax()

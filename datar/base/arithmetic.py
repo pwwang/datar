@@ -38,13 +38,13 @@ sum = _register_arithmetic_agg(
     'sum',
     doc="""Sum of the input.
 
-Args:
-    x: The input
-    na_rm: Exclude the NAs
+    Args:
+        x: The input
+        na_rm: Exclude the NAs
 
-Returns:
-    The sum of the input
-"""
+    Returns:
+        The sum of the input
+    """
 )
 
 mean = _register_arithmetic_agg(
@@ -52,13 +52,13 @@ mean = _register_arithmetic_agg(
     'mean',
     doc="""Mean of the input.
 
-Args:
-    x: The input
-    na_rm: Exclude the NAs
+    Args:
+        x: The input
+        na_rm: Exclude the NAs
 
-Returns:
-    The mean of the input
-"""
+    Returns:
+        The mean of the input
+    """
 )
 
 median = _register_arithmetic_agg(
@@ -66,13 +66,13 @@ median = _register_arithmetic_agg(
     'median',
     doc="""Median of the input.
 
-Args:
-    x: The input
-    na_rm: Exclude the NAs
+    Args:
+        x: The input
+        na_rm: Exclude the NAs
 
-Returns:
-    The median of the input
-"""
+    Returns:
+        The median of the input
+    """
 )
 
 @register_func(None, context=Context.EVAL)
@@ -170,12 +170,12 @@ sqrt = register_numpy_func_x(
     'sqrt',
     doc="""Get the square root of a number/numbers
 
-Args:
-    x: The input
+    Args:
+        x: The input
 
-Returns:
-    The square root of the input
-"""
+    Returns:
+        The square root of the input
+    """
 )
 
 abs = register_numpy_func_x(
@@ -183,12 +183,12 @@ abs = register_numpy_func_x(
     'abs',
     doc="""Get the absolute value of a number/numbers
 
-Args:
-    x: The input
+    Args:
+        x: The input
 
-Returns:
-    The absolute values of the input
-"""
+    Returns:
+        The absolute values of the input
+    """
 )
 
 ceiling = register_numpy_func_x(
@@ -196,12 +196,12 @@ ceiling = register_numpy_func_x(
     'ceil',
     doc="""Get the ceiling integer of a number/numbers
 
-Args:
-    x: The input
+    Args:
+        x: The input
 
-Returns:
-    The ceiling integer of the input
-"""
+    Returns:
+        The ceiling integer of the input
+    """
 )
 
 floor = register_numpy_func_x(
@@ -209,10 +209,10 @@ floor = register_numpy_func_x(
     'floor',
     doc="""Get the floor integer of a number/numbers
 
-Args:
-    x: The input
+    Args:
+        x: The input
 
-Returns:
-    The floor integer of the input
-"""
+    Returns:
+        The floor integer of the input
+    """
 )

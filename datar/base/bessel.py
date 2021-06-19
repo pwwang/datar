@@ -73,14 +73,14 @@ bessel_j = _register_bessel_function(
     faster_fun={0.0: 'j0', 1.0: 'j1'},
     doc="""Bessel function of first kind
 
-Args:
-    x: An iterable with numeric >= 0
-    nu: The order of the bessel function
+    Args:
+        x: An iterable with numeric >= 0
+        nu: The order of the bessel function
 
-Returns:
-    Numeric iterable with the values of the corresponding
-    Bessel function.
-"""
+    Returns:
+        Numeric iterable with the values of the corresponding
+        Bessel function.
+    """
 )
 
 bessel_y = _register_bessel_function(
@@ -89,14 +89,14 @@ bessel_y = _register_bessel_function(
     faster_fun={0.0: 'y0', 1.0: 'y1'},
     doc="""Bessel function of second kind
 
-Args:
-    x: An iterable with numeric >= 0
-    nu: The order of the bessel function
+    Args:
+        x: An iterable with numeric >= 0
+        nu: The order of the bessel function
 
-Returns:
-    Numeric iterable with the values of the corresponding
-    Bessel function.
-"""
+    Returns:
+        Numeric iterable with the values of the corresponding
+        Bessel function.
+    """
 )
 
 bessel_i = _register_bessel_function(
@@ -111,16 +111,16 @@ bessel_i = _register_bessel_function(
     },
     doc="""Modified bessel function of first kind
 
-Args:
-    x: An iterable with numeric >= 0
-    nu: The order of the bessel function
-    expon_scaled: if TRUE, the results are exponentially scaled
-        in order to avoid overflow
+    Args:
+        x: An iterable with numeric >= 0
+        nu: The order of the bessel function
+        expon_scaled: if TRUE, the results are exponentially scaled
+            in order to avoid overflow
 
-Returns:
-    Numeric iterable with scaled values of the corresponding
-    Bessel function.
-"""
+    Returns:
+        Numeric iterable with scaled values of the corresponding
+        Bessel function.
+    """
 )
 
 bessel_k = _register_bessel_function(
@@ -135,14 +135,14 @@ bessel_k = _register_bessel_function(
     },
     doc="""Modified bessel function of first kind
 
-Args:
-    x: An iterable with numeric >= 0
-    nu: The order of the bessel function
-    expon_scaled: if TRUE, the results are exponentially scaled
-        in order to avoid underflow
+    Args:
+        x: An iterable with numeric >= 0
+        nu: The order of the bessel function
+        expon_scaled: if TRUE, the results are exponentially scaled
+            in order to avoid underflow
 
-Returns:
-    Numeric iterable with scaled values of the corresponding
-    Bessel function.
-"""
+    Returns:
+        Numeric iterable with scaled values of the corresponding
+        Bessel function.
+    """
 )
