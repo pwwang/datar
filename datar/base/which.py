@@ -15,7 +15,7 @@ def which(x: Iterable[bool], _base0: Optional[bool] = None) -> Iterable[int]:
         x: An iterable of bools.
             Note that non-bool values will be converted into
         _base0: Whether the returned indexes are 0-based.
-            Controlled by `getOption('which.base.0')` if not provided
+            Controlled by `get_option('which.base.0')` if not provided
 
     Returns:
         The indexes
@@ -31,7 +31,7 @@ def which_min(x: Iterable, _base0: Optional[bool] = None) -> int:
     Args:
         x: The iterable
         _base0: Whether the index to return is 0-based or not.
-            Controlled by `getOption('which.base.0')` if not provided
+            Controlled by `get_option('which.base.0')` if not provided
 
     Returns:
         The index of the element with the maximum value
@@ -47,7 +47,7 @@ def which_max(x: Iterable, _base0: bool = True) -> int:
     Args:
         x: The iterable
         _base0: Whether the index to return is 0-based or not
-            Not that this is not controlled by `getOption('index.base.0')`
+            Not that this is not controlled by `get_option('index.base.0')`
 
     Returns:
         The index of the element with the minimum value

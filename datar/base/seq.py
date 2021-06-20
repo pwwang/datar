@@ -24,7 +24,7 @@ def seq_along(
     Args:
         along_with: An iterable to seq along with
         _base0: Whether the generated sequence should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The generated sequence.
@@ -153,8 +153,8 @@ length = register_func(None, context=Context.EVAL, func=length_of)
 def lengths(x: Any) -> IntOrIter:
     """Lengths of elements in x"""
     if is_scalar(x):
-        return [1]
-    return [length(elem) for elem in x]
+        return Array([1], dtype=numpy.int_)
+    return Array([length(elem) for elem in x], dtype=numpy.int_)
 
 @register_func(None, context=Context.EVAL)
 def sample(

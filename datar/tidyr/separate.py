@@ -64,7 +64,7 @@ def separate(
             - "left": fill with missing values on the left
         _base0: Whether `col` is 0-based when given by index and Whether `sep`
             is 0-based if given by position
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with separated columns.
@@ -144,7 +144,7 @@ def separate_rows(
         convert: The universal type for the extracted columns or a dict for
             individual ones
         _base0: Whether `columns` is 0-based when given by index
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with rows separated and repeated.

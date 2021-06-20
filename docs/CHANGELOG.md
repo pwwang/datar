@@ -27,7 +27,7 @@ Changed:
 - Finish tidyr porting.
 
 ## 0.0.6
-- Add `options`, `getOption` and `options_context` to `datar.base` to allow set/get global options
+- Add `options`, `get_option` and `options_context` to `datar.base` to allow set/get global options
 - Add options: `dplyr.summarise.inform`
 - Add `_base0` argument to all related APIs
 - Add `nycflights13` datasets

@@ -55,7 +55,7 @@ def mutate(
             (the default is to add to the right hand side).
             See relocate() for more details.
         _base0: Whether `_before` and `_after` are 0-based if given by indexes.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
         *args: and
         **kwargs: Name-value pairs. The name gives the name of the column
             in the output. The value can be:

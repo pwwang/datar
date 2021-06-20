@@ -117,9 +117,10 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
     We can't do `a %in% b` in python (`in` behaves differently), so
     use this function instead
     """
+    out = numpy.isin(elem, elems)
     if is_scalar(elem):
-        return elem in elems
-    return numpy.isin(elem, elems)
+        return bool(out)
+    return out
 
 is_in = is_element
 

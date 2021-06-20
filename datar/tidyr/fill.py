@@ -36,7 +36,7 @@ def fill(
             "downup" (i.e. first down and then up) or
             "updown" (first up and then down).
         _base0: Whether `*columns` are 0-based if given by indexes
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with NAs being replaced.

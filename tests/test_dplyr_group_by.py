@@ -387,7 +387,7 @@ def test_rowwise_preserved_by_subsetting():
     assert isinstance(out, DataFrameRowwise)
     assert group_vars(out) == ['x']
 
-    out = setNames(rf, [name.upper() for name in names(rf)])
+    out = set_names(rf, [name.upper() for name in names(rf)])
     assert isinstance(out, DataFrameRowwise)
     assert group_vars(out) == ['X']
 

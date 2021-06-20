@@ -22,6 +22,20 @@ from .conftest import assert_iterable_equal
 def test_seq(from_, to, by, length_out, along_with, expect):
     assert_iterable_equal(seq(from_, to, by, length_out, along_with), expect, approx=True)
 
+def test_seq_along():
+    assert_iterable_equal(seq_along([]), [])
+    assert_iterable_equal(seq_along([1,2]), [1,2])
+    assert_iterable_equal(seq_along(['a', 'b']), [1,2])
+    assert_iterable_equal(seq_along(['a', 'b'], _base0=True), [0,1])
+
+def test_seq_len(caplog):
+    assert_iterable_equal(seq_len([3,4]), [1,2,3])
+    assert 'first element' in caplog.text
+
+def test_seq_derives():
+    assert_iterable_equal(seq(along_with=['a', 'b']), [1,2])
+    assert_iterable_equal(seq(length_out=2), [1,2])
+    assert_iterable_equal(seq(to=2), [1,2])
 
 @pytest.mark.parametrize('x, times, length, each, expected', [
     (range(4), 2, None, 1, [0,1,2,3]*2),
@@ -56,3 +70,20 @@ def test_sample():
     w = sample('abc', 100, replace=True)
     assert set(w) == {'a', 'b', 'c'}
     assert len(z) == 100
+
+def test_rev():
+    assert_iterable_equal(rev([1,2]), [2,1])
+    a = numpy.array([1,2], dtype=float)
+    out = rev(a)
+    assert_iterable_equal(out, [2.0,1.0])
+    assert out.dtype == float
+
+def test_unique():
+    a = [1,2,2,3]
+    assert_iterable_equal(unique(a), [1,2,3])
+
+def test_length():
+    assert length(1) == 1
+    assert length([1,2]) == 2
+    assert_iterable_equal(lengths(1), [1])
+    assert_iterable_equal(lengths([[1], [2,3]]), [1,2])

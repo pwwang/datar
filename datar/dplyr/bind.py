@@ -40,7 +40,7 @@ def bind_rows(
         _id: The name of the id columns
         _base0: Whether `_id` starts from 0 or not, if no keys are provided.
             If `_base0` is not provided, will use
-            `datar.base.getOption('index.base.0')`
+            `datar.base.get_option('index.base.0')`
         _copy: If `False`, do not copy data unnecessarily.
             Original API does not support this. This argument will be
             passed by to `pandas.concat()` as `copy` argument.
@@ -152,7 +152,7 @@ def bind_cols(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the numeric suffix starts from 0 or not.
-            If not specified, will use `datar.base.getOption('index.base.0')`.
+            If not specified, will use `datar.base.get_option('index.base.0')`.
         _copy: If `False`, do not copy data unnecessarily.
             Original API does not support this. This argument will be
             passed by to `pandas.concat()` as `copy` argument.

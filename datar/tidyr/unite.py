@@ -32,7 +32,7 @@ def unite(
         na_rm: If True, missing values will be remove prior to uniting
             each value.
         _base0: Whether `columns` is 0-based when given by index
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with selected columns united

@@ -34,7 +34,7 @@ def pack(
             together the outer and the inner column names, separated by
             `_names_sep`.
         _base0: Whether `**cols` are 0-based
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
     """
     if not cols:
         return _data.copy()
@@ -90,7 +90,7 @@ def unpack(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether `cols` are 0-based
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Data frame with given columns unpacked.

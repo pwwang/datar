@@ -200,7 +200,7 @@ def all_of(
         _data: The data piped in
         x: A set of variables to match the columns
         _base0: Whether `x` is 0-based or not.
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The matched column names
@@ -239,7 +239,7 @@ def any_of(
         _data: The data piped in
         x: A set of variables to match the columns
         _base0: Whether `x` is 0-based or not.
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The matched column names

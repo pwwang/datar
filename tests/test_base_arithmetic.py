@@ -1,6 +1,10 @@
 import pytest
 
+from pandas.testing import assert_frame_equal
+from datar import f
 from datar.base import NA
+from datar.datar import drop_index
+from datar.tibble import tibble
 from datar.base.arithmetic import *
 from .conftest import assert_iterable_equal
 
@@ -61,3 +65,11 @@ def test_ceiling():
 def test_floor():
     assert floor(1.1) == 1
     assert_iterable_equal(floor([-1.1, 1.1]), [-2, 1])
+
+def test_cov():
+    df = tibble(x=f[1:3], y=f[4:6])
+    out = cov(df) >> drop_index()
+    assert_frame_equal(out, tibble(x=[1.0,1.0], y=[1.0,1.0]))
+
+    out = cov([1,2,3], [4,5,6])
+    assert out == 1.0

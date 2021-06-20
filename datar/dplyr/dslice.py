@@ -48,7 +48,7 @@ def slice( # pylint: disable=redefined-builtin
             recalculated based on the resulting data,
             otherwise the grouping is kept as is.
         _base0: If rows are selected by indexes, whether they are 0-based.
-            If not provided, `datar.base.getOption('index.base.0')` is used.
+            If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
         The sliced dataframe

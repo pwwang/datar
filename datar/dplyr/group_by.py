@@ -83,7 +83,7 @@ def rowwise(
             This is typically a set of variables whose combination
             uniquely identify each row.
         _base0: Whether indexes are 0-based if columns are selected by indexes.
-            If not given, will use `datar.base.getOption('index.base.0')`
+            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A row-wise data frame
@@ -137,7 +137,7 @@ def ungroup(
         x: The data frame
         *cols: Variables to remove from the grouping variables.
         _base0: If columns are selected with indexes, whether they are 0-based.
-            If not given, will use `datar.base.getOption('index.base.0')`
+            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A data frame with selected columns removed from the grouping variables.

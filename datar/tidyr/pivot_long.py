@@ -134,7 +134,7 @@ def pivot_longer(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether `cols` are 0-based if given by indexes
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The pivoted dataframe.

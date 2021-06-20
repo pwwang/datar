@@ -76,7 +76,7 @@ def options_context(**kwargs: Any) -> None:
     options(opts)
 
 # pylint: disable=invalid-name
-def getOption(x: str, default: Any = None) -> Any:
+def get_option(x: str, default: Any = None) -> Any:
     """Get the current value set for option ‘x’,
     or ‘default’ (which defaults to ‘NULL’) if the option is unset.
 

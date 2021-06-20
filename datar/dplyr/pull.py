@@ -53,7 +53,7 @@ def pull(
                 `dict` if `name` provided and has the same length as the pulled
                 single column. Otherwise `frame`.
         _base0: Whether `var` is 0-based if given by index
-            If not provided, `datar.base.getOption('index.base.0')` is used.
+            If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
         The data according to `to`

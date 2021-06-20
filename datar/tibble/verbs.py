@@ -169,7 +169,7 @@ def add_column(
         _after: Column index or name where to add the new columns
             (default to add after the last column)
         _base0: Whether `_before` and `_after` are 0-based if they are index.
-            if not given, will be determined by `getOption('index_base_0')`,
+            if not given, will be determined by `get_option('index_base_0')`,
             which is `False` by default.
         _dtypes: The dtypes for the new columns, either a uniform dtype or a
             dict of dtypes with keys the column names

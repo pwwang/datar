@@ -119,7 +119,7 @@ def repair_names(
                 Function accepts a list of names must annotate the first
                 argument with `typing.Iterable` or `typing.Sequence`.
         _base0: Whether the numeric suffix starts from 0 or not.
-            If not specified, will use `datar.base.getOption('index.base.0')`.
+            If not specified, will use `datar.base.get_option('index.base.0')`.
 
     Examples:
         >>> repair_names([None]*3, repair="minimal")

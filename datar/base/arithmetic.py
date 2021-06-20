@@ -1,10 +1,11 @@
 """Arithmetic or math functions"""
 
 from multiprocessing.dummy import Array
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Optional
 
 import numpy
-from pipda import register_func
+from pandas import DataFrame, Series
+from pipda import register_func, register_verb
 
 from ..core.contexts import Context
 from ..core.types import NumericOrIter, NumericType, is_not_null
@@ -216,3 +217,18 @@ floor = register_numpy_func_x(
         The floor integer of the input
     """
 )
+
+# pylint: disable=unused-argument
+@register_verb(DataFrame, context=Context.EVAL)
+def cov(x: DataFrame, y: Optional[Iterable] = None, ddof: int = 1) -> DataFrame:
+    """Compute pairwise covariance of dataframe columns,
+    or between two variables
+    """
+    # TODO: support na_rm, use, method. see `?cov` in R
+    return x.cov(ddof=ddof)
+
+@cov.register((numpy.ndarray, Series, list, tuple), context=Context.EVAL)
+def _(x: Iterable, y: Iterable, ddof: int = 1) -> DataFrame:
+    """Compute covariance for two iterables"""
+    # ddof: numpy v1.5+
+    return numpy.cov(x, y, ddof=ddof)[0][1]

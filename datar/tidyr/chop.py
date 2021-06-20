@@ -38,7 +38,7 @@ def chop(
         data: A data frame
         cols: Columns to chop
         _base0: Whether `cols` are 0-based
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Data frame with selected columns chopped
@@ -116,7 +116,7 @@ def unchop(
             is used as key, all columns of the nested data frames will be casted
             into that dtype.
         _base0: Whether `cols` are 0-based
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A data frame with selected columns unchopped.

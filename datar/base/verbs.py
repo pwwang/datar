@@ -1,5 +1,4 @@
 """Function from R-base that can be used as verbs"""
-# TODO: add tests
 from typing import (
     Any, Iterable, List, Mapping, Optional, Tuple, Union
 )
@@ -18,46 +17,48 @@ from ..core.utils import Array
 @register_verb(DataFrame, context=Context.EVAL)
 def colnames(
         df: DataFrame,
-        names: Optional[Iterable[str]] = None,
-        stack: bool = True
+        new: Optional[Iterable[str]] = None,
+        _nested: bool = True
 ) -> Union[List[Any], DataFrame]:
     """Get or set the column names of a dataframe
 
     Args:
         df: The dataframe
-        names: The names to set as column names for the dataframe.
+        new: The new names to set as column names for the dataframe.
 
     Returns:
         A list of column names if names is None, otherwise return the dataframe
         with new column names.
         if the input dataframe is grouped, the structure is kept.
     """
-    from ..stats.verbs import setNames
-    if not stack:
-        if names is not None:
-            return setNames(df, names)
+    from ..stats.verbs import set_names
+    if not _nested:
+        if new is not None:
+            return set_names(df, new)
         return df.columns.tolist()
 
-    if names is not None:
+    if new is not None:
         namei = 0
         newnames = []
+        last_parts0 = None
         for colname in df.columns:
-            parts = colname.split('$', 1)
+            parts = str(colname).split('$', 1)
             if not newnames:
                 if len(parts) < 2:
-                    newnames.append(names[namei])
-                    namei += 1
+                    newnames.append(new[namei])
                 else:
-                    newnames.append(f"{names[namei]}${parts[1]}")
+                    last_parts0 = parts[0]
+                    newnames.append(f"{new[namei]}${parts[1]}")
             elif len(parts) < 2:
-                newnames.append(names[namei])
                 namei += 1
-            elif newnames[-1].startswith(f"{parts[0]}$"):
-                newnames.append(f"{names[namei]}${parts[1]}")
+                newnames.append(new[namei])
+            elif last_parts0 and colname.startswith(f"{last_parts0}$"):
+                newnames.append(f"{new[namei]}${parts[1]}")
             else:
                 namei += 1
-                newnames.append(f"{names[namei]}${parts[1]}")
-        return setNames(df, newnames)
+                newnames.append(f"{new[namei]}${parts[1]}")
+                last_parts0 = parts[0]
+        return set_names(df, newnames)
 
     cols = [
         col.split('$', 1)[0] if isinstance(col, str) else col
@@ -73,13 +74,13 @@ def colnames(
 @register_verb(DataFrame, context=Context.EVAL)
 def rownames(
         df: DataFrame,
-        names: Optional[Iterable[str]] = None
+        new: Optional[Iterable[str]] = None
 ) -> Union[List[Any], DataFrame]:
     """Get or set the row names of a dataframe
 
     Args:
         df: The dataframe
-        names: The names to set as row names for the dataframe.
+        new: The new names to set as row names for the dataframe.
         copy: Whether return a copy of dataframe with new row names
 
     Returns:
@@ -87,25 +88,25 @@ def rownames(
         with new row names.
         if the input dataframe is grouped, the structure is kept.
     """
-    if names is not None:
+    if new is not None:
         df = df.copy()
-        df.index = names
+        df.index = new
         return df
 
     return df.index.tolist()
 
 @register_verb(DataFrame, context=Context.EVAL)
-def dim(x: DataFrame, stack: bool = True) -> Tuple[int]:
+def dim(x: DataFrame, _nested: bool = True) -> Tuple[int]:
     """Retrieve the dimension of a dataframe.
 
     Args:
         x: a dataframe
-        stack: When there is stacked df, count as 1.
+        _nested: When there is _nesteded df, count as 1.
 
     Returns:
         The shape of the dataframe.
     """
-    return (nrow(x), ncol(x, stack))
+    return (nrow(x), ncol(x, _nested))
 
 @register_verb(DataFrame)
 def nrow(_data: DataFrame) -> int:
@@ -120,17 +121,17 @@ def nrow(_data: DataFrame) -> int:
     return _data.shape[0]
 
 @register_verb(DataFrame)
-def ncol(_data: DataFrame, stack: bool = True):
+def ncol(_data: DataFrame, _nested: bool = True):
     """Get the number of columns in a dataframe
 
     Args:
         _data: The dataframe
-        stack: When there is stacked df, count as 1.
+        _nested: When there is _nesteded df, count as 1.
 
     Returns:
         The number of columns in _data
     """
-    if not stack:
+    if not _nested:
         return _data.shape[1]
     cols = set()
     for col in _data.columns:
@@ -177,7 +178,7 @@ def diag(
     x = Array(x)
     try:
         ret = DataFrame(numpy.diag(x), dtype=x.dtype)
-    except TypeError:
+    except TypeError: # pragma: no cover, TODO: add test
         ret = DataFrame(numpy.diag(x), dtype=object)
     return ret.iloc[:nrow, :ncol]
 
@@ -193,7 +194,7 @@ def _(
 
     x = x.copy()
     if nrow is not None:
-        numpy.fill_diagonal(x, nrow)
+        numpy.fill_diagonal(x.values, nrow)
         return x
     return numpy.diag(x)
 
@@ -211,17 +212,27 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
     return _data.transpose(copy=copy)
 
 @register_verb(DataFrame)
-def names(x: DataFrame) -> List[str]:
+def names(
+        x: DataFrame,
+        new: Optional[Iterable[str]] = None,
+        _nested: bool = True
+) -> Union[List[str], DataFrame]:
     """Get the column names of a dataframe"""
-    return x.columns.tolist()
+    return colnames(x, new, _nested)
 
 @names.register(dict)
-def _(x: Mapping[str, Any]) -> List[str]:
+def _(
+        x: Mapping[str, Any],
+        new: Optional[Iterable[str]] = None,
+        _nested: bool = True
+) -> Union[List[str], Mapping[str, Any]]:
     """Get the keys of a dict
 
     dict is like a list in R, mimic `names(<list>)` in R.
     """
-    return list(x)
+    if new is None:
+        return list(x)
+    return dict(zip(new, x.values()))
 
 @register_verb(context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> List[Any]:
@@ -268,14 +279,14 @@ def setequal(x: Any, y: Any) -> List[Any]:
 def duplicated( # pylint: disable=invalid-name
         x: Iterable[Any],
         incomparables: Optional[Iterable[Any]] = None,
-        fromLast: bool = False
+        from_last: bool = False
 ) -> numpy.ndarray:
     """Determine Duplicate Elements
 
     Args:
         x: The iterable to detect duplicates
             Currently, elements in `x` must be hashable.
-        fromLast: Whether start to detect from the last element
+        from_last: Whether start to detect from the last element
 
     Returns:
         A bool array with the same length as `x`
@@ -286,17 +297,17 @@ def duplicated( # pylint: disable=invalid-name
     if incomparables is None:
         incomparables = []
 
-    if fromLast:
+    if from_last:
         x = reversed(x)
     for elem in x:
         if elem in incomparables:
             out_append(False)
-        if elem in dups:
+        elif elem in dups:
             out_append(True)
         else:
             dups.add(elem)
             out_append(False)
-    if fromLast:
+    if from_last:
         out = list(reversed(out))
     return Array(out, dtype=bool)
 
@@ -304,25 +315,11 @@ def duplicated( # pylint: disable=invalid-name
 def _( # pylint: disable=invalid-name,unused-argument
         x: DataFrame,
         incomparables: Optional[Iterable[Any]] = None,
-        fromLast: bool = False
+        from_last: bool = False
 ) -> numpy.ndarray:
     """Check if rows in a data frame are duplicated
 
     `incomparables` not working here
     """
-    keep = 'first' if not fromLast else 'last'
+    keep = 'first' if not from_last else 'last'
     return x.duplicated(keep=keep).values
-
-@register_verb(DataFrame, context=Context.EVAL)
-def cov(x: DataFrame, y: Optional[Iterable] = None, ddof: int = 1) -> DataFrame:
-    """Compute pairwise covariance of dataframe columns,
-    or between two variables
-    """
-    # TODO: support na_rm, use, method. see `?cov` in R
-    return x.cov(ddof=ddof)
-
-@cov.register((numpy.ndarray, Series, list, tuple), context=Context.EVAL)
-def _(x: Iterable, y: Iterable, ddof: int = 1) -> DataFrame:
-    """Compute covariance for two iterables"""
-    # ddof: numpy v1.5+
-    return numpy.cov(x, y, ddof=ddof)[0][1]

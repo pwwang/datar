@@ -50,7 +50,7 @@ def vars_select(
         raise_nonexist: Whether raise exception when column not exists
             in the pool
         base0: Whether indexes are 0-based if columns are selected by indexes.
-            If not given, will use `datar.base.getOption('index.base.0')`
+            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The selected indexes for columns
@@ -412,13 +412,13 @@ def get_option(key: str, value: Any = None) -> Any:
     This is a shortcut for:
     >>> if value is not None:
     >>>     return value
-    >>> from datar.base import getOption
-    >>> return getOption(key)
+    >>> from datar.base import get_option
+    >>> return get_option(key)
     """
     if value is not None:
         return value
-    from ..base import getOption
-    return getOption(key)
+    from ..base import get_option as get_option_
+    return get_option_(key)
 
 def apply_dtypes(
         df: DataFrame,
@@ -595,7 +595,9 @@ def fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
     Raises:
         ValueError: when `rep` exists in data
     """
-    if rep in data:
+    # elementwise comparison failed; returning scalar instead
+    # if rep in data:
+    if rep in list(data):
         raise ValueError("The value to replace NAs is already present in data.")
 
     if not is_null(data).any():

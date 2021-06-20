@@ -3,15 +3,15 @@
 from .constants import (
     pi, Inf, letters, LETTERS, month_abb, month_name
 )
-from ..core.options import options, getOption, options_context
+from ..core.options import options, get_option, options_context
 from .verbs import (
     colnames, rownames, dim, nrow, ncol, diag, t, names,
-    intersect, union, setdiff, setequal, duplicated, cov
+    intersect, union, setdiff, setequal, duplicated
 )
 from .funs import (
     cut, identity, expandgrid, data_context
 )
-from .arithmetic import mean, median, pmin, pmax, var, ceiling, floor, sqrt
+from .arithmetic import mean, median, pmin, pmax, var, ceiling, floor, sqrt, cov
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_integer, as_float, as_double, as_int, as_numeric
 from .complex import im, mod, arg, conj, is_complex, as_complex

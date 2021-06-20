@@ -45,7 +45,7 @@ def expand_grid(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A data frame with one column for each input in `*args` and `**kwargs`.
@@ -118,7 +118,7 @@ def expand(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A data frame with all combination of variables.
@@ -202,7 +202,7 @@ def nesting(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A data frame with all combinations in data.
@@ -246,7 +246,7 @@ def crossing(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A data frame with values deduplicated and sorted.
