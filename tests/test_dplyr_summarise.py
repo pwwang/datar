@@ -1,5 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-summarise.r
+from tokenize import group
 from datar.core.grouped import DataFrameRowwise
 from pandas.core.frame import DataFrame
 from pandas.testing import assert_frame_equal
@@ -254,8 +255,9 @@ def test_errors(caplog):
 
     # Duplicate column names
     x = 1
+    df = tibble(x, x, _name_repair="minimal")
     with pytest.raises(NameNonUniqueError):
-        tibble(x, x, _name_repair="minimal") >> summarise(f.x)
+        df >> summarise(f.x)
 
 def test_summarise_with_multiple_acrosses():
     """https://stackoverflow.com/questions/63200530/python-pandas-equivalent-to-dplyr-1-0-0-summarizeacross"""
@@ -272,3 +274,13 @@ def test_summarise_with_multiple_acrosses():
         wt=[2.285727, 3.117143, 3.999214]
     )
     assert_frame_equal(out, exp)
+
+def test_dup_keyword_args():
+    df = tibble(g=[1,1], a=[1.0,2.0]) >> group_by(f.g)
+    out = df >> summarise(b_=mean(f.a), b=f.b*2)
+    assert_frame_equal(out, tibble(g=1, b=3.0))
+
+def test_use_pandas_series_func_gh14():
+    df = tibble(g=[1,1,2,2], a=[4,4,8,8]) >> group_by(f.g)
+    out = df >> summarise(a=f.a.mean())
+    assert_frame_equal(out, tibble(g=[1,2], a=[4.0,8.0]))

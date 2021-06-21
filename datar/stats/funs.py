@@ -5,9 +5,11 @@ import numpy
 from pipda import register_func
 
 from ..core.types import (
-    FloatOrIter, NumericOrIter, NumericType, SeriesLikeType, is_scalar
+    FloatOrIter, NumericOrIter, NumericType, ArrayLikeType, is_scalar
 )
 from ..core.contexts import Context
+from ..core.utils import Array
+from ..base import NA
 
 # pylint: disable=redefined-builtin, redefined-outer-name
 
@@ -59,7 +61,7 @@ def quantile(
         series: Iterable[Any],
         probs: FloatOrIter = (0.0, 0.25, 0.5, 0.75, 1.0),
         na_rm: bool = False
-) -> SeriesLikeType:
+) -> ArrayLikeType:
     """produces sample quantiles corresponding to the given probabilities.
 
     Args:
@@ -101,9 +103,9 @@ def weighted_mean(
         x = [x]
     if w is not None and is_scalar(w):
         w = [w]
-    x = numpy.array(x)
+    x = Array(x)
     if w is not None:
-        w = numpy.array(w)
+        w = Array(w)
         if len(x) != len(w):
             raise ValueError("'x' and 'w' must have the same length")
 
@@ -114,5 +116,5 @@ def weighted_mean(
             w = w[notna]
 
     if w is not None and sum(w) == 0:
-        return numpy.nan
+        return NA
     return numpy.average(x, weights=w)

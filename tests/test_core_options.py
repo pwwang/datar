@@ -19,16 +19,16 @@ def test_options_with_names_only_selects_options():
 def test_options_with_names_name_value_pairs_mixed_returns_select_options_and_changes_option():
     out = options('index.base.0', dplyr_summarise_inform=False)
     assert out == {'index_base_0': False, 'dplyr_summarise_inform': True}
-    assert not getOption('dplyr.summarise.inform')
+    assert not get_option('dplyr.summarise.inform')
 
 def test_options_with_dict_updates_options():
     out = options({'index.base.0': True})
-    assert getOption('index.base.0')
+    assert get_option('index.base.0')
     assert not out.index_base_0
 
 def test_options_context():
-    assert not getOption('index.base.0')
+    assert not get_option('index.base.0')
     with options_context(index_base_0=True):
-        assert getOption('index.base.0')
+        assert get_option('index.base.0')
 
-    assert not getOption('index.base.0')
+    assert not get_option('index.base.0')

@@ -42,7 +42,7 @@ def extract(
         convert: The universal type for the extracted columns or a dict for
             individual ones
         _base0: Whether `col` is 0-based when given by index
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with extracted columns.

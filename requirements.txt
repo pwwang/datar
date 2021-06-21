@@ -1,6 +1,7 @@
 diot
-modkit
+executing
 pandas==1.*,>=1.2.0
 pipda
 pytest
 pytest-cov
+scipy==1.*,>=1.6.0

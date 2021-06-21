@@ -27,6 +27,15 @@ def assert_equal(x, y):
 def assert_iterable_equal(x, y, na=8525.8525, approx=False):
     x = [na if isna(elt) else elt for elt in x]
     y = [na if isna(elt) else elt for elt in y]
-    if approx:
+    if approx is True:
         x = pytest.approx(x)
+    elif approx:
+        x = pytest.approx(x, rel=approx)
     assert x == y
+
+def is_installed(pkg):
+    try:
+        __import__(pkg)
+        return True
+    except ImportError:
+        return False

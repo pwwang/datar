@@ -26,7 +26,7 @@ def rename(
         _data: The dataframe
         **kwargs: The new_name = old_name pairs
         _base0: Whether the old_name is 0-based if given by indexes.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with new names
@@ -75,7 +75,7 @@ def rename_with(
             keyword arguments instead.
         **kwargs: keyword arguments for `_fn`
         _base0: Whether the old_name is 0-based if given by indexes.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with new names

@@ -1,14 +1,14 @@
 """Select helpers"""
 import re
+import builtins
 from typing import Callable, Iterable, List, Optional, Union
 
-import numpy
 from pandas import DataFrame
 from pipda import register_func
 from pipda.utils import functype
 
 from ..core.contexts import Context
-from ..core.utils import get_option, vars_select
+from ..core.utils import get_option, vars_select, Array
 from ..core.types import StringOrIter
 from ..base import setdiff, intersect
 from .group_data import group_vars
@@ -200,7 +200,7 @@ def all_of(
         _data: The data piped in
         x: A set of variables to match the columns
         _base0: Whether `x` is 0-based or not.
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The matched column names
@@ -239,7 +239,7 @@ def any_of(
         _data: The data piped in
         x: A set of variables to match the columns
         _base0: Whether `x` is 0-based or not.
-            if not provided, will use `datar.base.getOption('index.base.0')`
+            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The matched column names
@@ -258,7 +258,7 @@ def any_of(
 @register_func(None)
 def num_range(
         prefix: str,
-        range_: Iterable[int], # pylint: disable=redefined-builtin
+        range: Iterable[int], # pylint: disable=redefined-builtin
         width: Optional[int] = None,
         _base0: Optional[bool] = None
 ) -> List[str]:
@@ -281,7 +281,10 @@ def num_range(
         if not width
         else str(elem + int(not _base0)).zfill(width)
     )
-    return numpy.array([f"{prefix}{zfill(elem)}" for elem in range(range_)])
+    return Array([
+        f"{prefix}{zfill(elem)}"
+        for elem in builtins.range(range)
+    ])
 
 def _filter_columns(
         all_columns: Iterable[str],

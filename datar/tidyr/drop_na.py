@@ -29,12 +29,12 @@ def drop_na(
             - any: Any columns of `columns` to be `NA`s
             (tidyr doesn't support this argument)
         _base0: Whether `*columns` are 0-based if given by indexes
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with rows with NAs dropped and indexes dropped
     """
-    arg_match(how, ['any', 'all'])
+    arg_match(how, 'how', ['any', 'all'])
     all_columns = _data.columns
     if columns:
         columns = vars_select(all_columns, *columns, base0=_base0)

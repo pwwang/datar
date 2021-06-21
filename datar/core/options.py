@@ -16,7 +16,11 @@ OPTIONS = Diot(
     # Whether use 0-based numbers when index is involved, acts similar like R
     # Otherwise, like python
     index_base_0=False,
+    # Whether which, which_min, which_max is 0-based
+    which_base_0=True,
     dplyr_summarise_inform=True,
+    # whether warn about importing functions that override builtin ones.
+    warn_builtin_names=True,
     add_option=True,
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform
@@ -72,7 +76,7 @@ def options_context(**kwargs: Any) -> None:
     options(opts)
 
 # pylint: disable=invalid-name
-def getOption(x: str, default: Any = None) -> Any:
+def get_option(x: str, default: Any = None) -> Any:
     """Get the current value set for option ‘x’,
     or ‘default’ (which defaults to ‘NULL’) if the option is unset.
 

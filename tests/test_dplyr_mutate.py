@@ -2,6 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-mutate.r
 from pipda.function import register_func
 import pytest
+from pandas.testing import assert_frame_equal
 from pandas.core.frame import DataFrame
 from datar.all import *
 from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -367,3 +368,21 @@ def test_transmute_errors():
         transmute(mtcars, cyl2=f.cyl, _keep='all')
     # transmute(mtcars, cyl2=f.cyl, _before=f.disp)
     # transmute(mtcars, cyl2=f.cyl, _after=f.disp)
+
+def test_dup_keyword_args():
+    df = tibble(a=1)
+    out = df >> mutate(b_=f.a+1, b=f.b*2)
+    assert_frame_equal(out, tibble(a=1, b=4))
+    # order doesn't matter
+    out = df >> mutate(b=f.a+1, b_=f.b*2)
+    assert_frame_equal(out, tibble(a=1, b=4))
+    # support >= 2 dups
+    out = df >> mutate(b__=f.a+1, b_=f.b*2, b=f.b/4.)
+    assert_frame_equal(out, tibble(a=1, b=1.))
+    # has to be consective
+    out = df >> mutate(b__=f.a+1, b_=f.b*2, b=f.b/4.)
+    assert_frame_equal(out, tibble(a=1, b=1.))
+    out = df >> mutate(b__=f.a+1, b_=f.b_*2)
+    assert_frame_equal(out, tibble(a=1, b_=4))
+    out = df >> mutate(b_=f.a+1)
+    assert_frame_equal(out, tibble(a=1, b_=2))

@@ -1,3 +1,20 @@
+## 0.2.0
+Added:
+- Add `base.which`, `base.bessel`, `base.special`, `base.trig_hb` and `base.string` modules
+- Add Support for duplicated keyword arguments for dplyr.mutate/summarise by using `_` as suffix
+- Warn when import python builtin names directly; ; Remove modkit dependency
+
+Fixed:
+- Fixed errors when use`a_1` as names for `"check_unique"` name repairs
+- Fixed #14: `f.a.mean()` not applied to grouped data
+
+Changed:
+- Don't allow `from datar.datasets import *`
+- Remove `modkit` dependency
+- Reset `NaN` to `NA`
+- Rename `base.getOption` to `base.get_option`
+- Rename `stats.setNames` to `stats.set_names`
+
 ## 0.1.1
 - Adopt `pipda` 0.2.8
 - Allow `f.col1[f.col2==max(f.col2)]` like expression
@@ -27,7 +44,7 @@ Changed:
 - Finish tidyr porting.
 
 ## 0.0.6
-- Add `options`, `getOption` and `options_context` to `datar.base` to allow set/get global options
+- Add `options`, `get_option` and `options_context` to `datar.base` to allow set/get global options
 - Add options: `dplyr.summarise.inform`
 - Add `_base0` argument to all related APIs
 - Add `nycflights13` datasets

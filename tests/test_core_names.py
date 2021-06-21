@@ -103,7 +103,7 @@ def test_check_unique():
     with pytest.raises(NameNonUniqueError):
         repair_names(["a", "a"], repair="check_unique")
     with pytest.raises(NameNonUniqueError):
-        repair_names(["_1"], repair="check_unique")
+        repair_names(["__1"], repair="check_unique")
     with pytest.raises(NameNonUniqueError):
         repair_names(["__"], repair="check_unique")
     assert repair_names(["a", "b"], repair="check_unique") == ["a", "b"]

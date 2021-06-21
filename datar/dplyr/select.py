@@ -38,7 +38,7 @@ def select(
         *columns: The columns to select
         **renamings: The columns to rename and select in new => old column way.
         _base0: Whether the columns are 0-based if given by indexes
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with select columns

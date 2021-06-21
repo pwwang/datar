@@ -44,7 +44,7 @@ def tibble(
         _rows: Number of rows of a 0-col dataframe when args and kwargs are
             not provided. When args or kwargs are provided, this is ignored.
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A constructed dataframe
@@ -82,16 +82,13 @@ def tibble(
     names.extend(kwargs)
     values.extend(kwargs.values())
 
-    if not names:
-        out = DataFrame()
-    else:
-        out = zibble(
-            names,
-            values,
-            _name_repair=_name_repair,
-            _base0=_base0,
-            _dtypes=_dtypes
-        )
+    out = zibble(
+        names,
+        values,
+        _name_repair=_name_repair,
+        _base0=_base0,
+        _dtypes=_dtypes
+    )
 
     try:
         out.__dfname__ = varname(raise_exc=False)
@@ -125,7 +122,7 @@ def tibble_row(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A constructed dataframe
@@ -281,7 +278,7 @@ def zibble(
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
         _base0: Whether the suffixes of repaired names should be 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`.
+            If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
         A data frame

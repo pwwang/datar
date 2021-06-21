@@ -91,7 +91,8 @@ class DatarOperator(Operator):
             neout = ~out
             # neout[pandas.isna(out)] = numpy.nan
             return neout
-        return not out
+        # out is always a numpy.ndarray
+        return not out # pragma: no cover
 
     def __getattr__(self, name: str) -> Any:
         """Other operators"""

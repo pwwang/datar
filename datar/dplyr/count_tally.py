@@ -13,7 +13,7 @@ from ..core.types import NumericOrIter, NumericType
 from ..core.utils import copy_attrs, logger
 from ..core.defaults import f
 from ..core.grouped import DataFrameGroupBy
-from ..base import options_context, sum # pylint: disable=redefined-builtin
+from ..base import options_context, sum_
 from .context import n
 from .group_by import group_by_drop_default, group_by
 from .group_data import group_data, group_vars
@@ -145,7 +145,7 @@ def _tally_n(
 
     # If it's Expression, will return a Function object
     # Otherwise, sum of wt
-    return sum(wt)
+    return sum_(wt)
 
 def _check_name(name: Optional[str], invars: Iterable[str]) -> str:
     """Check if count is valid"""

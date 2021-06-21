@@ -2,13 +2,12 @@
 
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
-from datar.base.funcs import c
 import pytest
 
 from datar import f
 from datar.core.exceptions import DataUnrecyclable
 from datar.tibble import *
-from datar.base import nrow, rep, dim, sum, diag, NA, letters, LETTERS, NULL, seq
+from datar.base import c, nrow, rep, dim, sum, diag, NA, letters, LETTERS, NULL, seq
 from datar.dplyr import pull, mutate
 from datar.datasets import iris
 from .conftest import assert_iterable_equal

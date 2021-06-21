@@ -3,7 +3,6 @@ import functools
 from pathlib import Path
 
 import pandas
-from modkit import install
 
 HERE = Path(__file__).parent
 
@@ -38,12 +37,10 @@ def load_data(name: str) -> pandas.DataFrame:
     data.__dfname__ = name
     return data
 
-__all__ = all_datasets().keys()
+__all__ = []
 
 def __getattr__(name):
     # mkapi accesses quite a lot of attributes starting with _
     if name.startswith('_'):
         raise AttributeError
     return load_data(name)
-
-install(__name__)

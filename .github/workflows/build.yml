@@ -22,6 +22,7 @@ jobs:
           python -m pip install pylint
           python -m pip install poetry
           poetry install -v
+          poetry run pip install scipy
       # - name: Run pylint
       #   run: pylint datar
       - name: Test with pytest

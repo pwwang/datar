@@ -12,7 +12,8 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..core.utils import logger, get_option, Array
 from ..core.types import is_not_null, is_scalar, is_null, is_categorical
-from ..base import NA, unique, c, intersect, NA_integer_, NA_character_
+from ..base import NA, unique, c, intersect
+from ..base.na import NA_integer_, NA_character_
 
 def _get_first(x: Iterable[Any]) -> Any:
     """Get first raw item from an iterable"""

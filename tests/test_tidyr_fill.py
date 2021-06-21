@@ -42,7 +42,7 @@ def test_missings_filled_down_for_each_atomic_vector():
         lgl = c(True, NA),
         int = c(1, NA),
         dbl = c(1.0, NA),
-        chr = c("a", NaN),
+        chr = c("a", None),
         lst = [seq(1,5), NULL]
     )
     out = fill(df, everything())
@@ -57,7 +57,7 @@ def test_missings_filled_up_for_each_atomic_vector():
         lgl = c(NA, True),
         int = c(NA, 1),
         dbl = c(NA, 1.0),
-        chr = c(NaN, "a"),
+        chr = c(None, "a"),
         lst = [NULL, seq(1,5)]
     )
     out = fill(df, everything(), _direction="up")

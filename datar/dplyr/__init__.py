@@ -1,6 +1,6 @@
 """Public APIs for dplyr"""
 
-# pylint: disable=redefined-builtin, unused-import
+# pylint: disable=unused-import
 from .sets import union_all, union, setdiff, intersect, setequal
 from .funs import (
     cummean, cumall, cumany,
@@ -34,10 +34,9 @@ from .tidyselect import (
 )
 from .if_else import if_else, case_when
 from .relocate import relocate
-from .filter import filter
 from .distinct import distinct, n_distinct
-from .slice import  (
-    slice, slice_head, slice_tail, slice_min,
+from .dslice import  (
+    slice_head, slice_tail, slice_min,
     slice_max, slice_sample
 )
 from .rank import (
@@ -53,3 +52,18 @@ from .lead_lag import lead, lag
 from .recode import recode, recode_factor, recode_categorical
 from .order_by import order_by, with_order
 from .rows import rows_insert, rows_update, rows_patch, rows_upsert, rows_delete
+
+# make sure builtin names are included when
+# from datar.dplyr import *
+__all__ = [name for name in locals() if not name.startswith('_')]
+__all__.extend(['filter', 'slice'])
+
+# warn when builtin names are imported directly
+# pylint: disable=wrong-import-position
+from ..core.warn_builtin_names import warn_builtin_names
+from . import dfilter as _dfilter, dslice as _dslice
+
+__getattr__ = warn_builtin_names(
+    filter=_dfilter,
+    slice=_dslice
+)

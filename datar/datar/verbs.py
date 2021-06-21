@@ -1,5 +1,4 @@
 """Specific verbs from this package"""
-import builtins
 from typing import Any, List
 
 from pandas import DataFrame
@@ -8,7 +7,7 @@ from pipda import register_verb
 
 from ..core.types import is_scalar
 from ..core.contexts import Context
-from ..dplyr import select, slice # pylint: disable=redefined-builtin
+from ..dplyr import select, slice_
 
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
 def get(
@@ -49,12 +48,12 @@ def get(
 
     if rows is not None:
         # slice only support integer index
-        if not isinstance(rows, builtins.slice):
+        if not isinstance(rows, slice):
             if is_scalar(rows):
                 rows = [rows]
             if not isinstance(rows[0], int):
                 rows = data.index.get_indexer_for(rows)
-        data = slice(data, rows)
+        data = slice_(data, rows)
     return data
 
 @register_verb(DataFrame)

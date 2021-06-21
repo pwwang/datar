@@ -9,7 +9,7 @@ from pipda import register_verb, evaluate_expr, ContextBase
 
 from ..core.contexts import Context, ContextEval
 from ..core.utils import (
-    recycle_value, arg_match, df_setitem,
+    dedup_name, recycle_value, arg_match, df_setitem,
     name_mutatable_args, reconstruct_tibble
 )
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
@@ -55,7 +55,7 @@ def mutate(
             (the default is to add to the right hand side).
             See relocate() for more details.
         _base0: Whether `_before` and `_after` are 0-based if given by indexes.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
         *args: and
         **kwargs: Name-value pairs. The name gives the name of the column
             in the output. The value can be:
@@ -80,6 +80,7 @@ def mutate(
     """
     keep = arg_match(
         _keep,
+        '_keep',
         ['all', 'unused', 'used', 'none']
     )
 
@@ -204,37 +205,49 @@ def _mutate_cols(
     named_mutatables = name_mutatable_args(*args, **kwargs)
     new_columns = []
     removed = []
+    add_new_name = True
     for name, mutatable in named_mutatables.items():
+        ddp_name = dedup_name(name, list(named_mutatables))
+        # if not a dedup name, it's a new name
+        add_new_name = ddp_name == name
+
         mutatable = evaluate_expr(mutatable, data, context)
         if mutatable is None:
-            if name in data:
-                removed.append(name)
-                data.drop(columns=[name], inplace=True)
+            if ddp_name in data:
+                removed.append(ddp_name)
+                data.drop(columns=[ddp_name], inplace=True)
             # be silent if name doesn't exist
             continue
 
         if isinstance(mutatable, DataFrame):
             if (
                     mutatable.shape[1] == 0 and
-                    not name.startswith(DEFAULT_COLUMN_PREFIX)
+                    not ddp_name.startswith(DEFAULT_COLUMN_PREFIX)
             ):
                 data = df_setitem(
-                    data, name, [NA] * max(mutatable.shape[0], 1)
+                    data, ddp_name, [NA] * max(mutatable.shape[0], 1)
                 )
-                new_columns.append(name)
+                if add_new_name:
+                    new_columns.append(ddp_name)
             else:
                 for col in mutatable.columns:
                     new_name = (
-                        col if name.startswith(DEFAULT_COLUMN_PREFIX)
-                        else f'{name}${col}'
+                        col if ddp_name.startswith(DEFAULT_COLUMN_PREFIX)
+                        else f'{ddp_name}${col}'
                     )
-                    coldata = recycle_value(mutatable[col], data.shape[0], name)
+                    coldata = recycle_value(
+                        mutatable[col], data.shape[0], ddp_name
+                    )
                     data = df_setitem(data, new_name, coldata)
-                    new_columns.append(new_name)
+
+                    if add_new_name:
+                        new_columns.append(new_name)
         else:
-            mutatable = recycle_value(mutatable, data.shape[0], name)
-            data = df_setitem(data, name, mutatable)
-            new_columns.append(name)
+            mutatable = recycle_value(mutatable, data.shape[0], ddp_name)
+            data = df_setitem(data, ddp_name, mutatable)
+
+            if add_new_name:
+                new_columns.append(ddp_name)
 
     # keep column order
     return data[new_columns], removed

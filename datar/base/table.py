@@ -11,7 +11,7 @@ from ..core.contexts import Context
 from ..core.types import is_iterable, is_scalar, is_categorical, is_null
 from ..core.utils import Array, categorized, fillna_safe
 
-from .constants import NA
+from .na import NA
 
 # pylint: disable=redefined-builtin
 

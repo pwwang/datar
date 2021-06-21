@@ -14,7 +14,7 @@ from ..core.utils import reconstruct_tibble
 from ..base import intersect, setdiff, union
 from .group_by import group_by_drop_default
 from .group_data import group_data, group_vars
-from .filter import filter # pylint: disable=redefined-builtin
+from .dfilter import filter as dfilter
 
 def _join(
         x: DataFrame,
@@ -303,7 +303,7 @@ def nest_join(
                 condition = y[on[key]] == row[key]
             else:
                 condition = condition & (y[on[key]] == row[key])
-        df = filter(y, condition)
+        df = dfilter(y, condition)
         if not keep:
             df = df[setdiff(df.columns, on.values())]
 

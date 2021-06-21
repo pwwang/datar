@@ -12,7 +12,7 @@ from ..core.utils import vars_select, reconstruct_tibble
 from ..core.exceptions import ColumnNotExistingError
 
 from ..base import NA, identity
-from ..base.constants import NA_integer_
+from ..base.na import NA_integer_
 
 ROWID_COLUMN = '_PIVOT_ROWID_'
 
@@ -67,7 +67,7 @@ def pivot_wider(
             If not specified, will be `numpy.mean`
         _base0: Whether `id_cols`, `names_from` and `values_from`
             are 0-based if given by indexes.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The pivoted dataframe.

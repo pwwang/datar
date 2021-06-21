@@ -28,6 +28,7 @@ nav:
     - 'Home': 'index.md'
     - 'Reference maps':
         'ALL': 'reference-maps/ALL.md'
+        'base': 'reference-maps/base.md'
         'dplyr': 'reference-maps/dplyr.md'
         'tibble': 'reference-maps/tibble.md'
         'tidyr': 'reference-maps/tidyr.md'

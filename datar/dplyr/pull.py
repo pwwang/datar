@@ -10,7 +10,7 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import arg_match, df_getitem, position_at
-from ..core.types import StringOrIter, SeriesLikeType, is_scalar
+from ..core.types import StringOrIter, ArrayLikeType, is_scalar
 
 @register_verb(
     DataFrame,
@@ -23,7 +23,7 @@ def pull(
         name: Optional[StringOrIter] = None,
         to: Optional[str] = None,
         _base0: Optional[bool] = None
-) -> Union[DataFrame, SeriesLikeType, Mapping[str, SeriesLikeType]]:
+) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
     # pylint: disable=too-many-branches
     """Pull a series or a dataframe from a dataframe
 
@@ -53,7 +53,7 @@ def pull(
                 `dict` if `name` provided and has the same length as the pulled
                 single column. Otherwise `frame`.
         _base0: Whether `var` is 0-based if given by index
-            If not provided, `datar.base.getOption('index.base.0')` is used.
+            If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
         The data according to `to`
@@ -61,7 +61,7 @@ def pull(
     # make sure pull(df, 'x') pulls a dataframe for columns
     # x$a, x$b in df
 
-    to = arg_match(to, ['list', 'array', 'frame', 'series', 'dict', None])
+    to = arg_match(to, 'to', ['list', 'array', 'frame', 'series', 'dict', None])
     if name is not None and is_scalar(name):
         name = [name]
 

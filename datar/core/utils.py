@@ -13,14 +13,17 @@ from numpy import array as Array
 
 import pandas
 from pandas import Categorical, DataFrame, Series
+from pipda import register_func
 from pipda.symbolic import Reference
-
-from varname import argname
 
 from .exceptions import (
     ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
 )
-from .types import is_iterable, is_scalar, Dtype, is_categorical, is_null
+from .contexts import Context
+from .types import (
+    StringOrIter, Dtype,
+    is_iterable, is_scalar, is_categorical, is_null
+)
 from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
 # logger
@@ -48,7 +51,7 @@ def vars_select(
         raise_nonexist: Whether raise exception when column not exists
             in the pool
         base0: Whether indexes are 0-based if columns are selected by indexes.
-            If not given, will use `datar.base.getOption('index.base.0')`
+            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The selected indexes for columns
@@ -71,34 +74,6 @@ def vars_select(
         )
     return unique(selected).astype(int)
 
-def series_expandable(
-        df_or_series: Union[DataFrame, Series],
-        series_or_df: Union[DataFrame, Series]
-) -> bool:
-    """Check if a series is expandable"""
-    if (not isinstance(df_or_series, (Series, DataFrame)) or
-            not isinstance(series_or_df, (Series, DataFrame))):
-        return False
-
-    if type(df_or_series) is type(series_or_df):
-        if df_or_series.shape[0] < series_or_df.shape[0]:
-            series, df = df_or_series, series_or_df
-        else:
-            df, series = df_or_series, series_or_df
-    elif isinstance(df_or_series, Series):
-        series, df = df_or_series, series_or_df
-    else:
-        df, series = df_or_series, series_or_df
-
-    return series.index.name in df.columns
-
-def series_expand(series: Union[DataFrame, Series], df: DataFrame):
-    """Expand the series to the scale of a dataframe"""
-    if isinstance(series, DataFrame):
-        #assert series.shape[1] == 1
-        series = series.iloc[:, 0]
-    return df[series.index.name].map(series)
-
 def recycle_value(
         value: Any,
         size: int,
@@ -114,6 +89,7 @@ def recycle_value(
     Returns:
         The recycled value
     """
+    # TODO: follow base R's recycling rule? i.e. size 2 -> 4
     from ..base import NA
 
     if is_scalar(value):
@@ -212,15 +188,20 @@ def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
     return DataFrame({name: data})
 
 @to_df.register(numpy.ndarray)
-def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
+def _(data: numpy.ndarray, name: Optional[StringOrIter] = None) -> DataFrame:
+    if name is not None and is_scalar(name):
+        name = [name]
+
     if len(data.shape) == 1:
-        return DataFrame(data, columns=[name]) if name else DataFrame(data)
+        return (
+            DataFrame(data, columns=name)
+            if name is not None
+            else DataFrame(data)
+        )
 
     ncols = data.shape[1]
-    if isinstance(name, Iterable) and len(name) == ncols:
+    if name is not None and len(name) == ncols:
         return DataFrame(data, columns=name)
-    if len(name) == 1 and name and isinstance(name, str):
-        return DataFrame(data, columns=[name])
     # ignore the name
     return DataFrame(data)
 
@@ -263,9 +244,9 @@ def dict_insert_at(
     for key, val in container.items():
         if key == poskeys[0]:
             matched = True
-            ret_items.extend(value.items())
             if not remove:
                 ret_items_append((key, val))
+            ret_items.extend(value.items())
         elif matched and key in poskeys:
             if not remove:
                 ret_items_append((key, val))
@@ -322,7 +303,12 @@ def name_mutatable_args(
                 if ret_key == key or ret_key.startswith(f"{key}$")
             ]
             if existing_keys:
-                ret = dict_insert_at(ret, existing_keys, val, remove=True)
+                ret = dict_insert_at(
+                    ret,
+                    existing_keys,
+                    {key: val},
+                    remove=True
+                )
             else:
                 for dkey, dval in val.items():
                     ret[f"{key}${dkey}"] = dval
@@ -330,15 +316,19 @@ def name_mutatable_args(
             ret[key] = val
     return ret
 
-def arg_match(arg: Any, values: Iterable[Any], errmsg=Optional[str]) -> Any:
+def arg_match(
+        arg: Any,
+        argname: str,
+        values: Iterable[Any],
+        errmsg: Optional[str] = None
+) -> Any:
     """Make sure arg is in one of the values.
 
     Mimics `rlang::arg_match`.
     """
     if not errmsg:
         values = list(values)
-        name = argname(arg, pos_only=True)
-        errmsg = f'`{name}` must be one of {values}.'
+        errmsg = f'`{argname}` must be one of {values}.'
     if arg not in values:
         raise ValueError(errmsg)
     return arg
@@ -410,13 +400,13 @@ def get_option(key: str, value: Any = None) -> Any:
     This is a shortcut for:
     >>> if value is not None:
     >>>     return value
-    >>> from datar.base import getOption
-    >>> return getOption(key)
+    >>> from datar.base import get_option
+    >>> return get_option(key)
     """
     if value is not None:
         return value
-    from ..base import getOption
-    return getOption(key)
+    from ..base import get_option as get_option_
+    return get_option_(key)
 
 def apply_dtypes(
         df: DataFrame,
@@ -558,10 +548,11 @@ def df_setitem(
     if isinstance(value, Series):
         value = value.values
 
-    if isinstance(value, tuple):
-        # ('A', array([1,2,3]))
-        # VisibleDeprecationWarning
-        value = list(value)
+    # tuple turned into list in recycle_value
+    # if isinstance(value, tuple):
+    #     # ('A', array([1,2,3]))
+    #     # VisibleDeprecationWarning
+    #     value = list(value)
 
     if not allow_dups:
         df[name] = value
@@ -593,7 +584,9 @@ def fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
     Raises:
         ValueError: when `rep` exists in data
     """
-    if rep in data:
+    # elementwise comparison failed; returning scalar instead
+    # if rep in data:
+    if rep in list(data):
         raise ValueError("The value to replace NAs is already present in data.")
 
     if not is_null(data).any():
@@ -640,3 +633,68 @@ def length_of(x: Any) -> int:
         return 1
 
     return len(x)
+
+def dedup_name(name: str, all_names: Iterable[str]):
+    """Check if a name is a duplicated name in all_names,
+    return the deduplicated name.
+
+    In other to support duplicated keyword arguments in R:
+        >>> df %>% mutate(a=1, a=a*2)
+
+    Now you can to it with datar:
+        >>> df >> mutate(a_=1, a=f.a*2)
+
+    Args:
+        name: The name to deduplicate
+        all_names: all names
+
+    Returns:
+        The deduplicated name
+    """
+    if not name.endswith('_') or name[:-1] not in all_names:
+        return name
+
+    # now determine whehter the real name is name[:-1]
+    # because the name could be "a__" ("a_" is for sure in all_names)
+    # we need to check if "a" is also in all_names
+    # otherwise, the realname is "a_"
+    name = name[:-1]
+    while name.endswith('_') and name[:-1] in all_names:
+        name = name[:-1]
+    return name
+
+def register_numpy_func_x(
+        name: str,
+        np_name: str,
+        trans_in: Optional[Callable] = None,
+        trans_out: Optional[Callable] = None,
+        doc: str = ""
+) -> Callable:
+    """Register numpy function with single argument x
+
+    Args:
+        name: The name of the function to be returned
+        np_name: The name of the function from numpy
+        trans_in: Transformation for input before sending to numpy function
+        trans_out: Transformation for output
+        doc: The docstring for the function
+
+    Returns:
+        The registered function
+    """
+    func = getattr(numpy, np_name)
+
+    @register_func(None, context=Context.EVAL)
+    def _func(x: Any) -> Any:
+        """Registered function from numpy"""
+        if trans_in:
+            x = trans_in(x)
+
+        out = func(x)
+        if trans_out: # pragma: no cover
+            out = trans_out(out)
+        return out
+
+    _func.__name__ = name
+    _func.__doc__ = doc
+    return _func

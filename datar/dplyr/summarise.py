@@ -9,7 +9,7 @@ from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.utils import (
     length_of, recycle_df, arg_match, check_column_uniqueness, df_setitem,
-    name_mutatable_args, logger, get_option, reconstruct_tibble
+    name_mutatable_args, logger, get_option, reconstruct_tibble, dedup_name
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -72,7 +72,11 @@ def summarise(
         _data,
         "Can't transform a data frame with duplicate names"
     )
-    _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
+    _groups = arg_match(
+        _groups,
+        '_groups',
+        ['drop', 'drop_last', 'keep', 'rowwise', None]
+    )
     out = _summarise_build(_data, *args, **kwargs)
     if _groups == 'rowwise':
         return DataFrameRowwise(out, _group_drop=group_by_drop_default(_data))
@@ -86,7 +90,11 @@ def _(
         **kwargs: Any
 ) -> DataFrame:
     # empty
-    _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
+    _groups = arg_match(
+        _groups,
+        '_groups',
+        ['drop', 'drop_last', 'keep', 'rowwise', None]
+    )
 
     allone = True
     if group_data(_data).shape[0] == 0:
@@ -155,6 +163,9 @@ def _summarise_build(
 
     out = group_keys(_data)
     for key, val in named.items():
+        # support: df %>% muate(a=1, a=a+1)
+        key = dedup_name(key, list(named))
+
         envdata = out
         if out.shape[1] == 0 or (
                 isinstance(val, Function) and

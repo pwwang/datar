@@ -1,6 +1,6 @@
 """Windowed rank functions.
 
-See https://github.com/tidyverse/dplyr/blob/master/R/slice.R
+See https://github.com/tidyverse/dplyr/blob/master/R/rank.R
 """
 from typing import Any, Iterable, Optional
 
@@ -13,7 +13,7 @@ from pipda.utils import Expression
 from ..core.contexts import Context
 from ..core.types import is_null
 from ..core.utils import Array
-from ..base.funcs import NA
+from ..base import NA
 
 @register_func(context=Context.EVAL)
 def row_number(

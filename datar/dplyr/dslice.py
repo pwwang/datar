@@ -13,9 +13,8 @@ from ..core.collections import Collection
 from ..core.utils import copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
 
-from ..base.constants import NA
-from ..base import unique
-from .filter import _filter_groups
+from ..base import NA, unique
+from .dfilter import _filter_groups
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -49,7 +48,7 @@ def slice( # pylint: disable=redefined-builtin
             recalculated based on the resulting data,
             otherwise the grouping is kept as is.
         _base0: If rows are selected by indexes, whether they are 0-based.
-            If not provided, `datar.base.getOption('index.base.0')` is used.
+            If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
         The sliced dataframe

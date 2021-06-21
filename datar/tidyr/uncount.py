@@ -32,7 +32,7 @@ def uncount(
         _id: Supply a string to create a new variable which gives a
             unique identifier for each created row (0-based).
         _base0: Whether the generated `_id` columns are 0-based.
-            If not provided, will use `datar.base.getOption('index.base.0')`
+            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         dataframe with rows repeated.

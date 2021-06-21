@@ -10,7 +10,7 @@ from pipda import register_func
 
 from ..core.types import NumericType, is_scalar
 from ..core.contexts import Context
-from ..base.constants import NA
+from ..base import NA
 from .order_by import with_order
 
 @register_func(None, context=Context.EVAL)

@@ -1,7 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-select.r
 from pipda.verb import register_verb
-from datar.stats.verbs import setNames
+from datar.stats.verbs import set_names
 from pandas.core.frame import DataFrame
 import pytest
 from datar.all import *
@@ -28,7 +28,7 @@ def test_non_syntactic_grouping_variable_is_preserved():
 
 def test_select_doesnot_fail_if_some_names_missing():
     df1 = tibble(x=range(1,11), y=range(1,11), z=range(1,11))
-    df2 = setNames(df1, ["x", "y", ""])
+    df2 = set_names(df1, ["x", "y", ""])
 
     out1 = select(df1, f.x)
     assert out1.equals(tibble(x=range(1,11)))
@@ -133,20 +133,20 @@ def test_can_select_with_strings():
     assert out.equals(exp)
 
 def test_works_on_empty_names():
-    df = tibble(x=1, y=2, z=3) >> setNames(c("x", "y", ""))
+    df = tibble(x=1, y=2, z=3) >> set_names(c("x", "y", ""))
     out = select(df, f.x) >> pull(to='list')
     assert out == [1]
 
-    df >>= setNames(c("", "y", "z"))
+    df >>= set_names(c("", "y", "z"))
     out = select(df, f.y) >> pull(to='list')
     assert out == [2]
 
 def test_works_on_na_names():
-    df = tibble(x=1, y=2, z=3) >> setNames(c("x", "y", NA))
+    df = tibble(x=1, y=2, z=3) >> set_names(c("x", "y", NA))
     out = select(df, f.x) >> pull(to='list')
     assert out == [1]
 
-    df >>= setNames(c(NA, "y", "z"))
+    df >>= set_names(c(NA, "y", "z"))
     out = select(df, f.y) >> pull(to='list')
     assert out == [2]
 

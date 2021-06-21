@@ -179,7 +179,7 @@ def across(
             To use 1-based index, use `{_fn1}`
         _base0: Indicating whether the columns are 0-based if selected
             by indexes. if not provided, will use
-            `datar.base.getOption('index.base.0')`.
+            `datar.base.get_option('index.base.0')`.
         _fn_context: Defines the context to evaluate the arguments for functions
             if they are plain functions.
             Note that registered functions will use its own context
@@ -212,7 +212,7 @@ def c_across(
         _cols: The columns
         _base0: Indicating whether the columns are 0-based if selected
             by indexes. if not provided, will use
-            `datar.base.getOption('index.base.0')`.
+            `datar.base.get_option('index.base.0')`.
 
     Returns:
         A series

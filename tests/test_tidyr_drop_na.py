@@ -12,8 +12,8 @@ def test_empty_call_drops_every_row():
     assert_frame_equal(drop_na(df), exp)
 
 def test_only_considers_specified_vars():
-    df = tibble(x=c(1,2,NA), y=c("a", NaN, "b"))
-    exp = tibble(x=[1,2], y=c("a", NaN), _dtypes={'x': float})
+    df = tibble(x=c(1,2,NA), y=c("a", None, "b"))
+    exp = tibble(x=[1,2], y=c("a", None), _dtypes={'x': float})
     out = drop_na(df, f.x)
     assert_frame_equal(out, exp)
 
