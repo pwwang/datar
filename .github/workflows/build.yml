@@ -23,6 +23,7 @@ jobs:
           python -m pip install poetry
           poetry install -v
           poetry run pip install scipy
+          poetry run pip install wcwidth
       # - name: Run pylint
       #   run: pylint datar
       - name: Test with pytest
