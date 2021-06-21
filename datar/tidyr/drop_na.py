@@ -34,7 +34,7 @@ def drop_na(
     Returns:
         Dataframe with rows with NAs dropped and indexes dropped
     """
-    arg_match(how, ['any', 'all'])
+    arg_match(how, 'how', ['any', 'all'])
     all_columns = _data.columns
     if columns:
         columns = vars_select(all_columns, *columns, base0=_base0)

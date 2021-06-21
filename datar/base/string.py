@@ -322,7 +322,7 @@ def _prepare_nchar(
         keep_na: Optional[bool]
 ) -> Tuple[Iterable[str], bool]:
     """Prepare arguments for n(z)char"""
-    arg_match(type, ['chars', 'bytes', 'width'])
+    arg_match(type, 'type', ['chars', 'bytes', 'width'])
     if keep_na is None:
         keep_na = type != 'width'
 

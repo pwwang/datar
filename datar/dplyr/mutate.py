@@ -80,6 +80,7 @@ def mutate(
     """
     keep = arg_match(
         _keep,
+        '_keep',
         ['all', 'unused', 'used', 'none']
     )
 

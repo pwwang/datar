@@ -143,9 +143,9 @@ def _vec_split(
     Returns a data frame with columns `key` and `val`. `key` is a stacked column
     with data from by.
     """
-    if isinstance(x, Series):
+    if isinstance(x, Series): # pragma: no cover, always a data frame?
         x = x.to_frame()
-    if isinstance(by, Series):
+    if isinstance(by, Series): # pragma: no cover, always a data frame?
         by = by.to_frame()
 
     df = bind_cols(x, by)
@@ -235,8 +235,9 @@ def _unchopping_df_column(
                 for col in val:
                     # pylint: disable=unsupported-membership-test
                     # pylint: disable=unsupported-delete-operation
+                    # TODO: test
                     if col in dtypes and dtypes[col] != val[col].dtype:
-                        del dtypes[col]
+                        del dtypes[col] # pragma: no cover
 
     sizes = []
     val_data = defaultdict(list)

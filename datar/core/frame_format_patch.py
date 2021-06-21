@@ -48,7 +48,7 @@ from .options import add_option
 
 # TODO: patch more formatters
 
-class DatarDataFrameFormatter(DataFrameFormatter):
+class DatarDataFrameFormatter(DataFrameFormatter): # pragma: no cover
     """Custom formatter for DataFrame
     """
     @property
@@ -96,12 +96,12 @@ class DatarDataFrameFormatter(DataFrameFormatter):
             leading_space=self.index,
         )
 
-class DatarGenericArrayFormatter(GenericArrayFormatter):
+class DatarGenericArrayFormatter(GenericArrayFormatter): # pragma: no cover
     """Generic Array Formatter to show DataFrame element in a cell in a
     collpased representation
     """
 
-    def _format_strings(self) -> List[str]: # pragma: no cover
+    def _format_strings(self) -> List[str]:
         if self.float_format is None:
             float_format = get_option("display.float_format")
             if float_format is None:
@@ -174,7 +174,7 @@ class DatarGenericArrayFormatter(GenericArrayFormatter):
 
         return fmt_values
 
-class DatarHTMLFormatter(HTMLFormatter):
+class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
     """Fix nrows as we added one more row (dtype)"""
 
     def _write_regular_rows(
@@ -429,7 +429,7 @@ class DatarHTMLFormatter(HTMLFormatter):
 class DatarNotebookFormatter(DatarHTMLFormatter, NotebookFormatter):
     """Notebook Formatter"""
 
-class DatarStringFormatter(StringFormatter):
+class DatarStringFormatter(StringFormatter): # pragma: no cover
     """String Formatter"""
     def to_string(self) -> str:
         """To string representation"""
@@ -448,7 +448,7 @@ class DatarStringFormatter(StringFormatter):
 
         return text
 
-def _patch(option: bool) -> None:
+def _patch(option: bool) -> None: # pragma: no cover
     """Patch pandas?"""
     if option:
         # monkey-patch the formatter

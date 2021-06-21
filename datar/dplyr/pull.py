@@ -61,7 +61,7 @@ def pull(
     # make sure pull(df, 'x') pulls a dataframe for columns
     # x$a, x$b in df
 
-    to = arg_match(to, ['list', 'array', 'frame', 'series', 'dict', None])
+    to = arg_match(to, 'to', ['list', 'array', 'frame', 'series', 'dict', None])
     if name is not None and is_scalar(name):
         name = [name]
 

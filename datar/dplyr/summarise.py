@@ -72,7 +72,11 @@ def summarise(
         _data,
         "Can't transform a data frame with duplicate names"
     )
-    _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
+    _groups = arg_match(
+        _groups,
+        '_groups',
+        ['drop', 'drop_last', 'keep', 'rowwise', None]
+    )
     out = _summarise_build(_data, *args, **kwargs)
     if _groups == 'rowwise':
         return DataFrameRowwise(out, _group_drop=group_by_drop_default(_data))
@@ -86,7 +90,11 @@ def _(
         **kwargs: Any
 ) -> DataFrame:
     # empty
-    _groups = arg_match(_groups, ['drop', 'drop_last', 'keep', 'rowwise', None])
+    _groups = arg_match(
+        _groups,
+        '_groups',
+        ['drop', 'drop_last', 'keep', 'rowwise', None]
+    )
 
     allone = True
     if group_data(_data).shape[0] == 0:

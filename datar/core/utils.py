@@ -16,13 +16,14 @@ from pandas import Categorical, DataFrame, Series
 from pipda import register_func
 from pipda.symbolic import Reference
 
-from varname import argname
-
 from .exceptions import (
     ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
 )
 from .contexts import Context
-from .types import is_iterable, is_scalar, Dtype, is_categorical, is_null
+from .types import (
+    StringOrIter, Dtype,
+    is_iterable, is_scalar, is_categorical, is_null
+)
 from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
 # logger
@@ -73,34 +74,6 @@ def vars_select(
         )
     return unique(selected).astype(int)
 
-def series_expandable(
-        df_or_series: Union[DataFrame, Series],
-        series_or_df: Union[DataFrame, Series]
-) -> bool:
-    """Check if a series is expandable"""
-    if (not isinstance(df_or_series, (Series, DataFrame)) or
-            not isinstance(series_or_df, (Series, DataFrame))):
-        return False
-
-    if type(df_or_series) is type(series_or_df):
-        if df_or_series.shape[0] < series_or_df.shape[0]:
-            series, df = df_or_series, series_or_df
-        else:
-            df, series = df_or_series, series_or_df
-    elif isinstance(df_or_series, Series):
-        series, df = df_or_series, series_or_df
-    else:
-        df, series = df_or_series, series_or_df
-
-    return series.index.name in df.columns
-
-def series_expand(series: Union[DataFrame, Series], df: DataFrame):
-    """Expand the series to the scale of a dataframe"""
-    if isinstance(series, DataFrame):
-        #assert series.shape[1] == 1
-        series = series.iloc[:, 0]
-    return df[series.index.name].map(series)
-
 def recycle_value(
         value: Any,
         size: int,
@@ -116,6 +89,7 @@ def recycle_value(
     Returns:
         The recycled value
     """
+    # TODO: follow base R's recycling rule? i.e. size 2 -> 4
     from ..base import NA
 
     if is_scalar(value):
@@ -214,15 +188,20 @@ def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
     return DataFrame({name: data})
 
 @to_df.register(numpy.ndarray)
-def _(data: numpy.ndarray, name: Optional[str] = None) -> DataFrame:
+def _(data: numpy.ndarray, name: Optional[StringOrIter] = None) -> DataFrame:
+    if name is not None and is_scalar(name):
+        name = [name]
+
     if len(data.shape) == 1:
-        return DataFrame(data, columns=[name]) if name else DataFrame(data)
+        return (
+            DataFrame(data, columns=name)
+            if name is not None
+            else DataFrame(data)
+        )
 
     ncols = data.shape[1]
-    if isinstance(name, Iterable) and len(name) == ncols:
+    if name is not None and len(name) == ncols:
         return DataFrame(data, columns=name)
-    if len(name) == 1 and name and isinstance(name, str):
-        return DataFrame(data, columns=[name])
     # ignore the name
     return DataFrame(data)
 
@@ -265,9 +244,9 @@ def dict_insert_at(
     for key, val in container.items():
         if key == poskeys[0]:
             matched = True
-            ret_items.extend(value.items())
             if not remove:
                 ret_items_append((key, val))
+            ret_items.extend(value.items())
         elif matched and key in poskeys:
             if not remove:
                 ret_items_append((key, val))
@@ -324,7 +303,12 @@ def name_mutatable_args(
                 if ret_key == key or ret_key.startswith(f"{key}$")
             ]
             if existing_keys:
-                ret = dict_insert_at(ret, existing_keys, val, remove=True)
+                ret = dict_insert_at(
+                    ret,
+                    existing_keys,
+                    {key: val},
+                    remove=True
+                )
             else:
                 for dkey, dval in val.items():
                     ret[f"{key}${dkey}"] = dval
@@ -332,15 +316,19 @@ def name_mutatable_args(
             ret[key] = val
     return ret
 
-def arg_match(arg: Any, values: Iterable[Any], errmsg=Optional[str]) -> Any:
+def arg_match(
+        arg: Any,
+        argname: str,
+        values: Iterable[Any],
+        errmsg: Optional[str] = None
+) -> Any:
     """Make sure arg is in one of the values.
 
     Mimics `rlang::arg_match`.
     """
     if not errmsg:
         values = list(values)
-        name = argname(arg, pos_only=True)
-        errmsg = f'`{name}` must be one of {values}.'
+        errmsg = f'`{argname}` must be one of {values}.'
     if arg not in values:
         raise ValueError(errmsg)
     return arg
@@ -560,10 +548,11 @@ def df_setitem(
     if isinstance(value, Series):
         value = value.values
 
-    if isinstance(value, tuple):
-        # ('A', array([1,2,3]))
-        # VisibleDeprecationWarning
-        value = list(value)
+    # tuple turned into list in recycle_value
+    # if isinstance(value, tuple):
+    #     # ('A', array([1,2,3]))
+    #     # VisibleDeprecationWarning
+    #     value = list(value)
 
     if not allow_dups:
         df[name] = value
@@ -702,7 +691,7 @@ def register_numpy_func_x(
             x = trans_in(x)
 
         out = func(x)
-        if trans_out:
+        if trans_out: # pragma: no cover
             out = trans_out(out)
         return out
 
