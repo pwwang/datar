@@ -279,3 +279,8 @@ def test_dup_keyword_args():
     df = tibble(g=[1,1], a=[1.0,2.0]) >> group_by(f.g)
     out = df >> summarise(b_=mean(f.a), b=f.b*2)
     assert_frame_equal(out, tibble(g=1, b=3.0))
+
+def test_use_pandas_series_func_gh14():
+    df = tibble(g=[1,1,2,2], a=[4,4,8,8]) >> group_by(f.g)
+    out = df >> summarise(a=f.a.mean())
+    assert_frame_equal(out, tibble(g=[1,2], a=[4.0,8.0]))
