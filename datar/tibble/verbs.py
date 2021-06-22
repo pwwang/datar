@@ -100,7 +100,7 @@ def add_row(
 ) -> DataFrame:
     """Add one or more rows of data to an existing data frame.
 
-    Aliases: `add_case`
+    Aliases `add_case`
 
     Args:
         _data: Data frame to append to.
@@ -199,7 +199,7 @@ def add_column(
 def has_rownames(_data: DataFrame) -> bool:
     """Detect if a data frame has row names
 
-    Aliases: `has_index`
+    Aliases `has_index`
 
     Args:
         _data: The data frame to check
@@ -216,7 +216,7 @@ has_index = has_rownames # pylint: disable=invalid-name
 def remove_rownames(_data: DataFrame) -> DataFrame:
     """Remove the index/rownames of a data frame
 
-    Aliases: `remove_index`, `drop_index`, `remove_rownames`
+    Aliases `remove_index`, `drop_index`, `remove_rownames`
 
     Args:
         _data: The data frame
@@ -233,7 +233,7 @@ remove_index = drop_index = remove_rownames # pylint: disable=invalid-name
 def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
     """Add rownames as a column
 
-    Aliases: `index_to_column`
+    Aliases `index_to_column`
 
     Args:
         _data: The data frame
@@ -282,7 +282,7 @@ def rowid_to_column(
 def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
     """Set rownames/index with one column, and remove it
 
-    Aliases: `column_to_index`
+    Aliases `column_to_index`
 
     Args:
         _data: The data frame

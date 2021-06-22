@@ -139,6 +139,7 @@ def na_if(x: Iterable[Any], y: Any) -> Iterable[Any]:
     if not isinstance(x, Series):
         x = Series(x, dtype=object) if len(x) == 0 else Series(x)
 
+    x = x.copy()
     x[x == y] = NA
     return x
 

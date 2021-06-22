@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from IPython.display import display, Markdown, HTML
 from IPython.core.interactiveshell import InteractiveShell
 import pardoc
+from varname.helpers import debug
 
 InteractiveShell.ast_node_interactivity = "all"
 

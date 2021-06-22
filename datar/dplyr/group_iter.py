@@ -104,7 +104,8 @@ def group_walk(
         **kwargs: Any,
 ) -> None:
     """Walk along data in each groups, but don't return anything"""
-    group_map(_data, _f, _keep=_keep, *args, **kwargs)
+    # list to trigger generator
+    list(group_map(_data, _f, _keep=_keep, *args, **kwargs))
 
 @register_verb(DataFrame)
 def group_trim(
