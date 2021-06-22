@@ -9,8 +9,8 @@
 |#|#|#|
 |`datasets`|Datasets collected from `tidyverse` or other related packages|[:octicons-cross-reference-16:][3]|
 
-[1]: ./tibble
-[2]: ./dplyr
-[3]: ./datasets
-[4]: ./tidyr
-[5]: ./base
+[1]: ../tibble
+[2]: ../dplyr
+[3]: ../datasets
+[4]: ../tidyr
+[5]: ../base
