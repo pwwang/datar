@@ -131,6 +131,10 @@ def test_mutate_semantics():
     bar = tibble(b=[1.0,1.0], c=[1.0,1.0], a=[1,2])
     assert foo.equals(bar)
 
+    x = 1
+    df = tibble(x, f.x*2)
+    assert_frame_equal(df, tibble(x=1, **{'f.x*2': 2}))
+
 # TODO: units preseved when recycled
 
 def test_auto_splicing_anonymous_tibbles():

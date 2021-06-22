@@ -91,7 +91,8 @@ def _replace_with(
         val = numpy.array(val)
 
     _check_length(val, x, name)
-    _check_type(val, out_type, name)
+    if not is_null(val).any():
+        _check_type(val, out_type, name)
     # check_class(val, x, name)
 
     i[is_null(i)] = False

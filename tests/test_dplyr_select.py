@@ -158,7 +158,7 @@ def test_keeps_attributes():
 
 
 def test_select_rename_with_dup_names():
-    df = tibble(tibble(x=1), x=2)
+    df = tibble(tibble(x=1), x=2, _name_repair='minimal')
     with pytest.raises(
             ValueError,
             match='Names must be unique. Name "x" found at locations'
@@ -202,6 +202,6 @@ def test_tidyselect_funs():
     out = num_range('a', 3, width=2)
     assert out.tolist() == ['a01', 'a02', 'a03']
 
-    df = tibble(tibble(X=1), X=2)
+    df = tibble(tibble(X=1), X=2, _name_repair='minimal')
     out = df >> select(contains("X"))
     assert out.columns.tolist() == ["X"]

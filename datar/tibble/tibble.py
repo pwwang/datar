@@ -4,21 +4,21 @@ from typing import (
     Any, Union, Callable, Optional, Mapping, Iterable, Tuple
 )
 
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from varname import argname, varname, VarnameRetrievingError
 
 from pipda import register_func
 from pipda.utils import Expression
 from pipda.symbolic import DirectRefItem, DirectRefAttr
 
-from ..core.types import Dtype, is_null, is_not_null
+from ..core.types import Dtype, is_null
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
 from ..core.names import repair_names
 from ..core.utils import (
     Array,
-    recycle_value,
-    to_df, length_of, recycle_df, df_setitem, copy_attrs, apply_dtypes
+    to_df, length_of, recycle_df, df_setitem,
+    copy_attrs, apply_dtypes
 )
 
 def tibble(
@@ -69,15 +69,13 @@ def tibble(
 
     if argnames:
         for i, value in enumerate(values):
-            if (
-                    _expand_value(value) is None and (
-                        not isinstance(value, Series) or not value.name
-                    )
+            if isinstance(value, Expression):
+                names[i] = argnames[i]
+            elif (
+                    _expand_value(value) is None and
+                    not getattr(value, '__name__', getattr(value, 'name', None))
             ):
-                values[i] = Series(
-                    recycle_value(value, length_of(value)),
-                    name=argnames[i]
-                )
+                names[i] = argnames[i]
 
     names.extend(kwargs)
     values.extend(kwargs.values())
@@ -293,8 +291,6 @@ def zibble(
         ],
         dtype=object
     )
-    valid_idxes = is_not_null(names)
-    names[valid_idxes] = repair_names(names[valid_idxes], _name_repair, _base0)
 
     out = None
     suffix = 0
@@ -325,7 +321,10 @@ def zibble(
 
     if out is None:
         out = DataFrame()
+    names = repair_names(out.columns.tolist(), _name_repair, _base0)
+    out.columns = names
     apply_dtypes(out, _dtypes)
+
     return out
 
 # Helpers ----------------------------------------------------

@@ -39,7 +39,9 @@ from .special import (
     choose, lchoose, factorial, lfactorial
 )
 from .string import (
-    is_str, is_string, is_character, as_str, as_string, as_character
+    is_str, is_string, is_character, as_str, as_string, as_character,
+    grep, grepl, sub, gsub, nchar, nzchar, paste, paste0, sprintf,
+    substr, substring, strsplit
 )
 from .table import table
 from .testing import (
