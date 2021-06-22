@@ -5,7 +5,7 @@ Port of [dplyr][2] and other related R packages in python, using [pipda][3].
 <!-- badges -->
 [![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13]
 
-[Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17]
+[Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17] | [Blog][18]
 
 <img width="30%" style="margin: 10px 10px 10px 30px" align="right" src="logo.png">
 
@@ -118,3 +118,4 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [15]: https://pwwang.github.io/datar/reference-maps/ALL/
 [16]: https://pwwang.github.io/datar/notebooks/across/
 [17]: https://pwwang.github.io/datar/api/datar/
+[18]: https://pwwang.github.io/datar-blog
