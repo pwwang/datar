@@ -93,7 +93,7 @@ class DataFrameGroupBy(DataFrame):
 
     def _compute_multiple_var_groups(self):
         """Compute groups for multiple vars"""
-        from ..base import NA
+        from ..base import unique
 
         dtypes = {}
         groupings = []
@@ -120,21 +120,35 @@ class DataFrameGroupBy(DataFrame):
         # pandas not including unused categories for multiple variables
         # even with observed=False
         # #
-        # This is a simplied version to include those unobserved values
-        # Find a better way to implement the dplyr way?
         if not self.attrs['_group_drop']:
-            unobserved = [
-                self[gvar].values.categories.difference(self[gvar])
-                if is_categorical(dtype)
-                else []
-                for gvar, dtype in dtypes.items()
-            ]
-            maxlen = max((len(unobs) for unobs in unobserved))
-            if maxlen > 0:
-                unobserved = [
-                    [NA] if len(unobs) == 0 else unobs
-                    for unobs in unobserved
-                ]
+            # unobserved = [
+            #     self[gvar].values.categories.difference(self[gvar])
+            #     if is_categorical(dtype)
+            #     else []
+            #     for gvar, dtype in dtypes.items()
+            # ]
+            # maxlen = max((len(unobs) for unobs in unobserved))
+            # if maxlen > 0:
+            #     unobserved = [
+            #         ## Simply adding NAs would change dtype
+            #         [NA] if len(unobs) == 0 else unobs
+            #         for unobs in unobserved
+            #     ]
+            #     for row in product(*unobserved):
+            #         groups[row] = []
+            unobserved = []
+            insert_unobs = False
+            for gvar, dtype in dtypes.items():
+                if is_categorical(dtype):
+                    unobs = self[gvar].values.categories.difference(self[gvar])
+                    if len(unobs) > 0:
+                        unobserved.append(unobs)
+                        insert_unobs = True
+                    else:
+                        unobserved.append(unique(self[gvar]))
+                else:
+                    unobserved.append(unique(self[gvar]))
+            if insert_unobs:
                 for row in product(*unobserved):
                     groups[row] = []
 
@@ -285,8 +299,8 @@ def _groups_to_group_data(
             out[gvar] = na_if_safe(out[gvar], dtype=dtype)
         else:
             try:
-                same_dtype = out[gvar].dtype != dtype
-            except TypeError:
+                same_dtype = out[gvar].dtype == dtype
+            except TypeError: # pragma: no cover
                 # Cannot interpret 'CategoricalDtype(categories=[1, 2],
                 # ordered=False)' as a data type
                 same_dtype = False

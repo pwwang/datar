@@ -28,7 +28,7 @@ def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
     out = ungroup(count(filter(df, f.f==1)))
     expect = tibble(
-        e=[1,1,NA],
+        e=[1,1,1],
         f=factor([1,2,3], levels=[1,2,3]),
         n=[2,0,0]
     )
@@ -36,7 +36,7 @@ def test_filter_slice_retain_zero_group_labels(df):
 
     out = ungroup(count(slice(df, 1)))
     expect = tibble(
-        e=[1,1,NA],
+        e=[1,1,1],
         f=factor([1,2,3], levels=[1,2,3]),
         n=[1,1,0]
     )

@@ -5,3 +5,4 @@ pipda
 pytest
 pytest-cov
 scipy==1.*,>=1.6.0
+wcwidth==0.*,>=0.2.0

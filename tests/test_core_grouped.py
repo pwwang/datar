@@ -78,9 +78,7 @@ def test_multi_cats():
         'd': Categorical([4, NA, NA, NA], categories=[4]),
     })
     gf = DataFrameGroupBy(df, _group_vars=list('abcd'), _group_drop=False)
-    # This acts different as dplyr's grouped_df
-    # assert len(gf._group_data) == 8
-    assert len(gf._group_data) == 4
+    assert len(gf._group_data) == 11
 
     gf = DataFrameGroupBy(df, _group_vars=list('abcd'), _group_drop=True)
     assert len(gf._group_data) == 3
