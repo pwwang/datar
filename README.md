@@ -72,7 +72,7 @@ df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
 
 ```python
 # works with plotnine
-# works with plotnine
+# example grabbed from https://github.com/has2k1/plydata
 import numpy
 from datar.base import sin, pi
 from plotnine import ggplot, aes, geom_line, theme_classic
