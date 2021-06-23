@@ -31,6 +31,7 @@ jobs:
           cp ../README.md index.md
           cp ../example.png example.png
           cp ../example2.png example2.png
+          cp ../logo.png logo.png
           cd ..
           mkdocs build
         if : success()

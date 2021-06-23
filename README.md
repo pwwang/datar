@@ -2,12 +2,15 @@
 
 Port of [dplyr][2] and other related R packages in python, using [pipda][3].
 
-Unlike other similar packages in python that just mimic the piping sign, `datar` follows the API designs from the original packages as much as possible. So that minimal effort is needed for those who are familar with those R packages to transition to python.
-
 <!-- badges -->
 [![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13]
 
-[Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17]
+[Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17] | [Blog][18]
+
+<img width="30%" style="margin: 10px 10px 10px 30px" align="right" src="logo.png">
+
+Unlike other similar packages in python that just mimic the piping sign, `datar` follows the API designs from the original packages as much as possible. So that minimal effort is needed for those who are familar with those R packages to transition to python.
+
 
 ## Installtion
 
@@ -69,7 +72,7 @@ df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
 
 ```python
 # works with plotnine
-# works with plotnine
+# example grabbed from https://github.com/has2k1/plydata
 import numpy
 from datar.base import sin, pi
 from plotnine import ggplot, aes, geom_line, theme_classic
@@ -115,3 +118,4 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [15]: https://pwwang.github.io/datar/reference-maps/ALL/
 [16]: https://pwwang.github.io/datar/notebooks/across/
 [17]: https://pwwang.github.io/datar/api/datar/
+[18]: https://pwwang.github.io/datar-blog

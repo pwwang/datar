@@ -7,8 +7,6 @@ datar
 
 Port of `dplyr <https://dplyr.tidyverse.org/index.html>`_ and other related R packages in python, using `pipda <https://github.com/pwwang/pipda>`_.
 
-Unlike other similar packages in python that just mimic the piping sign, ``datar`` follows the API designs from the original packages as much as possible. So that minimal effort is needed for those who are familar with those R packages to transition to python.
-
 :raw-html-m2r:`<!-- badges -->`
 `
 .. image:: https://img.shields.io/pypi/v/datar?style=flat-square
@@ -36,7 +34,11 @@ Unlike other similar packages in python that just mimic the piping sign, ``datar
    :alt: Codacy coverage
  <https://app.codacy.com/gh/pwwang/datar>`_
 
-`Documentation <https://pwwang.github.io/datar/>`_ | `Reference Maps <https://pwwang.github.io/datar/reference-maps/ALL/>`_ | `Notebook Examples <https://pwwang.github.io/datar/notebooks/across/>`_ | `API <https://pwwang.github.io/datar/api/datar/>`_
+`Documentation <https://pwwang.github.io/datar/>`_ | `Reference Maps <https://pwwang.github.io/datar/reference-maps/ALL/>`_ | `Notebook Examples <https://pwwang.github.io/datar/notebooks/across/>`_ | `API <https://pwwang.github.io/datar/api/datar/>`_ | `Blog <https://pwwang.github.io/datar-blog>`_
+
+:raw-html-m2r:`<img width="30%" style="margin: 10px 10px 10px 30px" align="right" src="logo.png">`
+
+Unlike other similar packages in python that just mimic the piping sign, ``datar`` follows the API designs from the original packages as much as possible. So that minimal effort is needed for those who are familar with those R packages to transition to python.
 
 Installtion
 -----------
@@ -101,7 +103,7 @@ Example usage
 .. code-block:: python
 
    # works with plotnine
-   # works with plotnine
+   # example grabbed from https://github.com/has2k1/plydata
    import numpy
    from datar.base import sin, pi
    from plotnine import ggplot, aes, geom_line, theme_classic
