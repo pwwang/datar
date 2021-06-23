@@ -1,3 +1,7 @@
+## 0.2.1
+- Use observed values for non-observsed value match for group_data instead of NAs, which might change the dtype.
+- Fix tibble recycling values too early
+
 ## 0.2.0
 Added:
 - Add `base.which`, `base.bessel`, `base.special`, `base.trig_hb` and `base.string` modules
