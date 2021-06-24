@@ -12,7 +12,7 @@ from datar.all import mutate
 
 !!! Attention
 
-    When you use `from datar.all import *`, you need to pay attention to the python builtin names that are covered by `datar`. For example, `slice` will be `datar.dplyr.slice` instead of `builtins.slice`. To refer to the builtin one, you need to:
+    When you use `from datar.all import *`, you need to pay attention to the python builtin names that are covered by `datar` (will warn by default). For example, `slice` will be `datar.dplyr.slice` instead of `builtins.slice`. To refer to the builtin one, you need to:
     ```python
     import builtins
 
@@ -116,3 +116,25 @@ There are a couple of ways to disable:
 >>> logger.setLevel(40)
 >>> from datar.dplyr import * # ok
 ```
+
+4. Use aliases instead
+
+```python
+>>> from datar.all import filter
+[2021-06-24 10:06:19][datar][WARNING] Builtin name "filter" has been overriden by datar.
+```
+
+But this is Okay:
+```python
+>>> from datar.all import filter_
+>>> filter_
+<function filter at 0x7fc93396df80>
+```
+
+Or you could even aliase it to `filter` by yourself:
+```python
+>>> from datar.all import filter_ as filter # no warnings
+>>> filter
+<function filter at 0x7fc93396df80>
+```
+
