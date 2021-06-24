@@ -150,18 +150,19 @@ def pivot_wider(
         aggfunc=values_fn
     )
 
-    if len(id_cols) > 0:
-        ret.reset_index(inplace=True)
-
-    if ROWID_COLUMN in ret:
-        ret.drop(columns=[ROWID_COLUMN], level=0, inplace=True)
-
     ret.columns = _flatten_column_names(
         ret.columns,
         names_prefix,
         names_sep,
         names_glue
     )
+
+    if len(id_cols) > 0:
+        ret.reset_index(inplace=True)
+
+    if ROWID_COLUMN in ret:
+        ret.drop(columns=[ROWID_COLUMN], inplace=True)
+
     ret.reset_index(drop=True, inplace=True)
     # Get the original NAs back
     for col in ret.columns.difference(id_cols):
@@ -193,22 +194,22 @@ def _flatten_column_names(
     """
     lvlnames = ['_value' if level is None else level for level in names.names]
     out = []
-
     for cols in names:
         if is_scalar(cols):
-            out.append(f'{names_prefix}{cols}')
-            continue
+            cols = [cols]
+            # out.append(f'{names_prefix}{cols}')
+            # continue
         # if len(cols) == 1:
         #     out.append(f'{names_prefix}{cols[0]}')
         #     continue
 
         cols = dict(zip(lvlnames, (str(col) for col in cols)))
         # in case of ('id', '', '')
-        if all(name == '' for key, name in cols.items() if key != '_value'):
-            out.append(f'{names_prefix}{cols["_value"]}')
+        # if all(name == '' for key, name in cols.items() if key != '_value'):
+        #     out.append(f'{names_prefix}{cols["_value"]}')
         # in case of values_from is a dataframe column
         # ('d$a', 'X', '1')
-        elif '$' in cols.get('_value', ''):
+        if '$' in cols.get('_value', ''):
             prefix = names_prefix + names_sep.join(
                 col for name, col in cols.items() if name != '_value'
             )

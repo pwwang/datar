@@ -78,6 +78,27 @@ def test_names_glue_affects_output_names():
     )
     assert out.columns.tolist() == ['X1_a', 'Y2_a', 'X1_b', 'Y2_b']
 
+    # single values_from
+    # https://stackoverflow.com/questions/42516817/reproduce-rs-summarise-reshape-result-in-python
+    df = tribble(
+        f.project, f.resourcetype, f.count,
+        1000001,   "O",            7,
+        1000002,   "O",            6,
+        1000003,   "O",            18,
+        1000004,   "C",            1,
+        1000004,   "I",            1,
+        1000004,   "O",            19,
+        1000005,   "I",            2,
+        1000005,   "O",            11,
+        1000006,   "O",            4,
+    )
+    out = df >> pivot_wider(
+        names_from=f.resourcetype,
+        names_glue="count_{resourcetype}",
+        values_from=f.count,
+    )
+    assert_iterable_equal(out.columns, ['project', 'count_C', 'count_I', 'count_O'])
+
 def test_can_sort_column_names():
     df = tibble(
         int=[1,3,2],
