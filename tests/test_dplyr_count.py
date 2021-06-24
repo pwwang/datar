@@ -1,6 +1,6 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-count-tally.r
-from pandas.core.groupby import groupby
 from datar.core.grouped import DataFrameGroupBy
+from pandas.testing import assert_frame_equal
 from pandas.core.frame import DataFrame
 import pytest
 
@@ -128,12 +128,12 @@ def test_can_add_tallies_of_a_variable():
     df = tibble(a=c(2,1,1))
     out = df >> group_by(f.a) >> add_tally()
     exp = group_by(tibble(a=c(2,1,1), n=c(1,2,2)), f.a)
-    assert out.equals(exp)
+    assert_frame_equal(out, exp)
     assert group_vars(out) == group_vars(exp)
     # sort
     out = df >> group_by(f.a) >> add_tally(sort=True)
     exp = group_by(tibble(a=c(1,1,2), n=c(2,2,1)), f.a)
-    assert out.equals(exp)
+    assert_frame_equal(out, exp)
     assert group_vars(out) == group_vars(exp)
 
 def test_add_tally_can_be_given_a_weighting_variable():

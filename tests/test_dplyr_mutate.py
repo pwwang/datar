@@ -178,8 +178,8 @@ def test_rowwise_mutate_as_expected():
 
 def test_rowwise_list_data():
     test = rowwise(tibble(x=[1,2]))
-    out = test >> mutate(a=[[1]]) >> mutate(b=[[f.a[cur_group_id()][0] + 1]])
-    exp = test >> mutate(a=[[1]], b=[[f.a[cur_group_id()][0] + 1]])
+    out = test >> mutate(a=[[3,4]]) >> mutate(b=f.a[0][cur_group_id()])
+    exp = test >> mutate(a=[[3,4]]) >> ungroup() >> mutate(b=[3,4])
 
     assert out.equals(exp)
 
@@ -386,3 +386,16 @@ def test_dup_keyword_args():
     assert_frame_equal(out, tibble(a=1, b_=4))
     out = df >> mutate(b_=f.a+1)
     assert_frame_equal(out, tibble(a=1, b_=2))
+
+def test_complex_expression_as_value():
+    # https://stackoverflow.com/questions/30714810/pandas-group-by-and-aggregate-column-1-with-condition-from-column-2
+    dat = tibble(
+        user=rep(c("1", 2, 3, 4), each=5),
+        cancel_date=rep(c(12, 5, 10, 11), each=5)
+    ) >> group_by(
+        f.user
+    )
+    out = dat >> mutate(
+        login = sample(f[1:f.cancel_date[0]], size = n(), replace = True)
+    )
+    assert nrow(out) == 20
