@@ -1,6 +1,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-arrange.r
 
 import pytest
+from pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.grouped import DataFrameGroupBy
 from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
@@ -59,7 +60,8 @@ def test_ignores_group():
     assert out.equals(df.iloc[[3,2,1,0], :].reset_index(drop=True))
 
     out = gf >> arrange(f.x, _by_group=True)
-    assert out.equals(df.iloc[[3,1,2,0], :].reset_index(drop=True))
+    exp = df.iloc[[3,1,2,0], :].reset_index(drop=True)
+    assert_frame_equal(out, exp)
 
 def test_update_grouping():
     df = tibble(g = [2, 2, 1, 1], x = [1, 3, 2, 4])

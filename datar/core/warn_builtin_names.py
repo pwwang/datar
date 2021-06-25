@@ -1,13 +1,12 @@
 """Let datar warn when builtin names are tried to be imported"""
 import sys
 from typing import Callable, Any
-from types import ModuleType
 from executing import Source
 
 WARNED = set()
 
 def warn_builtin_names(
-        **names: ModuleType
+        **names: Callable
 ) -> Callable[[str], Any]:
     """Generate __getattr__ function to warn the builtin names"""
     from .utils import logger, get_option
@@ -45,13 +44,8 @@ def warn_builtin_names(
             warn = False
             return None
 
-        rname = name[:-1] if name.endswith('_') else name
-
-        if name == '__path__' or rname not in names:
+        if name == '__path__' or name not in names:
             raise AttributeError
-
-        if rname != name:
-            return getattr(names[rname], rname)
 
         if warn and name not in WARNED and get_option('warn.builtin.names'):
             node = Source.executing(sys._getframe(1)).node
@@ -61,6 +55,6 @@ def warn_builtin_names(
                     'Builtin name "%s" has been overriden by datar.',
                     name
                 )
-        return getattr(names[name], name)
+        return names[name]
 
     return _getattr

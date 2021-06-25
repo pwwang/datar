@@ -138,7 +138,7 @@ def _(
         index = df.attrs['_group_index']
         rows = df.attrs['_group_data'].loc[index, '_rows']
         ret = mutate(
-            df,
+            df.reset_index(drop=True),
             *args,
             _keep=_keep,
             _before=_before,

@@ -1,3 +1,11 @@
+## 0.2.2
+- Use a better strategy warning for builtin name overriding.
+- Fix index of subdf not dropped for mutate on grouped data
+- Fix `names_glue` not working with single `values_from` for `tidyr.pivot_wider`
+- Fix `base.paste` not registered
+- Fix `base.grep`/`grepl` on NA values
+- Make `base.sub`/`gsub` return scalar when inputs are scalar strings
+
 ## 0.2.1
 - Use observed values for non-observsed value match for group_data instead of NAs, which might change the dtype.
 - Fix tibble recycling values too early

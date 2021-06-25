@@ -1,6 +1,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-context.R
 import pytest
 
+from pandas.testing import assert_frame_equal
 from datar.all import *
 
 def test_cur_group():
@@ -27,7 +28,7 @@ def test_cur_group_id():
 
     out = gf >> mutate(id=cur_group_id())
     expect = tibble(x=["b", "a","b"], id=[1,0,1])
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 def test_cur_data_all():
     df = tibble(x = c("b", "a", "b"), y = [1,2,3])
