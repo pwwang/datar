@@ -224,6 +224,9 @@ def _match(
         fixed: bool
 ) -> bool:
     """Do the regex match"""
+    if is_null(text):
+        return False
+
     flags = re.IGNORECASE if ignore_case else 0
     if fixed:
         pattern = re.escape(pattern)
@@ -253,6 +256,9 @@ def _sub(
 
     flags = re.IGNORECASE if ignore_case else 0
     pattern = re.compile(pattern, flags)
+
+    if is_scalar(x):
+        return pattern.sub(repl=replacement, count=count, string=x)
 
     return Array([
         pattern.sub(repl=replacement, count=count, string=elem)
@@ -358,6 +364,7 @@ def _nchar_scalar(
 
 # paste and paste0 --------------------
 
+@register_func(None, context=Context.EVAL)
 def paste(
         *args: StringOrIter,
         sep: str = " ",
@@ -380,6 +387,7 @@ def paste(
     out = [sep.join(arg) for arg in args]
     if collapse is not None:
         return collapse.join(out)
+
     return Array(out, dtype=str)
 
 @register_func(None, context=Context.EVAL)
