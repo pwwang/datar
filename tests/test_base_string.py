@@ -50,6 +50,11 @@ def test_grepl(caplog):
     grepl(['a', 'b'], 'a')
     assert 'has length > 1' in caplog.text
 
+    # NA
+    out = grepl('a', ['a', NA])
+    assert_iterable_equal(out, [True, False])
+
+
 def test_sub():
     txt = ["arm","foot","lefroo", "bafoobarfoo"]
     out = sub("foo", "bar", txt)
