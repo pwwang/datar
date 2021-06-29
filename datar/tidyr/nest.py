@@ -105,7 +105,7 @@ def unnest(
         data: DataFrame,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
+        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None
@@ -122,7 +122,7 @@ def unnest(
             dropped from the output.
             If you want to preserve all rows, use `keep_empty` = `True` to
             replace size-0 elements with a single row of missing values.
-        dtypes: NOT `ptype`. Providing the dtypes for the output columns.
+        ptype: Providing the dtypes for the output columns.
             Could be a single dtype, which will be applied to all columns, or
             a dictionary of dtypes with keys for the columns and values the
             dtypes.
@@ -158,7 +158,7 @@ def unnest(
 
     out = unchop(
         out, cols,
-        keep_empty=keep_empty, dtypes=dtypes, _base0=_base0
+        keep_empty=keep_empty, ptype=ptype, _base0=_base0
     )
     return unpack(
         out, cols,
@@ -170,7 +170,7 @@ def _(
         data: DataFrameRowwise,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
+        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
         _base0: Optional[bool] = None
@@ -179,7 +179,7 @@ def _(
     out = unnest.dispatch(DataFrame)(
         data, *cols,
         keep_empty=keep_empty,
-        dtypes=dtypes,
+        ptype=ptype,
         names_sep=names_sep,
         names_repair=names_repair,
         _base0=_base0

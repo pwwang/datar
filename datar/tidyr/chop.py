@@ -83,7 +83,7 @@ def unchop(
         data: DataFrame,
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
         keep_empty: bool = False,
-        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
+        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         _base0: Optional[bool] = None
 ) -> DataFrame:
     """Makes df longer by expanding list-columns so that each element
@@ -108,7 +108,7 @@ def unchop(
             dropped from the output.
             If you want to preserve all rows, use `keep_empty` = `True` to
             replace size-0 elements with a single row of missing values.
-        dtypes: NOT `ptype`. Providing the dtypes for the output columns.
+        ptype: Providing the dtypes for the output columns.
             Could be a single dtype, which will be applied to all columns, or
             a dictionary of dtypes with keys for the columns and values the
             dtypes.
@@ -131,7 +131,7 @@ def unchop(
     key_cols = all_columns.difference(cols).tolist()
     out = _unchopping(data, cols, key_cols, keep_empty)
 
-    apply_dtypes(out, dtypes)
+    apply_dtypes(out, ptype)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 def _vec_split(

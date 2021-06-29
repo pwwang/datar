@@ -47,12 +47,12 @@ def test_chop_with_all_column_keys():
 
 def test_unchop_extends_into_rows():
     df = tibble(x = [1, 2], y = [NULL, seq(1, 4)])
-    out = df >> unchop(f.y, dtypes=int)
+    out = df >> unchop(f.y, ptype=int)
     assert_frame_equal(out, tibble(x=[2,2,2,2], y=[1,2,3,4]))
 
 def test_can_unchop_multiple_cols():
     df = tibble(x=[1,2], y=[[1], [2,3]], z=[[4], [5,6]])
-    out = df >> unchop(c(f.y, f.z), dtypes=int)
+    out = df >> unchop(c(f.y, f.z), ptype=int)
     assert_frame_equal(out, tibble(
         x=[1,2,2],
         y=[1,2,3],
@@ -69,7 +69,7 @@ def test_unchopping_null_inputs_are_dropped():
         y = [NULL, [1,2], 4, NULL],
         z = [NULL, [1,2], NULL, 5]
     )
-    out = df >> unchop(c(f.y, f.z), dtypes=float)
+    out = df >> unchop(c(f.y, f.z), ptype=float)
     assert_frame_equal(out, tibble(
         x=[2,2,3,4],
         y=[1,2,4,NA],
@@ -119,7 +119,7 @@ def test_unchop_empty_list():
 
 def test_unchop_recycles_size_1_inputs():
     df = tibble(x=[[1], [2,3]], y=[[2,3], [1]])
-    out = unchop(df, [f.x, f.y], dtypes=int)
+    out = unchop(df, [f.x, f.y], ptype=int)
     exp = tibble(x=[1,2,3], y=[2,3,1])
     # exp = tibble(x=[1,1,2,3], y=[2,3,1,1])
     assert_frame_equal(out, exp)
@@ -130,7 +130,7 @@ def test_unchop_can_specify_dtypes():
     # No extra columns added
     exp = tibble(x=[1,1], y=[1,2])
     # exp = tibble(x=[1,1], y=[1,2], z=[NA,NA])
-    out = unchop(df, f.y, dtypes=dtypes)
+    out = unchop(df, f.y, ptype=dtypes)
     assert_frame_equal(out, exp)
 
 # test_that("can specify a ptype with extra columns", {
@@ -144,7 +144,7 @@ def test_unchop_can_specify_dtypes():
 
 def test_unchop_can_specify_dtypes_to_force_output_type():
     df = tibble(x=[[1,2]])
-    out = unchop(df, f.x, dtypes=float)
+    out = unchop(df, f.x, ptype=float)
     exp = tibble(x=[1.0,2.0])
     assert_frame_equal(out, exp)
 
