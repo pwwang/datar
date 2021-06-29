@@ -14,7 +14,7 @@ from ..core.utils import arg_match, vars_select, reconstruct_tibble
 def drop_na(
         _data: DataFrame,
         *columns: str,
-        how: str = 'any',
+        how_: str = 'any',
         base0_: Optional[bool] = None
 ) -> DataFrame:
     """Drop rows containing missing values
@@ -24,7 +24,7 @@ def drop_na(
     Args:
         data: A data frame.
         *columns: Columns to inspect for missing values.
-        how: How to select the rows to drop
+        how_: How to select the rows to drop
             - all: All columns of `columns` to be `NA`s
             - any: Any columns of `columns` to be `NA`s
             (tidyr doesn't support this argument)
@@ -34,13 +34,13 @@ def drop_na(
     Returns:
         Dataframe with rows with NAs dropped and indexes dropped
     """
-    arg_match(how, 'how', ['any', 'all'])
+    arg_match(how_, 'how_', ['any', 'all'])
     all_columns = _data.columns
     if columns:
         columns = vars_select(all_columns, *columns, base0=base0_)
         columns = all_columns[columns]
-        out = _data.dropna(subset=columns, how=how).reset_index(drop=True)
+        out = _data.dropna(subset=columns, how=how_).reset_index(drop=True)
     else:
-        out = _data.dropna(how=how).reset_index(drop=True)
+        out = _data.dropna(how=how_).reset_index(drop=True)
 
     return reconstruct_tibble(_data, out, keep_rowwise=True)

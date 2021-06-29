@@ -213,7 +213,7 @@ def _unchopping(
     # say y$a, then ['y'] will not select it
     out = keep_column_order(DataFrame(key_data), data.columns)
     if not keep_empty:
-        out = drop_na(out, *val_data, how='all')
+        out = drop_na(out, *val_data, how_='all')
     apply_dtypes(out, dtypes)
     copy_attrs(out, data)
     return out
