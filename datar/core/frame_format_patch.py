@@ -27,8 +27,7 @@ from pandas.io.formats.format import (
     lib,
     notna,
     is_float,
-    format_array,
-    _trim_zeros_single_float
+    format_array
 )
 from pandas.io.formats.string import (
     StringFormatter
@@ -47,6 +46,18 @@ from .options import add_option
 # pylint: disable=too-many-nested-blocks
 
 # TODO: patch more formatters
+
+# pandas 1.2.0 doesn't have this function
+def _trim_zeros_single_float(str_float: str) -> str: # pragma: no cover
+    """
+    Trims trailing zeros after a decimal point,
+    leaving just one if necessary.
+    """
+    str_float = str_float.rstrip("0")
+    if str_float.endswith("."):
+        str_float += "0"
+
+    return str_float
 
 class DatarDataFrameFormatter(DataFrameFormatter): # pragma: no cover
     """Custom formatter for DataFrame

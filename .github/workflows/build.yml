@@ -7,8 +7,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.7, 3.8, 3.9]
+        # lastest: 1.2.5
+        pandas-version: ['==1.2.0', '==1.2.1', =='1.2.2', '==1.2.3', '==1.2.4', '']
 
     steps:
       - uses: actions/checkout@v2
@@ -21,13 +24,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pylint
           python -m pip install poetry
-          poetry install -v
-          poetry run pip install scipy
-          poetry run pip install wcwidth
-      # - name: Run pylint
-      #   run: pylint datar
+          poetry config virtualenvs.create false
+          poetry install -v -E
+          pip install pandas$PANDAS_VER
+        env:
+          PANDAS_VER: ${{ matrix.pandas-version }}
+      - name: Run pylint
+        run: pylint datar
       - name: Test with pytest
-        run: poetry run pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
         uses: actions/upload-artifact@v2
         with:
@@ -45,7 +50,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'release'
     strategy:
       matrix:
         python-version: [3.8]
