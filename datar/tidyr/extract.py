@@ -4,7 +4,7 @@ expression groups
 https://github.com/tidyverse/tidyr/blob/HEAD/R/extract.R
 """
 import re
-from typing import Optional, Union, Type, Mapping
+from typing import Optional, Union, Mapping
 
 import pandas
 from pandas import DataFrame
@@ -12,7 +12,7 @@ from pipda import register_verb
 
 from ..core.types import StringOrIter, Dtype, is_scalar
 from ..core.contexts import Context
-from ..core.utils import vars_select, reconstruct_tibble
+from ..core.utils import apply_dtypes, vars_select, reconstruct_tibble
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -85,13 +85,9 @@ def extract(
         )
         for outcol, indexes in mergedcols.items()
     }
-    out = DataFrame(out)
 
-    if isinstance(convert, (str, Type)):
-        out = out.astype(convert)
-    elif isinstance(convert, dict):
-        for key, conv in convert.items():
-            out[key] = out[key].astype(conv)
+    out = DataFrame(out)
+    apply_dtypes(out, convert)
 
     base = data[all_columns.difference([col])] if remove else data
     out = pandas.concat([base, out], axis=1)

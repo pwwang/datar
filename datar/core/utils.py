@@ -505,7 +505,7 @@ def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Array]:
     except KeyError:
         cols = [col for col in df.columns if col.startswith(f'{ref}$')]
         if not cols:
-            raise KeyError(ref)
+            raise KeyError(ref) from None
         ret = df.loc[:, cols]
         ret.columns = [col[len(ref)+1:] for col in cols]
         return ret

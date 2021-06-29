@@ -34,6 +34,7 @@ jobs:
           poetry install -v
           pip install wcwidth
           pip install scipy
+          # reinstall pandas to specific version
           pip install $PANDAS
         env:
           PANDAS: ${{ matrix.pandas }}

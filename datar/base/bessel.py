@@ -15,8 +15,10 @@ def _get_special_func_from_scipy(name: str) -> Callable:
     """
     try:
         from scipy import special
-    except ImportError: # pragma: no cover
-        raise ImportError("Bessel functions require scipy to be installed.")
+    except ImportError as imperr: # pragma: no cover
+        raise ValueError(
+            "Bessel functions require scipy to be installed."
+        ) from imperr
 
     return getattr(special, name)
 

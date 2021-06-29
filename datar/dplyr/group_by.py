@@ -167,7 +167,7 @@ def _(
         _base0: Optional[bool] = None
 ) -> DataFrame:
     if cols:
-        raise ValueError(f'`*cols` is not empty.')
+        raise ValueError('`*cols` is not empty.')
     return DataFrame(x)
 
 def _group_by_prepare(

@@ -310,6 +310,6 @@ def _sanitize_rows(
     ]
     if invalid_type_rows:
         raise TypeError(
-            f"`slice()` expressions should return indices."
+            "`slice()` expressions should return indices."
         )
     return unique(rows)

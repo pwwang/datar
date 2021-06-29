@@ -91,7 +91,7 @@ def _check_table_inputs(
         obj1 = obj1 if is_categorical(obj1) else Array(obj1)
         obj_nvar = 1
     elif input.shape[1] == 0:
-        raise ValueError(f"`input` of `table` has no columns.")
+        raise ValueError("`input` of `table` has no columns.")
     elif input.shape[1] == 1:
         obj1 = input.iloc[:, 0]
         obj_nvar = 1
