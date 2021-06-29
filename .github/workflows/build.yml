@@ -1,6 +1,9 @@
 name: Build and Deploy
 
-on: [push, pull_request]
+on:
+  push:
+  release:
+    types: [published]
 
 jobs:
 
