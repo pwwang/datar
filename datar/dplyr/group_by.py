@@ -143,7 +143,7 @@ def ungroup(
         A data frame with selected columns removed from the grouping variables.
     """
     if cols:
-        raise ValueError(f'`*cols` is not empty.')
+        raise ValueError('`*cols` is not empty.')
     return x
 
 @ungroup.register(DataFrameGroupBy, context=Context.SELECT)
