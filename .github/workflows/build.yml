@@ -10,8 +10,14 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.7, 3.8, 3.9]
-        # lastest: 1.2.5
-        pandas-version: ['==1.2.0', '==1.2.1', =='1.2.2', '==1.2.3', '==1.2.4', '']
+        pandas: [
+          pandas==1.2.0,
+          pandas==1.2.1,
+          pandas==1.2.2,
+          pandas==1.2.3,
+          pandas==1.2.4,
+          pandas # lastest 1.2.5
+        ]
 
     steps:
       - uses: actions/checkout@v2
@@ -25,10 +31,10 @@ jobs:
           python -m pip install pylint
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -v -E
-          pip install pandas$PANDAS_VER
+          poetry install -v --extras "wcwidth scipy"
+          pip install $PANDAS
         env:
-          PANDAS_VER: ${{ matrix.pandas-version }}
+          PANDAS: ${{ matrix.pandas }}
       - name: Run pylint
         run: pylint datar
       - name: Test with pytest
