@@ -39,13 +39,13 @@ with options_context(index_base_0=True):
     # rows #2,3,4: [1,2,3]
 ```
 
-APIs with arguments related to indexing selection usually have a `_base0` argument, which also switch the index base temporarily. For example:
+APIs with arguments related to indexing selection usually have a `base0_` argument, which also switch the index base temporarily. For example:
 
 ```python
 from datar.datasets iris
 from datar.all import mutate, across, c
 
-iris >> mutate(across(c(0,1), round, _base0=True))
+iris >> mutate(across(c(0,1), round, base0_=True))
 # 	Sepal_Length Sepal_Width Petal_Length Petal_Width	Species
 # 0	5.0	         4.0         1.4          0.2           setosa
 # 1	5.0	         3.0         1.4          0.2           setosa

@@ -19,7 +19,7 @@ from ..dplyr import bind_cols
 def pack(
         _data: DataFrame,
         _names_sep: Optional[str] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **cols: Union[str, int]
 ) -> DataFrame:
     """Makes df narrow by collapsing a set of columns into a single df-column.
@@ -33,7 +33,7 @@ def pack(
             The names of the new outer columns will be formed by pasting
             together the outer and the inner column names, separated by
             `_names_sep`.
-        _base0: Whether `**cols` are 0-based
+        base0_: Whether `**cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
     """
     if not cols:
@@ -44,7 +44,7 @@ def pack(
     colgroups = {}
     usedcols = set()
     for group, columns in cols.items():
-        oldcols = all_columns[vars_select(all_columns, columns, base0=_base0)]
+        oldcols = all_columns[vars_select(all_columns, columns, base0=base0_)]
         usedcols = usedcols.union(oldcols)
         newcols = (
             oldcols if _names_sep is None else
@@ -67,7 +67,7 @@ def unpack(
         cols: Union[StringOrIter, IntOrIter],
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = "check_unique",
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Makes df wider by expanding df-columns back out into individual columns.
 
@@ -89,7 +89,7 @@ def unpack(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether `cols` are 0-based
+        base0_: Whether `cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -101,7 +101,7 @@ def unpack(
     all_columns = data.columns
     cols = _check_present(
         data, cols, all_columns,
-        base0=_base0,
+        base0=base0_,
     )
 
     out = data.copy()
@@ -120,7 +120,7 @@ def unpack(
         else:
             new_cols.append(col)
 
-    new_cols = repair_names(new_cols, names_repair, _base0)
+    new_cols = repair_names(new_cols, names_repair, base0_)
     out.columns = new_cols
 
     copy_attrs(out, data)

@@ -22,7 +22,7 @@ def slice( # pylint: disable=redefined-builtin
         _data: DataFrame,
         *rows: Any,
         _preserve: bool = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Index rows by their (integer) locations
 
@@ -47,7 +47,7 @@ def slice( # pylint: disable=redefined-builtin
             If _preserve = FALSE (the default), the grouping structure is
             recalculated based on the resulting data,
             otherwise the grouping is kept as is.
-        _base0: If rows are selected by indexes, whether they are 0-based.
+        base0_: If rows are selected by indexes, whether they are 0-based.
             If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
@@ -56,7 +56,7 @@ def slice( # pylint: disable=redefined-builtin
     if not rows:
         return _data
 
-    rows = _sanitize_rows(rows, _data.shape[0], _base0)
+    rows = _sanitize_rows(rows, _data.shape[0], base0_)
     out = _data.iloc[rows, :]
     if isinstance(_data.index, RangeIndex):
         out.reset_index(drop=True, inplace=True)
@@ -68,11 +68,11 @@ def _(
         _data: DataFrameGroupBy,
         *rows: Any,
         _preserve: bool = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
     out = _data.datar_apply(
-        lambda df: slice(df, *rows, _base0=_base0)
+        lambda df: slice(df, *rows, base0_=base0_)
     )
     out = reconstruct_tibble(_data, out, keep_rowwise=True)
     gdata = _filter_groups(out, _data)
@@ -106,7 +106,7 @@ def slice_head(
         The sliced dataframe
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(_data, builtins.slice(None, n), _base0=True)
+    return slice(_data, builtins.slice(None, n), base0_=True)
 
 @slice_head.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
@@ -132,7 +132,7 @@ def slice_tail(
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(_data, builtins.slice(-n, None), _base0=True)
+    return slice(_data, builtins.slice(-n, None), base0_=True)
 
 @slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
 def _(

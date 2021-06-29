@@ -23,7 +23,7 @@ def extract(
         regex: str = r'(\w+)',
         remove: bool = True,
         convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Given a regular expression with capturing groups, extract() turns each
     group into a new column. If the groups don't match, or the input is NA,
@@ -41,7 +41,7 @@ def extract(
         remove: If TRUE, remove input column from output data frame.
         convert: The universal type for the extracted columns or a dict for
             individual ones
-        _base0: Whether `col` is 0-based when given by index
+        base0_: Whether `col` is 0-based when given by index
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -51,7 +51,7 @@ def extract(
         into = [into]
 
     all_columns = data.columns
-    col = vars_select(all_columns, col, base0=_base0)
+    col = vars_select(all_columns, col, base0=base0_)
     col = all_columns[col[0]]
 
     outcols = {}

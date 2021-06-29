@@ -31,7 +31,7 @@ def separate(
         convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
         extra: str = "warn",
         fill: str = "warn",
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Given either a regular expression or a vector of character positions,
     turns a single character column into multiple columns.
@@ -62,7 +62,7 @@ def separate(
             - "warn" (the default): emit a warning and fill from the right
             - "right": fill with missing values on the right
             - "left": fill with missing values on the left
-        _base0: Whether `col` is 0-based when given by index and Whether `sep`
+        base0_: Whether `col` is 0-based when given by index and Whether `sep`
             is 0-based if given by position
             If not provided, will use `datar.base.get_option('index.base.0')`
 
@@ -76,7 +76,7 @@ def separate(
         raise ValueError("`into` must be a string or a list of strings.")
 
     all_columns = data.columns
-    col = vars_select(all_columns, col, base0=_base0)
+    col = vars_select(all_columns, col, base0=base0_)
     col = all_columns[col[0]]
 
     colindex = [
@@ -96,7 +96,7 @@ def separate(
         sep=sep,
         extra=extra,
         fill=fill,
-        base0=_base0,
+        base0=base0_,
         extra_warns=extra_warns,
         missing_warns=missing_warns
     )
@@ -133,7 +133,7 @@ def separate_rows(
         *columns: str,
         sep: str = r'[^0-9A-Za-z]+',
         convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Separates the values and places each one in its own row.
 
@@ -143,14 +143,14 @@ def separate_rows(
         sep: Separator between columns.
         convert: The universal type for the extracted columns or a dict for
             individual ones
-        _base0: Whether `columns` is 0-based when given by index
+        base0_: Whether `columns` is 0-based when given by index
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with rows separated and repeated.
     """
     all_columns = data.columns
-    selected = all_columns[vars_select(all_columns, *columns, base0=_base0)]
+    selected = all_columns[vars_select(all_columns, *columns, base0=base0_)]
     out = data.copy()
     for sel in selected:
         out[sel] = out[sel].apply(
@@ -159,12 +159,12 @@ def separate_rows(
             sep=sep,
             extra="merge",
             fill="right",
-            base0=_base0,
+            base0=base0_,
             extra_warns=[],
             missing_warns=[]
         )
 
-    out = unchop(out, selected, keep_empty=True, dtypes=convert, _base0=_base0)
+    out = unchop(out, selected, keep_empty=True, ptype=convert, base0_=base0_)
     return reconstruct_tibble(out, ungroup(out), selected, keep_rowwise=True)
 
 def _separate_col(

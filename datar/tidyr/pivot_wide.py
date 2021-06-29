@@ -31,7 +31,7 @@ def pivot_wider(
         values_from: StringOrIter = "value",
         values_fill: Any = None,
         values_fn: Union[Callable, Mapping[str, Callable]] = identity,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """"widens" data, increasing the number of columns and decreasing
     the number of rows.
@@ -65,7 +65,7 @@ def pivot_wider(
             This can be a dict you want to apply different aggregations to
             different value columns.
             If not specified, will be `numpy.mean`
-        _base0: Whether `id_cols`, `names_from` and `values_from`
+        base0_: Whether `id_cols`, `names_from` and `values_from`
             are 0-based if given by indexes.
             If not provided, will use `datar.base.get_option('index.base.0')`
 
@@ -81,7 +81,7 @@ def pivot_wider(
 
     if id_cols is None:
         all_cols = _data.columns
-        names_from = all_cols[vars_select(all_cols, names_from, base0=_base0)]
+        names_from = all_cols[vars_select(all_cols, names_from, base0=base0_)]
         # values_from could be a df-column
         new_values_from = []
         for value_from in values_from:
@@ -95,7 +95,7 @@ def pivot_wider(
             else:
                 new_values_from.append(value_from)
         values_from = all_cols[
-            vars_select(all_cols, *new_values_from, base0=_base0)
+            vars_select(all_cols, *new_values_from, base0=base0_)
         ]
         id_cols = (
             all_cols

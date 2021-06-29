@@ -166,9 +166,9 @@ def test_near():
 # -----------------------------------------------------------------
 def test_nth_works_with_lists():
     x = [1,2,3]
-    assert nth(x, 0, _base0=True) == 1 # 0-based
-    assert pandas.isna(nth(x, 3, _base0=True))
-    assert nth(x, 3, default=1, _base0=True) == 1
+    assert nth(x, 0, base0_=True) == 1 # 0-based
+    assert pandas.isna(nth(x, 3, base0_=True))
+    assert nth(x, 3, default=1, base0_=True) == 1
     assert first(x) == 1
     assert last(x) == 3
     assert first(x, order_by=[3,2,1]) == 3
@@ -182,9 +182,9 @@ def test_nth_negative_index():
 
 def test_nth_index_past_ends_returns_default_value():
     x = [1,2,3,4]
-    assert pandas.isna(nth(x, 4, _base0=True))
-    assert pandas.isna(nth(x, -5, _base0=True))
-    assert pandas.isna(nth(x, 10, _base0=True))
+    assert pandas.isna(nth(x, 4, base0_=True))
+    assert pandas.isna(nth(x, -5, base0_=True))
+    assert pandas.isna(nth(x, 10, base0_=True))
 
 def test_nth_errors():
     with pytest.raises(TypeError):

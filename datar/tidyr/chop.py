@@ -29,7 +29,7 @@ from .drop_na import drop_na
 def chop(
         data: DataFrame,
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Makes data frame shorter by converting rows within each group
     into list-columns.
@@ -37,7 +37,7 @@ def chop(
     Args:
         data: A data frame
         cols: Columns to chop
-        _base0: Whether `cols` are 0-based
+        base0_: Whether `cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -47,7 +47,7 @@ def chop(
         return data.copy()
 
     all_columns = data.columns
-    cols = vars_select(all_columns, cols, base0=_base0)
+    cols = vars_select(all_columns, cols, base0=base0_)
     cols = all_columns[cols]
     # when cols is empty
     # order may change for all_columns.difference([])
@@ -84,7 +84,7 @@ def unchop(
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
         keep_empty: bool = False,
         ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Makes df longer by expanding list-columns so that each element
     of the list-column gets its own row in the output.
@@ -115,14 +115,14 @@ def unchop(
             For nested data frames, we need to specify `col$a` as key. If `col`
             is used as key, all columns of the nested data frames will be casted
             into that dtype.
-        _base0: Whether `cols` are 0-based
+        base0_: Whether `cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A data frame with selected columns unchopped.
     """
     all_columns = data.columns
-    cols = vars_select(all_columns, cols, base0=_base0)
+    cols = vars_select(all_columns, cols, base0=base0_)
 
     if len(cols) == 0 or data.shape[0] == 0:
         return data.copy()

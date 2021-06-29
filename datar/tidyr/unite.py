@@ -19,7 +19,7 @@ def unite(
         sep: str = '_',
         remove: bool = True,
         na_rm: bool = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Unite multiple columns into one by pasting strings together
 
@@ -31,7 +31,7 @@ def unite(
         remove: If True, remove input columns from output data frame.
         na_rm: If True, missing values will be remove prior to uniting
             each value.
-        _base0: Whether `columns` is 0-based when given by index
+        base0_: Whether `columns` is 0-based when given by index
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -41,7 +41,7 @@ def unite(
     if not columns:
         columns = all_columns
     else:
-        columns = all_columns[vars_select(all_columns, *columns, base0=_base0)]
+        columns = all_columns[vars_select(all_columns, *columns, base0=base0_)]
 
     out = data.copy()
 

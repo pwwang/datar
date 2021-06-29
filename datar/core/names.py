@@ -26,10 +26,10 @@ def _repair_names_unique(
         names: Iterable[str],
         quiet: bool = False,
         sanitizer: Optional[Callable[[str], str]] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> List[str]:
     """Make sure names are unique"""
-    base = int(not _base0)
+    base = int(not base0_)
     min_names = _repair_names_minimal(names)
     neat_names = [
         re.sub(r'(?:(?<!_)_{1,2}\d+|(?<!_)__)+$', '', name)
@@ -53,7 +53,7 @@ def _repair_names_unique(
 def _repair_names_universal(
         names: Iterable[str],
         quiet: bool = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> List[str]:
     """Make sure names are safely to be used as variable or attribute"""
     min_names = _repair_names_minimal(names)
@@ -66,7 +66,7 @@ def _repair_names_universal(
             if keyword.iskeyword(name) or (name and name[0].isdigit())
             else name
         ),
-        _base0=_base0
+        base0_=base0_
     )
     if not quiet:
         changed_names = [
@@ -100,7 +100,7 @@ BUILTIN_REPAIR_METHODS = dict(
 def repair_names(
         names: Iterable[str],
         repair: Union[str, Callable],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> List[str]:
     """Repair names based on the method
 
@@ -118,7 +118,7 @@ def repair_names(
             - A function, accepts either a list of names or a single name.
                 Function accepts a list of names must annotate the first
                 argument with `typing.Iterable` or `typing.Sequence`.
-        _base0: Whether the numeric suffix starts from 0 or not.
+        base0_: Whether the numeric suffix starts from 0 or not.
             If not specified, will use `datar.base.get_option('index.base.0')`.
 
     Examples:
@@ -141,7 +141,7 @@ def repair_names(
         NameNonUniqueError: when check_unique fails
     """
     from .utils import get_option
-    _base0 = get_option('index.base.0', _base0)
+    base0_ = get_option('index.base.0', base0_)
     if isinstance(repair, str):
         repair = BUILTIN_REPAIR_METHODS[repair]
     elif is_iterable(repair) and all(isinstance(elem, str) for elem in repair):
@@ -156,15 +156,15 @@ def repair_names(
             annotation._name not in ('Iterable', 'Sequence')
     ): # scalar input
         return [
-            repair(name, _base0=_base0)
-            if '_base0' in parameters
+            repair(name, base0_=base0_)
+            if 'base0_' in parameters
             else repair(name)
             for name in names
         ]
 
     names = list(names)
     return (
-        repair(names, _base0=_base0)
-        if '_base0' in parameters
+        repair(names, base0_=base0_)
+        if 'base0_' in parameters
         else repair(names)
     )

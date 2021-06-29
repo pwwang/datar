@@ -63,7 +63,7 @@ Changed:
 ## 0.0.6
 - Add `options`, `get_option` and `options_context` to `datar.base` to allow set/get global options
 - Add options: `dplyr.summarise.inform`
-- Add `_base0` argument to all related APIs
+- Add `base0_` argument to all related APIs
 - Add `nycflights13` datasets
 - Support slice_head/slice_tail for grouped data
 

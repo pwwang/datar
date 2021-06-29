@@ -49,7 +49,7 @@ def group_by(
         *args: variables or computations to group by.
             Note that columns here cannot be selected by indexes. As they are
             treated as computations to be added as new columns.
-            So no `_base0` argument is supported.
+            So no `base0_` argument is supported.
         **kwargs: Extra variables to group the dataframe
 
     Return:
@@ -71,7 +71,7 @@ def group_by(
 def rowwise(
         _data: DataFrame,
         *columns: Union[str, int],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrameRowwise:
     """Compute on a data frame a row-at-a-time
 
@@ -82,14 +82,14 @@ def rowwise(
         *columns:  Variables to be preserved when calling summarise().
             This is typically a set of variables whose combination
             uniquely identify each row.
-        _base0: Whether indexes are 0-based if columns are selected by indexes.
+        base0_: Whether indexes are 0-based if columns are selected by indexes.
             If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A row-wise data frame
     """
     check_column_uniqueness(_data)
-    idxes = vars_select(_data.columns, *columns, base0=_base0)
+    idxes = vars_select(_data.columns, *columns, base0=base0_)
     if len(idxes) == 0:
         return DataFrameRowwise(_data)
     return DataFrameRowwise(_data, _group_vars=_data.columns[idxes].tolist())
@@ -98,7 +98,7 @@ def rowwise(
 def _(
         _data: DataFrameGroupBy,
         *columns: str,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrameRowwise:
     # grouped dataframe's columns are unique already
     if columns:
@@ -114,9 +114,9 @@ def _(
 def _(
         _data: DataFrameRowwise,
         *columns: str,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrameRowwise:
-    idxes = vars_select(_data.columns, *columns, base0=_base0)
+    idxes = vars_select(_data.columns, *columns, base0=base0_)
     if len(idxes) == 0:
         # copy_attrs?
         return DataFrameRowwise(_data)
@@ -127,7 +127,7 @@ def _(
 def ungroup(
         x: DataFrame,
         *cols: Union[str, int],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Ungroup a grouped data
 
@@ -136,7 +136,7 @@ def ungroup(
     Args:
         x: The data frame
         *cols: Variables to remove from the grouping variables.
-        _base0: If columns are selected with indexes, whether they are 0-based.
+        base0_: If columns are selected with indexes, whether they are 0-based.
             If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -150,12 +150,12 @@ def ungroup(
 def _(
         x: DataFrameGroupBy,
         *cols: Union[str, int],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     if not cols:
         return DataFrame(x, index=x.index)
     old_groups = group_vars(x)
-    to_remove = vars_select(x.columns, *cols, base0=_base0)
+    to_remove = vars_select(x.columns, *cols, base0=base0_)
     new_groups = setdiff(old_groups, x.columns[to_remove])
 
     return group_by(x, *new_groups)
@@ -164,7 +164,7 @@ def _(
 def _(
         x: DataFrameRowwise,
         *cols: Union[str, int],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     if cols:
         raise ValueError('`*cols` is not empty.')

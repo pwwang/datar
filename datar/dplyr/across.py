@@ -157,7 +157,7 @@ def across(
         *args: Any,
         _names: Optional[str] = None,
         _fn_context: Optional[Union[Context, ContextBase]] = Context.EVAL,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Apply the same transformation to multiple columns
@@ -178,7 +178,7 @@ def across(
             single function case and `{_col}_{_fn}` for the case where
             a list is used for _fns. In such a case, `{_fn}` is 0-based.
             To use 1-based index, use `{_fn1}`
-        _base0: Indicating whether the columns are 0-based if selected
+        base0_: Indicating whether the columns are 0-based if selected
             by indexes. if not provided, will use
             `datar.base.get_option('index.base.0')`.
         _fn_context: Defines the context to evaluate the arguments for functions
@@ -197,21 +197,21 @@ def across(
     _cols = evaluate_expr(_cols, _data, Context.SELECT)
 
     return Across(
-        _data, _cols, _fns, _names, _base0, args, kwargs
+        _data, _cols, _fns, _names, base0_, args, kwargs
     ).evaluate(_fn_context)
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
         _data: DataFrame,
         _cols: Optional[Iterable[str]] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> Series:
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
         _data: The dataframe
         _cols: The columns
-        _base0: Indicating whether the columns are 0-based if selected
+        base0_: Indicating whether the columns are 0-based if selected
             by indexes. if not provided, will use
             `datar.base.get_option('index.base.0')`.
 
@@ -221,7 +221,7 @@ def c_across(
     if not _cols:
         _cols = everything(_data)
 
-    _cols = vars_select(_data.columns.tolist(), _cols, base0=_base0)
+    _cols = vars_select(_data.columns.tolist(), _cols, base0=base0_)
 
     series = [_data.iloc[:, col] for col in _cols]
     return numpy.concatenate(series)
@@ -237,7 +237,7 @@ def if_any(
         *args: Any,
         _names: Optional[str] = None,
         _context: Optional[ContextBase] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> Iterable[bool]:
     """Apply the same predicate function to a selection of columns and combine
@@ -253,7 +253,7 @@ def if_any(
     _cols, _fns, *args = args
 
     return IfAny(
-        _data, _cols, _fns, _names, _base0, args, kwargs
+        _data, _cols, _fns, _names, base0_, args, kwargs
     ).evaluate(_context)
 
 
@@ -270,7 +270,7 @@ def if_all(
         *args: Any,
         _names: Optional[str] = None,
         _context: Optional[ContextBase] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> Iterable[bool]:
     """Apply the same predicate function to a selection of columns and combine
@@ -286,5 +286,5 @@ def if_all(
     _cols, _fns, *args = args
 
     return IfAll(
-        _data, _cols, _fns, _names, _base0, args, kwargs
+        _data, _cols, _fns, _names, base0_, args, kwargs
     ).evaluate(_context)

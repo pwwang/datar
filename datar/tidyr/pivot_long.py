@@ -48,7 +48,7 @@ def pivot_longer(
         values_transform: Optional[
             Union[Callable, Mapping[str, Callable]]
         ] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ):
     """"lengthens" data, increasing the number of rows and
     decreasing the number of columns.
@@ -133,7 +133,7 @@ def pivot_longer(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether `cols` are 0-based if given by indexes
+        base0_: Whether `cols` are 0-based if given by indexes
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -142,7 +142,7 @@ def pivot_longer(
     rowid_column = '_PIVOT_ROWID_'
     ret = _data.assign(**{rowid_column: range(_data.shape[0])})
     all_columns = ret.columns
-    columns = _data.columns[vars_select(_data.columns, cols, base0=_base0)]
+    columns = _data.columns[vars_select(_data.columns, cols, base0=base0_)]
     id_columns = all_columns.difference(columns)
 
     if is_scalar(names_to):
@@ -203,7 +203,7 @@ def pivot_longer(
             sep=names_sep
         )
     # extract/separate puts `into` last
-    ret = relocate(ret, values_to, _after=-1, _base0=True)
+    ret = relocate(ret, values_to, _after=-1, base0_=True)
 
 
     if '.value' in names_to:
@@ -258,7 +258,7 @@ def pivot_longer(
             elif name in values_transform:
                 ret[name] = ret[name].apply(values_transform[name])
 
-    names = repair_names(ret.columns.tolist(), names_repair, _base0=_base0)
+    names = repair_names(ret.columns.tolist(), names_repair, base0_=base0_)
     ret.columns = names
 
     return reconstruct_tibble(_data, ret)

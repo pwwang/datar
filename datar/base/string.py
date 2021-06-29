@@ -72,7 +72,7 @@ def grep(
         value: bool = False,
         fixed: bool = False,
         invert: bool = False,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> Iterable[Union[int, str]]:
     """R's grep, get the element in x matching the pattern
 
@@ -83,7 +83,7 @@ def grep(
         value: Return values instead of indices?
         fixed: Fixed matching (instead of regex matching)?
         invert: Return elements thata don't match instead?
-        _base0: When return indices, whether return 0-based indices?
+        base0_: When return indices, whether return 0-based indices?
             If not set, will use `datar.base.get_option('which.base.0')`
 
     Returns:
@@ -104,8 +104,8 @@ def grep(
     if value:
         return x[matched]
 
-    _base0 = get_option('which.base.0', _base0)
-    return numpy.flatnonzero(matched) + int(not _base0)
+    base0_ = get_option('which.base.0', base0_)
+    return numpy.flatnonzero(matched) + int(not base0_)
 
 @register_func(None, context=Context.EVAL)
 def grepl(
@@ -439,7 +439,7 @@ def substr(
         x: StringOrIter,
         start: IntOrIter,
         stop: IntOrIter,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> StringOrIter:
     """Extract substrings in strings.
 
@@ -447,7 +447,7 @@ def substr(
         x: The strings
         start: The start positions to extract
         stop: The stop positions to extract
-        _base0: Whether `start` and `stop` are 0-based
+        base0_: Whether `start` and `stop` are 0-based
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -456,15 +456,15 @@ def substr(
     if is_scalar(x) and is_scalar(start) and is_scalar(stop):
         if is_null(x):
             return NA
-        _base0 = get_option('index.base.0', _base0)
+        base0_ = get_option('index.base.0', base0_)
         x = as_character(x)
         lenx = len(x)
         # int() converts numpy.int64 to int
-        start0 = position_at(int(start), lenx, base0=_base0)
+        start0 = position_at(int(start), lenx, base0=base0_)
         stop0 = position_at(
-            min(int(stop), lenx - int(_base0)),
+            min(int(stop), lenx - int(base0_)),
             lenx,
-            base0=_base0
+            base0=base0_
         )
         return x[start0:stop0+1]
 
@@ -479,7 +479,7 @@ def substr(
     start = recycle_value(start, maxlen)
     stop = recycle_value(stop, maxlen)
     out = [
-        substr(elem, start_, stop_, _base0)
+        substr(elem, start_, stop_, base0_)
         for elem, start_, stop_ in zip(x, start, stop)
     ]
     if is_null(out).any():
@@ -491,7 +491,7 @@ def substring(
         x: StringOrIter,
         first: IntOrIter,
         last: IntOrIter = 1000000,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> StringOrIter:
     """Extract substrings in strings.
 
@@ -499,13 +499,13 @@ def substring(
         x: The strings
         start: The start positions to extract
         stop: The stop positions to extract
-        _base0: Whether `start` and `stop` are 0-based
+        base0_: Whether `start` and `stop` are 0-based
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The substrings from `x`
     """
-    return substr(x, first, last, _base0)
+    return substr(x, first, last, base0_)
 
 # strsplit --------------------------------
 

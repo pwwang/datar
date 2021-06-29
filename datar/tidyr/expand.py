@@ -27,7 +27,7 @@ from ..dplyr import arrange, distinct, pull
 def expand_grid(
         *args: Iterable[Any],
         _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Iterable[Any]
 ) -> DataFrame:
     """Create a tibble from all combinations of inputs
@@ -44,7 +44,7 @@ def expand_grid(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -84,15 +84,15 @@ def expand_grid(
 
     ## tibble will somehow flatten the nested dataframes into fake nested df.
     ## do it inside _flatten_nested
-    # out = tibble(out, _name_repair=_name_repair, _base0=_base0)
-    return _flatten_nested(out, named, _name_repair, _base0)
+    # out = tibble(out, _name_repair=_name_repair, base0_=base0_)
+    return _flatten_nested(out, named, _name_repair, base0_)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def expand(
         data: DataFrame,
         *args: Union[Series, DataFrame],
         _name_repair: Union[str, Callable] = "check_unique",
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Union[Series, DataFrame]
 ) -> DataFrame:
     """Generates all combination of variables found in a dataset.
@@ -117,7 +117,7 @@ def expand(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -129,8 +129,8 @@ def expand(
         key: _sorted_unique(val) for key, val in cols.items()
     }
 
-    out = expand_grid(**cols, _name_repair=_name_repair, _base0=_base0)
-    out = _flatten_nested(out, named, _name_repair, _base0)
+    out = expand_grid(**cols, _name_repair=_name_repair, base0_=base0_)
+    out = _flatten_nested(out, named, _name_repair, base0_)
 
     copy_attrs(out, data)
     return out
@@ -140,7 +140,7 @@ def _(
         data: DataFrameGroupBy,
         *args: Union[Series, DataFrame],
         _name_repair: Union[str, Callable] = "check_unique",
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Union[Series, DataFrame]
 ) -> DataFrameGroupBy:
     """Expand on grouped data frame"""
@@ -149,7 +149,7 @@ def _(
             df,
             *args,
             _name_repair=_name_repair,
-            _base0=_base0,
+            base0_=base0_,
             **kwargs
         )
 
@@ -161,7 +161,7 @@ def _(
         data: DataFrameRowwise,
         *args: Union[Series, DataFrame],
         _name_repair: Union[str, Callable] = "check_unique",
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Union[Series, DataFrame]
 ) -> DataFrame:
     """Expand on rowwise dataframe"""
@@ -169,7 +169,7 @@ def _(
         data,
         *args,
         _name_repair=_name_repair,
-        _base0=_base0,
+        base0_=base0_,
         **kwargs
     )
 
@@ -177,7 +177,7 @@ def _(
 def nesting(
         *args: Any,
         _name_repair: Union[str, Callable] = "check_unique",
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """A helper that only finds combinations already present in the data.
@@ -201,7 +201,7 @@ def nesting(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -210,16 +210,16 @@ def nesting(
     cols = _dots_cols(*args, **kwargs)
     named = cols.pop('__named__')
     out = _sorted_unique(
-        tibble(**cols, _name_repair=_name_repair, _base0=_base0)
+        tibble(**cols, _name_repair=_name_repair, base0_=base0_)
     )
-    return _flatten_nested(out, named, _name_repair, _base0)
+    return _flatten_nested(out, named, _name_repair, base0_)
 
 
 @register_func(None, context=Context.EVAL)
 def crossing(
         *args: Any,
         _name_repair: Union[str, Callable] = "check_unique",
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """A wrapper around `expand_grid()` that de-duplicates and sorts its inputs
@@ -245,7 +245,7 @@ def crossing(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -258,8 +258,8 @@ def crossing(
         for key, val in cols.items()
     }
 
-    out = expand_grid(**out, _name_repair=_name_repair, _base0=_base0)
-    return _flatten_nested(out, named, _name_repair, _base0)
+    out = expand_grid(**out, _name_repair=_name_repair, base0_=base0_)
+    return _flatten_nested(out, named, _name_repair, base0_)
 
 
 
@@ -332,7 +332,7 @@ def _flatten_nested(
         for key, val in x.items()
     }
     out = _flatten_at(x, to_flatten)
-    return tibble(**out, _name_repair=name_repair, _base0=base0)
+    return tibble(**out, _name_repair=name_repair, base0_=base0)
 
 def _flatten_at(
         x: Mapping[str, Iterable[Any]],

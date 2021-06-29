@@ -25,7 +25,7 @@ def tibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
         _rows: Optional[int] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         **kwargs: Any
 ) -> DataFrame:
@@ -43,7 +43,7 @@ def tibble(
             - a function: apply custom name repair
         _rows: Number of rows of a 0-col dataframe when args and kwargs are
             not provided. When args or kwargs are provided, this is ignored.
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -84,7 +84,7 @@ def tibble(
         names,
         values,
         _name_repair=_name_repair,
-        _base0=_base0,
+        base0_=base0_,
         _dtypes=_dtypes
     )
 
@@ -101,7 +101,7 @@ def tibble(
 def tibble_row(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         **kwargs: Any
 ) -> DataFrame:
@@ -119,7 +119,7 @@ def tibble_row(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -128,7 +128,7 @@ def tibble_row(
     if not args and not kwargs:
         df = DataFrame(index=[0]) # still one row
     else:
-        df = tibble(*args, **kwargs, _name_repair=_name_repair, _base0=_base0)
+        df = tibble(*args, **kwargs, _name_repair=_name_repair, base0_=base0_)
 
     if df.shape[0] > 1:
         raise ValueError("All arguments must be size one, use `[]` to wrap.")
@@ -144,7 +144,7 @@ def tibble_row(
 def fibble(
         *args: Any,
         _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _rows: Optional[int] = None,
         _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         **kwargs: Any
@@ -170,14 +170,14 @@ def fibble(
         *args, **kwargs,
         _name_repair=_name_repair,
         _rows=_rows,
-        _base0=_base0,
+        base0_=base0_,
         _dtypes=_dtypes
     )
 
 def tribble(
         *dummies: Any,
         _name_repair: Union[str, Callable] = 'minimal',
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None
 ) -> DataFrame:
     """Create dataframe using an easier to read row-by-row layout
@@ -226,7 +226,7 @@ def tribble(
             columns,
             [[]]*len(columns),
             _name_repair=_name_repair,
-            _base0=_base0,
+            base0_=base0_,
             _dtypes=_dtypes
         )
 
@@ -241,7 +241,7 @@ def tribble(
         columns,
         list(zip(*data)),
         _name_repair=_name_repair,
-        _base0=_base0,
+        base0_=base0_,
         _dtypes=_dtypes
     )
 
@@ -249,7 +249,7 @@ def zibble(
         names: Iterable[Optional[str]],
         values: Iterable,
         _name_repair: Union[str, Callable] = 'minimal',
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None
 ) -> DataFrame:
     """Zip version of tibble, where names specify together and so do values.
@@ -275,7 +275,7 @@ def zibble(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the suffixes of repaired names should be 0-based.
+        base0_: Whether the suffixes of repaired names should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`.
 
     Returns:
@@ -321,7 +321,7 @@ def zibble(
 
     if out is None:
         out = DataFrame()
-    names = repair_names(out.columns.tolist(), _name_repair, _base0)
+    names = repair_names(out.columns.tolist(), _name_repair, base0_)
     out.columns = names
     apply_dtypes(out, _dtypes)
 

@@ -189,7 +189,7 @@ def matches(
 def all_of(
         _data: DataFrame,
         x: Iterable[Union[int, str]],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> List[str]:
     """For strict selection.
 
@@ -199,7 +199,7 @@ def all_of(
     Args:
         _data: The data piped in
         x: A set of variables to match the columns
-        _base0: Whether `x` is 0-based or not.
+        base0_: Whether `x` is 0-based or not.
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -210,7 +210,7 @@ def all_of(
             in `_data` columns
     """
     all_columns = _data.columns
-    x = all_columns[vars_select(all_columns, x, base0=_base0)]
+    x = all_columns[vars_select(all_columns, x, base0=base0_)]
     # where do errors raise?
 
     # nonexists = setdiff(x, all_columns)
@@ -228,7 +228,7 @@ def any_of(
         x: Iterable[Union[int, str]],
         # pylint: disable=redefined-builtin
         vars: Optional[Iterable[str]] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> List[str]:
     """Select but doesn't check for missing variables.
 
@@ -238,14 +238,14 @@ def any_of(
     Args:
         _data: The data piped in
         x: A set of variables to match the columns
-        _base0: Whether `x` is 0-based or not.
+        base0_: Whether `x` is 0-based or not.
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The matched column names
     """
     vars = vars or _data.columns
-    x = vars_select(vars, x, raise_nonexists=False, base0=_base0)
+    x = vars_select(vars, x, raise_nonexists=False, base0=base0_)
     # exists = []
     # for idx in x:
     #     try:
@@ -260,7 +260,7 @@ def num_range(
         prefix: str,
         range: Iterable[int], # pylint: disable=redefined-builtin
         width: Optional[int] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
 
@@ -270,16 +270,16 @@ def num_range(
         range_: A sequence of integers, like `range(3)` (produces `0,1,2`).
         width: Optionally, the "width" of the numeric range.
             For example, a range of 2 gives "01", a range of three "001", etc.
-        _base0: Whether it is 0-based
+        base0_: Whether it is 0-based
 
     Returns:
         A list of ranges with prefix.
     """
-    _base0 = get_option('index.base.0', _base0)
+    base0_ = get_option('index.base.0', base0_)
     zfill = lambda elem: (
-        elem + int(not _base0)
+        elem + int(not base0_)
         if not width
-        else str(elem + int(not _base0)).zfill(width)
+        else str(elem + int(not base0_)).zfill(width)
     )
     return Array([
         f"{prefix}{zfill(elem)}"

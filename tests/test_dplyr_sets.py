@@ -79,7 +79,7 @@ def test_set_operations_reconstruct_grouping_metadata():
 
 def test_set_operations_keep_the_ordering_of_the_data():
     # test_that("set operations keep the ordering of the data (#3839)", {
-    rev_df = lambda df: df >> get(rev(seq_len(nrow(df), _base0=True)))
+    rev_df = lambda df: df >> get(rev(seq_len(nrow(df), base0_=True)))
 
     df1 = tibble(x = seq(1,4), g = rep([1,2], each = 2))
     df2 = tibble(x = seq(3,6), g = rep([2,3], each = 2))

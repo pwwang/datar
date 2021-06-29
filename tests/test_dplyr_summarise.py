@@ -33,7 +33,7 @@ def test_input_recycled():
     ) >> group_by(f.a)
     assert df1.equals(df2)
 
-    df1 = gf >> summarise(x = seq_len(f.a, _base0=True), y = 1)
+    df1 = gf >> summarise(x = seq_len(f.a, base0_=True), y = 1)
     df2 = tibble(a = c(1, 2, 2), x = c(0, 0, 1), y = 1) >> group_by(f.a)
     # assert df1.equals(df2)
     assert_frame_equal(df1, df2)

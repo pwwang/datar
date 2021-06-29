@@ -60,9 +60,9 @@ class Collection(CollectionBase, list):
     convert them into 0-based finally
 
     The Inverted, Negated and slice objects will be expanded immediately. This
-    means there is no chance to apply `_base0` that is received later on. So
+    means there is no chance to apply `base0_` that is received later on. So
     the original elements are stored in `self.elems` to wait for a second
-    evaluation with the correct `_base0`.
+    evaluation with the correct `base0_`.
 
     Args:
         *args: The elements
