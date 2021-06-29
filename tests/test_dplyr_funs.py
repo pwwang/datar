@@ -116,7 +116,6 @@ def test_cummean_is_consistent_with_cumsum_and_seq_along():
     assert out == pytest.approx(cumsum(x) / seq_along(x))
     assert cummean([]).tolist() == []
 
-# wait for order_by
 def test_order_by_returns_correct_value():
     expected = [15, 14, 12, 9, 5]
     out = with_order(range(5, 0, -1), cumsum, range(1, 6))

@@ -176,10 +176,7 @@ def diag(
         x = x * nmax
 
     x = Array(x)
-    try:
-        ret = DataFrame(numpy.diag(x), dtype=x.dtype)
-    except TypeError: # pragma: no cover, TODO: add test
-        ret = DataFrame(numpy.diag(x), dtype=object)
+    ret = DataFrame(numpy.diag(x), dtype=x.dtype)
     return ret.iloc[:nrow, :ncol]
 
 @diag.register(DataFrame)

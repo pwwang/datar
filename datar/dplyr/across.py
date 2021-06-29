@@ -2,7 +2,7 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/across.R
 """
-from abc import ABC, abstractstaticmethod
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, Mapping, Optional, Tuple, Union
 
 import numpy
@@ -119,7 +119,8 @@ class Across:
 
 class IfCross(Across, ABC):
     """Base class for IfAny and IfAll"""
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def aggregate(values: Series) -> bool:
         """How to aggregation by rows"""
 

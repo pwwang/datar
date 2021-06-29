@@ -93,6 +93,12 @@ def percent_rank(
         na_last: str = "keep"
 ) -> Iterable[float]:
     """Rank the data using percent_rank method"""
+    # Without this:
+    # pandas 1.2.0: ValueError: Transform function failed
+    if len(series) == 0:
+        dtype = getattr(series, 'dtype', None)
+        return Array(series, dtype=dtype) # make a copy
+
     ranking = _rank(series, na_last, 'min', True)
     minrank = ranking.min()
     maxrank = ranking.max()
@@ -103,6 +109,12 @@ def percent_rank(
 @register_func(None, context=Context.EVAL)
 def cume_dist(series: Iterable[Any], na_last: str = "keep") -> Iterable[float]:
     """Rank the data using percent_rank method"""
+    # Without this:
+    # pandas 1.2.0: ValueError: Transform function failed
+    if len(series) == 0:
+        dtype = getattr(series, 'dtype', None)
+        return Array(series, dtype=dtype) # make a copy
+
     ranking = _rank(series, na_last, 'min')
     max_ranking = ranking.max()
     ret = ranking.transform(lambda r: ranking.le(r).sum() / max_ranking)

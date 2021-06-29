@@ -89,12 +89,12 @@ def _lead_lag_prepare(
             cats = data.categories
 
     if not isinstance(n, int) or n < 0:
-        raise ValueError(f"`lead-lag` expect a non-negative integer for `n`.")
+        raise ValueError("`lead-lag` expect a non-negative integer for `n`.")
 
     if is_scalar(default):
         default = [default]
     if len(default) != 1:
-        raise ValueError(f"`lead-lag` Expect scalar or length-1 `default`.")
+        raise ValueError("`lead-lag` Expect scalar or length-1 `default`.")
 
     if not isinstance(data, Series):
         data = Series(data)

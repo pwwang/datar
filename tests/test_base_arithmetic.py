@@ -2,9 +2,9 @@ import pytest
 
 from pandas.testing import assert_frame_equal
 from datar import f
-from datar.base import NA
+from datar.base import NA, colnames
 from datar.datar import drop_index
-from datar.tibble import tibble
+from datar.tibble import tibble, tribble
 from datar.base.arithmetic import *
 from .conftest import assert_iterable_equal
 
@@ -73,3 +73,70 @@ def test_cov():
 
     out = cov([1,2,3], [4,5,6])
     assert out == 1.0
+
+def test_col_row_verbs():
+    df = tribble(
+        f.x, f.y, f.z,
+        1,   NA,  6,
+        2,   4,   9,
+        3,   6,   15
+    )
+    assert_iterable_equal(row_medians(df), [NA, 4, 6])
+    assert_iterable_equal(row_medians(df, na_rm=True), [3.5, 4, 6])
+    assert_iterable_equal(col_medians(df), [2, NA, 9])
+    assert_iterable_equal(col_medians(df, na_rm=True), [2, 5, 9])
+
+    assert_iterable_equal(row_means(df), [NA, 5, 8])
+    assert_iterable_equal(row_means(df, na_rm=True), [3.5, 5, 8])
+    assert_iterable_equal(col_means(df), [2, NA, 10])
+    assert_iterable_equal(col_means(df, na_rm=True), [2, 5, 10])
+
+    assert_iterable_equal(row_sums(df), [NA, 15, 24])
+    assert_iterable_equal(row_sums(df, na_rm=True), [7, 15, 24])
+    assert_iterable_equal(col_sums(df), [6, NA, 30])
+    assert_iterable_equal(col_sums(df, na_rm=True), [6, 10, 30])
+
+    assert_iterable_equal(
+        row_sds(df),
+        [NA, 3.605551275463989, 6.244997998398398],
+        approx=True
+    )
+    assert_iterable_equal(
+        row_sds(df, na_rm=True),
+        [3.5355339059327378, 3.605551275463989, 6.244997998398398],
+        approx=True
+    )
+    assert_iterable_equal(
+        col_sds(df),
+        [1.0, NA, 4.58257569495584],
+        approx=True
+    )
+    assert_iterable_equal(
+        col_sds(df, na_rm=True),
+        [1.0, 1.4142135623730951, 4.58257569495584],
+        approx=True
+    )
+
+def test_scale():
+    out = scale([1,2,3])
+    assert_frame_equal(out, tibble(scaled=[-1.,0.,1.]))
+    assert_iterable_equal(out.attrs['scaled:center'], [2])
+    assert_iterable_equal(out.attrs['scaled:scale'], [1])
+
+    out = scale([1,2,3], center=1)
+    assert_frame_equal(out, tibble(scaled=[0.,0.6324555,1.2649111]))
+    assert_iterable_equal(out.attrs['scaled:center'], [1])
+    assert_iterable_equal(out.attrs['scaled:scale'], [1.581139], approx=True)
+
+    out = scale([1,2,3], scale=1)
+    assert_frame_equal(out, tibble(scaled=[-1.,0.,1.]))
+    assert_iterable_equal(out.attrs['scaled:center'], [2])
+    assert_iterable_equal(out.attrs['scaled:scale'], [1])
+
+    with pytest.raises(ValueError):
+        scale([1,2,3], center=[1,2])
+    with pytest.raises(ValueError):
+        scale([1,2,3], scale=[1,2])
+
+    df = tibble(x=[1,2,3], y=[4,5,6])
+    assert_frame_equal(scale(df, False, False), df)

@@ -1,13 +1,19 @@
 site_name: datar
+repo_url: https://github.com/pwwang/datar
+repo_name: pwwang/datar
 theme:
-    # favicon: favicon.png
-    # logo: favicon.png
-    # palette:
-    #   primary: blue
+    favicon: favicon.png
+    logo: favicon.png
+    icon:
+        repo: fontawesome/brands/github
+    palette:
+        primary: black
     name: 'material'
     # font:
     #   text: 'Ubuntu'
     #   code: 'Ubuntu Mono'
+    features:
+        - navigation.top
 markdown_extensions:
     - markdown.extensions.admonition
     - pymdownx.emoji:
