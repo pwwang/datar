@@ -12,10 +12,10 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
         pandas: [
           pandas==1.2.0,
-          pandas==1.2.1,
-          pandas==1.2.2,
-          pandas==1.2.3,
-          pandas==1.2.4,
+          # pandas==1.2.1,
+          # pandas==1.2.2,
+          # pandas==1.2.3,
+          # pandas==1.2.4,
           pandas # lastest 1.2.5
         ]
 
