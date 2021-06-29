@@ -31,7 +31,9 @@ jobs:
           python -m pip install pylint
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -v --extras "wcwidth scipy"
+          poetry install -v
+          pip install wcwidth
+          pip install scipy
           pip install $PANDAS
         env:
           PANDAS: ${{ matrix.pandas }}
