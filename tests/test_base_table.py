@@ -31,11 +31,10 @@ def test_table():
     assert tab.loc['New England', 'Northeast'] == 6
 
     #-----------------
-    # wait for cut
-    # with context(airquality) as _:
-    #     tab = table(cut(f.Temp, stats.quantile(f.Temp)), f.Month)
+    with data_context(airquality) as _:
+        tab = table(cut(f.Temp, stats.quantile(f.Temp)), f.Month)
 
-    # assert tab.iloc[0,0] == 24
+    assert tab.iloc[0,0] == 24
 
     #-----------------
     a = letters[:3]

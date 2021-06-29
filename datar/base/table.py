@@ -20,8 +20,7 @@ def table(
         input: Any,
         *more_inputs: Any,
         exclude: Any = NA,
-        # not supported. use exclude instead
-        # use_na: str = "no",
+        # use_na: str = "no", # TODO
         dnn: Optional[Union[str, List[str]]] = None,
         # not supported, varname.argname not working with wrappers having
         # different signatures.
@@ -131,8 +130,11 @@ def _iterable_excludes(
         exclude: Optional[Iterable]
 ) -> Iterable:
     """Exclude values for categorical data"""
+    if is_categorical(data) and exclude is NA:
+        return data
+
     if exclude is None:
-        return fillna_safe(categorized(data))
+        return fillna_safe(data)
 
     if is_scalar(exclude):
         exclude = [exclude]

@@ -1,3 +1,8 @@
+## 0.2.3
+- Fix compatibility with `pandas` `v1.2.0~4` (#20, thanks to @antonio-yu)
+- Fix base.table when inputs are factors and exclude is NA;
+- Add base.scale/col_sums/row_sums/col_means/row_means/col_sds/row_sds/col_medians/row_medians
+
 ## 0.2.2
 - Use a better strategy warning for builtin name overriding.
 - Fix index of subdf not dropped for mutate on grouped data

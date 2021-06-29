@@ -2,6 +2,7 @@
 from typing import Any, Iterable, List, Optional
 
 import numpy
+from pandas import Series
 from pipda import register_func
 
 from ..core.types import (
@@ -80,15 +81,19 @@ def quantile(
 
 @register_func(None, context=Context.EVAL)
 def sd(
-        series: Iterable[Any],
+        x: Iterable[Any],
         na_rm: bool = False,
         # numpy default is 0. Make it 1 to be consistent with R
         ddof: int = 1
 ) -> float:
     """Get standard deviation of the input"""
+    if isinstance(x, Series):
+        return x.std(skipna=na_rm, ddof=ddof)
+
     return (
-        numpy.nanstd(series, ddof=ddof) if na_rm
-        else numpy.std(series, ddof=ddof)
+        numpy.nanstd(x, ddof=ddof)
+        if na_rm
+        else numpy.std(x, ddof=ddof)
     )
 
 @register_func(None, context=Context.EVAL)

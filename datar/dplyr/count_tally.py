@@ -145,7 +145,7 @@ def _tally_n(
 
     # If it's Expression, will return a Function object
     # Otherwise, sum of wt
-    return sum_(wt)
+    return sum_(wt, na_rm=True)
 
 def _check_name(name: Optional[str], invars: Iterable[str]) -> str:
     """Check if count is valid"""
