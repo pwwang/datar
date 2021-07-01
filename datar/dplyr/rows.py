@@ -274,4 +274,5 @@ def _rows_match(x: DataFrame, y: DataFrame) -> numpy.ndarray:
     """Mimic vctrs::vec_match"""
     id_col = '__id__'
     y_with_id = rownames_to_column(y, var=id_col)
-    return left_join(x, y_with_id)[id_col].values
+    # pylint: disable=no-value-for-parameter
+    return (x >> left_join(y_with_id))[id_col].values

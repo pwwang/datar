@@ -21,6 +21,8 @@ from ..base import setdiff, union
 
 from .group_data import group_vars
 
+# pylint: disable=unused-argument
+
 @register_verb(DataFrame, context=Context.PENDING)
 def group_by(
         _data: DataFrame,

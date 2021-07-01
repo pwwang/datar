@@ -1,11 +1,12 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-filter.r
 import numpy
-from pandas.core.groupby import groupby
-from pipda.function import register_func
 import pytest
 from datar.all import *
-from datar.datasets import mtcars, iris
+from datar.datasets import iris, mtcars
+from pandas.core.groupby import groupby
+from pipda import register_func
+
 
 def test_handles_passing_args():
     df = tibble(x=range(1,5))

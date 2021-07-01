@@ -130,7 +130,7 @@ def _(
 @register_verb((DataFrame, dict, NoneType), context=Context.EVAL)
 def bind_cols(
         _data: Optional[Union[DataFrame, dict]],
-        *datas: Optional[Union[DataFrame, dict]],
+        *datas: Union[DataFrame, dict],
         _name_repair: Union[str, Callable] = "unique",
         base0_: Optional[bool] = None,
         _copy: bool = True

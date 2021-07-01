@@ -8,7 +8,7 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Tuple, Union
 import numpy
 from pandas import DataFrame, Series
 from pipda import register_func, evaluate_expr, evaluate_args, evaluate_kwargs
-from pipda.utils import functype
+from pipda.utils import functype, PipingEnvs
 from pipda.context import ContextBase
 from pipda.symbolic import DirectRefAttr
 
@@ -105,7 +105,7 @@ class Across:
                         DirectRefAttr(self.data, column),
                         *args,
                         **kwargs,
-                        _env='piping'
+                        _env=PipingEnvs.PIPING
                     )._pipda_eval(self.data, context)
 
                 if ret is None:

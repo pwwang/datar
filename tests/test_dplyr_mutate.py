@@ -1,13 +1,14 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-mutate.r
-from pipda.function import register_func
 import pytest
-from pandas.testing import assert_frame_equal
-from pandas.core.frame import DataFrame
 from datar.all import *
-from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
 from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable
-from datar.datasets import mtcars, iris
+from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
+from datar.datasets import iris, mtcars
+from pandas.core.frame import DataFrame
+from pandas.testing import assert_frame_equal
+from pipda import register_func
+
 
 def test_empty_mutate_returns_input():
     df = tibble(x=1)

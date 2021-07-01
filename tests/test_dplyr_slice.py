@@ -245,9 +245,9 @@ def test_slice_any_checks_for_empty_args_kwargs():
     # with pytest.raises(ValueError):
     #     slice_tail(df, 5)
     with pytest.raises(TypeError):
-        slice_min(df, n=5)
+        df >> slice_min(n=5)
     with pytest.raises(TypeError):
-        slice_max(df, n=5)
+        df >> slice_max(n=5)
     # with pytest.raises(ValueError):
     #     slice_sample(df, 5)
 

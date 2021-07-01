@@ -102,8 +102,9 @@ def test_error_if_adding_row_with_unknown_variables():
         add_row(tibble(a=3), b="err", c="oops")
 
 def test_add_rows_to_nondf():
-    with pytest.raises(NotImplementedError):
-        add_row(1)
+    # with pytest.raises(NotImplementedError):
+    out = add_row(1)
+    assert hasattr(out, '_pipda_eval')
 
 def test_can_add_multiple_rows():
     df = tibble(a=3)

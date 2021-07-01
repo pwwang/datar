@@ -22,7 +22,7 @@
 
 ## Extra arguments
 
-In order to keep some python language features, or extend the APIs a little, a few APIs may come with extra arguments. For example, to allow people to work with 0-indexing, `base0_` argument is added to functions that involve indexing. `how` for `drop_na` is added to allow drop rows of a data frame with `any` or `all` values of in that row.
+In order to keep some python language features, or extend the APIs a little, a few APIs may come with extra arguments. For example, to allow people to work with 0-indexing, `base0_` argument is added to functions that involve indexing. `how_` for `drop_na` is added to allow drop rows of a data frame with `any` or `all` values of in that row.
 
 ## `tibble` vs `DataFrame`
 

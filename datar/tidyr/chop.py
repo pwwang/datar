@@ -75,7 +75,7 @@ def chop(
     else:
         vals = pandas.concat(compacted, ignore_index=True)
 
-    out = bind_cols(split_key, vals)
+    out = split_key >> bind_cols(vals)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -148,7 +148,7 @@ def _vec_split(
     if isinstance(by, Series): # pragma: no cover, always a data frame?
         by = by.to_frame()
 
-    df = bind_cols(x, by)
+    df = x >> bind_cols(by)
     if df.shape[0] == 0:
         return DataFrame(columns=['key', 'val'])
     df = df >> group_by(*by.columns)

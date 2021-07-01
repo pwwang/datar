@@ -36,12 +36,11 @@ class CollectionBase(ABC):
     def _pipda_eval(
             self,
             data: Any,
-            context: ContextAnnoType,
-            level: int = 0
+            context: ContextAnnoType
     ) -> Any:
         """Defines how the object should be evaluated when evaluated by
         pipda's evaluation"""
-        self.elems = evaluate_args(self.elems, data, context, level)
+        self.elems = evaluate_args(self.elems, data, context)
         return self
 
     @abstractmethod

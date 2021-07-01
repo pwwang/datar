@@ -58,7 +58,7 @@ def pack(
             cols[f'{group}${newcol}'] = _data[oldcol]
 
     asis = setdiff(_data.columns, usedcols)
-    out = bind_cols(_data[asis], DataFrame(cols))
+    out = _data[asis] >> bind_cols(DataFrame(cols))
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)

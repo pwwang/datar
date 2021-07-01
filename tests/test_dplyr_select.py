@@ -1,12 +1,13 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-select.r
-from pipda.verb import register_verb
-from datar.stats.verbs import set_names
-from pandas.core.frame import DataFrame
 import pytest
 from datar.all import *
-from datar.datasets import mtcars
 from datar.core.exceptions import ColumnNotExistingError
+from datar.datasets import mtcars
+from datar.stats.verbs import set_names
+from pandas.core.frame import DataFrame
+from pipda import register_verb
+
 
 def test_preserves_grouping():
     gf = group_by(tibble(g = [1,2,3], x = [3,2,1]), f.g)
