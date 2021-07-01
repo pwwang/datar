@@ -1,3 +1,12 @@
+## 0.3.0
+- Adopt `pipda` v0.3.0
+
+Breaking changes:
+
+- Rename argument `dtypes` of `unchop` and `unnest` back to `ptype`
+- Change all `_base0` to `base0_`
+- Change argument `how` of `tidyr.drop_na` to `how_`
+
 ## 0.2.3
 - Fix compatibility with `pandas` `v1.2.0~4` (#20, thanks to @antonio-yu)
 - Fix base.table when inputs are factors and exclude is NA;

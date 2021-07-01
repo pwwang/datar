@@ -14,7 +14,7 @@
 
     For example, `is.integer` is ported as `is_integer`. Argument `.drop` in `group_by` is replaced with `_drop`.
 
-- `datar` specific arguments are named with `_` prefix. For example, `base0_`.
+- `datar` specific arguments are named with `_` suffix. For example, `base0_`.
 
 - camelCase style named functions are ported with snake_case named functions.
 
