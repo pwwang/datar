@@ -35,7 +35,7 @@ def test_minimal(names, expect):
      ["__0", "x__1", "__2", "y", "x__4", "__5", "__6"]),
 ])
 def test_unique(names, expect):
-    assert repair_names(names, repair="unique", _base0=True) == expect
+    assert repair_names(names, repair="unique", base0_=True) == expect
 
 def test_unique_algebraic_y():
     x = ["__20", "a__1", "b", "", "a__2", "d"]
@@ -92,7 +92,7 @@ def test_unique_algebraic_y():
      ["_7","_4","_3","_6","_5","_1","_2","_8"]),
 ])
 def test_universal(names, expect):
-    assert repair_names(names, repair="universal", _base0=True) == expect
+    assert repair_names(names, repair="universal", base0_=True) == expect
 
 
 def test_check_unique():

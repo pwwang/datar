@@ -18,7 +18,7 @@ def test_is_character():
 def test_grep():
     out = grep('[a-z]', 'a')
     assert_iterable_equal(out, [0])
-    out = grep('[a-z]', 'a', _base0=False)
+    out = grep('[a-z]', 'a', base0_=False)
     assert_iterable_equal(out, [1])
     out = grep('[a-z]', 'a', invert=True)
     assert_iterable_equal(out, [])

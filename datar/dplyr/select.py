@@ -20,7 +20,7 @@ from .group_data import group_data, group_vars
 def select(
         _data: DataFrame,
         *args: Union[StringOrIter, Inverted],
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Mapping[str, str]
 ) -> DataFrame:
     """Select (and optionally rename) variables in a data frame
@@ -37,7 +37,7 @@ def select(
     Args:
         *columns: The columns to select
         **renamings: The columns to rename and select in new => old column way.
-        _base0: Whether the columns are 0-based if given by indexes
+        base0_: Whether the columns are 0-based if given by indexes
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -50,7 +50,7 @@ def select(
         *args,
         **kwargs,
         _group_vars=gvars,
-        _base0=_base0
+        base0_=base0_
     )
     out = _data.iloc[:, selected].copy()
 
@@ -73,7 +73,7 @@ def _eval_select(
         _all_columns: Index,
         *args: Any,
         _group_vars: Iterable[str],
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> Tuple[List[int], Mapping[str, str]]:
     """Evaluate selections to get locations
@@ -81,7 +81,7 @@ def _eval_select(
     Returns:
         A tuple of (selected columns, dict of old-to-new renaming columns)
     """
-    selected = vars_select(_all_columns, *args, *kwargs.values(), base0=_base0)
+    selected = vars_select(_all_columns, *args, *kwargs.values(), base0=base0_)
     missing = setdiff(_group_vars, _all_columns[selected])
     if missing:
         logger.info(
@@ -110,7 +110,7 @@ def _eval_select(
             # try:
             #   If out of bounds, it should be raised at getting missing
             val = _all_columns[
-                position_at(val, len(_all_columns), base0=_base0)
+                position_at(val, len(_all_columns), base0=base0_)
             ]
             # except IndexError:
             #     raise ColumnNotExistingError(

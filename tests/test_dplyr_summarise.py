@@ -1,16 +1,23 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-summarise.r
 from tokenize import group
-from datar.core.grouped import DataFrameRowwise
-from pandas.core.frame import DataFrame
-from pandas.testing import assert_frame_equal
-from pipda.function import register_func
-from datar.core.contexts import Context
+
 import pytest
 from datar.all import *
+from datar.core.contexts import Context
+from datar.core.exceptions import (
+    ColumnNotExistingError,
+    DataUnrecyclable,
+    NameNonUniqueError
+)
+from datar.core.grouped import DataFrameRowwise
 from datar.datasets import mtcars
-from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
+from pandas.core.frame import DataFrame
+from pandas.testing import assert_frame_equal
+from pipda import register_func
+
 from .conftest import assert_iterable_equal
+
 
 def test_freshly_create_vars():
     df = tibble(x=range(1,11))
@@ -33,7 +40,7 @@ def test_input_recycled():
     ) >> group_by(f.a)
     assert df1.equals(df2)
 
-    df1 = gf >> summarise(x = seq_len(f.a, _base0=True), y = 1)
+    df1 = gf >> summarise(x = seq_len(f.a, base0_=True), y = 1)
     df2 = tibble(a = c(1, 2, 2), x = c(0, 0, 1), y = 1) >> group_by(f.a)
     # assert df1.equals(df2)
     assert_frame_equal(df1, df2)

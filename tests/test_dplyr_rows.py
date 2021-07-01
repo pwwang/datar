@@ -46,35 +46,35 @@ def test_rows_upsert(data):
     assert_frame_equal(out, exp)
 
 def test_rows_delete(data):
-    out = rows_delete(data, tibble(a=[2,3]), by="a")
+    out = data >> rows_delete(tibble(a=[2,3]), by="a")
     assert_frame_equal(out, data.iloc[[0], :])
 
     with pytest.raises(ValueError, match="delete missing"):
-        rows_delete(data, tibble(a=[2,3,4]), by="a")
+        data >> rows_delete(tibble(a=[2,3,4]), by="a")
 
-    out = rows_delete(data, tibble(a = [2,3], b = "b"), by = "a")
+    out = data >> rows_delete(tibble(a = [2,3], b = "b"), by = "a")
     assert_frame_equal(out, data.iloc[[0], :])
 
     with pytest.raises(ValueError, match="delete missing"):
-        rows_delete(data, tibble(a = [2,3], b = "b"), by = c("a", "b"))
+        data >> rows_delete(tibble(a = [2,3], b = "b"), by = c("a", "b"))
 
 def test_rows_errors(data):
     # by must be string or strings
     with pytest.raises(ValueError, match="must be a string"):
-        rows_delete(data, tibble(a = [2,3]), by=1)
+        data >> rows_delete(tibble(a = [2,3]), by=1)
 
     # Insert
     with pytest.raises(ValueError):
-        rows_insert(data, tibble(a = 3, b = "z"))
+        data >> rows_insert(tibble(a = 3, b = "z"))
 
     with pytest.raises(ValueError):
-        rows_insert(data.iloc[[0,0], ], tibble(a = 3))
+        data.iloc[[0,0], ] >> rows_insert(tibble(a = 3))
 
     with pytest.raises(ValueError):
-        rows_insert(data, tibble(a = 4, b = "z"), by = "e")
+        data >> rows_insert(tibble(a = 4, b = "z"), by = "e")
 
     with pytest.raises(ValueError):
-        rows_insert(data, tibble(d = 4))
+        data >> rows_insert(tibble(d = 4))
 
     # Update
     with pytest.raises(ValueError):
@@ -86,10 +86,10 @@ def test_rows_errors(data):
 
     # Delete and truncate
     with pytest.raises(ValueError):
-        rows_delete(data, tibble(a = [2,3,4]))
+        data >> rows_delete(tibble(a = [2,3,4]))
 
     with pytest.raises(ValueError):
-        rows_delete(data, tibble(a = [2,3], b = "b"), by = c("a", "b"))
+        data >> rows_delete(tibble(a = [2,3], b = "b"), by = c("a", "b"))
 
     # works
     # rows_delete(data, tibble(a = [2,3]))

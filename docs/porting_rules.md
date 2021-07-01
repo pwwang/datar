@@ -14,7 +14,7 @@
 
     For example, `is.integer` is ported as `is_integer`. Argument `.drop` in `group_by` is replaced with `_drop`.
 
-- `datar` specific arguments are named with `_` prefix. For example, `_base0`.
+- `datar` specific arguments are named with `_` suffix. For example, `base0_`.
 
 - camelCase style named functions are ported with snake_case named functions.
 
@@ -22,7 +22,7 @@
 
 ## Extra arguments
 
-In order to keep some python language features, or extend the APIs a little, a few APIs may come with extra arguments. For example, to allow people to work with 0-indexing, `_base0` argument is added to functions that involve indexing. `how` for `drop_na` is added to allow drop rows of a data frame with `any` or `all` values of in that row.
+In order to keep some python language features, or extend the APIs a little, a few APIs may come with extra arguments. For example, to allow people to work with 0-indexing, `base0_` argument is added to functions that involve indexing. `how_` for `drop_na` is added to allow drop rows of a data frame with `any` or `all` values of in that row.
 
 ## `tibble` vs `DataFrame`
 

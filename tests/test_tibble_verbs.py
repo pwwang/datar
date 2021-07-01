@@ -102,8 +102,9 @@ def test_error_if_adding_row_with_unknown_variables():
         add_row(tibble(a=3), b="err", c="oops")
 
 def test_add_rows_to_nondf():
-    with pytest.raises(NotImplementedError):
-        add_row(1)
+    # with pytest.raises(NotImplementedError):
+    out = add_row(1)
+    assert hasattr(out, '_pipda_eval')
 
 def test_can_add_multiple_rows():
     df = tibble(a=3)
@@ -415,7 +416,7 @@ def test_column_to_rownames(caplog):
     #   expect_false(has_name(res, var))
 
     mtcars1 = mtcars.copy()
-    mtcars1['num'] = rev(seq_len(nrow(mtcars), _base0=True))
+    mtcars1['num'] = rev(seq_len(nrow(mtcars), base0_=True))
     res0 = rownames_to_column(mtcars1)
     res = column_to_rownames(res0, var="num")
     assert caplog.text == ''

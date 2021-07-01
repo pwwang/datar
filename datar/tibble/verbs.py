@@ -19,7 +19,7 @@ def enframe(
         x: Optional[Union[Iterable, Mapping]],
         name: Optional[str] = "name",
         value: str = "value",
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Converts mappings or lists to one- or two-column data frames.
 
@@ -29,7 +29,7 @@ def enframe(
         value: value Names of the columns that store the names and values.
             If `None`, a one-column dataframe is returned.
             `value` cannot be `None`
-        _base0: Whether the indexes for lists converted to name are 0-based
+        base0_: Whether the indexes for lists converted to name are 0-based
             or not.
 
     Returns:
@@ -54,8 +54,8 @@ def enframe(
 
     elif name:
         if not isinstance(x, dict):
-            _base0 = get_option('index.base.0', _base0)
-            names = (i + int(not _base0) for i in range(len(x)))
+            base0_ = get_option('index.base.0', base0_)
+            names = (i + int(not base0_) for i in range(len(x)))
             values = x
         else:
             names = x.keys()
@@ -95,7 +95,7 @@ def add_row(
         *args: Any,
         _before: Optional[int] = None,
         _after: Optional[int] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **kwargs: Any
 ) -> DataFrame:
     """Add one or more rows of data to an existing data frame.
@@ -109,7 +109,7 @@ def add_row(
         _before: and
         _after: row index where to add the new rows.
             (default to add after the last row)
-        _base0: Whether `_before` and `_after` are 0-based or not.
+        base0_: Whether `_before` and `_after` are 0-based or not.
 
     Returns:
         The dataframe with the added rows
@@ -133,7 +133,7 @@ def add_row(
     if extra_vars:
         raise ValueError(f"New rows can't add columns: {extra_vars}")
 
-    pos = _pos_from_before_after(_before, _after, _data.shape[0], _base0)
+    pos = _pos_from_before_after(_before, _after, _data.shape[0], base0_)
     out = _rbind_at(_data, df, pos)
 
     if isinstance(_data, DataFrameRowwise):
@@ -155,7 +155,7 @@ def add_column(
         _before: Optional[Union[str, int]] = None,
         _after: Optional[Union[str, int]] = None,
         _name_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         **kwargs: Any
 ) -> DataFrame:
@@ -168,7 +168,7 @@ def add_column(
         _before: and
         _after: Column index or name where to add the new columns
             (default to add after the last column)
-        _base0: Whether `_before` and `_after` are 0-based if they are index.
+        base0_: Whether `_before` and `_after` are 0-based if they are index.
             if not given, will be determined by `get_option('index_base_0')`,
             which is `False` by default.
         _dtypes: The dtypes for the new columns, either a uniform dtype or a
@@ -187,7 +187,7 @@ def add_column(
         _before,
         _after,
         _data.columns.tolist(),
-        _base0
+        base0_
     )
 
     out = _cbind_at(_data, df, pos, _name_repair)
@@ -255,7 +255,7 @@ index_to_column = rownames_to_column # pylint: disable=invalid-name
 def rowid_to_column(
         _data: DataFrame,
         var="rowid",
-        _base0: bool = False
+        base0_: bool = False
 ) -> DataFrame:
     """Add rownames as a column
 
@@ -271,7 +271,7 @@ def rowid_to_column(
         raise ValueError(f"Column name `{var}` must not be duplicated.")
 
     from ..dplyr.mutate import mutate
-    base = int(not _base0)
+    base = int(not base0_)
     return remove_rownames(mutate(
         _data,
         **{var: range(base, _data.shape[0] + base)},
@@ -348,7 +348,7 @@ def _cbind_at(
     from ..dplyr import bind_cols
     part1 = data.iloc[:, :pos]
     part2 = data.iloc[:, pos:]
-    return bind_cols(part1, df, part2, _name_repair=_name_repair)
+    return part1 >> bind_cols(df, part2, _name_repair=_name_repair)
 
 def _pos_from_before_after(
         before: Optional[int],

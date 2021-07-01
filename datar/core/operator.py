@@ -1,12 +1,11 @@
 """Operators for datar"""
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple
 from functools import partial
 import operator
 
 import numpy
 from pandas import Series
 from pipda import register_operator, Operator
-from pipda.context import ContextBase
 
 from .utils import length_of, recycle_value
 from .collections import Collection, Inverted, Negated, Intersect
@@ -30,7 +29,7 @@ class DatarOperator(Operator):
         left, right = _recycle_left_right(left, right)
         return op_func(left, right)
 
-    def invert(self, operand: Any, _context: Optional[ContextBase]) -> Any:
+    def invert(self, operand: Any) -> Any:
         """Interpretation for ~x"""
         if isinstance(operand, (slice, str, list, tuple, Collection)):
             return Inverted(operand)

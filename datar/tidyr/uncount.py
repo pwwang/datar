@@ -20,7 +20,7 @@ def uncount(
         weights: IntOrIter,
         _remove: bool = True,
         _id: Optional[str] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Duplicating rows according to a weighting variable
 
@@ -31,7 +31,7 @@ def uncount(
             then this column is removed.
         _id: Supply a string to create a new variable which gives a
             unique identifier for each created row (0-based).
-        _base0: Whether the generated `_id` columns are 0-based.
+        base0_: Whether the generated `_id` columns are 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -60,7 +60,7 @@ def uncount(
     out.reset_index(drop=True, inplace=True)
 
     if _id:
-        base = int(not get_option('index.base.0', _base0))
+        base = int(not get_option('index.base.0', base0_))
         # pylint: disable=no-value-for-parameter
         out = (
             out >>

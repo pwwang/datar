@@ -21,7 +21,7 @@ def fill(
         _data: DataFrame,
         *columns: Union[str, int],
         _direction: str = "down",
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Fills missing values in selected columns using the next or
     previous entry.
@@ -35,7 +35,7 @@ def fill(
             Currently either "down" (the default), "up",
             "downup" (i.e. first down and then up) or
             "updown" (first up and then down).
-        _base0: Whether `*columns` are 0-based if given by indexes
+        base0_: Whether `*columns` are 0-based if given by indexes
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -51,7 +51,7 @@ def fill(
                 method='ffill' if _direction.endswith('down') else 'bfill',
             )
     else:
-        colidx = vars_select(data.columns, *columns, base0=_base0)
+        colidx = vars_select(data.columns, *columns, base0=base0_)
         data.iloc[:, colidx] = fill(data.iloc[:, colidx], _direction=_direction)
     return data
 

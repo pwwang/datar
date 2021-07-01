@@ -48,7 +48,7 @@ nav:
     - 'Piping vs regular calling': 'piping_vs_regular.md'
     - 'Indexing/Selection': 'indexing.md'
     - 'Datasets': 'datasets.md'
-    - 'API': 'mkapi/api/datar'
+    - 'Advanced usage': 'advanced.md'
     - 'Examples':
         'across': 'notebooks/across.ipynb'
         'add_column': 'notebooks/add_column.ipynb'
@@ -111,5 +111,5 @@ nav:
         'uncount': 'notebooks/uncount.ipynb'
         'unite': 'notebooks/unite.ipynb'
         'with_groups': 'notebooks/with_groups.ipynb'
-    - 'TODO': 'TODO.md'
+    - 'API': 'mkapi/api/datar'
     - 'Change Log': CHANGELOG.md

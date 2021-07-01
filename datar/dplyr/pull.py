@@ -22,7 +22,7 @@ def pull(
         var: Union[int, str] = -1,
         name: Optional[StringOrIter] = None,
         to: Optional[str] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
     # pylint: disable=too-many-branches
     """Pull a series or a dataframe from a dataframe
@@ -52,7 +52,7 @@ def pull(
             - If not provided: `series` when pulled data has only one columns.
                 `dict` if `name` provided and has the same length as the pulled
                 single column. Otherwise `frame`.
-        _base0: Whether `var` is 0-based if given by index
+        base0_: Whether `var` is 0-based if given by index
             If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
@@ -66,7 +66,7 @@ def pull(
         name = [name]
 
     if isinstance(var, int):
-        var = position_at(var, _data.shape[1], base0=_base0)
+        var = position_at(var, _data.shape[1], base0=base0_)
         var = _data.columns[var]
         var = var.split('$', 1)[0]
 

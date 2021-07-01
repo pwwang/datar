@@ -24,7 +24,7 @@ def bind_rows(
         _data: Optional[Union[DataFrame, list, dict]],
         *datas: Optional[Union[DataFrame, dict]],
         _id: Optional[str] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _copy: bool = True,
         **kwargs: Union[DataFrame, dict]
 ) -> DataFrame:
@@ -38,8 +38,8 @@ def bind_rows(
             Could be a dict or a list, keys/indexes will be used for _id col
         *datas: Other dataframes to combine
         _id: The name of the id columns
-        _base0: Whether `_id` starts from 0 or not, if no keys are provided.
-            If `_base0` is not provided, will use
+        base0_: Whether `_id` starts from 0 or not, if no keys are provided.
+            If `base0_` is not provided, will use
             `datar.base.get_option('index.base.0')`
         _copy: If `False`, do not copy data unnecessarily.
             Original API does not support this. This argument will be
@@ -49,7 +49,7 @@ def bind_rows(
     Returns:
         The combined dataframe
     """
-    base = int(not get_option('index.base.0', _base0))
+    base = int(not get_option('index.base.0', base0_))
 
     if _id is not None and not isinstance(_id, str):
         raise ValueError("`_id` must be a scalar string.")
@@ -130,9 +130,9 @@ def _(
 @register_verb((DataFrame, dict, NoneType), context=Context.EVAL)
 def bind_cols(
         _data: Optional[Union[DataFrame, dict]],
-        *datas: Optional[Union[DataFrame, dict]],
+        *datas: Union[DataFrame, dict],
         _name_repair: Union[str, Callable] = "unique",
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         _copy: bool = True
 ) -> DataFrame:
     """Bind columns of give dataframes
@@ -151,7 +151,7 @@ def bind_cols(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether the numeric suffix starts from 0 or not.
+        base0_: Whether the numeric suffix starts from 0 or not.
             If not specified, will use `datar.base.get_option('index.base.0')`.
         _copy: If `False`, do not copy data unnecessarily.
             Original API does not support this. This argument will be
@@ -176,6 +176,6 @@ def bind_cols(
     ret.columns = repair_names(
         ret.columns.tolist(),
         repair=_name_repair,
-        _base0=_base0
+        base0_=base0_
     )
     return ret

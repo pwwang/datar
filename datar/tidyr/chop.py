@@ -29,7 +29,7 @@ from .drop_na import drop_na
 def chop(
         data: DataFrame,
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Makes data frame shorter by converting rows within each group
     into list-columns.
@@ -37,7 +37,7 @@ def chop(
     Args:
         data: A data frame
         cols: Columns to chop
-        _base0: Whether `cols` are 0-based
+        base0_: Whether `cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -47,7 +47,7 @@ def chop(
         return data.copy()
 
     all_columns = data.columns
-    cols = vars_select(all_columns, cols, base0=_base0)
+    cols = vars_select(all_columns, cols, base0=base0_)
     cols = all_columns[cols]
     # when cols is empty
     # order may change for all_columns.difference([])
@@ -75,7 +75,7 @@ def chop(
     else:
         vals = pandas.concat(compacted, ignore_index=True)
 
-    out = bind_cols(split_key, vals)
+    out = split_key >> bind_cols(vals)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -83,8 +83,8 @@ def unchop(
         data: DataFrame,
         cols: Optional[Union[IntOrIter, StringOrIter]] = None,
         keep_empty: bool = False,
-        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        _base0: Optional[bool] = None
+        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Makes df longer by expanding list-columns so that each element
     of the list-column gets its own row in the output.
@@ -108,21 +108,21 @@ def unchop(
             dropped from the output.
             If you want to preserve all rows, use `keep_empty` = `True` to
             replace size-0 elements with a single row of missing values.
-        dtypes: NOT `ptype`. Providing the dtypes for the output columns.
+        ptype: Providing the dtypes for the output columns.
             Could be a single dtype, which will be applied to all columns, or
             a dictionary of dtypes with keys for the columns and values the
             dtypes.
             For nested data frames, we need to specify `col$a` as key. If `col`
             is used as key, all columns of the nested data frames will be casted
             into that dtype.
-        _base0: Whether `cols` are 0-based
+        base0_: Whether `cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A data frame with selected columns unchopped.
     """
     all_columns = data.columns
-    cols = vars_select(all_columns, cols, base0=_base0)
+    cols = vars_select(all_columns, cols, base0=base0_)
 
     if len(cols) == 0 or data.shape[0] == 0:
         return data.copy()
@@ -131,7 +131,7 @@ def unchop(
     key_cols = all_columns.difference(cols).tolist()
     out = _unchopping(data, cols, key_cols, keep_empty)
 
-    apply_dtypes(out, dtypes)
+    apply_dtypes(out, ptype)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 def _vec_split(
@@ -148,7 +148,7 @@ def _vec_split(
     if isinstance(by, Series): # pragma: no cover, always a data frame?
         by = by.to_frame()
 
-    df = bind_cols(x, by)
+    df = x >> bind_cols(by)
     if df.shape[0] == 0:
         return DataFrame(columns=['key', 'val'])
     df = df >> group_by(*by.columns)
@@ -213,7 +213,7 @@ def _unchopping(
     # say y$a, then ['y'] will not select it
     out = keep_column_order(DataFrame(key_data), data.columns)
     if not keep_empty:
-        out = drop_na(out, *val_data, how='all')
+        out = drop_na(out, *val_data, how_='all')
     apply_dtypes(out, dtypes)
     copy_attrs(out, data)
     return out

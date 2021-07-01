@@ -36,12 +36,11 @@ class CollectionBase(ABC):
     def _pipda_eval(
             self,
             data: Any,
-            context: ContextAnnoType,
-            level: int = 0
+            context: ContextAnnoType
     ) -> Any:
         """Defines how the object should be evaluated when evaluated by
         pipda's evaluation"""
-        self.elems = evaluate_args(self.elems, data, context, level)
+        self.elems = evaluate_args(self.elems, data, context)
         return self
 
     @abstractmethod
@@ -60,9 +59,9 @@ class Collection(CollectionBase, list):
     convert them into 0-based finally
 
     The Inverted, Negated and slice objects will be expanded immediately. This
-    means there is no chance to apply `_base0` that is received later on. So
+    means there is no chance to apply `base0_` that is received later on. So
     the original elements are stored in `self.elems` to wait for a second
-    evaluation with the correct `_base0`.
+    evaluation with the correct `base0_`.
 
     Args:
         *args: The elements

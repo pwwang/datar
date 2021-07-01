@@ -17,37 +17,37 @@ from ..core.collections import Collection
 @register_func(None, context=Context.EVAL)
 def seq_along(
         along_with: Iterable[Any],
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> ArrayLikeType:
     """Generate sequences along an iterable
 
     Args:
         along_with: An iterable to seq along with
-        _base0: Whether the generated sequence should be 0-based.
+        base0_: Whether the generated sequence should be 0-based.
             If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The generated sequence.
     """
-    _base0 = get_option('index.base.0', _base0)
-    return Array(range(len(along_with))) + int(not _base0)
+    base0_ = get_option('index.base.0', base0_)
+    return Array(range(len(along_with))) + int(not base0_)
 
 @register_func(None, context=Context.EVAL)
 def seq_len(
         length_out: IntOrIter,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> ArrayLikeType:
     """Generate sequences with the length"""
-    _base0 = get_option('index.base.0', _base0)
+    base0_ = get_option('index.base.0', base0_)
     if is_scalar(length_out):
-        return Array(range(int(length_out))) + int(not _base0)
+        return Array(range(int(length_out))) + int(not base0_)
     if len(length_out) > 1:
         logger.warning(
             "In seq_len(%r) : first element used of 'length_out' argument",
             length_out
         )
     length_out = int(list(length_out)[0])
-    return Array(range(length_out)) + int(not _base0)
+    return Array(range(length_out)) + int(not base0_)
 
 
 @register_func(None, context=Context.EVAL)
@@ -57,7 +57,7 @@ def seq(
         by: IntType = None,
         length_out: IntType = None,
         along_with: IntType = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
 ) -> ArrayLikeType:
     """Generate a sequence
 
@@ -65,15 +65,15 @@ def seq(
 
     Note that this API is consistent with r-base's seq. 1-based and inclusive.
     """
-    _base0 = get_option('index.base.0', _base0)
+    base0_ = get_option('index.base.0', base0_)
     if along_with is not None:
-        return seq_along(along_with, _base0)
+        return seq_along(along_with, base0_)
     if from_ is not None and not is_scalar(from_):
-        return seq_along(from_, _base0)
+        return seq_along(from_, base0_)
     if length_out is not None and from_ is None and to is None:
         return seq_len(length_out)
 
-    base = int(not _base0)
+    base = int(not base0_)
 
     if from_ is None:
         from_ = base

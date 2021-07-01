@@ -1,3 +1,7 @@
+## Why `f`?
+
+It is just fast for you to type, since usually, it is `.` right after `f`. Then you have your left hand and right hand working together sequentially.
+
 ## The `Symbolic` object `f`
 
 You can import it by `from datar import f`, or `from datar.all import *`
@@ -18,6 +22,8 @@ There are different uses for the `f`.
         3,   4
     )
     ```
+
+## If you don't like `f` ...
 
 Sometimes if you have mixed verbs with piping and you want to distinguish to proxies for different verbs:
 

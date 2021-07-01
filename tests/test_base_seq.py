@@ -26,7 +26,7 @@ def test_seq_along():
     assert_iterable_equal(seq_along([]), [])
     assert_iterable_equal(seq_along([1,2]), [1,2])
     assert_iterable_equal(seq_along(['a', 'b']), [1,2])
-    assert_iterable_equal(seq_along(['a', 'b'], _base0=True), [0,1])
+    assert_iterable_equal(seq_along(['a', 'b'], base0_=True), [0,1])
 
 def test_seq_len(caplog):
     assert_iterable_equal(seq_len([3,4]), [1,2,3])

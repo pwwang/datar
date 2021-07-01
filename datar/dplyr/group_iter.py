@@ -33,7 +33,7 @@ def group_map(
         *args: Any,
         _keep: bool = False,
         **kwargs: Any,
-) -> List[Any]:
+) -> Iterable:
     """A generator to map function to data in each group"""
     keys = group_keys(_data) if nargs(_f) > 1 else None
     for i, chunk in enumerate(group_split(_data, _keep=_keep)):
@@ -42,9 +42,20 @@ def group_map(
         else:
             yield _f(chunk, keys.iloc[[i], :], *args, **kwargs)
 
-group_map.list = register_verb(DataFrame, context=Context.PENDING)(
-    lambda *args, **kwargs: list(group_map(*args, **kwargs))
-)
+def _group_map_list(
+        _data: DataFrame,
+        _f: Callable,
+        *args: Any,
+        _keep: bool = False,
+        **kwargs: Any
+) -> List:
+    """List version of group_map"""
+    return list(_data >> group_map(_f, *args, _keep=_keep, **kwargs))
+
+group_map.list = register_verb(
+    DataFrame,
+    context=Context.PENDING
+)(_group_map_list)
 
 @register_verb(DataFrame, context=Context.EVAL)
 def group_modify(
@@ -204,9 +215,19 @@ def _(
 
     return group_split_impl(_data, _keep=True)
 
-group_split.list = register_verb(DataFrame, context=Context.PENDING)(
-    lambda *args, **kwargs: list(group_split(*args, **kwargs))
-)
+def _group_split_list(
+        _data: DataFrame,
+        *args: Any,
+        _keep: bool = True,
+        **kwargs: Any
+) -> Iterable[DataFrame]:
+    """List version of group_split"""
+    return list(_data >> group_split(*args, _keep=_keep, **kwargs))
+
+group_split.list = register_verb(
+    DataFrame,
+    context=Context.PENDING
+)(_group_split_list)
 
 def group_split_impl(data: DataFrame, _keep: bool):
     """Implement splitting data frame by groups"""

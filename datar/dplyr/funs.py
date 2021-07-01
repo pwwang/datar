@@ -157,7 +157,7 @@ def nth(
         n: int,
         order_by: Optional[Iterable[Any]] = None,
         default: Any = NA,
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> Any:
     """Get the nth element of x
 
@@ -169,7 +169,7 @@ def nth(
         order_by: An optional vector used to determine the order
         default: A default value to use if the position does not exist
             in the input.
-        _base0: Whether `n` is 0-based or not.
+        base0_: Whether `n` is 0-based or not.
 
     Returns:
         A single element of x at `n'th`
@@ -182,7 +182,7 @@ def nth(
         raise TypeError("`nth` expects `n` to be an integer")
 
     try:
-        return x[position_at(n, len(x), base0=_base0)]
+        return x[position_at(n, len(x), base0=base0_)]
     except (ValueError, IndexError, TypeError):
         return default
 

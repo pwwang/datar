@@ -24,7 +24,7 @@ from .pack import unpack
 def nest(
         _data: DataFrame,
         _names_sep: Optional[str] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **cols: Union[str, int]
 ) -> DataFrame:
     """Nesting creates a list-column of data frames
@@ -38,7 +38,7 @@ def nest(
             The names of the new outer columns will be formed by pasting
             together the outer and the inner column names, separated by
             `_names_sep`.
-        _base0: Whether `**cols` are 0-based
+        base0_: Whether `**cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -51,7 +51,7 @@ def nest(
     colgroups = {}
     usedcols = set()
     for group, columns in cols.items():
-        oldcols = all_columns[vars_select(all_columns, columns, base0=_base0)]
+        oldcols = all_columns[vars_select(all_columns, columns, base0=base0_)]
         usedcols = usedcols.union(oldcols)
         newcols = (
             oldcols if _names_sep is None else
@@ -83,20 +83,20 @@ def nest(
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
-    return bind_cols(u_keys, recycle_value(out, u_keys.shape[0]))
+    return u_keys >> bind_cols(recycle_value(out, u_keys.shape[0]))
 
 @nest.register(DataFrameGroupBy, context=Context.SELECT)
 def _(
         _data: DataFrameGroupBy,
         _names_sep: Optional[str] = None,
-        _base0: Optional[bool] = None,
+        base0_: Optional[bool] = None,
         **cols: Mapping[str, Union[str, int]]
 ) -> DataFrameGroupBy:
     """Nesting grouped dataframe"""
     if not cols:
         cols = {'data': setdiff(_data.columns, group_vars(_data))}
     out = nest.dispatch(DataFrame)(
-        _data, **cols, _names_sep=_names_sep, _base0=_base0
+        _data, **cols, _names_sep=_names_sep, base0_=base0_
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
@@ -105,10 +105,10 @@ def unnest(
         data: DataFrame,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
+        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Flattens list-column of data frames back out into regular columns.
 
@@ -122,7 +122,7 @@ def unnest(
             dropped from the output.
             If you want to preserve all rows, use `keep_empty` = `True` to
             replace size-0 elements with a single row of missing values.
-        dtypes: NOT `ptype`. Providing the dtypes for the output columns.
+        ptype: Providing the dtypes for the output columns.
             Could be a single dtype, which will be applied to all columns, or
             a dictionary of dtypes with keys for the columns and values the
             dtypes.
@@ -139,7 +139,7 @@ def unnest(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        _base0: Whether `cols` are 0-based
+        base0_: Whether `cols` are 0-based
             if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
@@ -149,7 +149,7 @@ def unnest(
         raise ValueError("`*cols` is required when using unnest().")
 
     all_columns = data.columns
-    cols = vars_select(all_columns, cols, base0=_base0)
+    cols = vars_select(all_columns, cols, base0=base0_)
     cols = all_columns[cols]
 
     out = data.copy()
@@ -158,7 +158,7 @@ def unnest(
 
     out = unchop(
         out, cols,
-        keep_empty=keep_empty, dtypes=dtypes, _base0=_base0
+        keep_empty=keep_empty, ptype=ptype, base0_=base0_
     )
     return unpack(
         out, cols,
@@ -170,19 +170,19 @@ def _(
         data: DataFrameRowwise,
         *cols: Union[str, int],
         keep_empty: bool = False,
-        dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
+        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
         names_sep: Optional[str] = None,
         names_repair: Union[str, Callable] = 'check_unique',
-        _base0: Optional[bool] = None
+        base0_: Optional[bool] = None
 ) -> DataFrame:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
         data, *cols,
         keep_empty=keep_empty,
-        dtypes=dtypes,
+        ptype=ptype,
         names_sep=names_sep,
         names_repair=names_repair,
-        _base0=_base0
+        base0_=base0_
     )
     return DataFrameGroupBy(
         out,

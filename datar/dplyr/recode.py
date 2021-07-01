@@ -29,13 +29,13 @@ def _args_to_recodings(
         **kwargs: Any
 ) -> Mapping[Any, Any]:
     """Convert arguments to replaceable"""
-    _base0 = get_option('index.base.0')
+    base0_ = get_option('index.base.0')
     values = {}
     for i, arg in enumerate(args):
         if isinstance(arg, dict):
             values.update(arg)
         else:
-            values[i + int(not _base0)] = arg
+            values[i + int(not base0_)] = arg
 
     values.update(kwargs)
     if _force_index:

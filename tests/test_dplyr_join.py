@@ -260,18 +260,18 @@ def test_join_by_dict_not_keep():
 def test_nest_join_by_multiple():
     df1 = tibble(x=[1,2], y=[3,4])
     df2 = tibble(x=[1,2], y=[3,4], z=[5,6])
-    out = nest_join(df1, df2, by=['x', 'y'])
+    out = df1 >> nest_join(df2, by=['x', 'y'])
     assert out.df2.values[0].equals(tibble(z=5))
     assert out.df2.values[1].equals(tibble(z=6))
 
-    out = nest_join(df1, df2, copy=True)
+    out = df1 >> nest_join(df2, copy=True)
     assert out.df2.values[0].equals(tibble(z=5))
     assert out.df2.values[1].equals(tibble(z=6))
 
 def test_join_by_none():
     df1 = tibble(x=[1,2,3], y=[3,4,5])
     df2 = tibble(x=[2,3,4], z=[5,6,7])
-    out = inner_join(df1, df2, keep=True)
+    out = df1 >> inner_join(df2, keep=True)
 
     assert_frame_equal(out, tibble(
         x_x=[2,3],
@@ -280,7 +280,7 @@ def test_join_by_none():
         z=[5,6]
     ))
 
-    out = inner_join(df1, df2, keep=False)
+    out = df1 >> inner_join(df2, keep=False)
     assert_frame_equal(out, tibble(
         x=[2,3],
         y=[4,5],
