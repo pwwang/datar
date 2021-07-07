@@ -11,6 +11,7 @@ from ..core.types import is_scalar, is_null
 
 from .na import NA
 
+
 def _ensure_nas_after_na(x: Any) -> Any:
     """Ensure NAs after first NA
 
@@ -27,10 +28,11 @@ def _ensure_nas_after_na(x: Any) -> Any:
     x[na_index:] = NA
     return x
 
+
 # pylint: disable=invalid-name
 cumsum = register_numpy_func_x(
-    'cumsum',
-    'cumsum',
+    "cumsum",
+    "cumsum",
     trans_in=_ensure_nas_after_na,
     doc="""Cumulative sum of elements.
 
@@ -39,12 +41,12 @@ Args:
 
 Returns:
     An array of cumulative sum of elements in x
-"""
+""",
 )
 
 cumprod = register_numpy_func_x(
-    'cumprod',
-    'cumprod',
+    "cumprod",
+    "cumprod",
     trans_in=_ensure_nas_after_na,
     doc="""Cumulative product of elements.
 
@@ -53,7 +55,7 @@ Args:
 
 Returns:
     An array of cumulative product of elements in x
-"""
+""",
 )
 
 
@@ -71,6 +73,7 @@ def cummin(x: Any) -> Any:
         return x
     x = _ensure_nas_after_na(x)
     return Series(x).cummin()
+
 
 @register_func(None, context=Context.EVAL)
 def cummax(x: Any) -> Any:

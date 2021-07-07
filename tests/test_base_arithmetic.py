@@ -68,10 +68,10 @@ def test_floor():
 
 def test_cov():
     df = tibble(x=f[1:3], y=f[4:6])
-    out = cov(df) >> drop_index()
+    out = df >> cov() >> drop_index()
     assert_frame_equal(out, tibble(x=[1.0,1.0], y=[1.0,1.0]))
 
-    out = cov([1,2,3], [4,5,6])
+    out = [1,2,3] >> cov([4,5,6])
     assert out == 1.0
 
 def test_col_row_verbs():
@@ -118,7 +118,7 @@ def test_col_row_verbs():
     )
 
 def test_scale():
-    out = scale([1,2,3])
+    out =  [1,2,3] >> scale()
     assert_frame_equal(out, tibble(scaled=[-1.,0.,1.]))
     assert_iterable_equal(out.attrs['scaled:center'], [2])
     assert_iterable_equal(out.attrs['scaled:scale'], [1])
@@ -128,7 +128,7 @@ def test_scale():
     assert_iterable_equal(out.attrs['scaled:center'], [1])
     assert_iterable_equal(out.attrs['scaled:scale'], [1.581139], approx=True)
 
-    out = scale([1,2,3], scale=1)
+    out = [1,2,3] >> scale(scale=1)
     assert_frame_equal(out, tibble(scaled=[-1.,0.,1.]))
     assert_iterable_equal(out.attrs['scaled:center'], [2])
     assert_iterable_equal(out.attrs['scaled:scale'], [1])
@@ -136,7 +136,7 @@ def test_scale():
     with pytest.raises(ValueError):
         scale([1,2,3], center=[1,2])
     with pytest.raises(ValueError):
-        scale([1,2,3], scale=[1,2])
+        [1,2,3] >> scale(scale=[1,2])
 
     df = tibble(x=[1,2,3], y=[4,5,6])
     assert_frame_equal(scale(df, False, False), df)

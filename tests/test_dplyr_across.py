@@ -173,7 +173,7 @@ def test_cache_key():
     df = tibble(g=rep([1,2], each=2), a=range(1,5)) >> group_by(f.g)
 
     out = df >> mutate(
-        fibble(
+        tibble(
             x = across(where(is_numeric), mean).a,
             y = across(where(is_numeric), max).a
         )
@@ -307,7 +307,7 @@ def test_c_across():
     assert out[0].tolist() == [1,2,3,4]
 
     # what if no columns specified
-    gf = group_by(df, f.x)
+    gf = df >> group_by(f.x)
     out = gf >> mutate(z=sum(c_across())) >> pull(to='list')
     assert out == [3,4]
 

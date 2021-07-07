@@ -15,7 +15,7 @@ import numpy
 from pandas.core.dtypes.common import (
     is_integer_dtype,
     is_float_dtype,
-    is_numeric_dtype
+    is_numeric_dtype,
 )
 from pipda import register_func
 
@@ -24,19 +24,21 @@ from ..core.types import TypeOrIter, BoolOrIter, is_scalar
 
 # pylint: disable=invalid-name
 
+
 def _register_type_testing(
-        name: str,
-        scalar_types: TypeOrIter,
-        dtype_checker: Callable[[Iterable], bool],
-        doc: str = ""
+    name: str,
+    scalar_types: TypeOrIter,
+    dtype_checker: Callable[[Iterable], bool],
+    doc: str = "",
 ) -> Callable:
     """Register type testing function"""
+
     @register_func(None, context=Context.EVAL)
     def _testing(x: Any) -> bool:
         """Type testing"""
         if is_scalar(x):
             return isinstance(x, scalar_types)
-        if hasattr(x, 'dtype'):
+        if hasattr(x, "dtype"):
             return dtype_checker(x)
         return all(isinstance(elem, scalar_types) for elem in x)
 
@@ -44,8 +46,9 @@ def _register_type_testing(
     _testing.__doc__ = doc
     return _testing
 
+
 is_numeric = _register_type_testing(
-    'is_numeric',
+    "is_numeric",
     scalar_types=(int, float, complex, numpy.number),
     dtype_checker=is_numeric_dtype,
     doc="""Test if a value is numeric
@@ -56,11 +59,11 @@ is_numeric = _register_type_testing(
     Returns:
         True if the value is numeric; with a numeric dtype;
         or all elements are numeric
-    """
+    """,
 )
 
 is_integer = _register_type_testing(
-    'is_integer',
+    "is_integer",
     scalar_types=(int, numpy.integer),
     dtype_checker=is_integer_dtype,
     doc="""Test if a value is integers
@@ -72,13 +75,13 @@ is_integer = _register_type_testing(
 
     Returns:
         True if the value is an integer or integers; False otherwise.
-    """
+    """,
 )
 
 is_int = is_integer
 
 is_double = _register_type_testing(
-    'is_double',
+    "is_double",
     scalar_types=(float, numpy.float_),
     dtype_checker=is_float_dtype,
     doc="""Test if a value is integers
@@ -90,10 +93,11 @@ is_double = _register_type_testing(
 
     Returns:
         True if the value is an integer or integers; False otherwise.
-    """
+    """,
 )
 
 is_float = is_double
+
 
 @register_func(None, context=Context.EVAL)
 def is_atomic(x: Any) -> bool:
@@ -122,13 +126,14 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
         return bool(out)
     return out
 
+
 is_in = is_element
 
 # pylint: disable=unnecessary-lambda, redefined-builtin
 all = register_func(None, context=Context.EVAL)(
     # can't set attributes to builtins.all, so wrap it.
-    lambda *args, **kwargs: builtins.all(*args, **kwargs)
+    lambda arg: builtins.all(arg)
 )
 any = register_func(None, context=Context.EVAL)(
-    lambda *args, **kwargs: builtins.any(*args, **kwargs)
+    lambda arg: builtins.any(arg)
 )

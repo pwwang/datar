@@ -1,5 +1,6 @@
 """Basic functions"""
 from typing import Any, Iterable
+import numpy
 
 from pandas import Series
 from pipda import register_func
@@ -8,8 +9,9 @@ from ..core.contexts import Context
 from ..core.collections import Collection
 from ..core.utils import Array
 
+
 @register_func(None, context=Context.EVAL)
-def itemgetter(data: Iterable[Any], *subscripts) -> Array:
+def itemgetter(data: Iterable[Any], *subscripts) -> numpy.ndarray:
     """Itemgetter as a function for verb
 
     In datar expression, we can do:
@@ -24,8 +26,7 @@ def itemgetter(data: Iterable[Any], *subscripts) -> Array:
         *subscripts: The subscripts
     """
     flattened = Collection(
-        subs.values if isinstance(subs, Series) else subs
-        for subs in subscripts
+        subs.values if isinstance(subs, Series) else subs for subs in subscripts
     )
 
     return Array([data[sub] for sub in flattened])

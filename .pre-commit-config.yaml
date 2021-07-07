@@ -39,6 +39,14 @@ repos:
         language: system
         files: pyproject.toml
         pass_filenames: false
+    # -   id: mypycheck
+    #     name: Type checking by mypy
+    #     entry: mypy
+    #     language: system
+    #     files: ^datar/.+$
+    #     pass_filenames: false
+    #     types: [python]
+    #     args: [-p, datar]
     -   id: pytest
         name: Run pytest
         entry: pytest
@@ -46,10 +54,10 @@ repos:
         args: [tests/]
         pass_filenames: false
         files: ^tests/.+$|^datar/.+$
-    -   id: mkdocs
-        name: Compile docs
-        entry: mkdocs
-        language: system
-        args: [build]
-        pass_filenames: false
-        files: ^datar/.+$
+    # -   id: mkdocs
+    #     name: Compile docs
+    #     entry: mkdocs
+    #     language: system
+    #     args: [build]
+    #     pass_filenames: false
+    #     files: ^datar/.+$

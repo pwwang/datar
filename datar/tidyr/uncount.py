@@ -1,6 +1,6 @@
 """Uncount a data frame"""
 
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable
 
 import numpy
 from pandas import DataFrame
@@ -12,15 +12,16 @@ from ..core.utils import get_option, reconstruct_tibble
 
 from ..dplyr import group_by, mutate, row_number, ungroup
 
-INDEX_COLUMN = '_UNCOUND_INDEX_'
+INDEX_COLUMN = "_UNCOUND_INDEX_"
+
 
 @register_verb(DataFrame, context=Context.EVAL)
 def uncount(
-        data: DataFrame,
-        weights: IntOrIter,
-        _remove: bool = True,
-        _id: Optional[str] = None,
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    weights: IntOrIter,
+    _remove: bool = True,
+    _id: str = None,
+    base0_: bool = None,
 ) -> DataFrame:
     """Duplicating rows according to a weighting variable
 
@@ -38,17 +39,16 @@ def uncount(
         dataframe with rows repeated.
     """
     if is_scalar(weights):
-        weights = [weights] * data.shape[0]
+        weights = [weights] * data.shape[0] # type: ignore
 
     _check_weights(weights)
 
     indexes = [
-        idx for i, idx in enumerate(data.index)
-        for _ in range(int(weights[i]))
+        idx for i, idx in enumerate(data.index) for _ in range(int(weights[i]))
     ]
 
     all_columns = data.columns
-    weight_name = getattr(weights, 'name', None)
+    weight_name = getattr(weights, "name", None)
     if weight_name in all_columns and weights is data[weight_name]:
         rest_columns = all_columns.difference([weight_name])
     else:
@@ -60,17 +60,18 @@ def uncount(
     out.reset_index(drop=True, inplace=True)
 
     if _id:
-        base = int(not get_option('index.base.0', base0_))
+        base = int(not get_option("index.base.0", base0_))
         # pylint: disable=no-value-for-parameter
         out = (
-            out >>
-            group_by(INDEX_COLUMN) >>
-            mutate(**{_id: row_number() + base - 1}) >>
-            ungroup()
+            out
+            >> group_by(INDEX_COLUMN)
+            >> mutate(**{_id: row_number() + base - 1})
+            >> ungroup()
         )
 
     out.drop(columns=[INDEX_COLUMN], inplace=True)
     return reconstruct_tibble(data, out)
+
 
 def _check_weights(weights: Iterable[Any]) -> None:
     """Check if uncounting weights are valid"""

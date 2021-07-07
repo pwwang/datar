@@ -76,7 +76,7 @@ def test_by_tuple_values():
     df = tibble(
         x=[1,2,3],
         y=[(1,2), (1,2,3), (1,2)],
-        _dtypes={'y': object}
+        dtypes_={'y': object}
     ) >> group_by(f.y)
     out = df >> count()
     assert out.y.tolist() == [(1,2), (1,2,3)]
@@ -270,7 +270,6 @@ def test_add_passes_drop():
         f2 = factor("g", levels = c("e", "f", "g")),
         x  = 48
     )
-
     res = group_by(group_by(d, f.f1, _drop = TRUE), f.f2, _add = TRUE)
     ng = n_groups(res)
     assert ng == 1

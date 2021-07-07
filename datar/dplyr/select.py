@@ -2,7 +2,7 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/select.R
 """
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Tuple, Union
 
 from pandas import DataFrame, Index, Series
 from pipda import register_verb
@@ -16,12 +16,13 @@ from ..base import setdiff, union
 from .group_by import group_by_drop_default
 from .group_data import group_data, group_vars
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def select(
-        _data: DataFrame,
-        *args: Union[StringOrIter, Inverted],
-        base0_: Optional[bool] = None,
-        **kwargs: Mapping[str, str]
+    _data: DataFrame,
+    *args: Union[StringOrIter, Iterable[Iterable], Inverted],
+    base0_: bool = None,
+    **kwargs: Mapping[str, str],
 ) -> DataFrame:
     """Select (and optionally rename) variables in a data frame
 
@@ -46,11 +47,7 @@ def select(
     all_columns = _data.columns
     gvars = group_vars(_data)
     selected, new_names = _eval_select(
-        all_columns,
-        *args,
-        **kwargs,
-        _group_vars=gvars,
-        base0_=base0_
+        all_columns, *args, **kwargs, _group_vars=gvars, base0_=base0_
     )
     out = _data.iloc[:, selected].copy()
 
@@ -60,21 +57,22 @@ def select(
     if isinstance(_data, DataFrameGroupBy):
         gvars = [new_names.get(gvar, gvar) for gvar in gvars]
         gdata = group_data(_data)
-        gdata.columns = gvars + ['_rows']
+        gdata.columns = gvars + ["_rows"]
         return _data.__class__(
             out,
             _group_vars=gvars,
             _group_drop=group_by_drop_default(_data),
-            _group_data=gdata
+            _group_data=gdata,
         )
     return out
 
+
 def _eval_select(
-        _all_columns: Index,
-        *args: Any,
-        _group_vars: Iterable[str],
-        base0_: Optional[bool] = None,
-        **kwargs: Any
+    _all_columns: Index,
+    *args: Any,
+    _group_vars: Iterable[str],
+    base0_: bool = None,
+    **kwargs: Any,
 ) -> Tuple[List[int], Mapping[str, str]]:
     """Evaluate selections to get locations
 
@@ -84,10 +82,7 @@ def _eval_select(
     selected = vars_select(_all_columns, *args, *kwargs.values(), base0=base0_)
     missing = setdiff(_group_vars, _all_columns[selected])
     if missing:
-        logger.info(
-            "Adding missing grouping variables: %s",
-            missing
-        )
+        logger.info("Adding missing grouping variables: %s", missing)
 
     selected = union(_all_columns.get_indexer_for(_group_vars), selected)
 
@@ -103,10 +98,10 @@ def _eval_select(
             idx = _all_columns.get_indexer_for([val])
             if len(idx) > 1:
                 raise ValueError(
-                    'Names must be unique. '
+                    "Names must be unique. "
                     f'Name "{val}" found at locations {list(idx)}.'
                 )
-        else: # int
+        else:  # int
             # try:
             #   If out of bounds, it should be raised at getting missing
             val = _all_columns[

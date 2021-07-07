@@ -2,7 +2,7 @@
 
 https://github.com/tidyverse/tidyr/blob/master/R/nest.R
 """
-from typing import Callable, Mapping, Optional, Union, Iterable, List
+from typing import Callable, Mapping, Union, Iterable, List
 import re
 
 import pandas
@@ -20,12 +20,13 @@ from ..dplyr import distinct, bind_cols, group_vars, group_by_drop_default
 from .chop import unchop, _vec_split
 from .pack import unpack
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def nest(
-        _data: DataFrame,
-        _names_sep: Optional[str] = None,
-        base0_: Optional[bool] = None,
-        **cols: Union[str, int]
+    _data: DataFrame,
+    _names_sep: str = None,
+    base0_: bool = None,
+    **cols: Union[str, int],
 ) -> DataFrame:
     """Nesting creates a list-column of data frames
 
@@ -51,13 +52,14 @@ def nest(
     colgroups = {}
     usedcols = set()
     for group, columns in cols.items():
-        oldcols = all_columns[vars_select(all_columns, columns, base0=base0_)]
-        usedcols = usedcols.union(oldcols)
+        old_cols = all_columns[vars_select(all_columns, columns, base0=base0_)]
+        usedcols = usedcols.union(old_cols)
         newcols = (
-            oldcols if _names_sep is None else
-            _strip_names(oldcols, group, _names_sep)
+            old_cols
+            if _names_sep is None
+            else _strip_names(old_cols, group, _names_sep)
         )
-        colgroups[group] = dict(zip(newcols, oldcols))
+        colgroups[group] = dict(zip(newcols, old_cols))
 
     asis = setdiff(_data.columns, usedcols)
     keys = _data[asis]
@@ -65,7 +67,7 @@ def nest(
 
     nested = []
     for group, columns in colgroups.items():
-        if _names_sep is None: # names as is
+        if _names_sep is None:  # names as is
             # out <- map(cols, ~ vec_split(.data[.x], keys)$val)
             val = _vec_split(_data[list(columns)], keys).val
         else:
@@ -85,30 +87,32 @@ def nest(
         return out if isinstance(out, DataFrame) else out.to_frame()
     return u_keys >> bind_cols(recycle_value(out, u_keys.shape[0]))
 
+
 @nest.register(DataFrameGroupBy, context=Context.SELECT)
 def _(
-        _data: DataFrameGroupBy,
-        _names_sep: Optional[str] = None,
-        base0_: Optional[bool] = None,
-        **cols: Mapping[str, Union[str, int]]
+    _data: DataFrameGroupBy,
+    _names_sep: str = None,
+    base0_: bool = None,
+    **cols: Mapping[str, Union[str, int]],
 ) -> DataFrameGroupBy:
     """Nesting grouped dataframe"""
     if not cols:
-        cols = {'data': setdiff(_data.columns, group_vars(_data))}
+        cols = {"data": setdiff(_data.columns, group_vars(_data))}
     out = nest.dispatch(DataFrame)(
         _data, **cols, _names_sep=_names_sep, base0_=base0_
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def unnest(
-        data: DataFrame,
-        *cols: Union[str, int],
-        keep_empty: bool = False,
-        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        names_sep: Optional[str] = None,
-        names_repair: Union[str, Callable] = 'check_unique',
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    *cols: Union[str, int],
+    keep_empty: bool = False,
+    ptype: Union[Dtype, Mapping[str, Dtype]] = None,
+    names_sep: str = None,
+    names_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
 ) -> DataFrame:
     """Flattens list-column of data frames back out into regular columns.
 
@@ -156,57 +160,55 @@ def unnest(
     for col in cols:
         out[col] = _as_df(data[col])
 
-    out = unchop(
-        out, cols,
-        keep_empty=keep_empty, ptype=ptype, base0_=base0_
-    )
-    return unpack(
-        out, cols,
-        names_sep=names_sep, names_repair=names_repair
-    )
+    out = unchop(out, cols, keep_empty=keep_empty, ptype=ptype, base0_=base0_)
+    return unpack(out, cols, names_sep=names_sep, names_repair=names_repair)
+
 
 @unnest.register(DataFrameRowwise, context=Context.SELECT)
 def _(
-        data: DataFrameRowwise,
-        *cols: Union[str, int],
-        keep_empty: bool = False,
-        ptype: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        names_sep: Optional[str] = None,
-        names_repair: Union[str, Callable] = 'check_unique',
-        base0_: Optional[bool] = None
+    data: DataFrameRowwise,
+    *cols: Union[str, int],
+    keep_empty: bool = False,
+    ptype: Union[Dtype, Mapping[str, Dtype]] = None,
+    names_sep: str = None,
+    names_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
 ) -> DataFrame:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
-        data, *cols,
+        data,
+        *cols,
         keep_empty=keep_empty,
         ptype=ptype,
         names_sep=names_sep,
         names_repair=names_repair,
-        base0_=base0_
+        base0_=base0_,
     )
     return DataFrameGroupBy(
         out,
         _group_vars=group_vars(data),
-        _group_drop=group_by_drop_default(data)
+        _group_drop=group_by_drop_default(data),
     )
+
 
 def _strip_names(names: Iterable[str], base: str, sep: str) -> List[str]:
     """Strip the base names with sep"""
     out = []
     for name in names:
         if not sep:
-            out.append(name[len(base):] if name.startswith(base) else name)
+            out.append(name[len(base) :] if name.startswith(base) else name)
         else:
             parts = re.split(re.escape(sep), name, maxsplit=1)
             out.append(parts[1] if parts[0] == base else name)
     return out
 
-def _as_df(series: Series) -> List[Optional[DataFrame]]:
+
+def _as_df(series: Series) -> List[DataFrame]:
     """Convert series to dataframe"""
     out = []
     for val in series:
         if isinstance(val, DataFrame):
-            if val.shape[1] == 0: # no columns
+            if val.shape[1] == 0:  # no columns
                 out.append(NA)
             elif val.shape[0] == 0:
                 out.append(

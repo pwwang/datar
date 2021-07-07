@@ -7,6 +7,7 @@ from pipda import register_verb
 from ..core.grouped import DataFrameGroupBy
 from ..base import setdiff
 
+
 @register_verb(DataFrame)
 def group_data(_data: DataFrame) -> DataFrame:
     """Returns a data frame that defines the grouping structure.
@@ -22,11 +23,13 @@ def group_data(_data: DataFrame) -> DataFrame:
         Note that `_rows` are always 0-based.
     """
     rows = list(range(_data.shape[0]))
-    return DataFrame({'_rows': [rows]})
+    return DataFrame({"_rows": [rows]})
+
 
 @group_data.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> DataFrame:
     return _data._group_data
+
 
 @register_verb(DataFrame)
 def group_keys(_data: DataFrame) -> DataFrame:
@@ -44,22 +47,24 @@ def group_keys(_data: DataFrame) -> DataFrame:
     """
     return DataFrame(index=[0])
 
+
 @group_keys.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> DataFrame:
     # .copy() allows future modifications
     return group_data(_data).iloc[:, :-1].copy()
 
+
 @register_verb(DataFrame)
-def group_rows(
-        _data: DataFrame
-) -> List[List[int]]:
+def group_rows(_data: DataFrame) -> List[List[int]]:
     """The locations of grouping structure, always 0-based."""
     rows = list(range(_data.shape[0]))
     return [rows]
 
+
 @group_rows.register(DataFrameGroupBy)
 def _(_data: DataFrame) -> List[List[int]]:
-    return group_data(_data)['_rows'].tolist()
+    return group_data(_data)["_rows"].tolist()
+
 
 @register_verb(DataFrame)
 def group_indices(_data: DataFrame) -> List[int]:
@@ -69,6 +74,7 @@ def group_indices(_data: DataFrame) -> List[int]:
     """
     return [0] * _data.shape[0]
 
+
 @group_indices.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[int]:
     ret = {}
@@ -77,38 +83,45 @@ def _(_data: DataFrameGroupBy) -> List[int]:
             ret[index] = row.Index
     return [ret[key] for key in sorted(ret)]
 
+
 @register_verb(DataFrame)
 def group_vars(_data: DataFrame) -> List[str]:
     """Gives names of grouping variables as character vector"""
     # If it is a subdf of a DataFrameGroupBy, still be able to
     # return the group_vars
-    index = _data.attrs.get('_group_index', None)
+    index = _data.attrs.get("_group_index", None)
     if index is None:
         return []
-    gdata = _data.attrs['_group_data']
-    return setdiff(gdata.columns, ['_rows'])
+    gdata = _data.attrs["_group_data"]
+    return setdiff(gdata.columns, ["_rows"])
+
 
 @group_vars.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[str]:
     return _data._group_vars
 
+
 # groups in dplyr returns R list
-groups = group_vars # pylint: disable=invalid-name
-group_cols = group_vars # pylint: disable=invalid-name
+groups = group_vars  # pylint: disable=invalid-name
+group_cols = group_vars  # pylint: disable=invalid-name
+
 
 @register_verb(DataFrame)
 def group_size(_data: DataFrame) -> List[int]:
     """Gives the size of each group"""
     return [_data.shape[0]]
 
+
 @group_size.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[int]:
-    return list(map(len, group_data(_data)['_rows']))
+    return list(map(len, group_data(_data)["_rows"]))
+
 
 @register_verb(DataFrame)
 def n_groups(_data: DataFrame) -> int:
     """Gives the total number of groups."""
     return 1
+
 
 @n_groups.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> int:

@@ -3,7 +3,7 @@
 https://github.com/tidyverse/dplyr/blob/master/R/slice.R
 """
 import builtins
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Iterable, List, Union
 
 from pandas import DataFrame, RangeIndex
 from pipda import register_verb
@@ -12,17 +12,20 @@ from ..core.contexts import Context
 from ..core.collections import Collection
 from ..core.utils import copy_attrs, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
+from ..core.types import NumericOrIter
 
 from ..base import NA, unique
 from .dfilter import _filter_groups
 
+# pylint: disable=no-value-for-parameter
+
 
 @register_verb(DataFrame, context=Context.SELECT)
-def slice( # pylint: disable=redefined-builtin
-        _data: DataFrame,
-        *rows: Any,
-        _preserve: bool = False,
-        base0_: Optional[bool] = None
+def slice(  # pylint: disable=redefined-builtin
+    _data: DataFrame,
+    *rows: NumericOrIter,
+    _preserve: bool = False,
+    base0_: bool = None,
 ) -> DataFrame:
     """Index rows by their (integer) locations
 
@@ -60,34 +63,32 @@ def slice( # pylint: disable=redefined-builtin
     out = _data.iloc[rows, :]
     if isinstance(_data.index, RangeIndex):
         out.reset_index(drop=True, inplace=True)
-    #copy_attrs(out, _data) # attrs carried
+    # copy_attrs(out, _data) # attrs carried
     return out
+
 
 @slice.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        *rows: Any,
-        _preserve: bool = False,
-        base0_: Optional[bool] = None
+    _data: DataFrameGroupBy,
+    *rows: Any,
+    _preserve: bool = False,
+    base0_: bool = None,
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.datar_apply(
-        lambda df: slice(df, *rows, base0_=base0_)
-    )
+    out = _data.datar_apply(lambda df: df >> slice(*rows, base0_=base0_))
     out = reconstruct_tibble(_data, out, keep_rowwise=True)
     gdata = _filter_groups(out, _data)
 
-    if not _preserve and _data.attrs.get('_group_drop', True):
-        out._group_data = gdata[gdata['_rows'].map(len) > 0]
+    if not _preserve and _data.attrs.get("_group_drop", True):
+        out._group_data = gdata[gdata["_rows"].map(len) > 0]
 
     copy_attrs(out, _data)
     return out
 
+
 @register_verb(DataFrame)
 def slice_head(
-        _data: DataFrame,
-        n: Optional[int] = None,
-        prop: Optional[float] = None
+    _data: DataFrame, n: int = None, prop: float = None
 ) -> DataFrame:
     """Select first rows
 
@@ -108,24 +109,16 @@ def slice_head(
     n = _n_from_prop(_data.shape[0], n, prop)
     return slice(_data, builtins.slice(None, n), base0_=True)
 
+
 @slice_head.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrame,
-        n: Optional[int] = None,
-        prop: Optional[float] = None
-) -> DataFrameGroupBy:
+def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.datar_apply(
-        lambda df: slice_head(df, n, prop)
-    )
+    out = _data.datar_apply(lambda df: slice_head(df, n, prop))
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
+
 @register_verb(DataFrame)
-def slice_tail(
-        _data: DataFrame,
-        n: Optional[int] = 1,
-        prop: Optional[float] = None
-) -> DataFrame:
+def slice_tail(_data: DataFrame, n: int = 1, prop: float = None) -> DataFrame:
     """Select last rows
 
     See Also:
@@ -134,25 +127,21 @@ def slice_tail(
     n = _n_from_prop(_data.shape[0], n, prop)
     return slice(_data, builtins.slice(-n, None), base0_=True)
 
+
 @slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-        _data: DataFrame,
-        n: Optional[int] = None,
-        prop: Optional[float] = None
-) -> DataFrameGroupBy:
+def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.datar_apply(
-        lambda df: slice_tail(df, n, prop)
-    )
+    out = _data.datar_apply(lambda df: slice_tail(df, n, prop))
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
-@register_verb(DataFrame, extra_contexts={'order_by': Context.EVAL})
+
+@register_verb(DataFrame, extra_contexts={"order_by": Context.EVAL})
 def slice_min(
-        _data: DataFrame,
-        order_by: Iterable[Any],
-        n: Optional[int] = 1,
-        prop: Optional[float] = None,
-        with_ties: Union[bool, str] = True
+    _data: DataFrame,
+    order_by: Iterable[Any],
+    n: int = 1,
+    prop: float = None,
+    with_ties: Union[bool, str] = True,
 ) -> DataFrame:
     """select rows with lowest values of a variable.
 
@@ -162,39 +151,39 @@ def slice_min(
     n = _n_from_prop(_data.shape[0], n, prop)
 
     sorting_df = DataFrame(index=_data.index)
-    sorting_df['x'] = order_by
-    keep = {True: 'all', False: 'first'}.get(with_ties, with_ties)
-    sorting_df = sorting_df.nsmallest(n, 'x', keep)
+    sorting_df["x"] = order_by
+    keep = {True: "all", False: "first"}.get(with_ties, with_ties)
+    sorting_df = sorting_df.nsmallest(n, "x", keep)
 
-    out = _data.copy() # attrs copied
-    out = out.loc[sorting_df.index, :] # attrs kept
+    out = _data.copy()  # attrs copied
+    out = out.loc[sorting_df.index, :]  # attrs kept
     return out
+
 
 @slice_min.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        order_by: Iterable[Any],
-        n: Optional[int] = 1,
-        prop: Optional[float] = None,
-        with_ties: Union[bool, str] = True
+    _data: DataFrameGroupBy,
+    order_by: Iterable[Any],
+    n: int = 1,
+    prop: float = None,
+    with_ties: Union[bool, str] = True,
 ) -> DataFrameGroupBy:
     """slice_min for DataFrameGroupBy object"""
-    out = _data.datar_apply(lambda df: slice_min(
-        df,
-        order_by=order_by,
-        n=n,
-        prop=prop,
-        with_ties=with_ties
-    ))
+    out = _data.datar_apply(
+        lambda df: slice_min(
+            df, order_by=order_by, n=n, prop=prop, with_ties=with_ties
+        )
+    )
     return reconstruct_tibble(_data, out)
 
-@register_verb(DataFrame, extra_contexts={'order_by': Context.EVAL})
+
+@register_verb(DataFrame, extra_contexts={"order_by": Context.EVAL})
 def slice_max(
-        _data: DataFrame,
-        order_by: Iterable[Any],
-        n: Optional[int] = 1,
-        prop: Optional[float] = None,
-        with_ties: Union[bool, str] = True
+    _data: DataFrame,
+    order_by: Iterable[Any],
+    n: int = 1,
+    prop: float = None,
+    with_ties: Union[bool, str] = True,
 ) -> DataFrame:
     """select rows with highest values of a variable.
 
@@ -204,40 +193,40 @@ def slice_max(
     n = _n_from_prop(_data.shape[0], n, prop)
 
     sorting_df = DataFrame(index=_data.index)
-    sorting_df['x'] = order_by
-    keep = {True: 'all', False: 'first'}.get(with_ties, with_ties)
-    sorting_df = sorting_df.nlargest(n, 'x', keep)
+    sorting_df["x"] = order_by
+    keep = {True: "all", False: "first"}.get(with_ties, with_ties)
+    sorting_df = sorting_df.nlargest(n, "x", keep)
 
-    out = _data.copy() # attrs copied
-    out = out.loc[sorting_df.index, :] # attrs kept
+    out = _data.copy()  # attrs copied
+    out = out.loc[sorting_df.index, :]  # attrs kept
     return out
+
 
 @slice_max.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        order_by: Iterable[Any],
-        n: Optional[int] = 1,
-        prop: Optional[float] = None,
-        with_ties: Union[bool, str] = True
+    _data: DataFrameGroupBy,
+    order_by: Iterable[Any],
+    n: int = 1,
+    prop: float = None,
+    with_ties: Union[bool, str] = True,
 ) -> DataFrameGroupBy:
     """slice_min for DataFrameGroupBy object"""
-    out = _data.datar_apply(lambda df: slice_max(
-        df,
-        order_by=order_by,
-        n=n,
-        prop=prop,
-        with_ties=with_ties
-    ))
+    out = _data.datar_apply(
+        lambda df: slice_max(
+            df, order_by=order_by, n=n, prop=prop, with_ties=with_ties
+        )
+    )
     return reconstruct_tibble(_data, out)
 
-@register_verb(DataFrame, extra_contexts={'weight_by': Context.EVAL})
+
+@register_verb(DataFrame, extra_contexts={"weight_by": Context.EVAL})
 def slice_sample(
-        _data: DataFrame,
-        n: Optional[int] = 1,
-        prop: Optional[float] = None,
-        weight_by: Optional[Iterable[Union[int, float]]] = None,
-        replace: bool = False,
-        random_state: Any = None
+    _data: DataFrame,
+    n: int = 1,
+    prop: float = None,
+    weight_by: Iterable[Union[int, float]] = None,
+    replace: bool = False,
+    random_state: Any = None,
 ) -> DataFrame:
     """Randomly selects rows.
 
@@ -254,62 +243,62 @@ def slice_sample(
         replace=replace,
         weights=weight_by,
         random_state=random_state,
-        axis=0
+        axis=0,
     )
+
 
 @slice_sample.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        n: Optional[int] = 1,
-        prop: Optional[float] = None,
-        weight_by: Optional[Iterable[Union[int, float]]] = None,
-        replace: bool = False,
-        random_state: Any = None
+    _data: DataFrameGroupBy,
+    n: int = 1,
+    prop: float = None,
+    weight_by: Iterable[Union[int, float]] = None,
+    replace: bool = False,
+    random_state: Any = None,
 ) -> DataFrameGroupBy:
-    out = _data.datar_apply(lambda df: slice_sample(
-        df,
-        n=n,
-        prop=prop,
-        weight_by=weight_by,
-        replace=replace,
-        random_state=random_state
-    ))
+    out = _data.datar_apply(
+        lambda df: slice_sample(
+            df,
+            n=n,
+            prop=prop,
+            weight_by=weight_by,
+            replace=replace,
+            random_state=random_state,
+        )
+    )
     return reconstruct_tibble(_data, out)
 
+
 def _n_from_prop(
-        total: int,
-        n: Optional[int] = None,
-        prop: Optional[float] = None,
+    total: int,
+    n: int = None,
+    prop: float = None,
 ) -> int:
     """Get n from a proportion"""
     if n is None and prop is None:
         return 1
     if n is not None and not isinstance(n, int):
-        raise TypeError(f'Expect `n` int type, got {type(n)}.')
+        raise TypeError(f"Expect `n` int type, got {type(n)}.")
     if prop is not None and not isinstance(prop, (int, float)):
-        raise TypeError(f'Expect `prop` a number, got {type(n)}.')
+        raise TypeError(f"Expect `prop` a number, got {type(n)}.")
     if (n is not None and n < 0) or (prop is not None and prop < 0):
-        raise ValueError('`n` and `prop` should not be negative.')
+        raise ValueError("`n` and `prop` should not be negative.")
     if prop is not None:
         return int(float(total) * min(prop, 1.0))
     return min(n, total)
 
-def _sanitize_rows(
-        rows: Iterable,
-        nrow: int,
-        base0: Optional[bool] = None
-) -> List[int]:
+
+def _sanitize_rows(rows: Iterable, nrow: int, base0: bool = None) -> List[int]:
     """Sanitize rows passed to slice"""
     rows = Collection(*rows, pool=nrow, base0=base0)
     if rows.error:
         # pylint: disable=raising-bad-type
         raise rows.error from None
     invalid_type_rows = [
-        row for row in rows.unmatched
+        row
+        for row in rows.unmatched
         if not isinstance(row, (int, type(None), type(NA)))
     ]
     if invalid_type_rows:
-        raise TypeError(
-            "`slice()` expressions should return indices."
-        )
+        raise TypeError("`slice()` expressions should return indices.")
     return unique(rows)

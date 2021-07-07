@@ -2,7 +2,7 @@
 
 import datetime
 import functools
-from typing import Any, Optional, Union, List, Iterable
+from typing import Any, Union, List, Iterable
 
 import numpy
 from pandas import Series, DataFrame
@@ -15,54 +15,58 @@ from .na import NA
 # pylint: disable=invalid-name
 # pylint: disable=redefined-builtin
 
+
 @functools.singledispatch
 def _as_date_dummy(
-        x: Any,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[IntType, datetime.timedelta] = 0,
-        origin: Any = None
+    x: Any,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[IntType, datetime.timedelta] = 0,
+    origin: Any = None,
 ) -> datetime.date:
     """Convert a dummy object to date"""
-    raise ValueError(f'Unable to convert to date with type: {type(x)!r}')
+    raise ValueError(f"Unable to convert to date with type: {type(x)!r}")
+
 
 @_as_date_dummy.register(datetime.date)
 def _(
-        x: datetime.date,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[int, datetime.timedelta] = 0,
-        origin: Any = None
+    x: datetime.date,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[int, datetime.timedelta] = 0,
+    origin: Any = None,
 ) -> datetime.date:
     if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return x + tz
 
+
 @_as_date_dummy.register(datetime.datetime)
 def _(
-        x: datetime.datetime,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[IntType, datetime.timedelta] = 0,
-        origin: Any = None
+    x: datetime.datetime,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[IntType, datetime.timedelta] = 0,
+    origin: Any = None,
 ):
     if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return (x + tz).date()
 
+
 @_as_date_dummy.register(str)
 def _(
-        x: str,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[IntType, datetime.timedelta] = 0,
-        origin: Any = None
+    x: str,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[IntType, datetime.timedelta] = 0,
+    origin: Any = None,
 ) -> datetime.date:
     if is_scalar_int(tz):
         tz = datetime.timedelta(hours=int(tz))
@@ -71,7 +75,7 @@ def _(
         "%Y-%m-%d",
         "%Y/%m/%d",
         "%Y-%m-%d %H:%M:%S",
-        "%Y/%m/%d %H:%M:%S"
+        "%Y/%m/%d %H:%M:%S",
     ]
     if not format:
         format = try_formats
@@ -87,19 +91,17 @@ def _(
     if optional:
         return NA
 
-    raise ValueError(
-        "character string is not in a standard unambiguous format"
-    )
+    raise ValueError("character string is not in a standard unambiguous format")
 
 
 @_as_date_dummy.register(Series)
 def _(
-        x: Series,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[IntType, datetime.timedelta] = 0,
-        origin: Any = None
+    x: Series,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[IntType, datetime.timedelta] = 0,
+    origin: Any = None,
 ) -> datetime.date:
     return _as_date_dummy(
         x.values[0],
@@ -107,18 +109,19 @@ def _(
         try_formats=try_formats,
         optional=optional,
         tz=tz,
-        origin=origin
+        origin=origin,
     )
+
 
 @_as_date_dummy.register(int)
 @_as_date_dummy.register(numpy.integer)
 def _(
-        x: IntType,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[IntType, datetime.timedelta] = 0,
-        origin: Any = None
+    x: IntType,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[IntType, datetime.timedelta] = 0,
+    origin: Any = None,
 ) -> datetime.date:
     if isinstance(tz, (int, numpy.integer)):
         tz = datetime.timedelta(hours=int(tz))
@@ -132,14 +135,15 @@ def _(
         return dt.date()
     return dt
 
+
 @register_func(None, context=Context.EVAL)
 def as_date(
-        x: DataFrame,
-        format: Optional[str] = None,
-        try_formats: Optional[List[str]] = None,
-        optional: bool = False,
-        tz: Union[IntType, datetime.timedelta] = 0,
-        origin: Any = None
+    x: DataFrame,
+    format: str = None,
+    try_formats: List[str] = None,
+    optional: bool = False,
+    tz: Union[IntType, datetime.timedelta] = 0,
+    origin: Any = None,
 ) -> Iterable[datetime.date]:
     """Convert an object to a datetime.date object
 
@@ -170,5 +174,5 @@ def as_date(
         try_formats=try_formats,
         optional=optional,
         tz=tz,
-        origin=origin
+        origin=origin,
     )

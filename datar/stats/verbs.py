@@ -16,6 +16,7 @@ def set_names(obj: DataFrame, names: Iterable[str]) -> DataFrame:
     obj.columns = names
     return obj
 
+
 @set_names.register(DataFrameGroupBy)
 def _(obj: DataFrameGroupBy, names: Iterable[str]) -> DataFrameGroupBy:
     """Set names of a grouped/rowwise df"""

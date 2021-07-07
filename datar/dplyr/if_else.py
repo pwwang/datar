@@ -14,12 +14,13 @@ from ..core.types import is_iterable, is_scalar, is_null
 from ..core.utils import Array
 from ..base import NA
 
+
 @register_func(None, context=Context.EVAL)
 def if_else(
-        condition: Union[bool, Iterable[bool]],
-        true: Any,
-        false: Any,
-        missing: Any = None
+    condition: Union[bool, Iterable[bool]],
+    true: Any,
+    false: Any,
+    missing: Any = None,
 ) -> numpy.ndarray:
     """Where condition is TRUE, the matching value from true, where it's FALSE,
     the matching value from false, otherwise missing.
@@ -39,11 +40,16 @@ def if_else(
     condition[na_indexes] = False
     condition = condition.astype(bool)
     return case_when(
-        na_indexes, missing,
-        numpy.invert(condition), false,
-        condition, true,
-        True, missing
+        na_indexes,
+        missing,
+        numpy.invert(condition),
+        false,
+        condition,
+        true,
+        True,
+        missing,
     )
+
 
 @register_func(None, context=Context.EVAL)
 def case_when(*when_cases: Any) -> Series:
@@ -59,7 +65,7 @@ def case_when(*when_cases: Any) -> Series:
         A series with values replaced
     """
     if not when_cases or len(when_cases) % 2 != 0:
-        raise ValueError('Number of arguments of case_when should be even.')
+        raise ValueError("Number of arguments of case_when should be even.")
 
     out_len = 1
     if is_iterable(when_cases[0]):
@@ -72,7 +78,9 @@ def case_when(*when_cases: Any) -> Series:
     for case, rep in when_cases:
         if case is True:
             out[:] = rep
-        elif case is not False and case is not NA: # skip atmoic False condition
+        elif (
+            case is not False and case is not NA
+        ):  # skip atmoic False condition
             case = Array(case)
             case[is_null(case)] = False
             case = case.astype(bool)
@@ -87,4 +95,4 @@ def case_when(*when_cases: Any) -> Series:
                     f"(length of `condition`) or one, not {len(rep)}."
                 )
 
-    return Array(out.tolist()) # shrink the dtype
+    return Array(out.tolist())  # shrink the dtype

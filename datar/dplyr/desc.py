@@ -6,6 +6,7 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..base import NA
 
+
 @register_func(None, context=Context.EVAL)
 def desc(x: Iterable[Any]) -> Series:
     """Transform a vector into a format that will be sorted in descending order
@@ -27,5 +28,5 @@ def desc(x: Iterable[Any]) -> Series:
     except TypeError:
         cat = Categorical(x)
         code = Series(cat.codes).astype(float)
-        code[code == -1.] = NA
+        code[code == -1.0] = NA
         return -code

@@ -117,8 +117,9 @@ def test_ntile_works_with_one_argument():
     exp = df >> mutate(nt=ntile(row_number(), n=9))
     assert out.equals(exp)
 
-    with pytest.raises(TypeError):
-        mutate(df, nt=ntile(row_number(), 9))
+    # with pytest.raises(TypeError):
+    out = df >> mutate(nt=ntile(row_number(), 9))
+    assert out.equals(exp)
 
     df = group_by(tibble(x=range(1,43), g=rep(range(1,8), each=6)), f.g)
     out = df >> mutate(nt=ntile(n=4))
@@ -143,12 +144,12 @@ def test_rank_functions_deal_correctly_with_na():
     assert all(is_na(res.ntile[[2,5]]))
     assert all(is_na(res.row_number[[2,5]]))
 
-    assert res.percent_rank[c(0,1,3,4)].tolist() == c(1./3.,1.,1./3.,0.)
-    assert res.min_rank[c(0,1,3,4)].tolist() == c(2,4,2,1)
-    assert res.dense_rank[c(0,1,3,4)].tolist() == c(2,3,2,1)
-    assert res.cume_dist[c(0,1,3,4)].tolist() == c(.75,1.,.75,.25)
-    assert res.ntile[c(0,1,3,4)].tolist() == c(0,1,0,0)
-    assert res.row_number[c(0,1,3,4)].tolist() == c(2,4,3,1)
+    assert res.percent_rank[[0,1,3,4]].tolist() == c(1./3.,1.,1./3.,0.)
+    assert res.min_rank[[0,1,3,4]].tolist() == c(2,4,2,1)
+    assert res.dense_rank[[0,1,3,4]].tolist() == c(2,3,2,1)
+    assert res.cume_dist[[0,1,3,4]].tolist() == c(.75,1.,.75,.25)
+    assert res.ntile[[0,1,3,4]].tolist() == c(0,1,0,0)
+    assert res.row_number[[0,1,3,4]].tolist() == c(2,4,3,1)
 
     data = tibble(
         x=rep(c(1,2,NA,1,0,NA), 2),
@@ -164,20 +165,20 @@ def test_rank_functions_deal_correctly_with_na():
         row_number = row_number(f.x)
     )
 
-    assert all(is_na(res.min_rank[c(2, 5, 8, 11)]))
-    assert all(is_na(res.dense_rank[c(2, 5, 8, 11)]))
-    assert all(is_na(res.percent_rank[c(2, 5, 8, 11)]))
-    assert all(is_na(res.cume_dist[c(2, 5, 8, 11)]))
-    assert all(is_na(res.ntile[c(2, 5, 8, 11)]))
-    assert all(is_na(res.row_number[c(2, 5, 8, 11)]))
+    assert all(is_na(res.min_rank[[2, 5, 8, 11]]))
+    assert all(is_na(res.dense_rank[[2, 5, 8, 11]]))
+    assert all(is_na(res.percent_rank[[2, 5, 8, 11]]))
+    assert all(is_na(res.cume_dist[[2, 5, 8, 11]]))
+    assert all(is_na(res.ntile[[2, 5, 8, 11]]))
+    assert all(is_na(res.row_number[[2, 5, 8, 11]]))
 
 
-    assert res.percent_rank[ c(0, 1, 3, 4, 6, 7, 9, 10) ].tolist() == rep(c(1. / 3, 1., 1. / 3, 0.), 2).tolist()
-    assert res.min_rank[ c(0, 1, 3, 4, 6, 7, 9, 10) ].tolist() == rep(c(2, 4, 2, 1), 2).tolist()
-    assert res.dense_rank[ c(0, 1, 3, 4, 6, 7, 9, 10) ].tolist() == rep(c(2, 3, 2, 1), 2).tolist()
-    assert res.cume_dist[ c(0, 1, 3, 4, 6, 7, 9, 10) ].tolist() == rep(c(.75, 1, .75, .25), 2).tolist()
-    assert res.ntile[ c(0, 1, 3, 4, 6, 7, 9, 10) ].tolist() == rep(c(0, 1, 0, 0), 2).tolist()
-    assert res.row_number[ c(0, 1, 3, 4, 6, 7, 9, 10) ].tolist() == rep(c(2, 4, 3, 1), 2).tolist()
+    assert res.percent_rank[ [0, 1, 3, 4, 6, 7, 9, 10] ].tolist() == rep(c(1. / 3, 1., 1. / 3, 0.), 2).tolist()
+    assert res.min_rank[ [0, 1, 3, 4, 6, 7, 9, 10] ].tolist() == rep(c(2, 4, 2, 1), 2).tolist()
+    assert res.dense_rank[ [0, 1, 3, 4, 6, 7, 9, 10] ].tolist() == rep(c(2, 3, 2, 1), 2).tolist()
+    assert res.cume_dist[ [0, 1, 3, 4, 6, 7, 9, 10] ].tolist() == rep(c(.75, 1, .75, .25), 2).tolist()
+    assert res.ntile[ [0, 1, 3, 4, 6, 7, 9, 10] ].tolist() == rep(c(0, 1, 0, 0), 2).tolist()
+    assert res.row_number[ [0, 1, 3, 4, 6, 7, 9, 10] ].tolist() == rep(c(2, 4, 3, 1), 2).tolist()
 
 def test_lag_lead_work_on_factors_inside_mutate():
     # test_that("lag and lead work on factors inside mutate (#955)", {

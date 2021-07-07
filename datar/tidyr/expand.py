@@ -3,7 +3,7 @@
 https://github.com/tidyverse/tidyr/blob/HEAD/R/expand.R
 """
 
-from typing import Any, Callable, Iterable, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, Mapping, Union
 
 import numpy
 import pandas
@@ -23,12 +23,13 @@ from ..base import NA, NULL, factor, levels
 from ..tibble import tibble
 from ..dplyr import arrange, distinct, pull
 
+
 @register_func(None, context=Context.EVAL)
 def expand_grid(
-        *args: Iterable[Any],
-        _name_repair: Union[str, Callable] = 'check_unique',
-        base0_: Optional[bool] = None,
-        **kwargs: Iterable[Any]
+    *args: Iterable[Any],
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    **kwargs: Iterable[Any],
 ) -> DataFrame:
     """Create a tibble from all combinations of inputs
 
@@ -55,17 +56,13 @@ def expand_grid(
         zero rows.
     """
     dots = _dots_cols(*args, **kwargs)
-    named = dots.pop('__named__')
+    named = dots.pop("__named__")
     ns = {key: len(val) for key, val in dots.items()}
     n = product(list(ns.values()))
 
     if n == 0:
         out = {
-            key: (
-                val.iloc[[], :]
-                if isinstance(val, DataFrame)
-                else []
-            )
+            key: (val.iloc[[], :] if isinstance(val, DataFrame) else [])
             for key, val in dots.items()
         }
     else:
@@ -87,13 +84,14 @@ def expand_grid(
     # out = tibble(out, _name_repair=_name_repair, base0_=base0_)
     return _flatten_nested(out, named, _name_repair, base0_)
 
+
 @register_verb(DataFrame, context=Context.EVAL)
 def expand(
-        data: DataFrame,
-        *args: Union[Series, DataFrame],
-        _name_repair: Union[str, Callable] = "check_unique",
-        base0_: Optional[bool] = None,
-        **kwargs: Union[Series, DataFrame]
+    data: DataFrame,
+    *args: Union[Series, DataFrame],
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    **kwargs: Union[Series, DataFrame],
 ) -> DataFrame:
     """Generates all combination of variables found in a dataset.
 
@@ -124,10 +122,8 @@ def expand(
         A data frame with all combination of variables.
     """
     cols = _dots_cols(*args, **kwargs)
-    named = cols.pop('__named__')
-    cols = {
-        key: _sorted_unique(val) for key, val in cols.items()
-    }
+    named = cols.pop("__named__")
+    cols = {key: _sorted_unique(val) for key, val in cols.items()}
 
     out = expand_grid(**cols, _name_repair=_name_repair, base0_=base0_)
     out = _flatten_nested(out, named, _name_repair, base0_)
@@ -135,50 +131,46 @@ def expand(
     copy_attrs(out, data)
     return out
 
+
 @expand.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        data: DataFrameGroupBy,
-        *args: Union[Series, DataFrame],
-        _name_repair: Union[str, Callable] = "check_unique",
-        base0_: Optional[bool] = None,
-        **kwargs: Union[Series, DataFrame]
+    data: DataFrameGroupBy,
+    *args: Union[Series, DataFrame],
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    **kwargs: Union[Series, DataFrame],
 ) -> DataFrameGroupBy:
     """Expand on grouped data frame"""
+
     def apply_func(df):
         return expand(
-            df,
-            *args,
-            _name_repair=_name_repair,
-            base0_=base0_,
-            **kwargs
+            df, *args, _name_repair=_name_repair, base0_=base0_, **kwargs
         )
 
     out = data.datar_apply(apply_func)
     return reconstruct_tibble(data, out)
 
+
 @expand.register(DataFrameRowwise, context=Context.EVAL)
 def _(
-        data: DataFrameRowwise,
-        *args: Union[Series, DataFrame],
-        _name_repair: Union[str, Callable] = "check_unique",
-        base0_: Optional[bool] = None,
-        **kwargs: Union[Series, DataFrame]
+    data: DataFrameRowwise,
+    *args: Union[Series, DataFrame],
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    **kwargs: Union[Series, DataFrame],
 ) -> DataFrame:
     """Expand on rowwise dataframe"""
     return expand.dispatch(DataFrame)(
-        data,
-        *args,
-        _name_repair=_name_repair,
-        base0_=base0_,
-        **kwargs
+        data, *args, _name_repair=_name_repair, base0_=base0_, **kwargs
     )
+
 
 @register_func(None, context=Context.EVAL)
 def nesting(
-        *args: Any,
-        _name_repair: Union[str, Callable] = "check_unique",
-        base0_: Optional[bool] = None,
-        **kwargs: Any
+    *args: Any,
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    **kwargs: Any,
 ) -> DataFrame:
     """A helper that only finds combinations already present in the data.
 
@@ -208,7 +200,7 @@ def nesting(
         A data frame with all combinations in data.
     """
     cols = _dots_cols(*args, **kwargs)
-    named = cols.pop('__named__')
+    named = cols.pop("__named__")
     out = _sorted_unique(
         tibble(**cols, _name_repair=_name_repair, base0_=base0_)
     )
@@ -217,10 +209,10 @@ def nesting(
 
 @register_func(None, context=Context.EVAL)
 def crossing(
-        *args: Any,
-        _name_repair: Union[str, Callable] = "check_unique",
-        base0_: Optional[bool] = None,
-        **kwargs: Any
+    *args: Any,
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    **kwargs: Any,
 ) -> DataFrame:
     """A wrapper around `expand_grid()` that de-duplicates and sorts its inputs
 
@@ -252,35 +244,30 @@ def crossing(
         A data frame with values deduplicated and sorted.
     """
     cols = _dots_cols(*args, **kwargs)
-    named = cols.pop('__named__')
-    out = {
-        key: _sorted_unique(val)
-        for key, val in cols.items()
-    }
+    named = cols.pop("__named__")
+    out = {key: _sorted_unique(val) for key, val in cols.items()}
 
     out = expand_grid(**out, _name_repair=_name_repair, base0_=base0_)
     return _flatten_nested(out, named, _name_repair, base0_)
 
 
-
 # Helpers --------------------------------
 def _dots_cols(
-        *args: Iterable[Any],
-        **kwargs: Iterable[Any]
+    *args: Iterable[Any], **kwargs: Iterable[Any]
 ) -> Mapping[str, Iterable[Any]]:
     """Mimic tidyr:::dots_cols to clean up the dot (args, kwargs) arugments"""
-    out = {'__named__': {}}
+    out = {"__named__": {}}
     for i, arg in enumerate(args):
         if arg is None:
             continue
 
         name = getattr(
             arg,
-            '__dfname__',
-            getattr(arg, 'name', getattr(arg, '__name__', None))
+            "__dfname__",
+            getattr(arg, "name", getattr(arg, "__name__", None)),
         )
-        name = name or f'{DEFAULT_COLUMN_PREFIX}{i}'
-        out['__named__'][name] = False
+        name = name or f"{DEFAULT_COLUMN_PREFIX}{i}"
+        out["__named__"][name] = False
         out[name] = [arg] if is_scalar(arg) else arg
 
     for name, arg in kwargs.items():
@@ -288,14 +275,13 @@ def _dots_cols(
             continue
 
         out[name] = [arg] if is_scalar(arg) else arg
-        out['__named__'][name] = True
+        out["__named__"][name] = True
 
     return out
 
+
 def _vec_repeat(
-        vec: Iterable[Any],
-        each: Iterable[int],
-        times: Iterable[int]
+    vec: Iterable[Any], each: Iterable[int], times: Iterable[int]
 ) -> Iterable[Any]:
     """Repeat a vector or a dataframe by rows"""
     if isinstance(vec, DataFrame):
@@ -305,9 +291,8 @@ def _vec_repeat(
     vec = categorized(vec)
     # numpy.repeat() turn [numpy.nan, 'A'] to ['nan', 'A']
     vec_to_rep = vec
-    if (
-            any(isinstance(elem, str) for elem in vec) and
-            any(pandas.isnull(elem) for elem in vec)
+    if any(isinstance(elem, str) for elem in vec) and any(
+        pandas.isnull(elem) for elem in vec
     ):
         vec_to_rep = numpy.array(vec, dtype=object)
     out = numpy.tile(numpy.repeat(vec_to_rep, each), times)
@@ -315,11 +300,12 @@ def _vec_repeat(
         return factor(out, levels(vec), ordered=vec.ordered)
     return out
 
+
 def _flatten_nested(
-        x: Union[DataFrame, Mapping[str, Iterable[Any]]],
-        named: Mapping[str, bool],
-        name_repair: Union[str, Callable],
-        base0: Optional[bool] = None
+    x: Union[DataFrame, Mapping[str, Iterable[Any]]],
+    named: Mapping[str, bool],
+    name_repair: Union[str, Callable],
+    base0: bool = None,
 ) -> DataFrame:
     """Mimic `tidyr:::flatten_nested`"""
     if isinstance(x, DataFrame):
@@ -334,9 +320,9 @@ def _flatten_nested(
     out = _flatten_at(x, to_flatten)
     return tibble(**out, _name_repair=name_repair, base0_=base0)
 
+
 def _flatten_at(
-        x: Mapping[str, Iterable[Any]],
-        to_flatten: Mapping[str, bool]
+    x: Mapping[str, Iterable[Any]], to_flatten: Mapping[str, bool]
 ) -> Mapping[str, Iterable[Any]]:
     """Flatten data at `to_flatten`"""
     if not any(to_flatten.values()):
@@ -354,14 +340,13 @@ def _flatten_at(
             out[name] = val
     return out
 
+
 def _sorted_unique(x: Iterable[Any]) -> Union[Categorical, numpy.ndarray]:
     """Sort and deduplicate the values"""
     x = categorized(x)
     if is_categorical_dtype(x):
         lvls = levels(x)
-        return factor(
-            lvls, lvls, exclude=NULL, ordered=x.ordered
-        )
+        return factor(lvls, lvls, exclude=NULL, ordered=x.ordered)
 
     # don't sort on bare list?
     # if isinstance(x, list):

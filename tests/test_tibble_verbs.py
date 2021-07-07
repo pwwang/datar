@@ -102,9 +102,8 @@ def test_error_if_adding_row_with_unknown_variables():
         add_row(tibble(a=3), b="err", c="oops")
 
 def test_add_rows_to_nondf():
-    # with pytest.raises(NotImplementedError):
-    out = add_row(1)
-    assert hasattr(out, '_pipda_eval')
+    with pytest.raises(NotImplementedError):
+        out = add_row(1)
 
 def test_can_add_multiple_rows():
     df = tibble(a=3)
@@ -148,15 +147,15 @@ def test_can_safely_add_to_factor_columns_everywhere():
     assert_frame_equal(out, exp)
 
     out = add_row(df, a="d")
-    exp = tibble(a = letters[:4], _dtypes=object)
+    exp = tibble(a = letters[:4], dtypes_=object)
     assert_frame_equal(out, exp)
 
     out = add_row(df, a="d", _before=1)
-    exp = tibble(a = c("d", letters[:3]), _dtypes=object)
+    exp = tibble(a = c("d", letters[:3]), dtypes_=object)
     assert_frame_equal(out, exp)
 
     out = add_row(df, a="d", _before=2)
-    exp = tibble(a = list("adbc"), _dtypes=object)
+    exp = tibble(a = list("adbc"), dtypes_=object)
     assert_frame_equal(out, exp)
 
 def test_error_if_both_before_and_after_are_given():

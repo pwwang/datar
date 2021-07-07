@@ -9,13 +9,13 @@ from .conftest import assert_iterable_equal
 
 def test_unite_pastes_columns_togeter_and_removes_old_col():
     df = tibble(x="a", y="b")
-    out = unite(df, 'z', f[f.x:f.y])
+    out = df >> unite('z', f[f.x:f.y])
     assert_frame_equal(out, tibble(z="a_b"))
 
 
 def test_unite_does_not_remove_new_col_in_case_of_name_clash():
     df = tibble(x = "a", y = "b")
-    out = unite(df, 'x', f[f.x:f.y])
+    out = df >> unite('x', f[f.x:f.y])
     assert_iterable_equal(names(out), ["x"])
     assert_iterable_equal(out.x, ["a_b"])
 
@@ -38,8 +38,8 @@ def test_empty_var_spec_uses_all_vars():
     assert_iterable_equal(unite(df, "z"), tibble(z = "a_b"))
 
 def test_can_remove_missing_vars_on_request():
-    df = expand_grid(x = c("a", NA), y = c("b", NA))
-    out = unite(df, "z", f[f.x:f.y], na_rm = TRUE)
+    df = expand_grid(x = ["a", NA], y = ["b", NA])
+    out = df >> unite("z", f[f.x:f.y], na_rm = TRUE)
 
     assert_iterable_equal(out.z, c("a_b", "a", "b", ""))
 

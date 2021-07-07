@@ -16,17 +16,17 @@ def df():
     ) >> group_by(f.e, f.f, _drop = FALSE)
 
 def test_filter_slice_keep_zero_len_groups(df):
-    out = filter(df, f.f == 1)
+    out = df >> filter(f.f == 1)
     gsize = group_size(out)
     assert gsize == [2,0,0]
 
-    out = slice(df, 1)
+    out = df >> slice(1)
     gsize = group_size(out)
     assert gsize == [1,1,0]
 
 def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
-    out = ungroup(count(filter(df, f.f==1)))
+    out = df >> filter(f.f==1) >> count() >> ungroup()
     expect = tibble(
         e=[1,1,1],
         f=factor([1,2,3], levels=[1,2,3]),
@@ -34,7 +34,7 @@ def test_filter_slice_retain_zero_group_labels(df):
     )
     assert_frame_equal(out, expect)
 
-    out = ungroup(count(slice(df, 1)))
+    out = df >> slice(1) >> count() >> ungroup()
     expect = tibble(
         e=[1,1,1],
         f=factor([1,2,3], levels=[1,2,3]),
@@ -55,11 +55,11 @@ def test_arrange_keeps_zero_len_groups(df):
     gsize = group_size(arrange(df))
     assert gsize == [2,2,0]
 
-    gsize = group_size(arrange(df, f.x))
+    gsize = group_size(df >> arrange(f.x))
     assert gsize == [2,2,0]
 
 def test_bind_rows(df):
-    gg = bind_rows(df, df)
+    gg = df >> bind_rows(df)
     gsize = group_size(gg)
     assert gsize == [4,4,0]
 

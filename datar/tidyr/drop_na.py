@@ -3,19 +3,19 @@
 https://github.com/tidyverse/tidyr/blob/HEAD/R/drop-na.R
 """
 
-from typing import Optional
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import arg_match, vars_select, reconstruct_tibble
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def drop_na(
-        _data: DataFrame,
-        *columns: str,
-        how_: str = 'any',
-        base0_: Optional[bool] = None
+    _data: DataFrame,
+    *columns: str,
+    how_: str = "any",
+    base0_: bool = None,
 ) -> DataFrame:
     """Drop rows containing missing values
 
@@ -34,7 +34,7 @@ def drop_na(
     Returns:
         Dataframe with rows with NAs dropped and indexes dropped
     """
-    arg_match(how_, 'how_', ['any', 'all'])
+    arg_match(how_, "how_", ["any", "all"])
     all_columns = _data.columns
     if columns:
         columns = vars_select(all_columns, *columns, base0=base0_)

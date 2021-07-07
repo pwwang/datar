@@ -24,7 +24,7 @@ from .arithmetic import (
     max as max_,
     round as round_,
     sum as sum_,
-    abs as abs_
+    abs as abs_,
 )
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_double, as_float, as_int, as_integer, as_numeric
@@ -39,7 +39,7 @@ from .factor import (
     factor,
     is_categorical,
     is_factor,
-    levels
+    levels,
 )
 from .funs import cut, data_context, expandgrid, identity
 from .logical import (
@@ -50,7 +50,7 @@ from .logical import (
     is_bool,
     is_false,
     is_logical,
-    is_true
+    is_true,
 )
 from .na import NA, NaN, any_na, is_na
 from .null import NULL, as_null, is_null
@@ -65,7 +65,7 @@ from .seq import (
     seq,
     seq_along,
     seq_len,
-    unique
+    unique,
 )
 from .special import (
     beta,
@@ -78,7 +78,7 @@ from .special import (
     lfactorial,
     lgamma,
     psigamma,
-    trigamma
+    trigamma,
 )
 from .string import (
     as_character,
@@ -98,7 +98,7 @@ from .string import (
     strsplit,
     sub,
     substr,
-    substring
+    substring,
 )
 from .table import table
 from .testing import (
@@ -111,7 +111,7 @@ from .testing import (
     is_integer,
     is_numeric,
     any as any_,
-    all as all_
+    all as all_,
 )
 from .trig_hb import (
     acos,
@@ -129,7 +129,7 @@ from .trig_hb import (
     sinpi,
     tan,
     tanh,
-    tanpi
+    tanpi,
 )
 from .verbs import (
     colnames,
@@ -144,13 +144,13 @@ from .verbs import (
     setdiff,
     setequal,
     t,
-    union
+    union,
 )
 from .which import which, which_max, which_min
 
-__all__ = [name for name in locals() if not name.startswith('_')]
+__all__ = [name for name in locals() if not name.startswith("_")]
 
-_builtin_names = { # pylint: disable=invalid-name
+_builtin_names = {  # pylint: disable=invalid-name
     "min": min_,
     "max": max_,
     "sum": sum_,
@@ -158,7 +158,7 @@ _builtin_names = { # pylint: disable=invalid-name
     "round": round_,
     "all": all_,
     "any": any_,
-    "re": re_
+    "re": re_,
 }
 __all__.extend(_builtin_names)
 

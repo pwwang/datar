@@ -1,24 +1,27 @@
 """Generating and manipulating sequences"""
 
-from typing import Optional, Iterable, Any, Union
+from typing import Iterable, Any, Union
 
 import numpy
 import pandas
 from pipda import register_func
 
 from ..core.types import (
-    IntType, IntOrIter, ArrayLikeType, NumericType,
-    is_scalar, is_iterable, is_scalar_int
+    IntType,
+    IntOrIter,
+    ArrayLikeType,
+    NumericType,
+    is_scalar,
+    is_iterable,
+    is_scalar_int,
 )
 from ..core.contexts import Context
 from ..core.utils import Array, get_option, length_of, logger
 from ..core.collections import Collection
 
+
 @register_func(None, context=Context.EVAL)
-def seq_along(
-        along_with: Iterable[Any],
-        base0_: Optional[bool] = None
-) -> ArrayLikeType:
+def seq_along(along_with: Iterable[Any], base0_: bool = None) -> ArrayLikeType:
     """Generate sequences along an iterable
 
     Args:
@@ -29,22 +32,20 @@ def seq_along(
     Returns:
         The generated sequence.
     """
-    base0_ = get_option('index.base.0', base0_)
+    base0_ = get_option("index.base.0", base0_)
     return Array(range(len(along_with))) + int(not base0_)
 
+
 @register_func(None, context=Context.EVAL)
-def seq_len(
-        length_out: IntOrIter,
-        base0_: Optional[bool] = None
-) -> ArrayLikeType:
+def seq_len(length_out: IntOrIter, base0_: bool = None) -> ArrayLikeType:
     """Generate sequences with the length"""
-    base0_ = get_option('index.base.0', base0_)
+    base0_ = get_option("index.base.0", base0_)
     if is_scalar(length_out):
         return Array(range(int(length_out))) + int(not base0_)
     if len(length_out) > 1:
         logger.warning(
             "In seq_len(%r) : first element used of 'length_out' argument",
-            length_out
+            length_out,
         )
     length_out = int(list(length_out)[0])
     return Array(range(length_out)) + int(not base0_)
@@ -52,12 +53,12 @@ def seq_len(
 
 @register_func(None, context=Context.EVAL)
 def seq(
-        from_: IntType = None,
-        to: IntType = None,
-        by: IntType = None,
-        length_out: IntType = None,
-        along_with: IntType = None,
-        base0_: Optional[bool] = None,
+    from_: IntType = None,
+    to: IntType = None,
+    by: IntType = None,
+    length_out: IntType = None,
+    along_with: IntType = None,
+    base0_: bool = None,
 ) -> ArrayLikeType:
     """Generate a sequence
 
@@ -65,7 +66,7 @@ def seq(
 
     Note that this API is consistent with r-base's seq. 1-based and inclusive.
     """
-    base0_ = get_option('index.base.0', base0_)
+    base0_ = get_option("index.base.0", base0_)
     if along_with is not None:
         return seq_along(along_with, base0_)
     if from_ is not None and not is_scalar(from_):
@@ -87,15 +88,16 @@ def seq(
         by = 1 if to > from_ else -1
         length_out = to - from_ + base if to > from_ else from_ - to + base
     else:
-        length_out = (to - from_ + .1 * by + float(base) * by) // by
+        length_out = (to - from_ + 0.1 * by + float(base) * by) // by
     return Array([from_ + n * by for n in range(int(length_out))])
+
 
 @register_func(None, context=Context.EVAL)
 def rep(
-        x: Any,
-        times: IntOrIter = 1,
-        length: Optional[int] = None, # pylint: disable=redefined-outer-name
-        each: int = 1
+    x: Any,
+    times: IntOrIter = 1,
+    length: int = None,  # pylint: disable=redefined-outer-name
+    each: int = 1,
 ) -> ArrayLikeType:
     """replicates the values in x
 
@@ -136,7 +138,7 @@ def rep(
 @register_func(None, context=Context.EVAL)
 def rev(x: Iterable[Any]) -> numpy.ndarray:
     """Get reversed vector"""
-    dtype = getattr(x, 'dtype', None)
+    dtype = getattr(x, "dtype", None)
     return Array(list(reversed(x)), dtype=dtype)
 
 
@@ -144,10 +146,12 @@ def rev(x: Iterable[Any]) -> numpy.ndarray:
 def unique(x: Iterable[Any]) -> numpy.ndarray:
     """Get unique elements"""
     # return numpy.unique(x)
-    return pandas.unique(x) # keeps order
+    return pandas.unique(x)  # keeps order
+
 
 # pylint: disable=invalid-name
 length = register_func(None, context=Context.EVAL, func=length_of)
+
 
 @register_func(None, context=Context.EVAL)
 def lengths(x: Any) -> IntOrIter:
@@ -156,12 +160,13 @@ def lengths(x: Any) -> IntOrIter:
         return Array([1], dtype=numpy.int_)
     return Array([length(elem) for elem in x], dtype=numpy.int_)
 
+
 @register_func(None, context=Context.EVAL)
 def sample(
-        x: Union[IntType, Iterable[Any]],
-        size: Optional[int] = None,
-        replace: bool = False,
-        prob: Optional[Iterable[NumericType]] = None
+    x: Union[IntType, Iterable[Any]],
+    size: int = None,
+    replace: bool = False,
+    prob: Iterable[NumericType] = None,
 ) -> Iterable[Any]:
     """Takes a sample of the specified size from the elements of x using
     either with or without replacement.
@@ -187,13 +192,13 @@ def sample(
         size = len(x) if is_iterable(x) else x
     return numpy.random.choice(x, int(size), replace=replace, p=prob)
 
+
 @register_func(None, context=Context.UNSET)
 def c(*elems: Any) -> Collection:
     """Mimic R's concatenation. Named one is not supported yet
     All elements passed in will be flattened.
 
     Args:
-        _data: The data piped in
         *elems: The elements
 
     Returns:

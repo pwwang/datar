@@ -3,7 +3,7 @@
 https://github.com/tidyverse/tidyr/blob/HEAD/R/complete.R
 """
 
-from typing import Optional, Iterable, Mapping, Any
+from typing import Iterable, Mapping, Any
 
 from pandas import DataFrame
 from pipda import register_verb
@@ -15,12 +15,13 @@ from ..dplyr import full_join
 from .replace_na import replace_na
 from .expand import expand
 
+
 @register_verb(DataFrame, context=Context.PENDING)
 def complete(
-        data: DataFrame,
-        *args: Iterable[Any],
-        fill: Optional[Mapping[str, Any]] = None,
-        **kwargs: Iterable[Any]
+    data: DataFrame,
+    *args: Iterable[Any],
+    fill: Mapping[str, Any] = None,
+    **kwargs: Iterable[Any],
 ) -> DataFrame:
     """Turns implicit missing values into explicit missing values.
 

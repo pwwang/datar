@@ -231,7 +231,7 @@ def test_unnest_grouping_preserved():
 # Empty inputs ------------------------------------------------------------
 
 def test_unnest_empty_data_frame():
-    df = tibble(x=[], y=[], _dtypes={'x': int})
+    df = tibble(x=[], y=[], dtypes_={'x': int})
     out = unnest(df, f.y)
     assert dim(out) == (0, 2)
 

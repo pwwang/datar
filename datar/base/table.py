@@ -1,6 +1,6 @@
 """Port `table` function from r-base"""
 
-from typing import Any, Iterable, Optional, Tuple, Union, List
+from typing import Any, Iterable, Mapping, Tuple, Union, List
 
 import numpy
 import pandas
@@ -15,16 +15,18 @@ from .na import NA
 
 # pylint: disable=redefined-builtin
 
+
 @register_func(None, context=Context.EVAL)
 def table(
-        input: Any,
-        *more_inputs: Any,
-        exclude: Any = NA,
-        # use_na: str = "no", # TODO
-        dnn: Optional[Union[str, List[str]]] = None,
-        # not supported, varname.argname not working with wrappers having
-        # different signatures.
-        # deparse_level: int = 1
+    input: Any,
+    *more_inputs: Any,
+    exclude: Any = NA,
+    # use_na: str = "no", # TODO
+    dnn: Union[str, List[str]] = None,
+    # not supported, varname.argname not working with wrappers having
+    # different signatures.
+    # TODO: varname.argname2() now supports it
+    # deparse_level: int = 1
 ) -> DataFrame:
     # pylint: disable=too-many-statements,too-many-branches
     """uses the cross-classifying factors to build a contingency table of
@@ -62,11 +64,11 @@ def table(
         obj1 = _iterable_excludes(obj1, exclude=exclude)
         obj2 = _iterable_excludes(obj2, exclude=exclude)
 
-    kwargs = {'dropna': False}
+    kwargs = {"dropna": False} # type: Mapping[str, Any]
     if dn1:
-        kwargs['rownames'] = [dn1]
+        kwargs["rownames"] = [dn1]
     if dn2:
-        kwargs['colnames'] = [dn2]
+        kwargs["colnames"] = [dn2]
 
     tab = pandas.crosstab(obj1, obj2, **kwargs)
     if obj1 is obj2:
@@ -76,9 +78,9 @@ def table(
 
     return tab
 
+
 def _check_table_inputs(
-        input: Any,
-        more_inputs: Any
+    input: Any, more_inputs: Any
 ) -> Tuple[Iterable, Iterable]:
     """Check and clean up `table` inputs"""
     too_many_input_vars_msg = "At most 2 iterables supported for `table`."
@@ -125,10 +127,8 @@ def _check_table_inputs(
 
     return obj1, obj2
 
-def _iterable_excludes(
-        data: Iterable,
-        exclude: Optional[Iterable]
-) -> Iterable:
+
+def _iterable_excludes(data: Iterable, exclude: Iterable) -> Iterable:
     """Exclude values for categorical data"""
     if is_categorical(data) and exclude is NA:
         return data

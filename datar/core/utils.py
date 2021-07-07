@@ -5,7 +5,14 @@ import inspect
 from functools import singledispatch
 from copy import deepcopy
 from typing import (
-    Any, Callable, Iterable, List, Mapping, Optional, Union, Tuple
+    Any,
+    Callable,
+    Iterable,
+    List,
+    Mapping,
+    Sequence,
+    Union,
+    Tuple,
 )
 
 import numpy
@@ -17,30 +24,39 @@ from pipda import register_func
 from pipda.symbolic import Reference
 
 from .exceptions import (
-    ColumnNotExistingError, DataUnrecyclable, NameNonUniqueError
+    ColumnNotExistingError,
+    DataUnrecyclable,
+    NameNonUniqueError,
 )
 from .contexts import Context
 from .types import (
-    StringOrIter, Dtype,
-    is_iterable, is_scalar, is_categorical, is_null
+    StringOrIter,
+    Dtype,
+    is_iterable,
+    is_scalar,
+    is_categorical,
+    is_null,
 )
 from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
 # logger
-logger = logging.getLogger('datar') # pylint: disable=invalid-name
+logger = logging.getLogger("datar")  # pylint: disable=invalid-name
 logger.setLevel(logging.INFO)
-stream_handler = logging.StreamHandler() # pylint: disable=invalid-name
-stream_handler.setFormatter(logging.Formatter(
-    '[%(asctime)s][%(name)s][%(levelname)7s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-))
+stream_handler = logging.StreamHandler()  # pylint: disable=invalid-name
+stream_handler.setFormatter(
+    logging.Formatter(
+        "[%(asctime)s][%(name)s][%(levelname)7s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+)
 logger.addHandler(stream_handler)
 
+
 def vars_select(
-        all_columns: Iterable[str],
-        *columns: Any,
-        raise_nonexists: bool = True,
-        base0: Optional[bool] = None
+    all_columns: Iterable[str],
+    *columns: Any,
+    raise_nonexists: bool = True,
+    base0: bool = None,
 ) -> List[int]:
     # TODO: support selecting data-frame columns
     """Select columns
@@ -74,10 +90,9 @@ def vars_select(
         )
     return unique(selected).astype(int)
 
+
 def recycle_value(
-        value: Any,
-        size: int,
-        name: Optional[str] = None
+    value: Any, size: int, name: str = None
 ) -> Union[DataFrame, numpy.ndarray]:
     """Recycle a value based on a dataframe
 
@@ -98,8 +113,8 @@ def recycle_value(
     length = len(value)
 
     if length not in (0, 1, size):
-        name = 'value' if not name else f'`{name}`'
-        expect = '1' if size == 1 else f'(1, {size})'
+        name = "value" if not name else f"`{name}`"
+        expect = "1" if size == 1 else f"(1, {size})"
         raise DataUnrecyclable(
             f"Cannot recycle {name} to size {size}, "
             f"expect {expect}, got {length}."
@@ -157,16 +172,17 @@ def recycle_value(
 
 
 def recycle_df(
-        df: DataFrame,
-        value: Any,
-        df_name: Optional[str] = None,
-        value_name: Optional[str] = None
+    df: DataFrame,
+    value: Any,
+    df_name: str = None,
+    value_name: str = None,
 ) -> Tuple[DataFrame, Any]:
     """Recycle the dataframe based on value"""
     if length_of(df) == 1:
         df = recycle_value(df, length_of(value), df_name)
     value = recycle_value(value, length_of(df), value_name)
     return df, value
+
 
 def categorized(data: Any) -> Any:
     """Get the Categorical object"""
@@ -176,8 +192,9 @@ def categorized(data: Any) -> Any:
         return data.values
     return data
 
+
 @singledispatch
-def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
+def to_df(data: Any, name: str = None) -> DataFrame:
     """Convert an object to a data frame"""
     if is_scalar(data):
         data = [data]
@@ -187,8 +204,9 @@ def to_df(data: Any, name: Optional[str] = None) -> DataFrame:
 
     return DataFrame({name: data})
 
+
 @to_df.register(numpy.ndarray)
-def _(data: numpy.ndarray, name: Optional[StringOrIter] = None) -> DataFrame:
+def _(data: numpy.ndarray, name: StringOrIter = None) -> DataFrame:
     if name is not None and is_scalar(name):
         name = [name]
 
@@ -205,40 +223,45 @@ def _(data: numpy.ndarray, name: Optional[StringOrIter] = None) -> DataFrame:
     # ignore the name
     return DataFrame(data)
 
+
 @to_df.register(DataFrame)
-def _(data: DataFrame, name: Optional[str] = None) -> DataFrame:
+def _(data: DataFrame, name: str = None) -> DataFrame:
     if name is None:
         return data
     return DataFrame({f"{name}${col}": data[col] for col in data.columns})
 
+
 @to_df.register(Series)
-def _(data: Series, name: Optional[str] = None) -> DataFrame:
+def _(data: Series, name: str = None) -> DataFrame:
     name = name or data.name
     return data.to_frame(name=name)
 
+
 # @to_df.register(SeriesGroupBy)
-# def _(data: SeriesGroupBy, name: Optional[str] = None) -> DataFrame:
+# def _(data: SeriesGroupBy, name: str = None) -> DataFrame:
 #     name = name or data.obj.name
 #     return data.obj.to_frame(name=name).groupby(data.grouper, dropna=False)
 
-def check_column_uniqueness(df: DataFrame, msg: Optional[str] = None) -> None:
+
+def check_column_uniqueness(df: DataFrame, msg: str = None) -> None:
     """Check if column names are unique of a dataframe"""
     uniq = set()
     for col in df.columns:
         if col not in uniq:
             uniq.add(col)
         else:
-            msg = msg or 'Name is not unique'
+            msg = msg or "Name is not unique"
             raise NameNonUniqueError(f"{msg}: {col}")
 
+
 def dict_insert_at(
-        container: Mapping[str, Any],
-        poskeys: Iterable[str],
-        value: Mapping[str, Any],
-        remove: bool = False
+    container: Mapping[str, Any],
+    poskeys: Sequence[str],
+    value: Mapping[str, Any],
+    remove: bool = False,
 ) -> Mapping[str, Any]:
     """Insert value to a certain position of a dict"""
-    ret_items = []
+    ret_items = []  # type: List[Tuple[str, Any]]
     ret_items_append = ret_items.append
     matched = False
     for key, val in container.items():
@@ -258,9 +281,10 @@ def dict_insert_at(
 
     return dict(ret_items)
 
+
 def name_mutatable_args(
-        *args: Union[Series, DataFrame, Mapping[str, Any]],
-        **kwargs: Any
+    *args: Union[Series, DataFrame, Mapping[str, Any]],
+    **kwargs: Any,
 ) -> Mapping[str, Any]:
     """Convert all mutatable arguments to named mappings, which can be easier
     to mutate later on.
@@ -279,7 +303,8 @@ def name_mutatable_args(
         >>> name_mutatable_args(d=df)
         >>> # {'d$x': [3], 'd$y': [4]}
     """
-    ret = {} # order kept
+    # order kept
+    ret = {}  # type: dict
 
     for i, arg in enumerate(args):
         if isinstance(arg, Series):
@@ -287,27 +312,25 @@ def name_mutatable_args(
         elif isinstance(arg, dict):
             ret.update(arg)
         elif isinstance(arg, DataFrame):
-            ret.update(arg.to_dict('series'))
+            ret.update(arg.to_dict("series"))
         elif isinstance(arg, Reference):
-            ret[arg.ref] = arg
+            ret[arg._pipda_ref] = arg
         else:
             ret[f"{DEFAULT_COLUMN_PREFIX}{i}"] = arg
 
     for key, val in kwargs.items():
         if isinstance(val, DataFrame):
-            val = val.to_dict('series')
+            val = val.to_dict("series")
 
         if isinstance(val, dict):
             existing_keys = [
-                ret_key for ret_key in ret
+                ret_key
+                for ret_key in ret
                 if ret_key == key or ret_key.startswith(f"{key}$")
             ]
             if existing_keys:
-                ret = dict_insert_at(
-                    ret,
-                    existing_keys,
-                    {key: val},
-                    remove=True
+                ret = dict_insert_at( # type: ignore
+                    ret, existing_keys, {key: val}, remove=True
                 )
             else:
                 for dkey, dval in val.items():
@@ -316,11 +339,9 @@ def name_mutatable_args(
             ret[key] = val
     return ret
 
+
 def arg_match(
-        arg: Any,
-        argname: str,
-        values: Iterable[Any],
-        errmsg: Optional[str] = None
+    arg: Any, argname: str, values: Iterable[Any], errmsg: str = None
 ) -> Any:
     """Make sure arg is in one of the values.
 
@@ -328,31 +349,27 @@ def arg_match(
     """
     if not errmsg:
         values = list(values)
-        errmsg = f'`{argname}` must be one of {values}.'
+        errmsg = f"`{argname}` must be one of {values}."
     if arg not in values:
         raise ValueError(errmsg)
     return arg
 
-def copy_attrs(
-        df1: DataFrame,
-        df2: DataFrame,
-        deep: bool = True
-) -> None:
+
+def copy_attrs(df1: DataFrame, df2: DataFrame, deep: bool = True) -> None:
     """Copy attrs from df2 to df1"""
     for key, val in df2.attrs.items():
-        if key.startswith('_'):
+        if key.startswith("_"):
             continue
         df1.attrs[key] = deepcopy(val) if deep else val
+
 
 def nargs(fun: Callable) -> int:
     """Get the number of arguments of a function"""
     return len(inspect.signature(fun).parameters)
 
+
 def position_at(
-        pos: int,
-        length: int,
-        base0: Optional[bool] = None,
-        raise_exc: bool = True
+    pos: int, length: int, base0: bool = None, raise_exc: bool = True
 ) -> int:
     """Get the 0-based position right at the given pos
 
@@ -369,13 +386,15 @@ def position_at(
         The 0-based position
     """
     from .collections import Collection
+
     coll = Collection(pos, pool=length, base0=base0)
     if raise_exc and coll.error:
         # pylint: disable=raising-bad-type
         raise coll.error
     return coll[0]
 
-def position_after(pos: int, length: int, base0: Optional[bool] = None) -> int:
+
+def position_after(pos: int, length: int, base0: bool = None) -> int:
     """Get the 0-based position right at the given pos
 
     Args:
@@ -385,12 +404,13 @@ def position_after(pos: int, length: int, base0: Optional[bool] = None) -> int:
     Returns:
         The position before the given position
     """
-    base0 = get_option('index.base.0', base0)
+    base0 = get_option("index.base.0", base0)
     # after 0 with 1-based, should insert to first column
     if not base0 and pos == 0:
         return 0
 
     return position_at(pos, length, base0) + 1
+
 
 def get_option(key: str, value: Any = None) -> Any:
     """Get the option with key.
@@ -406,11 +426,12 @@ def get_option(key: str, value: Any = None) -> Any:
     if value is not None:
         return value
     from ..base import get_option as get_option_
+
     return get_option_(key)
 
+
 def apply_dtypes(
-        df: DataFrame,
-        dtypes: Optional[Union[bool, Dtype, Mapping[str, Dtype]]]
+    df: DataFrame, dtypes: Union[bool, Dtype, Mapping[str, Dtype]]
 ) -> None:
     """Apply dtypes to data frame"""
     if dtypes is None or dtypes is False:
@@ -423,7 +444,7 @@ def apply_dtypes(
         return
 
     if not isinstance(dtypes, dict):
-        dtypes = dict(zip(df.columns, [dtypes]*df.shape[1]))
+        dtypes = dict(zip(df.columns, [dtypes] * df.shape[1])) # type: ignore
 
     for column, dtype in dtypes.items():
         if column in df:
@@ -432,6 +453,7 @@ def apply_dtypes(
             for col in df:
                 if col.startswith(f"{column}$"):
                     df[col] = df[col].astype(dtype)
+
 
 def keep_column_order(df: DataFrame, order: Iterable[str]):
     """Keep the order of columns as given `order`
@@ -451,11 +473,12 @@ def keep_column_order(df: DataFrame, order: Iterable[str]):
 
     return df[out_columns]
 
+
 def reconstruct_tibble(
-        input: DataFrame, # pylint: disable=redefined-builtin
-        output: DataFrame,
-        ungrouped_vars: Optional[List[str]] = None,
-        keep_rowwise: bool = False
+    input: DataFrame,  # pylint: disable=redefined-builtin
+    output: DataFrame,
+    ungrouped_vars: List[str] = None,
+    keep_rowwise: bool = False,
 ) -> DataFrame:
     """Reconstruct the output dataframe based on input dataframe
 
@@ -478,16 +501,20 @@ def reconstruct_tibble(
     new_groups = intersect(setdiff(old_groups, ungrouped_vars), output.columns)
 
     if isinstance(input, DataFrameRowwise):
-        out = DataFrameRowwise(
-            output,
-            _group_vars=new_groups,
-            _group_drop=group_by_drop_default(input)
-        ) if keep_rowwise else output
+        out = (
+            DataFrameRowwise(
+                output,
+                _group_vars=new_groups,
+                _group_drop=group_by_drop_default(input),
+            )
+            if keep_rowwise
+            else output
+        )
     elif isinstance(input, DataFrameGroupBy) and len(new_groups) > 0:
         out = DataFrameGroupBy(
             output,
             _group_vars=new_groups,
-            _group_drop=group_by_drop_default(input)
+            _group_drop=group_by_drop_default(input),
         )
     else:
         out = output
@@ -495,7 +522,8 @@ def reconstruct_tibble(
     copy_attrs(out, input)
     return out
 
-def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Array]:
+
+def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, numpy.ndarray]:
     """Select columns from a data frame
 
     If the column is a data frame, select that data frame.
@@ -503,18 +531,16 @@ def df_getitem(df: DataFrame, ref: Any) -> Union[DataFrame, Array]:
     try:
         return df[ref]
     except KeyError:
-        cols = [col for col in df.columns if col.startswith(f'{ref}$')]
+        cols = [col for col in df.columns if col.startswith(f"{ref}$")]
         if not cols:
             raise KeyError(ref) from None
         ret = df.loc[:, cols]
-        ret.columns = [col[len(ref)+1:] for col in cols]
+        ret.columns = [col[len(ref) + 1 :] for col in cols]
         return ret
 
+
 def df_setitem(
-        df: DataFrame,
-        name: str,
-        value: Any,
-        allow_dups: bool = False
+    df: DataFrame, name: str, value: Any, allow_dups: bool = False
 ) -> DataFrame:
     """Assign an item to a dataframe
 
@@ -530,7 +556,7 @@ def df_setitem(
     value = recycle_value(value, df.shape[0])
     if isinstance(value, DataFrame):
         # nested df
-        value.columns = [f'{name}${col}' for col in value.columns]
+        value.columns = [f"{name}${col}" for col in value.columns]
 
         if allow_dups:
             return pandas.concat([df, value], axis=1)
@@ -558,14 +584,10 @@ def df_setitem(
         df[name] = value
 
     else:
-        df.insert(
-            df.shape[1],
-            name,
-            value,
-            allow_duplicates=True
-        )
+        df.insert(df.shape[1], name, value, allow_duplicates=True)
 
     return df
+
 
 def fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
     """Safely replace NA in data, as we can't just fillna for
@@ -600,10 +622,9 @@ def fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
     # rep may not be the same dtype as data
     return Series(data).fillna(rep).values
 
+
 def na_if_safe(
-        data: Iterable,
-        value: str = NA_REPR,
-        dtype: Optional[Dtype] = None
+    data: Iterable, value: str = NA_REPR, dtype: Dtype = None
 ) -> Iterable:
     """Replace value with NA
 
@@ -627,12 +648,14 @@ def na_if_safe(
     out = Series(data).replace(value, NA)
     return out if dtype is None else out.astype(dtype)
 
+
 def length_of(x: Any) -> int:
     """Get the length of a value, scalar gets 1"""
     if is_scalar(x):
         return 1
 
     return len(x)
+
 
 def dedup_name(name: str, all_names: Iterable[str]):
     """Check if a name is a duplicated name in all_names,
@@ -651,7 +674,7 @@ def dedup_name(name: str, all_names: Iterable[str]):
     Returns:
         The deduplicated name
     """
-    if not name.endswith('_') or name[:-1] not in all_names:
+    if not name.endswith("_") or name[:-1] not in all_names:
         return name
 
     # now determine whehter the real name is name[:-1]
@@ -659,16 +682,17 @@ def dedup_name(name: str, all_names: Iterable[str]):
     # we need to check if "a" is also in all_names
     # otherwise, the realname is "a_"
     name = name[:-1]
-    while name.endswith('_') and name[:-1] in all_names:
+    while name.endswith("_") and name[:-1] in all_names:
         name = name[:-1]
     return name
 
+
 def register_numpy_func_x(
-        name: str,
-        np_name: str,
-        trans_in: Optional[Callable] = None,
-        trans_out: Optional[Callable] = None,
-        doc: str = ""
+    name: str,
+    np_name: str,
+    trans_in: Callable = None,
+    trans_out: Callable = None,
+    doc: str = "",
 ) -> Callable:
     """Register numpy function with single argument x
 
@@ -691,7 +715,7 @@ def register_numpy_func_x(
             x = trans_in(x)
 
         out = func(x)
-        if trans_out: # pragma: no cover
+        if trans_out:  # pragma: no cover
             out = trans_out(out)
         return out
 

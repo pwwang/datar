@@ -88,8 +88,8 @@ def test_null_inputs():
 
 def test_0len_input_gives_0len_output():
     tb = tibble(x=[])
-    assert_frame_equal(expand(tb, f.x), tb)
-    assert_frame_equal(expand(tb, x=f.x), tb)
+    assert_frame_equal(tb >> expand(f.x), tb)
+    assert_frame_equal(tb >> expand(x=f.x), tb)
     assert_frame_equal(expand(tb, y=NULL), tibble())
 
     assert_frame_equal(

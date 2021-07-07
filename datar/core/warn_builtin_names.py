@@ -5,14 +5,14 @@ from executing import Source
 
 WARNED = set()
 
-def warn_builtin_names(
-        **names: Callable
-) -> Callable[[str], Any]:
+
+def warn_builtin_names(**names: Callable) -> Callable[[str], Any]:
     """Generate __getattr__ function to warn the builtin names"""
     from .utils import logger, get_option
 
     # Enables tempoarory warn on or off
     warn = True
+
     def _getattr(name: str):
         """A route to let us check if the function is imported by
             >>> from module import func
@@ -37,23 +37,22 @@ def warn_builtin_names(
             A function that can be used as `__getattr__` for a module
         """
         nonlocal warn
-        if name == '_warn':
+        if name == "_warn":
             warn = True
             return None
-        if name == '_no_warn':
+        if name == "_no_warn":
             warn = False
             return None
 
-        if name == '__path__' or name not in names:
+        if name == "__path__" or name not in names:
             raise AttributeError
 
-        if warn and name not in WARNED and get_option('warn.builtin.names'):
+        if warn and name not in WARNED and get_option("warn.builtin.names"):
             node = Source.executing(sys._getframe(1)).node
             if not node:
                 WARNED.add(name)
                 logger.warning(
-                    'Builtin name "%s" has been overriden by datar.',
-                    name
+                    'Builtin name "%s" has been overriden by datar.', name
                 )
         return names[name]
 

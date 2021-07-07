@@ -2,37 +2,41 @@
 import inspect
 import re
 import keyword
-from typing import Callable, List, Optional, Union, Iterable
+from typing import Callable, List, Sequence, Union, Iterable, Tuple
 
 import numpy
 
 from .exceptions import NameNonUniqueError
 from .types import is_iterable
 
-def _log_changed_names(changed_names: Iterable[str]) -> None:
+
+def _log_changed_names(changed_names: Iterable[Tuple[str, str]]) -> None:
     """Log the changed names"""
     if not changed_names:
         return
     from .utils import logger
-    logger.warning('New names:')
+
+    logger.warning("New names:")
     for orig_name, new_name in changed_names:
-        logger.warning('* %r -> %r', orig_name, new_name)
+        logger.warning("* %r -> %r", orig_name, new_name)
+
 
 def _repair_names_minimal(names: Iterable[str]) -> List[str]:
     """Minimal repairing"""
     return ["" if name in (None, numpy.nan) else str(name) for name in names]
 
+
 def _repair_names_unique(
-        names: Iterable[str],
-        quiet: bool = False,
-        sanitizer: Optional[Callable[[str], str]] = None,
-        base0_: Optional[bool] = None
+    names: Sequence[str],
+    quiet: bool = False,
+    sanitizer: Callable = None,
+    base0_: bool = None,
 ) -> List[str]:
     """Make sure names are unique"""
     base = int(not base0_)
     min_names = _repair_names_minimal(names)
     neat_names = [
-        re.sub(r'(?:(?<!_)_{1,2}\d+|(?<!_)__)+$', '', name)
+        re.sub(r"(?:(?<!_)_{1,2}\d+|(?<!_)__)+$", "", name)
         for name in min_names
     ]
     if callable(sanitizer):
@@ -41,8 +45,8 @@ def _repair_names_unique(
     new_names = []
     changed_names = []
     for i, name in enumerate(neat_names):
-        if neat_names.count(name) > 1 or name == '':
-            name = f'{name}__{i + base}'
+        if neat_names.count(name) > 1 or name == "":
+            name = f"{name}__{i + base}"
         if name != names[i]:
             changed_names.append((names[i], name))
         new_names.append(name)
@@ -50,23 +54,22 @@ def _repair_names_unique(
         _log_changed_names(changed_names)
     return new_names
 
+
 def _repair_names_universal(
-        names: Iterable[str],
-        quiet: bool = False,
-        base0_: Optional[bool] = None
+    names: Iterable[str], quiet: bool = False, base0_: bool = None
 ) -> List[str]:
     """Make sure names are safely to be used as variable or attribute"""
     min_names = _repair_names_minimal(names)
-    neat_names = [re.sub(r'[^\w]', '_', name) for name in min_names]
+    neat_names = [re.sub(r"[^\w]", "_", name) for name in min_names]
     new_names = _repair_names_unique(
         neat_names,
         quiet=True,
         sanitizer=lambda name: (
-            f'_{name}'
+            f"_{name}"
             if keyword.iskeyword(name) or (name and name[0].isdigit())
             else name
         ),
-        base0_=base0_
+        base0_=base0_,
     )
     if not quiet:
         changed_names = [
@@ -77,6 +80,7 @@ def _repair_names_universal(
         _log_changed_names(changed_names)
     return new_names
 
+
 def _repair_names_check_unique(names: Iterable[str]) -> Iterable[str]:
     """Just check the uniqueness"""
     for name in names:
@@ -84,11 +88,12 @@ def _repair_names_check_unique(names: Iterable[str]) -> Iterable[str]:
             raise NameNonUniqueError(f"Names must be unique: {name}")
         if name == "" or name is numpy.nan:
             raise NameNonUniqueError(f"Names can't be empty: {name}")
-        if re.search(r'(?:(?<!_)_{2}\d+|(?<!_)__)+$', str(name)):
+        if re.search(r"(?:(?<!_)_{2}\d+|(?<!_)__)+$", str(name)):
             raise NameNonUniqueError(
                 f"Names can't be of the form `__` or `_j`: {name}"
             )
     return names
+
 
 BUILTIN_REPAIR_METHODS = dict(
     minimal=_repair_names_minimal,
@@ -97,10 +102,11 @@ BUILTIN_REPAIR_METHODS = dict(
     check_unique=_repair_names_check_unique,
 )
 
+
 def repair_names(
-        names: Iterable[str],
-        repair: Union[str, Callable],
-        base0_: Optional[bool] = None
+    names: Iterable[str],
+    repair: Union[str, Callable],
+    base0_: bool = None,
 ) -> List[str]:
     """Repair names based on the method
 
@@ -141,30 +147,31 @@ def repair_names(
         NameNonUniqueError: when check_unique fails
     """
     from .utils import get_option
-    base0_ = get_option('index.base.0', base0_)
-    if isinstance(repair, str):
-        repair = BUILTIN_REPAIR_METHODS[repair]
-    elif is_iterable(repair) and all(isinstance(elem, str) for elem in repair):
-        return repair
-    elif not callable(repair):
-        raise ValueError('Expect a function for name repairing.')
 
-    parameters = inspect.signature(repair).parameters
+    base0_ = get_option("index.base.0", base0_)
+    if isinstance(repair, str):
+        repair = BUILTIN_REPAIR_METHODS[repair] # type: ignore
+    elif is_iterable(repair) and all(isinstance(elem, str) for elem in repair):
+        return repair # type: ignore
+    elif not callable(repair):
+        raise ValueError("Expect a function for name repairing.")
+
+    parameters = inspect.signature(repair).parameters # type: ignore
     annotation = list(parameters.values())[0].annotation
-    if (
-            annotation is inspect._empty or
-            annotation._name not in ('Iterable', 'Sequence')
-    ): # scalar input
+    if annotation is inspect._empty or annotation._name not in (
+        "Iterable",
+        "Sequence",
+    ):  # scalar input
         return [
-            repair(name, base0_=base0_)
-            if 'base0_' in parameters
-            else repair(name)
+            repair(name, base0_=base0_) # type: ignore[operator]
+            if "base0_" in parameters
+            else repair(name) # type: ignore[operator]
             for name in names
         ]
 
     names = list(names)
     return (
-        repair(names, base0_=base0_)
-        if 'base0_' in parameters
-        else repair(names)
+        repair(names, base0_=base0_) # type: ignore[operator]
+        if "base0_" in parameters
+        else repair(names) # type: ignore[operator]
     )

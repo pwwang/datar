@@ -110,7 +110,7 @@ def test_handles_data_frame_columns():
     assert out.equals(tibble(x=[1,2,3]))
 
     rf = rowwise(df, f.a)
-    res = mutate(rf, new_col=fibble(x=f.a))
+    res = mutate(rf, new_col=tibble(x=f.a))
     out = res >> pull(f.new_col)
     assert out.equals(tibble(x=[1,2,3]))
 
@@ -358,7 +358,7 @@ def test_transmute_doesnot_warn_when_var_removed(caplog):
     assert caplog.text == ''
 
 def test_transmute_can_handle_auto_splicing():
-    out = iris >> transmute(fibble(f.Sepal_Length, f.Sepal_Width))
+    out = iris >> transmute(tibble(f.Sepal_Length, f.Sepal_Width))
     exp = iris >> select(f.Sepal_Length, f.Sepal_Width)
     assert out.equals(exp)
 

@@ -79,7 +79,7 @@ def test_returns_input_with_no_args():
 
 def test_complex_vec():
     d = tibble(x=range(1,11), y=[i+2j for i in range(1,11)])
-    out = filter(d, f.x < 4)
+    out = d >> filter(f.x < 4)
     assert out.y.tolist() == [i+2j for i in range(1,4)]
 
     out = d >> filter(re(f.y) < 4)
@@ -120,7 +120,7 @@ def test_empty_df():
 
 def test_true_true():
     df = tibble(x=range(1,6))
-    res = filter(df, True, True)
+    res = df >> filter(True, True)
     assert res.equals(df)
 
 def test_rowwise():
@@ -133,7 +133,7 @@ def test_rowwise():
     assert nrow(res) == 1
 
     df1 = df >> slice(1)
-    df2 = ungroup(res)
+    df2 = res >> ungroup()
     assert df1.equals(df2)
 
 def test_grouped_filter_handles_indices():
@@ -210,16 +210,16 @@ def test_handles_df_cols():
     )
     expect = df >> slice(1)
 
-    out = filter(df, f.x == 1)
+    out = df >> filter(f.x == 1)
     assert out.equals(expect)
-    out = filter(df, f['z$A'] == 1)
+    out = df >> filter(f['z$A'] == 1)
     assert out.equals(expect)
 
-    gdf = group_by(df, f.x)
+    gdf = df >> group_by(f.x)
 
-    out = filter(gdf, f['z$A'] == 1)
+    out = gdf >> filter(f['z$A'] == 1)
     assert out.equals(expect)
-    out = filter(gdf, f['z$A'] == 1)
+    out = gdf >> filter(f['z$A'] == 1)
     assert out.equals(expect)
 
 # def test_handles_named_logical():

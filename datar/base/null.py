@@ -10,6 +10,7 @@ from ..core.contexts import Context
 
 NULL = None
 
+
 @register_func(None, context=Context.EVAL)
 def as_null(*args: Any, **kwargs: Any) -> None:
     """Ignores arguments and returns NULL (None). R's `as.null()`
@@ -22,6 +23,7 @@ def as_null(*args: Any, **kwargs: Any) -> None:
         `NULL`
     """
     return NULL
+
 
 @register_func(None, context=Context.EVAL)
 def is_null(x: Any) -> bool:

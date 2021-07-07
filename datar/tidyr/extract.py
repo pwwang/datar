@@ -4,7 +4,7 @@ expression groups
 https://github.com/tidyverse/tidyr/blob/HEAD/R/extract.R
 """
 import re
-from typing import Optional, Union, Mapping
+from typing import Union, Mapping
 
 import pandas
 from pandas import DataFrame
@@ -17,13 +17,13 @@ from ..core.utils import apply_dtypes, vars_select, reconstruct_tibble
 
 @register_verb(DataFrame, context=Context.SELECT)
 def extract(
-        data: DataFrame,
-        col: Union[str, int],
-        into: StringOrIter,
-        regex: str = r'(\w+)',
-        remove: bool = True,
-        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    col: Union[str, int],
+    into: StringOrIter,
+    regex: str = r"(\w+)",
+    remove: bool = True,
+    convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
+    base0_: bool = None,
 ) -> DataFrame:
     """Given a regular expression with capturing groups, extract() turns each
     group into a new column. If the groups don't match, or the input is NA,
@@ -48,7 +48,7 @@ def extract(
         Dataframe with extracted columns.
     """
     if is_scalar(into):
-        into = [into]
+        into = [into] # type: ignore
 
     all_columns = data.columns
     col = vars_select(all_columns, col, base0=base0_)
@@ -81,7 +81,7 @@ def extract(
         outcol: (
             out.iloc[:, indexes[0]]
             if len(indexes) == 1
-            else out.iloc[:, indexes].astype(str).agg(''.join, axis=1)
+            else out.iloc[:, indexes].astype(str).agg("".join, axis=1)
         )
         for outcol, indexes in mergedcols.items()
     }

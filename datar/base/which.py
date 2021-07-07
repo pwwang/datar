@@ -1,5 +1,5 @@
 """Checking an iterable against itself or another one"""
-from typing import Iterable, Optional
+from typing import Iterable
 
 import numpy
 from pipda import register_func
@@ -7,8 +7,9 @@ from pipda import register_func
 from ..core.utils import get_option
 from ..core.contexts import Context
 
+
 @register_func(None, context=Context.EVAL)
-def which(x: Iterable[bool], base0_: Optional[bool] = None) -> Iterable[int]:
+def which(x: Iterable[bool], base0_: bool = None) -> Iterable[int]:
     """Convert a bool iterable to indexes
 
     Args:
@@ -20,10 +21,11 @@ def which(x: Iterable[bool], base0_: Optional[bool] = None) -> Iterable[int]:
     Returns:
         The indexes
     """
-    return numpy.flatnonzero(x) + int(not get_option('which.base.0', base0_))
+    return numpy.flatnonzero(x) + int(not get_option("which.base.0", base0_))
+
 
 @register_func(None)
-def which_min(x: Iterable, base0_: Optional[bool] = None) -> int:
+def which_min(x: Iterable, base0_: bool = None) -> int:
     """R's `which.min()`
 
     Get the index of the element with the maximum value
@@ -36,7 +38,8 @@ def which_min(x: Iterable, base0_: Optional[bool] = None) -> int:
     Returns:
         The index of the element with the maximum value
     """
-    return numpy.argmin(x) + int(not get_option('which.base.0', base0_))
+    return numpy.argmin(x) + int(not get_option("which.base.0", base0_))
+
 
 @register_func(None)
 def which_max(x: Iterable, base0_: bool = True) -> int:
@@ -52,4 +55,4 @@ def which_max(x: Iterable, base0_: bool = True) -> int:
     Returns:
         The index of the element with the minimum value
     """
-    return numpy.argmax(x) + int(not get_option('which.base.0', base0_))
+    return numpy.argmax(x) + int(not get_option("which.base.0", base0_))

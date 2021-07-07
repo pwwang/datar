@@ -183,7 +183,7 @@ def test_joins_matches_nas_by_default():
 def test_nest_join_returns_list_of_dfs():
     df1 = tibble(x = c(1, 2), y = c(2, 3))
     df2 = tibble(x = c(1, 1), z = c(2, 3))
-    out = nest_join(df1, df2, by = "x")
+    out = df1 >> nest_join(df2, by = "x")
 
     assert out.columns.tolist() == ["x", "y", "df2"]
     df2list = out.df2.tolist()

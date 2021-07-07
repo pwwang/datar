@@ -19,6 +19,7 @@ NA_integer_ = numpy.random.randint(numpy.iinfo(numpy.int32).max)
 NA_real_ = numpy.nan
 NA_compex_ = complex(NA_real_, NA_real_)
 
+
 @register_func(None, context=Context.EVAL)
 def is_na(x: Any) -> Iterable[bool]:
     """Test if a value is nullable or elements in the value is nullable
@@ -31,6 +32,7 @@ def is_na(x: Any) -> Iterable[bool]:
         of bools.
     """
     return is_null(x)
+
 
 @register_func(None, context=Context.EVAL)
 def any_na(x: Any, recursive: bool = False) -> bool:
@@ -47,6 +49,7 @@ def any_na(x: Any, recursive: bool = False) -> bool:
         return is_na(x)
 
     from .logical import is_true
+
     if not recursive:
         return any(is_true(is_na(elem)) for elem in x)
 

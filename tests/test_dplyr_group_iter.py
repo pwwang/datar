@@ -216,7 +216,8 @@ def test_group_map_errors():
 
 def test_group_split_keeps_group_variables_by_default():
     tbl = tibble(x=[1,2,3,4], g=factor(rep(["a", "b"], each=2)))
-    res = list(group_split(tbl, f.g))
+    out = group_split(tbl, f.g)
+    res = list(out)
 
     assert len(res) == 2
     assert res[0].equals(tbl.iloc[[0,1], :])

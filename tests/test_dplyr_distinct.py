@@ -13,10 +13,10 @@ def test_single_column():
         y = c(1, 1, 2, 2),
         z = c(1, 2, 1, 2)
     )
-    x = distinct(df, f.x, _keep_all=False)
+    x = df >> distinct(f.x, _keep_all=False)
     assert all(x.x == unique(df.x))
 
-    y = distinct(df, f.y, _keep_all=False)
+    y = df >> distinct(f.y, _keep_all=False)
     assert all(y.y == unique(df.y))
 
 def test_0_col_df():

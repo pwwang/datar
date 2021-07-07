@@ -9,12 +9,9 @@ from ..core.types import is_scalar
 from ..core.contexts import Context
 from ..dplyr import select, slice_
 
+
 @register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
-def get(
-        _data: DataFrame,
-        rows: Any = None,
-        cols: Any = None
-) -> Any:
+def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
     """Get a single element or a subset of a dataframe
 
     Args:
@@ -31,12 +28,12 @@ def get(
     data = _data.copy()
     # getting single element
     if (
-            rows is not None and
-            cols is not None and
-            is_scalar(rows) and
-            is_scalar(cols)
+        rows is not None
+        and cols is not None
+        and is_scalar(rows)
+        and is_scalar(cols)
     ):
-        if isinstance(rows, str): # index
+        if isinstance(rows, str):  # index
             rows = data.index.get_indexer_for([rows])[0]
         if isinstance(cols, str):
             cols = data.columns.get_indexer_for([cols])[0]
@@ -44,7 +41,7 @@ def get(
         return data.iloc[rows, cols]
 
     if cols is not None:
-        data = select(data, cols)
+        data = data >> select(cols)
 
     if rows is not None:
         # slice only support integer index
@@ -55,6 +52,7 @@ def get(
                 rows = data.index.get_indexer_for(rows)
         data = slice_(data, rows)
     return data
+
 
 @register_verb(DataFrame)
 def flatten(_data: DataFrame, bycol: bool = False) -> List[Any]:
@@ -110,6 +108,7 @@ def flatten(_data: DataFrame, bycol: bool = False) -> List[Any]:
 #             print_msg(val)
 #             print_msg("## Evaluated")
 #             print_msg(evaluate_expr(val, _data, context))
+
 
 @register_verb(DataFrame)
 def drop_index(_data: DataFrame) -> DataFrame:

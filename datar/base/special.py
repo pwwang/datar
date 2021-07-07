@@ -25,6 +25,7 @@ from .na import NA
 
 # pylint: disable=invalid-name
 
+
 @register_func(None, context=Context.EVAL)
 def beta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
     """The beta function
@@ -41,8 +42,9 @@ def beta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
     Returns:
         Value of the beta function
     """
-    fun = _get_special_func_from_scipy('beta')
+    fun = _get_special_func_from_scipy("beta")
     return fun(a, b)
+
 
 @register_func(None, context=Context.EVAL)
 def lbeta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
@@ -57,6 +59,7 @@ def lbeta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
     """
     return numpy.log(beta(a, b))
 
+
 @register_func(None, context=Context.EVAL)
 def gamma(x: FloatOrIter) -> FloatOrIter:
     """The gamma function
@@ -67,13 +70,14 @@ def gamma(x: FloatOrIter) -> FloatOrIter:
     Returns:
         Values of the gamma function
     """
-    fun = _get_special_func_from_scipy('gamma')
+    fun = _get_special_func_from_scipy("gamma")
     if is_scalar(x) and x <= 0:
         return NA
     if not is_scalar(x):
         x = Array(x, dtype=float)
         x[x <= 0.0] = NA
     return fun(x)
+
 
 @register_func(None, context=Context.EVAL)
 def lgamma(x: FloatOrIter) -> FloatOrIter:
@@ -87,6 +91,7 @@ def lgamma(x: FloatOrIter) -> FloatOrIter:
     """
     return numpy.log(gamma(x))
 
+
 @register_func(None, context=Context.EVAL)
 def digamma(x: FloatOrIter) -> FloatOrIter:
     """The digamma function.
@@ -97,10 +102,11 @@ def digamma(x: FloatOrIter) -> FloatOrIter:
     Returns:
         Computed values of psi.
     """
-    fun = _get_special_func_from_scipy('digamma')
+    fun = _get_special_func_from_scipy("digamma")
     if x == 0.0:
         return NA
     return fun(x)
+
 
 @register_func(None, context=Context.EVAL)
 def choose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
@@ -118,8 +124,9 @@ def choose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
     Returns:
         The total number of combinations.
     """
-    fun = _get_special_func_from_scipy('comb')
+    fun = _get_special_func_from_scipy("comb")
     return fun(n, k)
+
 
 @register_func(None, context=Context.EVAL)
 def lchoose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
@@ -139,6 +146,7 @@ def lchoose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
     """
     return numpy.log(choose(n, k))
 
+
 @register_func(None, context=Context.EVAL)
 def factorial(x: FloatOrIter) -> FloatOrIter:
     """The factorial of a number or array of numbers.
@@ -149,7 +157,7 @@ def factorial(x: FloatOrIter) -> FloatOrIter:
     Returns:
         Factorial of x
     """
-    fun = _get_special_func_from_scipy('factorial')
+    fun = _get_special_func_from_scipy("factorial")
     out = fun(x)
 
     if is_scalar(x):
@@ -158,6 +166,7 @@ def factorial(x: FloatOrIter) -> FloatOrIter:
 
     out[Array(x) < 0] = NA
     return out
+
 
 @register_func(None, context=Context.EVAL)
 def lfactorial(x: FloatOrIter) -> FloatOrIter:
@@ -171,6 +180,7 @@ def lfactorial(x: FloatOrIter) -> FloatOrIter:
     """
     return numpy.log(factorial(x))
 
+
 @register_func(None, context=Context.EVAL)
 def trigamma(x: FloatOrIter) -> FloatOrIter:
     """The second derivatives of the logarithm of the gamma function
@@ -181,14 +191,12 @@ def trigamma(x: FloatOrIter) -> FloatOrIter:
     Returns:
         The value of the 2nd derivatives of the logarithm of the gamma function
     """
-    fun = _get_special_func_from_scipy('polygamma')
+    fun = _get_special_func_from_scipy("polygamma")
     return fun(1, x)
 
+
 @register_func(None, context=Context.EVAL)
-def psigamma(
-        x: FloatOrIter,
-        deriv: NumericOrIter
-) -> FloatOrIter:
+def psigamma(x: FloatOrIter, deriv: NumericOrIter) -> FloatOrIter:
     """The deriv-th derivatives of the logarithm of the gamma function
 
     Args:
@@ -197,6 +205,6 @@ def psigamma(
     Returns:
         The value of the 2nd derivatives of the logarithm of the gamma function
     """
-    fun = _get_special_func_from_scipy('polygamma')
+    fun = _get_special_func_from_scipy("polygamma")
     deriv = numpy.round(deriv)
     return fun(deriv, x)

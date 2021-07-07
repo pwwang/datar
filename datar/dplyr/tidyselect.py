@@ -1,7 +1,7 @@
 """Select helpers"""
 import re
 import builtins
-from typing import Callable, Iterable, List, Optional, Union
+from typing import Callable, Iterable, List, Union
 
 from pandas import DataFrame
 from pipda import register_func
@@ -31,21 +31,22 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
     retcols = []
     pipda_type = functype(fn)
     for col in columns:
-        if pipda_type == 'plain':
+        if pipda_type == "plain":
             conditions = fn(_data[col])
         else:
-            conditions = fn(_data[col], _env=_data)
+            conditions = fn(_data[col], __envdata=_data)
 
         if isinstance(conditions, bool):
             if conditions:
                 retcols.append(col)
             else:
                 # pytest-cov not detecting this line
-                continue # pragma: no cover
+                continue  # pragma: no cover
         elif all(conditions):
             retcols.append(col)
 
     return retcols
+
 
 @register_func(DataFrame)
 def everything(_data: DataFrame) -> List[str]:
@@ -59,11 +60,12 @@ def everything(_data: DataFrame) -> List[str]:
     """
     return setdiff(_data.columns, group_vars(_data))
 
+
 @register_func(context=Context.SELECT)
 def last_col(
-        _data: DataFrame,
-        offset: int = 0,
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+    _data: DataFrame,
+    offset: int = 0,
+    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
 ) -> str:
     """Select last variable, possibly with an offset.
 
@@ -78,14 +80,15 @@ def last_col(
         The variable
     """
     vars = vars or _data.columns
-    return vars[-(offset+1)]
+    return vars[-(offset + 1)]
+
 
 @register_func(context=Context.SELECT)
 def starts_with(
-        _data: DataFrame,
-        match: StringOrIter,
-        ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+    _data: DataFrame,
+    match: StringOrIter,
+    ignore_case: bool = True,
+    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns starting with a prefix.
 
@@ -106,12 +109,13 @@ def starts_with(
         lambda mat, cname: cname.startswith(mat),
     )
 
+
 @register_func(context=Context.SELECT)
 def ends_with(
-        _data: DataFrame,
-        match: str,
-        ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+    _data: DataFrame,
+    match: str,
+    ignore_case: bool = True,
+    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns ending with a suffix.
 
@@ -132,12 +136,13 @@ def ends_with(
         lambda mat, cname: cname.endswith(mat),
     )
 
+
 @register_func(context=Context.SELECT)
 def contains(
-        _data: DataFrame,
-        match: str,
-        ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+    _data: DataFrame,
+    match: str,
+    ignore_case: bool = True,
+    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns containing substrings.
 
@@ -158,12 +163,13 @@ def contains(
         lambda mat, cname: mat in cname,
     )
 
+
 @register_func(context=Context.SELECT)
 def matches(
-        _data: DataFrame,
-        match: str,
-        ignore_case: bool = True,
-        vars: Optional[Iterable[str]] = None # pylint: disable=redefined-builtin
+    _data: DataFrame,
+    match: str,
+    ignore_case: bool = True,
+    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
 ) -> List[str]:
     """Select columns matching regular expressions.
 
@@ -187,9 +193,9 @@ def matches(
 
 @register_func(context=Context.EVAL)
 def all_of(
-        _data: DataFrame,
-        x: Iterable[Union[int, str]],
-        base0_: Optional[bool] = None
+    _data: DataFrame,
+    x: Iterable[Union[int, str]],
+    base0_: bool = None,
 ) -> List[str]:
     """For strict selection.
 
@@ -222,13 +228,14 @@ def all_of(
 
     return list(x)
 
+
 @register_func(context=Context.SELECT)
 def any_of(
-        _data: DataFrame,
-        x: Iterable[Union[int, str]],
-        # pylint: disable=redefined-builtin
-        vars: Optional[Iterable[str]] = None,
-        base0_: Optional[bool] = None
+    _data: DataFrame,
+    x: Iterable[Union[int, str]],
+    # pylint: disable=redefined-builtin
+    vars: Iterable[str] = None,
+    base0_: bool = None,
 ) -> List[str]:
     """Select but doesn't check for missing variables.
 
@@ -255,12 +262,13 @@ def any_of(
     # do we need intersect?
     return intersect(vars, [vars[idx] for idx in x])
 
+
 @register_func(None)
 def num_range(
-        prefix: str,
-        range: Iterable[int], # pylint: disable=redefined-builtin
-        width: Optional[int] = None,
-        base0_: Optional[bool] = None
+    prefix: str,
+    range: Iterable[int],  # pylint: disable=redefined-builtin
+    width: int = None,
+    base0_: bool = None,
 ) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
 
@@ -275,22 +283,20 @@ def num_range(
     Returns:
         A list of ranges with prefix.
     """
-    base0_ = get_option('index.base.0', base0_)
+    base0_ = get_option("index.base.0", base0_)
     zfill = lambda elem: (
         elem + int(not base0_)
         if not width
         else str(elem + int(not base0_)).zfill(width)
     )
-    return Array([
-        f"{prefix}{zfill(elem)}"
-        for elem in builtins.range(range)
-    ])
+    return Array([f"{prefix}{zfill(elem)}" for elem in builtins.range(range)])
+
 
 def _filter_columns(
-        all_columns: Iterable[str],
-        match: Union[Iterable[str], str],
-        ignore_case: bool,
-        func: Callable[[str, str], bool]
+    all_columns: Iterable[str],
+    match: Union[Iterable[str], str],
+    ignore_case: bool,
+    func: Callable[[str, str], bool],
 ) -> List[str]:
     """Filter the columns with given critera
 
@@ -304,17 +310,17 @@ def _filter_columns(
         A list of matched vars
     """
     if not isinstance(match, (tuple, list, set)):
-        match = [match]
+        match = [match] # type: ignore
 
     ret = []
     for mat in match:
         for column in all_columns:
             if column in ret:
                 continue
-            if (func(
-                    mat.lower() if ignore_case else mat,
-                    column.lower() if ignore_case else column
-            )):
+            if func(
+                mat.lower() if ignore_case else mat,
+                column.lower() if ignore_case else column,
+            ):
                 ret.append(column)
 
     return ret

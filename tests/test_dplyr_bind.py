@@ -34,10 +34,10 @@ def test_bind_col_null():
     df1 = tibble(a = range(1,11), b = range(1,11))
     df2 = tibble(c = range(1,11), d = range(1,11))
 
-    res1 = bind_cols(df1, df2)
-    res2 = bind_cols(NULL, df1, df2)
-    res3 = bind_cols(df1, NULL, df2)
-    res4 = bind_cols(df1, df2, NULL)
+    res1 = df1 >> bind_cols(df2)
+    res2 = NULL >> bind_cols(df1, df2)
+    res3 = df1 >> bind_cols(NULL, df2)
+    res4 = df1 >> bind_cols(df2, NULL)
 
     assert res1.equals(res2)
     assert res1.equals(res3)
@@ -56,7 +56,7 @@ def test_repair_names():
 def test_incompatible_size_fill_with_NA():
     df1 = tibble(x=range(1,4))
     df2 = tibble(y=range(1,2))
-    out = bind_cols(df1, df2).fillna(100)
+    out = (df1 >> bind_cols(df2)).fillna(100)
     assert out.x.tolist() == [1,2,3]
     assert out.y.tolist() == [1,100,100]
 
@@ -139,7 +139,7 @@ def test_bind_factors():
     assert out.a.cat.categories.tolist() == ["a"]
     assert out.a.astype(object).fillna("NA").tolist() == ["a", "NA"]
 
-    out2 = bind_rows(None, [df1, df2])
+    out2 = None >> bind_rows([df1, df2])
     assert_frame_equal(out2, out)
 
 def test_bind_na_cols():
@@ -198,8 +198,7 @@ def test_empty_dict():
     assert d == (0, 0)
 
 def test_rowwise_vector():
-    tbl = bind_rows(
-        tibble(a = "foo", b = "bar"),
+    tbl = tibble(a = "foo", b = "bar") >> bind_rows(
         dict(a = "A", b = "B")
     )
     expect = tibble(a=["foo", "A"], b=["bar", "B"])
@@ -220,7 +219,7 @@ def test_list_as_first_argument():
 
 def test_hierachical_data():
     my_list = [dict(x = 1, y = "a"), dict(x = 2, y = "b")]
-    res = bind_rows(my_list)
+    res = my_list >> bind_rows()
     rows = nrow(res)
     assert rows == 2
     out = is_int(res.x)
@@ -228,7 +227,7 @@ def test_hierachical_data():
     out = is_character(res.y)
     assert out
 
-    res = bind_rows(dict(x = 1, y = "a"), dict(x = 2, y = "b"))
+    res = dict(x = 1, y = "a") >> bind_rows(dict(x = 2, y = "b"))
     rows = nrow(res)
     assert rows == 2
     out = is_int(res.x)
@@ -249,14 +248,14 @@ def test_errors():
     df1 = tibble(x = [1,2,3])
     df2 = tibble(x = [4,5,6])
     with pytest.raises(ValueError):
-        bind_rows(df1, df2, _id=5)
+        df1 >> bind_rows(df2, _id=5)
 
     df1 = tibble(a = factor("a"))
     df2 = tibble(a = 1)
-    bind_rows(df1, df2) # no error, all converted to object
+    df1 >> bind_rows(df2) # no error, all converted to object
 
     with pytest.raises(TypeError):
-        bind_rows([1,2])
+        [1,2] >> bind_rows()
 
 # for coverage
 def test_bind_empty_dfs():
@@ -268,5 +267,5 @@ def test_bind_empty_dfs():
 
     df1 = tibble(x=factor([1,2,3]))
     df2 = tibble()
-    out = bind_rows(df1, df2)
+    out = df1 >> bind_rows(df2)
     assert out.x.tolist() == [1,2,3]

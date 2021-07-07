@@ -23,7 +23,6 @@ jobs:
           poetry install -v
       - name: Build docs
         run: |
-          python -m pip install mkdocs
           python -m pip install -r docs/requirements.txt
           python -m ipykernel install --user --name python --display-name python
           python -m ipykernel install --user --name python3 --display-name python3

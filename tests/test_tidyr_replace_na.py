@@ -38,7 +38,7 @@ def test_df_missing_values_are_replaced():
 def test_df_no_complain_about_non_existing_vars():
     df = tibble(a=c(1, NA))
     out = replace_na(df, {'a': 100, 'b':0})
-    assert_frame_equal(out, tibble(a=c(1,100), _dtypes=float))
+    assert_frame_equal(out, tibble(a=c(1,100), dtypes_=float))
 
 def test_df_can_replace_NULLs_in_list_column():
     df = tibble(x=[[1], NULL])

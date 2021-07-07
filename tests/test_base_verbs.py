@@ -30,23 +30,25 @@ def test_rowcolnames():
 
 
 def test_diag():
-    assert dim(diag(3)) == (3,3)
-    assert dim(diag(10, 3, 4)) == (3,4)
-    x = diag(c(1j,2j))
+    out = dim(3 >> diag())
+    assert out == (3,3)
+    out = dim(10 >> diag(3, 4))
+    assert out == (3,4)
+    x = c(1j,2j) >> diag()
     assert x.iloc[0,0] == 0+1j
     assert x.iloc[0,1] == 0+0j
     assert x.iloc[1,0] == 0+0j
     assert x.iloc[1,1] == 0+2j
-    x = diag(TRUE, 3)
+    x = TRUE >> diag(3)
     assert sum(x.values.flatten()) == 3
-    x = diag(c(2,1), 4)
-    assert_iterable_equal(diag(x), [2,1,2,1])
+    x = c(2,1) >> diag(4)
+    assert_iterable_equal(x >> diag(), [2,1,2,1])
 
     with pytest.raises(ValueError):
-        diag(x, 3, 3)
+        x >> diag(3, 3)
 
-    x = diag(1, 4)
-    assert_iterable_equal(diag(diag(x, 3)), [3,3,3,3])
+    x = 1 >> diag(4)
+    assert_iterable_equal(x >> diag(3) >> diag(), [3,3,3,3])
 
 def test_ncol():
     df = tibble(x=tibble(a=1, b=2))

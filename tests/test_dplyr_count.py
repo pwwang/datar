@@ -46,7 +46,7 @@ def test_drop():
     # note the order
     assert out.n.tolist() == [0,1,0]
 
-    out = count(group_by(df, f.f, _drop = FALSE))
+    out = df >> group_by(f.f, _drop = FALSE) >> count()
     # print(out.obj)
     assert out.n.tolist() == [0,1,0]
 
@@ -93,7 +93,7 @@ def test_can_only_explicitly_chain_together_multiple_tallies():
 # tally -------------------------------------------------------------------
 
 def test_tally_can_sort_output():
-    gf = group_by(tibble(x = c(1, 1, 2, 2, 2)), f.x)
+    gf = tibble(x = c(1, 1, 2, 2, 2)) >> group_by(f.x)
     out = tally(gf, sort = TRUE)
     exp = tibble(x = c(2, 1), n = c(3, 2))
     assert out.equals(exp)
@@ -127,12 +127,12 @@ def test_output_preserves_grouping():
 def test_can_add_tallies_of_a_variable():
     df = tibble(a=c(2,1,1))
     out = df >> group_by(f.a) >> add_tally()
-    exp = group_by(tibble(a=c(2,1,1), n=c(1,2,2)), f.a)
+    exp = tibble(a=c(2,1,1), n=c(1,2,2)) >> group_by(f.a)
     assert_frame_equal(out, exp)
     assert group_vars(out) == group_vars(exp)
     # sort
     out = df >> group_by(f.a) >> add_tally(sort=True)
-    exp = group_by(tibble(a=c(1,1,2), n=c(2,2,1)), f.a)
+    exp = tibble(a=c(1,1,2), n=c(2,2,1)) >> group_by(f.a)
     assert_frame_equal(out, exp)
     assert group_vars(out) == group_vars(exp)
 

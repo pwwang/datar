@@ -1,27 +1,25 @@
 """Provide Collection and related classes to mimic `c` from `r-base`"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Iterable, List, Union
 
 import pandas
+from pipda import evaluate_expr
 from pipda.context import ContextAnnoType
-from pipda.utils import evaluate_args
 
 from .utils import get_option
 from .types import is_iterable, is_scalar
 from .exceptions import ColumnNotExistingError
 
-PoolType = Optional[Union[Iterable, int]]
+PoolType = Union[Iterable, int]
 UNMATCHED = object()
+
 
 class CollectionBase(ABC):
     """Abstract class for collections"""
 
     def __init__(
-            self,
-            *args: Any,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
+        self, *args: Any, pool: PoolType = None, base0: bool = None
     ) -> None:
         self.elems = args
         self.base0 = base0
@@ -33,23 +31,18 @@ class CollectionBase(ABC):
         except (ValueError, ColumnNotExistingError) as exc:
             self.error = exc
 
-    def _pipda_eval(
-            self,
-            data: Any,
-            context: ContextAnnoType
-    ) -> Any:
+    def _pipda_eval(self, data: Any, context: ContextAnnoType) -> Any:
         """Defines how the object should be evaluated when evaluated by
         pipda's evaluation"""
-        self.elems = evaluate_args(self.elems, data, context)
+        self.elems = evaluate_expr(self.elems, data, context)
         return self
 
     @abstractmethod
     def expand(
-            self,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
-    ) -> None:
+        self, pool: PoolType = None, base0: bool = None
+    ) -> "CollectionBase":
         """Expand the collection"""
+
 
 class Collection(CollectionBase, list):
     """Mimic the c function in R
@@ -69,11 +62,11 @@ class Collection(CollectionBase, list):
             indicating the range or a list, not a generator.
         pool: The pool used to expand slice
     """
-    def _get_base0(self, base0: Optional[bool]) -> bool:
+    def _get_base0(self, base0: bool) -> bool:
         """Get base0 if specified, otherwise self.base0"""
         if base0 is None:
             base0 = self.base0
-        self.base0 = get_option('index.base.0', base0)
+        self.base0 = get_option("index.base.0", base0)
         return self.base0
 
     def _get_pool(self, pool: PoolType) -> PoolType:
@@ -83,10 +76,8 @@ class Collection(CollectionBase, list):
         return self.pool
 
     def expand(
-            self,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
-    ) -> None:
+        self, pool: PoolType = None, base0: bool = None
+    ) -> CollectionBase:
         """Expand the elements of this collection
 
         A element could be either
@@ -106,11 +97,12 @@ class Collection(CollectionBase, list):
 
         if pool is not None:
             elems = [
-                elem for elem in self.elems
+                elem
+                for elem in self.elems
                 if not is_scalar(elem) or not pandas.isnull(elem)
             ]
         else:
-            elems = self.elems
+            elems = self.elems # type: ignore
 
         if not elems:
             list.__init__(self, [])
@@ -123,8 +115,8 @@ class Collection(CollectionBase, list):
                 Inverted(
                     Collection(*(elem.elems for elem in elems)),
                     pool=pool,
-                    base0=base0
-                )
+                    base0=base0,
+                ),
             )
             return self
 
@@ -148,7 +140,7 @@ class Collection(CollectionBase, list):
                 elem = self._index_from_pool(elem)
                 if elem is not UNMATCHED:
                     expanded_append(elem)
-            else: # iterable
+            else:  # iterable
                 exp = Collection(*elem, pool=pool, base0=base0)
                 self.unmatched.update(exp.unmatched)
                 expanded_extend(exp)
@@ -169,7 +161,7 @@ class Collection(CollectionBase, list):
             return True
         return False
 
-    def _index_from_pool(self, elem: Any, base0: Optional[bool] = None) -> Any:
+    def _index_from_pool(self, elem: Any, base0: bool = None) -> Any:
         """Try to pull the index of the element from the pool"""
         if self.pool is None:
             # Return the element itself if pool is not specified
@@ -182,7 +174,7 @@ class Collection(CollectionBase, list):
         if self._is_index(elem):
             # elem is treated as an index if it is not an element of the pool
             if not base0 and elem == 0:
-                raise ValueError('Index 0 given for 1-based indexing.')
+                raise ValueError("Index 0 given for 1-based indexing.")
 
             pool = len(self.pool) if is_iterable(self.pool) else self.pool
             out = elem - int(not base0) if elem >= 0 else elem + pool
@@ -220,11 +212,7 @@ class Negated(Collection):
     def __repr__(self) -> str:
         return f"Negated({self.elems})"
 
-    def expand(
-            self,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
-    ) -> None:
+    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
         """Expand the object"""
         super().expand(pool, base0)
         # self is now 0-based indexes
@@ -232,7 +220,7 @@ class Negated(Collection):
         # pylint: disable=bad-reversed-sequence
         if pool is not None:
             elems = [
-                self._index_from_pool(-elem-int(not base0), base0=True)
+                self._index_from_pool(-elem - int(not base0), base0=True)
                 for elem in reversed(self)
             ]
             # for elem in reversed(self):
@@ -246,34 +234,30 @@ class Negated(Collection):
             list.__init__(self, [-elem for elem in self])
         return self
 
+
 class Inverted(Collection):
     """Inverted collection, tries to exlude some elements"""
 
     def __repr__(self) -> str:
         return f"Inverted({self.elems})"
 
-    def expand(
-            self,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
-    ) -> None:
+    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
         """Expand the object"""
         if pool is None:
             raise ValueError("Inverted object needs `pool` to expand.")
 
-        super().expand(pool, base0) # 0-based indexes
+        super().expand(pool, base0)  # 0-based indexes
         pool = range(pool) if isinstance(pool, int) else range(len(pool))
         # pylint: disable=unsupported-membership-test
         list.__init__(self, [elem for elem in pool if elem not in self])
         return self
 
+
 class Intersect(Collection):
     """Intersect of two collections, designed for `&` operator"""
-    def __init__( # pylint: disable=super-init-not-called
-            self,
-            *args: Any,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
+
+    def __init__(  # pylint: disable=super-init-not-called
+        self, *args: Any, pool: PoolType = None, base0: bool = None
     ) -> None:
         if len(args) != 2:
             raise ValueError("Intersect can only accept two collections.")
@@ -287,16 +271,13 @@ class Intersect(Collection):
     def __repr__(self) -> str:
         return f"Intersect({self.elems})"
 
-    def expand(
-            self,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
-    ) -> None:
+    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
         """Expand the object"""
         left = Collection(self.elems[0], pool=pool, base0=base0)
         right = Collection(self.elems[1], pool=pool, base0=base0)
         list.__init__(self, [elem for elem in left if elem in right])
         return self
+
 
 class Slice(Collection):
     """Slice to wrap builtins.slice
@@ -308,10 +289,7 @@ class Slice(Collection):
     """
 
     def __init__(
-            self,
-            *args: Any,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
+        self, *args: Any, pool: PoolType = None, base0: bool = None
     ) -> None:
         if len(args) != 1 or not isinstance(args[0], slice):
             raise ValueError("Slice should wrap one and only one slice object.")
@@ -321,11 +299,7 @@ class Slice(Collection):
     def __repr__(self) -> str:
         return f"Slice({self.elems})"
 
-    def expand(
-            self,
-            pool: PoolType = None,
-            base0: Optional[bool] = None
-    ) -> None:
+    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
         base0 = self._get_base0(base0)
         pool = self._get_pool(pool)
         self.unmatched.clear()
@@ -350,7 +324,7 @@ class Slice(Collection):
         # Without pool, we don't know how to interpret strings in slice
         if isinstance(start, str) or isinstance(stop, str):
             raise ValueError(
-                '`pool` is required when start/stop of slice are not indexes.'
+                "`pool` is required when start/stop of slice are not indexes."
             )
 
         if start is None:
@@ -366,7 +340,7 @@ class Slice(Collection):
         while (i < stop) if step > 0 else (i > stop):
             out_append(i)
             i += step
-        if not base0: # include stop
+        if not base0:  # include stop
             out_append(stop)
         return out
 
@@ -381,7 +355,7 @@ class Slice(Collection):
         elif not isinstance(start, int):
             if isinstance(pool, int) or start not in pool:
                 raise ColumnNotExistingError(
-                    f'Column `{start}` does not exist.'
+                    f"Column `{start}` does not exist."
                 )
             start = self._index_from_pool(start)
         else:
@@ -392,9 +366,7 @@ class Slice(Collection):
             stop = len_pool
         elif not isinstance(stop, int):
             if isinstance(pool, int) or stop not in pool:
-                raise ColumnNotExistingError(
-                    f'Column `{stop}` does not exist.'
-                )
+                raise ColumnNotExistingError(f"Column `{stop}` does not exist.")
             stop = self._index_from_pool(stop) + 1
         # else:
         #     stop += base

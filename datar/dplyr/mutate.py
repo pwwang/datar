@@ -3,14 +3,18 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 """
 
-from typing import Any, Optional, Tuple, List, Union
+from typing import Any, Tuple, List, Union
 from pandas import DataFrame
 from pipda import register_verb, evaluate_expr, ContextBase
 
 from ..core.contexts import Context, ContextEval
 from ..core.utils import (
-    dedup_name, recycle_value, arg_match, df_setitem,
-    name_mutatable_args, reconstruct_tibble
+    dedup_name,
+    recycle_value,
+    arg_match,
+    df_setitem,
+    name_mutatable_args,
+    reconstruct_tibble,
 )
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.grouped import DataFrameGroupBy
@@ -19,19 +23,20 @@ from .group_by import group_by_drop_default
 from .group_data import group_vars, group_data
 from .relocate import relocate
 
+
 @register_verb(
     DataFrame,
     context=Context.PENDING,
-    extra_contexts={'_before': Context.SELECT, '_after': Context.SELECT}
+    extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
 )
 def mutate(
-        _data: DataFrame,
-        *args: Any,
-        _keep: str = 'all',
-        _before: Optional[Union[int, str]] = None,
-        _after: Optional[Union[int, str]] = None,
-        base0_: Optional[bool] = None,
-        **kwargs: Any
+    _data: DataFrame,
+    *args: Any,
+    _keep: str = "all",
+    _before: Union[int, str] = None,
+    _after: Union[int, str] = None,
+    base0_: bool = None,
+    **kwargs: Any,
 ) -> DataFrame:
     # pylint: disable=too-many-branches
     """Adds new variables and preserves existing ones
@@ -78,11 +83,7 @@ def mutate(
         - Groups will be recomputed if a grouping variable is mutated.
         - Data frame attributes are preserved.
     """
-    keep = arg_match(
-        _keep,
-        '_keep',
-        ['all', 'unused', 'used', 'none']
-    )
+    keep = arg_match(_keep, "_keep", ["all", "unused", "used", "none"])
 
     context = ContextEval()
     cols, removed = _mutate_cols(_data, context, *args, **kwargs)
@@ -99,52 +100,49 @@ def mutate(
         new = setdiff(cols.columns, _data.columns)
         out = relocate(out, *new, _before=_before, _after=_after, base0_=base0_)
 
-    if keep == 'all':
+    if keep == "all":
         keep = out.columns
-    elif keep == 'unused':
+    elif keep == "unused":
         used = context.used_refs.keys()
         unused = setdiff(_data.columns, used)
         keep = intersect(
-            out.columns,
-            c(group_vars(_data), unused, cols.columns)
+            out.columns, c(group_vars(_data), unused, cols.columns)
         )
-    elif keep == 'used':
+    elif keep == "used":
         used = context.used_refs.keys()
-        keep = intersect(
-            out.columns,
-            c(group_vars(_data), used, cols.columns)
-        )
-    else: # keep == 'none':
+        keep = intersect(out.columns, c(group_vars(_data), used, cols.columns))
+    else:  # keep == 'none':
         keep = union(
             setdiff(group_vars(_data), cols.columns),
-            intersect(cols.columns, out.columns)
+            intersect(cols.columns, out.columns),
         )
 
     out = out[keep]
     return out.loc[[], :] if len(_data) == 0 else out
 
+
 @mutate.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        *args: Any,
-        _keep: str = 'all',
-        _before: Optional[str] = None,
-        _after: Optional[str] = None,
-        base0_: Optional[bool] = None,
-        **kwargs: Any
+    _data: DataFrameGroupBy,
+    *args: Any,
+    _keep: str = "all",
+    _before: str = None,
+    _after: str = None,
+    base0_: bool = None,
+    **kwargs: Any,
 ) -> DataFrameGroupBy:
     """Mutate on DataFrameGroupBy object"""
+
     def apply_func(df):
-        index = df.attrs['_group_index']
-        rows = df.attrs['_group_data'].loc[index, '_rows']
-        ret = mutate(
-            df.reset_index(drop=True),
+        index = df.attrs["_group_index"]
+        rows = df.attrs["_group_data"].loc[index, "_rows"]
+        ret = df.reset_index(drop=True) >> mutate(
             *args,
             _keep=_keep,
             _before=_before,
             _after=_after,
             base0_=base0_,
-            **kwargs
+            **kwargs,
         )
         ret.index = rows
         return ret
@@ -165,18 +163,18 @@ def _(
         out,
         _group_vars=group_vars(_data),
         _group_drop=group_by_drop_default(_data),
-        _group_data=group_data(_data)
+        _group_data=group_data(_data),
     )
 
 
 @register_verb(DataFrame, context=Context.PENDING)
 def transmute(
-        _data: DataFrame,
-        *args: Any,
-        _before: Optional[Union[int, str]] = None,
-        _after: Optional[Union[int, str]] = None,
-        base0_: Optional[bool] = None,
-        **kwargs: Any
+    _data: DataFrame,
+    *args: Any,
+    _before: Union[int, str] = None,
+    _after: Union[int, str] = None,
+    base0_: bool = None,
+    **kwargs: Any,
 ) -> DataFrame:
     """Mutate with _keep='none'
 
@@ -185,19 +183,20 @@ def transmute(
     """
     return _data >> mutate(
         *args,
-        _keep='none',
+        _keep="none",
         _before=_before,
         _after=_after,
         base0_=base0_,
-        **kwargs
+        **kwargs,
     )
 
+
 def _mutate_cols(
-        data: DataFrame,
-        context: ContextBase,
-        *args: Any,
-        **kwargs: Any
-) -> Tuple[Optional[DataFrame], List[str]]:
+    data: DataFrame,  # TODO: data and context could be kwargs
+    context: ContextBase,
+    *args: Any,
+    **kwargs: Any,
+) -> Tuple[DataFrame, List[str]]:
     """Mutate columns"""
     if not args and not kwargs:
         return None, []
@@ -210,7 +209,6 @@ def _mutate_cols(
         ddp_name = dedup_name(name, list(named_mutatables))
         # if not a dedup name, it's a new name
         add_new_name = ddp_name == name
-
         mutatable = evaluate_expr(mutatable, data, context)
         if mutatable is None:
             if ddp_name in data:
@@ -220,9 +218,8 @@ def _mutate_cols(
             continue
 
         if isinstance(mutatable, DataFrame):
-            if (
-                    mutatable.shape[1] == 0 and
-                    not ddp_name.startswith(DEFAULT_COLUMN_PREFIX)
+            if mutatable.shape[1] == 0 and not ddp_name.startswith(
+                DEFAULT_COLUMN_PREFIX
             ):
                 data = df_setitem(
                     data, ddp_name, [NA] * max(mutatable.shape[0], 1)
@@ -232,8 +229,9 @@ def _mutate_cols(
             else:
                 for col in mutatable.columns:
                     new_name = (
-                        col if ddp_name.startswith(DEFAULT_COLUMN_PREFIX)
-                        else f'{ddp_name}${col}'
+                        col
+                        if ddp_name.startswith(DEFAULT_COLUMN_PREFIX)
+                        else f"{ddp_name}${col}"
                     )
                     coldata = recycle_value(
                         mutatable[col], data.shape[0], ddp_name

@@ -38,7 +38,6 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 |<s>`tbl_df-class`</s>|||
 |<s>`print(<tbl_df>)`</s> <s>`format(<tbl_df>)`</s>|||
 |[`tribble()`][3]|Row-wise tibble creation|[:material-notebook:][2]|
-|[**`fibble()`**][13]|Table creation in verbs, making use of `f`|[:material-notebook:][2]|
 
 ### Coercion
 
@@ -80,7 +79,6 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 [10]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.has_rownames
 [11]: ../../notebooks/rownames
 [12]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.tibble
-[13]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.fibble
 [14]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.deframe
 [15]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.remove_rownames
 [16]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.rownames_to_column

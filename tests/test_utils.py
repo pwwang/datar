@@ -11,7 +11,7 @@ def test_head_tail():
     assert z.shape[0] == 3
     z = list(range(10)) >> head()
     assert len(z) == 6
-    with pytest.raises(TypeError):
+    with pytest.raises(NotImplementedError):
         head(3)
 
     z = df >> tail()
@@ -20,5 +20,5 @@ def test_head_tail():
     assert z.shape[0] == 3
     z = list(range(10)) >> tail()
     assert len(z) == 6
-    with pytest.raises(TypeError):
+    with pytest.raises(NotImplementedError):
         tail(3)

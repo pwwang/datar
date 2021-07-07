@@ -1,6 +1,6 @@
 """Replace NAs with specified values"""
 from functools import singledispatch
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable
 
 import numpy
 import pandas
@@ -11,13 +11,15 @@ from pipda import register_verb
 from ..core.types import ArrayLikeType, is_scalar
 from ..core.contexts import Context
 
+
 @singledispatch
 def _replace_na(data: Iterable[Any], replace: Any) -> Iterable[Any]:
     """Replace NA for any iterables"""
-    return type(data)(
+    return type(data)( # type: ignore
         replace if is_scalar(elem) and pandas.isnull(elem) else elem
         for elem in data
     )
+
 
 @_replace_na.register(numpy.ndarray)
 @_replace_na.register(Series)
@@ -27,20 +29,21 @@ def _(data: ArrayLikeType, replace: Any) -> ArrayLikeType:
     ret[pandas.isnull(ret)] = replace
     return ret
 
+
 @_replace_na.register(DataFrame)
 def _(data: DataFrame, replace: Any) -> DataFrame:
     """Replace NA for numpy.ndarray or DataFrame"""
     # TODO: allow replace to be a list as an entire value to replace
     return data.fillna(replace)
 
+
 @register_verb(
-    (DataFrame, Series, numpy.ndarray, list, tuple, set),
-    context=Context.EVAL
+    (DataFrame, Series, numpy.ndarray, list, tuple, set), context=Context.EVAL
 )
 def replace_na(
-        data: Iterable[Any],
-        data_or_replace: Optional[Any] = None,
-        replace: Any = None
+    data: Iterable[Any],
+    data_or_replace: Any = None,
+    replace: Any = None,
 ) -> Any:
     """Replace NA with a value
 

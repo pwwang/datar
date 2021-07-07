@@ -4,7 +4,7 @@ If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
 registered by `register_verb` and should be placed in `./verbs.py`
 """
 import itertools
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable
 
 import pandas
 from pandas import Categorical, DataFrame
@@ -14,15 +14,16 @@ from ..core.middlewares import WithDataEnv
 from ..core.types import NumericType
 from ..core.contexts import Context
 
+
 @register_func(None, context=Context.EVAL)
 def cut(
-        x: Iterable[NumericType],
-        breaks: Any,
-        labels: Optional[Iterable[Any]] = None,
-        include_lowest: bool = False,
-        right: bool = True,
-        precision: int = 2,
-        ordered_result: bool = False
+    x: Iterable[NumericType],
+    breaks: Any,
+    labels: Iterable[Any] = None,
+    include_lowest: bool = False,
+    right: bool = True,
+    precision: int = 2,
+    ordered_result: bool = False,
 ) -> Categorical:
     """Divides the range of x into intervals and codes the values in x
     according to which interval they fall. The leftmost interval corresponds
@@ -59,8 +60,9 @@ def cut(
         include_lowest=include_lowest,
         right=right,
         precision=precision,
-        ordered=ordered_result
+        ordered=ordered_result,
     )
+
 
 @register_func(None, context=Context.EVAL)
 def identity(x: Any) -> Any:
@@ -70,27 +72,25 @@ def identity(x: Any) -> Any:
     """
     return x
 
+
 @register_func(None, context=Context.EVAL)
 def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
     """Expand all combinations into a dataframe. R's `expand.grid()`"""
     iters = {}
     for i, arg in enumerate(args):
-        name = getattr(
-            arg,
-            'name',
-            getattr(arg, '__name__', f'Var{i}')
-        )
+        name = getattr(arg, "name", getattr(arg, "__name__", f"Var{i}"))
         iters[name] = arg
     iters.update(kwargs)
 
     return DataFrame(
-        list(itertools.product(*iters.values())),
-        columns=iters.keys()
+        list(itertools.product(*iters.values())), columns=iters.keys()
     )
+
 
 # ---------------------------------
 # Plain functions
 # ---------------------------------
+
 
 def data_context(data: DataFrame) -> Any:
     """Evaluate verbs, functions in the
