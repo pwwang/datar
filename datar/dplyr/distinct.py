@@ -17,12 +17,10 @@ from ..base import union, setdiff, intersect
 from .mutate import mutate
 from .group_by import ungroup
 
+
 @register_verb(DataFrame, context=Context.PENDING)
 def distinct(
-        _data: DataFrame,
-        *args: Any,
-        _keep_all: bool = False,
-        **kwargs: Any
+    _data: DataFrame, *args: Any, _keep_all: bool = False, **kwargs: Any
 ) -> DataFrame:
     """Select only unique/distinct rows from a data frame.
 
@@ -43,49 +41,48 @@ def distinct(
         uniq = _data.drop_duplicates()
     else:
         # keep_none_prefers_new_order
-        uniq = mutate(_data, *args, **kwargs, _keep='none').drop_duplicates()
+        uniq = (
+            _data >> mutate(*args, **kwargs, _keep="none")
+        ).drop_duplicates()
 
     if not _keep_all:
         # keep original order
-        out = uniq[union(
-            intersect(_data.columns, uniq.columns),
-            setdiff(uniq.columns, _data.columns)
-        )]
+        out = uniq[
+            union(
+                intersect(_data.columns, uniq.columns),
+                setdiff(uniq.columns, _data.columns),
+            )
+        ]
     else:
         out = _data.loc[uniq.index, :].copy()
         out[uniq.columns.tolist()] = uniq
     copy_attrs(out, _data)
     return out.reset_index(drop=True)
 
+
 @distinct.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        *args: Any,
-        _keep_all: bool = False,
-        **kwargs: Any
+    _data: DataFrameGroupBy, *args: Any, _keep_all: bool = False, **kwargs: Any
 ) -> DataFrameGroupBy:
 
     out = _data.datar_apply(
-        lambda df: distinct(df, *args, **kwargs, _keep_all=_keep_all)
+        lambda df: df >> distinct(*args, **kwargs, _keep_all=_keep_all)
     )
 
     return reconstruct_tibble(_data, out)
 
+
 @distinct.register(DataFrameRowwise, context=Context.PENDING)
 def _(
-        _data: DataFrameRowwise,
-        *args: Any,
-        _keep_all: bool = False,
-        **kwargs: Any
+    _data: DataFrameRowwise, *args: Any, _keep_all: bool = False, **kwargs: Any
 ) -> DataFrameRowwise:
+    # pylint: disable=no-value-for-parameter
     out = distinct.dispatch(DataFrame)(
-        ungroup(_data),
-        *args,
-        **kwargs,
-        _keep_all=_keep_all
+        _data >> ungroup(), *args, **kwargs, _keep_all=_keep_all
     )
 
     return reconstruct_tibble(_data, out, keep_rowwise=True)
+
 
 @register_func(None, context=Context.EVAL)
 def n_distinct(*data: Any, na_rm: bool = False) -> int:

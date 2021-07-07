@@ -1,13 +1,16 @@
 """Verbs ported from R-utils"""
-from typing import Any
-from pandas import DataFrame
+from typing import Sequence, Union
+
+import numpy
+from pandas import DataFrame, Series
 
 from pipda import register_verb
 
-from ..core.types import is_iterable
 
-@register_verb
-def head(_data: Any, n: int = 6) -> DataFrame:
+@register_verb((DataFrame, Series, list, tuple, numpy.ndarray))
+def head(
+    _data: Union[DataFrame, Series, Sequence, numpy.ndarray], n: int = 6
+) -> DataFrame:
     """Get the first n rows of the dataframe or a vector
 
     Args:
@@ -16,14 +19,15 @@ def head(_data: Any, n: int = 6) -> DataFrame:
     Returns:
         The dataframe with first n rows or a vector with first n elements
     """
-    if not is_iterable(_data):
-        raise TypeError("`head` only works with iterable data.")
     if isinstance(_data, DataFrame):
         return _data.head(n)
     return _data[:n]
 
-@register_verb
-def tail(_data: Any, n: int = 6) -> DataFrame:
+
+@register_verb((DataFrame, Series, list, tuple, numpy.ndarray))
+def tail(
+    _data: Union[DataFrame, Series, Sequence, numpy.ndarray], n: int = 6
+) -> DataFrame:
     """Get the last n rows of the dataframe or a vector
 
     Args:
@@ -32,12 +36,11 @@ def tail(_data: Any, n: int = 6) -> DataFrame:
     Returns:
         The dataframe with last n rows or a vector with last n elements
     """
-    if not is_iterable(_data):
-        raise TypeError("`tail` only works with iterable data.")
     if isinstance(_data, DataFrame):
         return _data.tail(n)
 
+    out = _data[-n:]
     try:
-        return _data[-n:].reset_index(drop=True)
+        return out.reset_index(drop=True) # type: ignore[union-attr]
     except AttributeError:
-        return _data[-n:]
+        return out

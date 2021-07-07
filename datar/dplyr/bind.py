@@ -2,7 +2,7 @@
 
 See https://github.com/tidyverse/dplyr/blob/master/R/bind.r
 """
-from typing import Callable, Optional, Union
+from typing import Callable, Union
 
 import pandas
 from pandas import DataFrame, Categorical
@@ -16,17 +16,15 @@ from ..core.names import repair_names
 from ..core.grouped import DataFrameGroupBy
 from ..tibble import tibble
 
-@register_verb(
-    (DataFrame, list, dict, NoneType),
-    context=Context.EVAL
-)
+
+@register_verb((DataFrame, list, dict, NoneType), context=Context.EVAL)
 def bind_rows(
-        _data: Optional[Union[DataFrame, list, dict]],
-        *datas: Optional[Union[DataFrame, dict]],
-        _id: Optional[str] = None,
-        base0_: Optional[bool] = None,
-        _copy: bool = True,
-        **kwargs: Union[DataFrame, dict]
+    _data: Union[DataFrame, list, dict],
+    *datas: Union[DataFrame, dict],
+    _id: str = None,
+    base0_: bool = None,
+    _copy: bool = True,
+    **kwargs: Union[DataFrame, dict],
 ) -> DataFrame:
     # pylint: disable=too-many-branches
     """Bind rows of give dataframes
@@ -49,7 +47,7 @@ def bind_rows(
     Returns:
         The combined dataframe
     """
-    base = int(not get_option('index.base.0', base0_))
+    base = int(not get_option("index.base.0", base0_))
 
     if _id is not None and not isinstance(_id, str):
         raise ValueError("`_id` must be a scalar string.")
@@ -59,14 +57,14 @@ def bind_rows(
         if isinstance(data, DataFrame):
             return data.copy()
 
-        out = tibble(**data) # avoid varname error
+        out = tibble(**data)  # avoid varname error
         return out
 
     key_data = {}
     if isinstance(_data, list):
         for i, dat in enumerate(_data):
             if dat is not None:
-                key_data[i+base] = data_to_df(dat)
+                key_data[i + base] = data_to_df(dat)
     elif _data is not None:
         key_data[base] = data_to_df(_data)
 
@@ -87,7 +85,8 @@ def bind_rows(
     # handle categorical data
     for col in list(key_data.values())[0].columns:
         all_series = [
-            dat[col] for dat in key_data.values()
+            dat[col]
+            for dat in key_data.values()
             if col in dat and not dat[col].isna().all()
         ]
         all_categorical = [
@@ -96,44 +95,50 @@ def bind_rows(
         if all(all_categorical):
             union_cat = union_categoricals(all_series)
             for data in key_data.values():
-                if col not in data: # in case it is 0-column df
+                if col not in data:  # in case it is 0-column df
                     continue
                 data[col] = Categorical(
                     data[col],
                     categories=union_cat.categories,
-                    ordered=is_categorical(data[col]) and data[col].cat.ordered
+                    ordered=is_categorical(data[col]) and data[col].cat.ordered,
                 )
         elif any(all_categorical):
             logger.warning("Factor information lost during rows binding.")
 
     if _id is not None:
-        return pandas.concat(
-            key_data.values(),
-            keys=key_data.keys(),
-            names=[_id, None],
-            copy=_copy
-        ).reset_index(level=0).reset_index(drop=True)
+        return (
+            pandas.concat(
+                key_data.values(),
+                keys=key_data.keys(),
+                names=[_id, None],
+                copy=_copy,
+            )
+            .reset_index(level=0)
+            .reset_index(drop=True)
+        )
 
     return pandas.concat(key_data.values(), copy=_copy).reset_index(drop=True)
 
+
 @bind_rows.register(DataFrameGroupBy, context=Context.PENDING)
 def _(
-        _data: DataFrameGroupBy,
-        *datas: Optional[Union[DataFrame, dict]],
-        _id: Optional[str] = None,
-        **kwargs: Union[DataFrame, dict]
+    _data: DataFrameGroupBy,
+    *datas: Union[DataFrame, dict],
+    _id: str = None,
+    **kwargs: Union[DataFrame, dict],
 ) -> DataFrameGroupBy:
 
     data = bind_rows.dispatch(DataFrame)(_data, *datas, _id=_id, **kwargs)
     return reconstruct_tibble(_data, data)
 
+
 @register_verb((DataFrame, dict, NoneType), context=Context.EVAL)
 def bind_cols(
-        _data: Optional[Union[DataFrame, dict]],
-        *datas: Union[DataFrame, dict],
-        _name_repair: Union[str, Callable] = "unique",
-        base0_: Optional[bool] = None,
-        _copy: bool = True
+    _data: Union[DataFrame, dict],
+    *datas: Union[DataFrame, dict],
+    _name_repair: Union[str, Callable] = "unique",
+    base0_: bool = None,
+    _copy: bool = True,
 ) -> DataFrame:
     """Bind columns of give dataframes
 
@@ -174,8 +179,6 @@ def bind_cols(
         return DataFrame()
     ret = pandas.concat(more_data, axis=1, copy=_copy)
     ret.columns = repair_names(
-        ret.columns.tolist(),
-        repair=_name_repair,
-        base0_=base0_
+        ret.columns.tolist(), repair=_name_repair, base0_=base0_
     )
     return ret

@@ -1,33 +1,40 @@
 """Functions help to create data frames"""
 
-from typing import (
-    Any, Union, Callable, Optional, Mapping, Iterable, Tuple
-)
+from typing import Any, Union, Callable, Mapping, Iterable, Tuple
 
 from pandas import DataFrame
-from varname import argname, varname, VarnameRetrievingError
+from varname import argname2, varname, VarnameRetrievingError
 
-from pipda import register_func
-from pipda.utils import Expression
+import pipda
+from pipda import register_func, evaluate_expr
+from pipda.expression import Expression
 from pipda.symbolic import DirectRefItem, DirectRefAttr
 
 from ..core.types import Dtype, is_null
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
+from ..core.collections import Collection
 from ..core.contexts import Context
 from ..core.names import repair_names
 from ..core.utils import (
     Array,
-    to_df, length_of, recycle_df, df_setitem,
-    copy_attrs, apply_dtypes
+    to_df,
+    length_of,
+    recycle_df,
+    df_setitem,
+    copy_attrs,
+    apply_dtypes,
 )
 
+
+@register_func(None, context=Context.EVAL)
 def tibble(
-        *args: Any,
-        _name_repair: Union[str, Callable] = 'check_unique',
-        _rows: Optional[int] = None,
-        base0_: Optional[bool] = None,
-        _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        **kwargs: Any
+    *args: Any,
+    _name_repair: Union[str, Callable] = "check_unique",
+    _rows: int = None,
+    base0_: bool = None,
+    dtypes_: Union[Dtype, Mapping[str, Dtype]] = None,
+    frame_: int = 1,
+    **kwargs: Any,
 ) -> DataFrame:
     """Constructs a data frame
 
@@ -52,16 +59,19 @@ def tibble(
     args = tuple((arg for arg in args if arg is not None))
     if not args and not kwargs:
         df = DataFrame() if not _rows else DataFrame(index=range(_rows))
-        try:
-            df.__dfname__ = varname(raise_exc=False)
-        except VarnameRetrievingError: # pragma: no cover
-            df.__dfname__ = None
+        df.__dfname__ = varname(raise_exc=False, ignore=pipda)
         return df
 
     names = [None] * len(args)
     values = list(args)
     try:
-        argnames = argname(args, vars_only=False, pos_only=True)
+        argnames = argname2(
+            "*args",
+            frame=frame_,
+            ignore=pipda,
+            func=tibble,
+            vars_only=False,
+        )
         if len(argnames) != len(args):
             raise VarnameRetrievingError
     except VarnameRetrievingError:
@@ -71,9 +81,8 @@ def tibble(
         for i, value in enumerate(values):
             if isinstance(value, Expression):
                 names[i] = argnames[i]
-            elif (
-                    _expand_value(value) is None and
-                    not getattr(value, '__name__', getattr(value, 'name', None))
+            elif _expand_value(value) is None and not getattr(
+                value, "__name__", getattr(value, "name", None)
             ):
                 names[i] = argnames[i]
 
@@ -81,29 +90,24 @@ def tibble(
     values.extend(kwargs.values())
 
     out = zibble(
-        names,
-        values,
-        _name_repair=_name_repair,
-        base0_=base0_,
-        _dtypes=_dtypes
+        names, values, _name_repair=_name_repair, base0_=base0_, dtypes_=dtypes_
     )
 
-    try:
-        out.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError: # pragma: no cover
-        out.__dfname__ = None # still raises in some cases
+    out.__dfname__ = varname(raise_exc=False, frame=frame_, ignore=pipda)
 
     if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
         copy_attrs(out, args[0])
 
     return out
 
+
+@register_func(None, context=Context.EVAL)
 def tibble_row(
-        *args: Any,
-        _name_repair: Union[str, Callable] = 'check_unique',
-        base0_: Optional[bool] = None,
-        _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        **kwargs: Any
+    *args: Any,
+    _name_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
+    dtypes_: Union[Dtype, Mapping[str, Dtype]] = None,
+    **kwargs: Any,
 ) -> DataFrame:
     """Constructs a data frame that is guaranteed to occupy one row.
 
@@ -126,59 +130,28 @@ def tibble_row(
         A constructed dataframe
     """
     if not args and not kwargs:
-        df = DataFrame(index=[0]) # still one row
+        df = DataFrame(index=[0])  # still one row
     else:
-        df = tibble(*args, **kwargs, _name_repair=_name_repair, base0_=base0_)
+        df = tibble(
+            *args, **kwargs, _name_repair=_name_repair, base0_=base0_, frame_=2
+        )
 
     if df.shape[0] > 1:
         raise ValueError("All arguments must be size one, use `[]` to wrap.")
     try:
         df.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError: # pragma: no cover
+    except VarnameRetrievingError:  # pragma: no cover
         df.__dfname__ = None
 
-    apply_dtypes(df, _dtypes)
+    apply_dtypes(df, dtypes_)
     return df
 
-@register_func(None, context=Context.EVAL)
-def fibble(
-        *args: Any,
-        _name_repair: Union[str, Callable] = 'check_unique',
-        base0_: Optional[bool] = None,
-        _rows: Optional[int] = None,
-        _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None,
-        **kwargs: Any
-) -> DataFrame:
-    """A function of tibble that can be used as an argument of verbs
-
-    Since `tibble` can recycle previous items, for example:
-        >>> df >> tibble(x=1, y=f.x+1)
-        >>> # x y
-        >>> # 1 2
-
-    It gets confused when it is used as an argument of a verb, the we can't tell
-    whether `f` if a proxy for the data of the verb or the data frame that
-    `tibble` is constructing. So then here is the function to be used as a verb
-    argument so `f` refers to the data of the verb. Note that in such a case,
-    the items coming in previously cannot be recycled.
-
-    See Also:
-        [`tibble`](datar.tibble.funcs.tibble)
-
-    """
-    return tibble(
-        *args, **kwargs,
-        _name_repair=_name_repair,
-        _rows=_rows,
-        base0_=base0_,
-        _dtypes=_dtypes
-    )
 
 def tribble(
-        *dummies: Any,
-        _name_repair: Union[str, Callable] = 'minimal',
-        base0_: Optional[bool] = None,
-        _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None
+    *dummies: Any,
+    _name_repair: Union[str, Callable] = "minimal",
+    base0_: bool = None,
+    dtypes_: Union[Dtype, Mapping[str, Dtype]] = None,
 ) -> DataFrame:
     """Create dataframe using an easier to read row-by-row layout
 
@@ -206,10 +179,10 @@ def tribble(
     for dummy in dummies:
         # columns
         if isinstance(dummy, (DirectRefAttr, DirectRefItem)):
-            columns.append(dummy.ref)
+            columns.append(dummy._pipda_ref)
         elif not columns:
             raise ValueError(
-                'Must specify at least one column using the `f.<name>` syntax.'
+                "Must specify at least one column using the `f.<name>` syntax."
             )
         else:
             if not data:
@@ -224,10 +197,10 @@ def tribble(
     if len_data == 0:
         return zibble(
             columns,
-            [[]]*len(columns),
+            [[]] * len(columns),
             _name_repair=_name_repair,
             base0_=base0_,
-            _dtypes=_dtypes
+            dtypes_=dtypes_,
         )
 
     if len_data % len(columns) != 0:
@@ -242,15 +215,16 @@ def tribble(
         list(zip(*data)),
         _name_repair=_name_repair,
         base0_=base0_,
-        _dtypes=_dtypes
+        dtypes_=dtypes_,
     )
 
+
 def zibble(
-        names: Iterable[Optional[str]],
-        values: Iterable,
-        _name_repair: Union[str, Callable] = 'minimal',
-        base0_: Optional[bool] = None,
-        _dtypes: Optional[Union[Dtype, Mapping[str, Dtype]]] = None
+    names: Iterable[str],
+    values: Iterable,
+    _name_repair: Union[str, Callable] = "minimal",
+    base0_: bool = None,
+    dtypes_: Union[Dtype, Mapping[str, Dtype]] = None,
 ) -> DataFrame:
     """Zip version of tibble, where names specify together and so do values.
 
@@ -286,24 +260,29 @@ def zibble(
 
     names = Array(
         [
-            name.ref if isinstance(DirectRefAttr, DirectRefItem) else name
+            name._pipda_ref
+            if isinstance(DirectRefAttr, DirectRefItem)
+            else name
             for name in names
         ],
-        dtype=object
+        dtype=object,
     )
 
     out = None
     suffix = 0
     for name, value in zip(names, values):
         # Evaluate value if neccessary
-        value = _evaluate_value(value, out)
+
+        value = evaluate_expr(value, out, Context.EVAL)
+        if isinstance(value, Collection):
+            value.expand()
         expanded = _expand_value(value)
 
         if is_null(name) and expanded is None:
             name = getattr(
                 value,
-                '__name__',
-                getattr(value, 'name', f"{DEFAULT_COLUMN_PREFIX}{suffix}")
+                "__name__",
+                getattr(value, "name", f"{DEFAULT_COLUMN_PREFIX}{suffix}"),
             )
             out = _process_one_pair(out, name, value)
         elif is_null(name):
@@ -323,16 +302,13 @@ def zibble(
         out = DataFrame()
     names = repair_names(out.columns.tolist(), _name_repair, base0_)
     out.columns = names
-    apply_dtypes(out, _dtypes)
+    apply_dtypes(out, dtypes_)
 
     return out
 
+
 # Helpers ----------------------------------------------------
-def _process_one_pair(
-        df: Optional[DataFrame],
-        name: Optional[str],
-        value: Any
-) -> DataFrame:
+def _process_one_pair(df: DataFrame, name: str, value: Any) -> DataFrame:
     """Process one name-value pair"""
     if value is None:
         return df
@@ -352,19 +328,11 @@ def _process_one_pair(
 
     return df_setitem(df, name, value, allow_dups=True)
 
-def _evaluate_value(value: Any, data: Optional[DataFrame]) -> Any:
-    """Evaluate a value for dataframe construction"""
-    if not isinstance(value, Expression):
-        return value
 
-    return value._pipda_eval(data, Context.EVAL.value)
-
-def _expand_value(
-        value: Any
-) -> Optional[Tuple[Iterable[str], Iterable[Any]]]:
+def _expand_value(value: Any) -> Tuple[str, Iterable[Any]]:
     """Expand value to name-value pairs"""
     if isinstance(value, DataFrame):
-        df_dict = value.to_dict('series')
+        df_dict = value.to_dict("series")
         return df_dict, df_dict.values()
     if isinstance(value, dict):
         return value, value.values()

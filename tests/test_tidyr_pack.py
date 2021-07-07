@@ -11,8 +11,8 @@ def test_can_pack_multiple_columns():
     out = df >> pack(a=c(f.a1, f.a2), b=c(f.b1, f.b2))
 
     assert colnames(out) == ['a', 'b']
-    assert_frame_equal(pull(out, f.a), df[['a1', 'a2']])
-    assert_frame_equal(pull(out, f.b), df[['b1', 'b2']])
+    assert_frame_equal(out >> pull(f.a), df[['a1', 'a2']])
+    assert_frame_equal(out >> pull(f.b), df[['b1', 'b2']])
 
 def test_pack_no_columns_returns_input():
     df = tibble(a1=1, a2=2, b1=1, b2=2)

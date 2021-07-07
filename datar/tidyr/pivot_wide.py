@@ -1,6 +1,6 @@
 """Pivot data from long to wide"""
 
-from typing import List, Optional, Any, Union, Callable, Mapping
+from typing import List, Any, Union, Callable, Mapping
 
 import pandas
 from pandas import DataFrame, Index
@@ -14,26 +14,27 @@ from ..core.exceptions import ColumnNotExistingError
 from ..base import NA, identity
 from ..base.na import NA_integer_
 
-ROWID_COLUMN = '_PIVOT_ROWID_'
+ROWID_COLUMN = "_PIVOT_ROWID_"
 
 # pylint: disable=too-many-branches
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_wider(
-        _data: DataFrame,
-        id_cols: Optional[StringOrIter] = None,
-        names_from: str = "name",
-        names_prefix: str = "",
-        names_sep: str = "_",
-        names_glue: Optional[str] = None,
-        names_sort: bool = False,
-        # names_repair: str = "check_unique", # todo
-        values_from: StringOrIter = "value",
-        values_fill: Any = None,
-        values_fn: Union[Callable, Mapping[str, Callable]] = identity,
-        base0_: Optional[bool] = None
+    _data: DataFrame,
+    id_cols: StringOrIter = None,
+    names_from: StringOrIter = "name",
+    names_prefix: str = "",
+    names_sep: str = "_",
+    names_glue: str = None,
+    names_sort: bool = False,
+    # names_repair: str = "check_unique", # todo
+    values_from: StringOrIter = "value",
+    values_fill: Any = None,
+    values_fn: Union[Callable, Mapping[str, Callable]] = identity,
+    base0_: bool = None,
 ) -> DataFrame:
-    """"widens" data, increasing the number of columns and decreasing
+    """ "widens" data, increasing the number of columns and decreasing
     the number of rows.
 
     Args:
@@ -73,11 +74,11 @@ def pivot_wider(
         The pivoted dataframe.
     """
     if is_scalar(names_from):
-        names_from = [names_from]
+        names_from = [names_from] # type: ignore
     if is_scalar(values_from):
-        values_from = [values_from]
+        values_from = [values_from] # type: ignore
     if id_cols is not None and is_scalar(id_cols):
-        id_cols = [id_cols]
+        id_cols = [id_cols] # type: ignore
 
     if id_cols is None:
         all_cols = _data.columns
@@ -87,7 +88,7 @@ def pivot_wider(
         for value_from in values_from:
             if isinstance(value_from, str) and value_from not in all_cols:
                 df_cols = [
-                    col for col in all_cols if col.startswith(f'{value_from}$')
+                    col for col in all_cols if col.startswith(f"{value_from}$")
                 ]
                 if not df_cols:
                     raise ColumnNotExistingError(value_from)
@@ -97,11 +98,7 @@ def pivot_wider(
         values_from = all_cols[
             vars_select(all_cols, *new_values_from, base0=base0_)
         ]
-        id_cols = (
-            all_cols
-            .difference(names_from)
-            .difference(values_from)
-        )
+        id_cols = all_cols.difference(names_from).difference(values_from)
 
     # build multiindex pivot table
     id_cols = list(id_cols)
@@ -147,14 +144,11 @@ def pivot_wider(
         columns=names_from,
         fill_value=values_fill,
         values=values_from[0] if len(values_from) == 1 else values_from,
-        aggfunc=values_fn
+        aggfunc=values_fn,
     )
 
     ret.columns = _flatten_column_names(
-        ret.columns,
-        names_prefix,
-        names_sep,
-        names_glue
+        ret.columns, names_prefix, names_sep, names_glue
     )
 
     if len(id_cols) > 0:
@@ -173,11 +167,9 @@ def pivot_wider(
 
     return reconstruct_tibble(_data, ret)
 
+
 def _flatten_column_names(
-        names: Index,
-        names_prefix: str,
-        names_sep: str,
-        names_glue: Optional[str]
+    names: Index, names_prefix: str, names_sep: str, names_glue: str
 ) -> List[str]:
     """Flatten the hierachical column names:
 
@@ -192,7 +184,7 @@ def _flatten_column_names(
         >>> ['X1_a', 'Y2_a', 'X1_b', 'Y2_b']
     with `names_glue={x}{y}_{_value}`
     """
-    lvlnames = ['_value' if level is None else level for level in names.names]
+    lvlnames = ["_value" if level is None else level for level in names.names]
     out = []
     for cols in names:
         if is_scalar(cols):
@@ -209,16 +201,16 @@ def _flatten_column_names(
         #     out.append(f'{names_prefix}{cols["_value"]}')
         # in case of values_from is a dataframe column
         # ('d$a', 'X', '1')
-        if '$' in cols.get('_value', ''):
+        if "$" in cols.get("_value", ""):
             prefix = names_prefix + names_sep.join(
-                col for name, col in cols.items() if name != '_value'
+                col for name, col in cols.items() if name != "_value"
             )
             out.append(f'{prefix}${cols["_value"].split("$", 1)[1]}')
         elif not names_glue:
-            out.append(f'{names_prefix}{names_sep.join(cols.values())}')
+            out.append(f"{names_prefix}{names_sep.join(cols.values())}")
         else:
-            if '_value' in cols:
-                cols['.value'] = cols['_value']
+            if "_value" in cols:
+                cols[".value"] = cols["_value"]
             out.append(names_glue.format(**cols))
 
     return out

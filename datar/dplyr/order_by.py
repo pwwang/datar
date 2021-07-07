@@ -2,7 +2,7 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/order-by.R
 """
-from typing import Callable, Iterable, Any
+from typing import Callable, Iterable, Any, Sequence
 
 from pandas import Series
 from pipda import register_func
@@ -10,8 +10,12 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..core.types import is_scalar
 
+
 @register_func(None, context=Context.EVAL)
-def order_by(order: Iterable[Any], data: Iterable[Any]) -> Series:
+def order_by(
+    order: Sequence[Any],
+    data: Sequence[Any],
+) -> Series:
     """Order the data by the given order
 
     Note:
@@ -39,24 +43,19 @@ def order_by(order: Iterable[Any], data: Iterable[Any]) -> Series:
     if is_scalar(data):
         data = [data]
 
-    order = (
-        Series(order) if len(order) > 1
-        else Series(order, dtype=object)
-    )
+    order = Series(order) if len(order) > 1 else Series(order, dtype=object)
     order = order.sort_values()
-    out = (
-        Series(data) if len(data) > 1
-        else Series(data, dtype=object)
-    )
+    out = Series(data) if len(data) > 1 else Series(data, dtype=object)
     return out[order.index]
+
 
 @register_func(None, context=Context.EVAL)
 def with_order(
-        order: Iterable[Any],
-        func: Callable,
-        x: Iterable[Any],
-        *args: Any,
-        **kwargs: Any
+    order: Iterable[Any],
+    func: Callable,
+    x: Iterable[Any],
+    *args: Any,
+    **kwargs: Any,
 ) -> Series:
     """Control argument and result of a window function
 

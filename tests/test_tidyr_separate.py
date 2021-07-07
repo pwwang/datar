@@ -125,7 +125,7 @@ def test_checks_type_of_into_and_sep():
         separate(df, f.x, "x", FALSE)
 
     with pytest.raises(ValueError, match="must be a string"):
-        separate(df, f.x, FALSE)
+        df >> separate(f.x, FALSE)
 
 def test_remove_false():
     df = tibble(x=c("a b"))
@@ -151,7 +151,7 @@ def test_can_handle_collapsed_rows():
     assert_iterable_equal(out.y, list("adefgh"))
 
 def test_can_handle_empty_dfs():
-    df = tibble(a=[], b=[], _dtypes=str)
+    df = tibble(a=[], b=[], dtypes_=str)
     rs = separate_rows(df, f.b)
     assert_frame_equal(rs, df)
 

@@ -1,15 +1,14 @@
 """Provide options"""
 
-from typing import Any, Mapping, Union, Optional, Callable
+from typing import Any, Generator, Mapping, Union, Callable
 from contextlib import contextmanager
 
 from diot import Diot
 
 # pylint: disable=invalid-name
-_key_transform = lambda key: key.replace('_', '.')
+_key_transform = lambda key: key.replace("_", ".")
 _dict_transform_back = lambda dic: {
-    key.replace('.', '_'): val
-    for key, val in dic.items()
+    key.replace(".", "_"): val for key, val in dic.items()
 }
 
 OPTIONS = Diot(
@@ -23,7 +22,7 @@ OPTIONS = Diot(
     warn_builtin_names=True,
     add_option=True,
     # allow 'a.b' to access 'a_b'
-    diot_transform=_key_transform
+    diot_transform=_key_transform,
 )
 
 OPTION_CALLBACKS = Diot(
@@ -31,7 +30,11 @@ OPTION_CALLBACKS = Diot(
     diot_transform=_key_transform
 )
 
-def options(*args: Union[str, Mapping[str, Any]], **kwargs: Any) -> None:
+
+def options(
+    *args: Union[str, Mapping[str, Any]],
+    **kwargs: Any,
+) -> Mapping[str, Any]:
     """Allow the user to set and examine a variety of global options
 
     Args:
@@ -41,17 +44,21 @@ def options(*args: Union[str, Mapping[str, Any]], **kwargs: Any) -> None:
     if not args and not kwargs:
         return OPTIONS.copy()
 
-    names = [arg.replace('.', '_') for arg in args if isinstance(arg, str)]
+    names = [arg.replace(".", "_") for arg in args if isinstance(arg, str)]
     pairs = {}
     for arg in args:
         if isinstance(arg, dict):
             pairs.update(_dict_transform_back(arg))
     pairs.update(_dict_transform_back(kwargs))
 
-    out = Diot({
-        name: value for name, value in OPTIONS.items()
-        if name in names or name in pairs
-    }, diot_transform=_key_transform)
+    out = Diot(
+        {
+            name: value
+            for name, value in OPTIONS.items()
+            if name in names or name in pairs
+        },
+        diot_transform=_key_transform,
+    )
 
     for key, val in pairs.items():
         oldval = OPTIONS[key]
@@ -64,16 +71,18 @@ def options(*args: Union[str, Mapping[str, Any]], **kwargs: Any) -> None:
 
     return out
 
+
 @contextmanager
-def options_context(**kwargs: Any) -> None:
+def options_context(**kwargs: Any) -> Generator:
     """A context manager to execute code with temporary options
 
     Note that this is not thread-safe.
     """
-    opts = options()
+    opts = options()  # type: Mapping[str, Any]
     options(**kwargs)
     yield
     options(opts)
+
 
 # pylint: disable=invalid-name
 def get_option(x: str, default: Any = None) -> Any:
@@ -86,11 +95,8 @@ def get_option(x: str, default: Any = None) -> Any:
     """
     return OPTIONS.get(x, default)
 
-def add_option(
-        x: str,
-        default: Any = None,
-        callback: Optional[Callable] = None
-) -> None:
+
+def add_option(x: str, default: Any = None, callback: Callable = None) -> None:
     """Add an option"""
     OPTIONS[x] = default
     if callback:

@@ -267,7 +267,7 @@ def test_dup_cols():
 
 # fibble -------------------------------------------
 def test_fibble():
-    df = tibble(x=[1,2]) >> mutate(fibble(y=f.x))
+    df = tibble(x=[1,2]) >> mutate(tibble(y=f.x))
     assert df.equals(tibble(x=[1,2], y=[1,2]))
 
 # tibble_row ---------------------------------------

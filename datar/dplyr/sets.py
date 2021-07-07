@@ -14,6 +14,7 @@ from ..core.utils import reconstruct_tibble
 from ..base.verbs import intersect, union, setdiff, setequal
 from .bind import bind_rows
 
+
 def _check_xy(x: DataFrame, y: DataFrame) -> None:
     """Check the dimension and columns of x and y for set operations"""
     if x.shape[1] != y.shape[1]:
@@ -30,13 +31,11 @@ def _check_xy(x: DataFrame, y: DataFrame) -> None:
             msg.append(f"- Cols in `y` but not `x`: {in_y_not_x}.")
         if in_x_not_y:
             msg.append(f"- Cols in `x` but not `y`: {in_x_not_y}.")
-        raise ValueError('\n'.join(msg))
+        raise ValueError("\n".join(msg))
+
 
 @intersect.register(DataFrame, context=Context.EVAL)
-def _(
-        x: DataFrame,
-        y: DataFrame
-) -> DataFrame:
+def _(x: DataFrame, y: DataFrame) -> DataFrame:
     """Intersect of two dataframes
 
     Args:
@@ -48,21 +47,18 @@ def _(
     """
     _check_xy(x, y)
     from .distinct import distinct
-    return distinct(pandas.merge(x, y, how='inner'))
+
+    return distinct(pandas.merge(x, y, how="inner"))
+
 
 @intersect.register(DataFrameGroupBy, context=Context.EVAL)
-def _(
-        x: DataFrameGroupBy,
-        y: DataFrame
-) -> DataFrameGroupBy:
+def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
     out = intersect.dispatch(DataFrame)(x, y)
     return reconstruct_tibble(x, out, keep_rowwise=True)
 
+
 @union.register(DataFrame, context=Context.EVAL)
-def _(
-        x: DataFrame,
-        y: DataFrame
-) -> DataFrame:
+def _(x: DataFrame, y: DataFrame) -> DataFrame:
     """Union of two dataframes
 
     Args:
@@ -74,21 +70,18 @@ def _(
     """
     _check_xy(x, y)
     from .distinct import distinct
-    return distinct(pandas.merge(x, y, how='outer'))
+
+    return distinct(pandas.merge(x, y, how="outer"))
+
 
 @union.register(DataFrameGroupBy, context=Context.EVAL)
-def _(
-        x: DataFrameGroupBy,
-        y: DataFrame
-) -> DataFrameGroupBy:
+def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
     out = union.dispatch(DataFrame)(x, y)
     return reconstruct_tibble(x, out, keep_rowwise=True)
 
+
 @setdiff.register(DataFrame, context=Context.EVAL)
-def _(
-        x: DataFrame,
-        y: DataFrame
-) -> DataFrame:
+def _(x: DataFrame, y: DataFrame) -> DataFrame:
     """Set diff of two dataframes
 
     Args:
@@ -99,29 +92,26 @@ def _(
         The dataframe of setdiff of input dataframes
     """
     _check_xy(x, y)
-    indicator = '__datar_setdiff__'
-    out = pandas.merge(x, y, how='left', indicator=indicator)
+    indicator = "__datar_setdiff__"
+    out = pandas.merge(x, y, how="left", indicator=indicator)
 
     from .distinct import distinct
-    return distinct(out[out[indicator] == 'left_only'].drop(
-        columns=[indicator]
-    ).reset_index(
-        drop=True
-    ))
+
+    return distinct(
+        out[out[indicator] == "left_only"]
+        .drop(columns=[indicator])
+        .reset_index(drop=True)
+    )
+
 
 @setdiff.register(DataFrameGroupBy, context=Context.EVAL)
-def _(
-        x: DataFrameGroupBy,
-        y: DataFrame
-) -> DataFrameGroupBy:
+def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
     out = setdiff.dispatch(DataFrame)(x, y)
     return reconstruct_tibble(x, out, keep_rowwise=True)
 
+
 @register_verb(DataFrame, context=Context.EVAL)
-def union_all(
-        x: DataFrame,
-        y: DataFrame
-) -> DataFrame:
+def union_all(x: DataFrame, y: DataFrame) -> DataFrame:
     """Union of all rows of two dataframes
 
     Args:
@@ -134,19 +124,15 @@ def union_all(
     _check_xy(x, y)
     return bind_rows(x, y)
 
+
 @union_all.register(DataFrameGroupBy, context=Context.EVAL)
-def _(
-        x: DataFrameGroupBy,
-        y: DataFrame
-) -> DataFrameGroupBy:
+def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
     out = union_all.dispatch(DataFrame)(x, y)
     return reconstruct_tibble(x, out, keep_rowwise=True)
 
+
 @setequal.register(DataFrame, context=Context.EVAL)
-def _(
-        x: DataFrame,
-        y: DataFrame
-) -> bool:
+def _(x: DataFrame, y: DataFrame) -> bool:
     """Check if two dataframes equal
 
     Args:

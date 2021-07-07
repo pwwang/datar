@@ -2,7 +2,7 @@
 
 https://github.com/tidyverse/tidyr/blob/master/R/pack.R
 """
-from typing import Iterable, Set, Optional, Union, Callable
+from typing import Iterable, Set, Union, Callable
 
 from pandas import DataFrame
 from pipda import register_verb
@@ -15,12 +15,13 @@ from ..core.names import repair_names
 from ..base import setdiff
 from ..dplyr import bind_cols
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def pack(
-        _data: DataFrame,
-        _names_sep: Optional[str] = None,
-        base0_: Optional[bool] = None,
-        **cols: Union[str, int]
+    _data: DataFrame,
+    _names_sep: str = None,
+    base0_: bool = None,
+    **cols: Union[str, int],
 ) -> DataFrame:
     """Makes df narrow by collapsing a set of columns into a single df-column.
 
@@ -40,6 +41,7 @@ def pack(
         return _data.copy()
 
     from .nest import _strip_names
+
     all_columns = _data.columns
     colgroups = {}
     usedcols = set()
@@ -47,27 +49,29 @@ def pack(
         oldcols = all_columns[vars_select(all_columns, columns, base0=base0_)]
         usedcols = usedcols.union(oldcols)
         newcols = (
-            oldcols if _names_sep is None else
-            _strip_names(oldcols, group, _names_sep)
+            oldcols
+            if _names_sep is None
+            else _strip_names(oldcols, group, _names_sep)
         )
         colgroups[group] = zip(newcols, oldcols)
 
     cols = {}
     for group, columns in colgroups.items():
         for newcol, oldcol in columns:
-            cols[f'{group}${newcol}'] = _data[oldcol]
+            cols[f"{group}${newcol}"] = _data[oldcol]
 
     asis = setdiff(_data.columns, usedcols)
     out = _data[asis] >> bind_cols(DataFrame(cols))
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def unpack(
-        data: DataFrame,
-        cols: Union[StringOrIter, IntOrIter],
-        names_sep: Optional[str] = None,
-        names_repair: Union[str, Callable] = "check_unique",
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    cols: Union[StringOrIter, IntOrIter],
+    names_sep: str = None,
+    names_repair: Union[str, Callable] = "check_unique",
+    base0_: bool = None,
 ) -> DataFrame:
     """Makes df wider by expanding df-columns back out into individual columns.
 
@@ -100,15 +104,17 @@ def unpack(
 
     all_columns = data.columns
     cols = _check_present(
-        data, cols, all_columns,
+        data,
+        cols,
+        all_columns,
         base0=base0_,
     )
 
     out = data.copy()
     new_cols = []
     for col in data.columns:
-        if '$' in col:
-            parts = col.split('$', 1)
+        if "$" in col:
+            parts = col.split("$", 1)
             if parts[0] not in cols:
                 new_cols.append(col)
             else:
@@ -128,23 +134,23 @@ def unpack(
 
 
 def _check_present(
-        data: DataFrame,
-        cols: Iterable[Union[int, str]],
-        all_columns: Iterable[str],
-        base0: Optional[bool] = None
+    data: DataFrame,
+    cols: Iterable[Union[int, str]],
+    all_columns: Iterable[str],
+    base0: bool = None,
 ) -> Set[str]:
     """Check if cols are packed columns"""
     out = set()
     for col in cols:
         if not isinstance(col, str):
             columns = vars_select(all_columns, col, base0=base0)
-            columns = all_columns[columns][0].split('$', 1)[0]
+            columns = all_columns[columns][0].split("$", 1)[0]
         else:
             columns = [col]
 
         for column in columns:
             if not (column in data and len(data[column]) == 0) and not any(
-                    allcol.startswith(f"{column}$") for allcol in all_columns
+                allcol.startswith(f"{column}$") for allcol in all_columns
             ):
                 raise ValueError(f"`{column}` must be a data frame column.")
 

@@ -12,6 +12,7 @@ from .collections import Collection, Inverted, Negated, Intersect
 from .exceptions import DataUnrecyclable
 from .types import BoolOrIter
 
+
 @register_operator
 class DatarOperator(Operator):
     """Operator class for datar"""
@@ -33,13 +34,13 @@ class DatarOperator(Operator):
         """Interpretation for ~x"""
         if isinstance(operand, (slice, str, list, tuple, Collection)):
             return Inverted(operand)
-        return self._arithmetize1(operand, 'invert')
+        return self._arithmetize1(operand, "invert")
 
     def neg(self, operand: Any) -> Any:
         """Interpretation for -x"""
         if isinstance(operand, (slice, list)):
             return Negated(operand)
-        return self._arithmetize1(operand, 'neg')
+        return self._arithmetize1(operand, "neg")
 
     def and_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
@@ -91,7 +92,7 @@ class DatarOperator(Operator):
             # neout[pandas.isna(out)] = numpy.nan
             return neout
         # out is always a numpy.ndarray
-        return not out # pragma: no cover
+        return not out  # pragma: no cover
 
     def __getattr__(self, name: str) -> Any:
         """Other operators"""
@@ -100,6 +101,7 @@ class DatarOperator(Operator):
         attr = partial(self._arithmetize2, op=name)
         attr.__qualname__ = self._arithmetize2.__qualname__
         return attr
+
 
 def _recycle_left_right(left: Any, right: Any) -> Tuple:
     """Recycle left right operands to each other"""

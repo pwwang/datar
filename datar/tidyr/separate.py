@@ -4,16 +4,20 @@ expression or numeric locations
 https://github.com/tidyverse/tidyr/blob/HEAD/R/separate.R
 """
 import re
-from typing import Any, List, Union, Mapping, Optional
+from typing import Any, Iterable, List, Tuple, Union, Mapping
 
 import pandas
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.types import Dtype, StringOrIter, is_scalar
+from ..core.types import Dtype, NAType, is_scalar
 from ..core.utils import (
-    logger, vars_select, apply_dtypes, position_at, reconstruct_tibble
+    logger,
+    vars_select,
+    apply_dtypes,
+    position_at,
+    reconstruct_tibble,
 )
 
 from ..base import NA
@@ -21,17 +25,20 @@ from ..dplyr import ungroup, mutate
 
 from .chop import unchop
 
+# pylint: disable=no-value-for-parameter
+
+
 @register_verb(DataFrame, context=Context.SELECT)
 def separate(
-        data: DataFrame,
-        col: Union[str, int],
-        into: StringOrIter,
-        sep: Union[int, str] = r'[^0-9A-Za-z]+',
-        remove: bool = True,
-        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
-        extra: str = "warn",
-        fill: str = "warn",
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    col: Union[str, int],
+    into: Union[NAType, str, Iterable[Union[NAType, str]]],
+    sep: Union[int, str] = r"[^0-9A-Za-z]+",
+    remove: bool = True,
+    convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
+    extra: str = "warn",
+    fill: str = "warn",
+    base0_: bool = None,
 ) -> DataFrame:
     """Given either a regular expression or a vector of character positions,
     turns a single character column into multiple columns.
@@ -70,7 +77,7 @@ def separate(
         Dataframe with separated columns.
     """
     if is_scalar(into):
-        into = [into]
+        into = [into] # type: ignore
 
     if not all(isinstance(it, str) or pandas.isnull(it) for it in into):
         raise ValueError("`into` must be a string or a list of strings.")
@@ -79,10 +86,7 @@ def separate(
     col = vars_select(all_columns, col, base0=base0_)
     col = all_columns[col[0]]
 
-    colindex = [
-        i for i, outcol in enumerate(into)
-        if not pandas.isnull(outcol)
-    ]
+    colindex = [i for i, outcol in enumerate(into) if not pandas.isnull(outcol)]
     non_na_elems = lambda row: [row[i] for i in colindex]
     # series.str.split can't do extra and fill
     # extracted = data[col].str.split(sep, expand=True).iloc[:, colindex]
@@ -98,24 +102,23 @@ def separate(
         fill=fill,
         base0=base0_,
         extra_warns=extra_warns,
-        missing_warns=missing_warns
+        missing_warns=missing_warns,
     )
 
     if extra_warns:
         logger.warning(
-            'Expected %s pieces. '
-            'Additional pieces discarded in %s rows %s.',
+            "Expected %s pieces. " "Additional pieces discarded in %s rows %s.",
             nout,
             len(extra_warns),
-            extra_warns
+            extra_warns,
         )
     if missing_warns:
         logger.warning(
-            'Expected %s pieces. '
-            'Missing pieces filled with `NA` in %s rows %s.',
+            "Expected %s pieces. "
+            "Missing pieces filled with `NA` in %s rows %s.",
             nout,
             len(missing_warns),
-            missing_warns
+            missing_warns,
         )
 
     separated = DataFrame(separated.values.tolist()).iloc[:, colindex]
@@ -123,17 +126,18 @@ def separate(
     apply_dtypes(separated, convert)
 
     out = data.drop(columns=[col]) if remove else data
-    out = mutate(out, separated)
+    out >>= mutate(separated)
 
     return reconstruct_tibble(data, out)
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def separate_rows(
-        data: DataFrame,
-        *columns: str,
-        sep: str = r'[^0-9A-Za-z]+',
-        convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    *columns: Tuple[str],
+    sep: str = r"[^0-9A-Za-z]+",
+    convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
+    base0_: bool = None,
 ) -> DataFrame:
     """Separates the values and places each one in its own row.
 
@@ -161,28 +165,31 @@ def separate_rows(
             fill="right",
             base0=base0_,
             extra_warns=[],
-            missing_warns=[]
+            missing_warns=[],
         )
 
-    out = unchop(out, selected, keep_empty=True, ptype=convert, base0_=base0_)
-    return reconstruct_tibble(out, ungroup(out), selected, keep_rowwise=True)
+    out >>= unchop(selected, keep_empty=True, ptype=convert, base0_=base0_)
+    return reconstruct_tibble(
+        out, out >> ungroup(), selected, keep_rowwise=True
+    )
+
 
 def _separate_col(
-        elem: Any,
-        nout: int,
-        sep: Union[str, int],
-        extra: str,
-        fill: str,
-        base0: Optional[bool],
-        # pylint: disable=dangerous-default-value
-        extra_warns: List[str] = [], # mutatable to save warnings
-        missing_warns: List[str] = []
-) -> List[Optional[str]]:
+    elem: Any,
+    nout: int,
+    sep: Union[str, int],
+    extra: str,
+    fill: str,
+    base0: bool,
+    # pylint: disable=dangerous-default-value
+    extra_warns: List[str] = [],  # mutatable to save warnings
+    missing_warns: List[str] = [],
+) -> List[Union[str, NAType]]:
     """Separate the column"""
     if (is_scalar(elem) and pandas.isnull(elem)) or (
-            not is_scalar(elem) and any(pandas.isnull(elem))
+        not is_scalar(elem) and any(pandas.isnull(elem))
     ):
-        return [NA] * nout if nout > 0 else NA
+        return [NA] * nout if nout > 0 else NA # type: ignore
 
     elem = str(elem)
     if isinstance(sep, int):
@@ -191,27 +198,27 @@ def _separate_col(
         except IndexError:
             tmp = 0 if sep < 0 else len(elem) - 1
         tmp = sep - 1 if sep < 0 else tmp
-        row = [elem[:tmp+1], elem[tmp+1:]]
+        row = [elem[: tmp + 1], elem[tmp + 1 :]]
     else:
         row = re.split(sep, elem, 0 if nout == 0 else nout - 1)
     if nout == 0:
         return row
     if len(row) < nout:
-        if fill == 'warn' and (
-                not missing_warns or missing_warns[-1] != '...truncated'
+        if fill == "warn" and (
+            not missing_warns or missing_warns[-1] != "...truncated"
         ):
             missing_warns.append(elem)
-        if fill in ('warn', 'right'):
-            row += [NA] * (nout - len(row))
+        if fill in ("warn", "right"):
+            row += [NA] * (nout - len(row)) # type: ignore
         else:
             row = [NA] * (nout - len(row)) + row
     elif not isinstance(sep, int):
         more_splits = re.split(sep, row[-1], 1)
         if len(more_splits) > 1:
-            if extra == 'warn' and (
-                    not extra_warns or extra_warns[-1] != '...truncated'
+            if extra == "warn" and (
+                not extra_warns or extra_warns[-1] != "...truncated"
             ):
                 extra_warns.append(elem)
-            if extra in ('warn', 'drop'):
+            if extra in ("warn", "drop"):
                 row[-1] = more_splits[0]
     return row

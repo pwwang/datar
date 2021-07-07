@@ -11,7 +11,7 @@ from .context import (
     cur_group,
     cur_group_id,
     cur_group_rows,
-    n
+    n,
 )
 from .count_tally import add_count, add_tally, count, tally
 from .desc import desc
@@ -29,7 +29,7 @@ from .funs import (
     last,
     na_if,
     near,
-    nth
+    nth,
 )
 from .group_by import group_by, group_by_drop_default, rowwise, ungroup
 from .group_data import (
@@ -40,7 +40,7 @@ from .group_data import (
     group_rows,
     group_size,
     group_vars,
-    n_groups
+    n_groups,
 )
 from .group_iter import (
     group_map,
@@ -48,7 +48,7 @@ from .group_iter import (
     group_split,
     group_trim,
     group_walk,
-    with_groups
+    with_groups,
 )
 from .if_else import case_when, if_else
 from .join import (
@@ -58,7 +58,7 @@ from .join import (
     left_join,
     nest_join,
     right_join,
-    semi_join
+    semi_join,
 )
 from .lead_lag import lag, lead
 from .mutate import mutate, transmute
@@ -70,18 +70,12 @@ from .rank import (
     min_rank,
     ntile,
     percent_rank,
-    row_number
+    row_number,
 )
 from .recode import recode, recode_categorical, recode_factor
 from .relocate import relocate
 from .rename import rename, rename_with
-from .rows import (
-    rows_delete,
-    rows_insert,
-    rows_patch,
-    rows_update,
-    rows_upsert
-)
+from .rows import rows_delete, rows_insert, rows_patch, rows_update, rows_upsert
 from .select import select
 from .sets import intersect, setdiff, setequal, union, union_all
 from .summarise import summarise, summarize
@@ -95,17 +89,17 @@ from .tidyselect import (
     matches,
     num_range,
     starts_with,
-    where
+    where,
 )
 
 # make sure builtin names are included when
 # from datar.dplyr import *
-_builtin_names = { # pylint: disable=invalid-name
+_builtin_names = {  # pylint: disable=invalid-name
     "filter": filter_,
-    "slice": slice_
+    "slice": slice_,
 }
 
-__all__ = [var_ for var_ in locals() if not var_.startswith('_')]
+__all__ = [var_ for var_ in locals() if not var_.startswith("_")]
 __all__.extend(_builtin_names)
 
 # warn when builtin names are imported directly

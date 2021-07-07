@@ -16,6 +16,7 @@ FALSE = False
 
 # pylint: disable=invalid-name
 
+
 @register_func(None, context=Context.EVAL)
 def as_logical(x: Any) -> BoolOrIter:
     """Convert an object or elements of an iterable into bool
@@ -30,11 +31,12 @@ def as_logical(x: Any) -> BoolOrIter:
     """
     return _as_type(x, bool)
 
+
 as_bool = as_logical
 
 
 is_logical = _register_type_testing(
-    'is_logical',
+    "is_logical",
     scalar_types=(bool, numpy.bool_),
     dtype_checker=is_bool_dtype,
     doc="""Test if a value is booleans
@@ -44,10 +46,11 @@ Args:
 
 Returns:
     True if the value is an boolean or booleans; False otherwise.
-"""
+""",
 )
 
 is_bool = is_logical
+
 
 @register_func(None, context=Context.EVAL)
 def is_true(x: Any) -> bool:
@@ -66,6 +69,7 @@ def is_true(x: Any) -> bool:
     if not is_scalar(x):
         return False
     return bool(x)
+
 
 @register_func(None, context=Context.EVAL)
 def is_false(x: Any) -> bool:

@@ -8,6 +8,7 @@ from pipda import register_func
 from ..core.utils import register_numpy_func_x
 from ..core.types import ComplexOrIter
 from ..core.contexts import Context
+
 # pylint: disable=invalid-name
 # pylint: disable=unused-import
 
@@ -15,8 +16,8 @@ from .testing import _register_type_testing
 from .casting import _as_type
 
 re = register_numpy_func_x(
-    're',
-    'real',
+    "re",
+    "real",
     doc="""Real part of complex numbers
 
     Args:
@@ -24,12 +25,12 @@ re = register_numpy_func_x(
 
     Returns:
         The real part of the complex numbers
-    """
+    """,
 )
 
 im = register_numpy_func_x(
-    'im',
-    'imag',
+    "im",
+    "imag",
     doc="""Imaginary part of complex numbers
 
     Args:
@@ -37,12 +38,12 @@ im = register_numpy_func_x(
 
     Returns:
         The imaginary part of the complex numbers
-    """
+    """,
 )
 
 mod = register_numpy_func_x(
-    'mod',
-    'absolute',
+    "mod",
+    "absolute",
     doc="""Modulus of complex numbers
 
     Args:
@@ -50,12 +51,12 @@ mod = register_numpy_func_x(
 
     Returns:
         The Modulus of the complex numbers
-    """
+    """,
 )
 
 arg = register_numpy_func_x(
-    'arg',
-    'angle',
+    "arg",
+    "angle",
     doc="""Angles of complex numbers
 
     Args:
@@ -63,12 +64,12 @@ arg = register_numpy_func_x(
 
     Returns:
         The Angles of the complex numbers
-    """
+    """,
 )
 
 conj = register_numpy_func_x(
-    'conj',
-    'conj',
+    "conj",
+    "conj",
     doc="""conjugate of complex numbers
 
     Args:
@@ -76,8 +77,9 @@ conj = register_numpy_func_x(
 
     Returns:
         The conjugate of the complex numbers
-    """
+    """,
 )
+
 
 @register_func(None, context=Context.EVAL)
 def as_complex(x: Any, complex_type=numpy.complex_) -> ComplexOrIter:
@@ -98,8 +100,9 @@ def as_complex(x: Any, complex_type=numpy.complex_) -> ComplexOrIter:
     """
     return _as_type(x, complex_type)
 
+
 is_complex = _register_type_testing(
-    'is_complex',
+    "is_complex",
     scalar_types=(complex, numpy.complex_),
     dtype_checker=is_complex_dtype,
     doc="""Test if a value is complexes
@@ -109,5 +112,5 @@ is_complex = _register_type_testing(
 
     Returns:
         True if the value is an complex or complexes; False otherwise.
-    """
+    """,
 )

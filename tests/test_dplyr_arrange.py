@@ -8,7 +8,7 @@ from datar.core.exceptions import ColumnNotExistingError, DataUnrecyclable, Name
 
 def test_empty_returns_self():
     df = tibble(x=range(1,11), y=range(1,11))
-    gf = group_by(df, f.x)
+    gf = df >> group_by(f.x)
 
     assert arrange(df).equals(df)
 

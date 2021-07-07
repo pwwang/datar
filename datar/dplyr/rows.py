@@ -2,7 +2,7 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/rows.R
 """
-from typing import List, Optional
+from typing import List
 
 import numpy
 from pandas import DataFrame
@@ -17,12 +17,13 @@ from .bind import bind_rows
 from .join import left_join
 from .funs import coalesce
 
+
 @register_verb(DataFrame)
 def rows_insert(
-        x: DataFrame,
-        y: DataFrame,
-        by: Optional[StringOrIter] = None,
-        copy: bool = True
+    x: DataFrame,
+    y: DataFrame,
+    by: StringOrIter = None,
+    copy: bool = True,
 ) -> DataFrame:
     """Adds new rows to a data frame
 
@@ -47,8 +48,8 @@ def rows_insert(
         A data frame with `y` inserted into `x`
     """
     key = _rows_check_key(by, x, y)
-    _rows_check_key_df(x, key, df_name='x')
-    _rows_check_key_df(y, key, df_name='y')
+    _rows_check_key_df(x, key, df_name="x")
+    _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
     bad = is_not_null(idx)
@@ -57,12 +58,13 @@ def rows_insert(
 
     return bind_rows(x, y, _copy=copy)
 
+
 @register_verb(DataFrame)
 def rows_update(
-        x: DataFrame,
-        y: DataFrame,
-        by: Optional[StringOrIter] = None,
-        copy: bool = True
+    x: DataFrame,
+    y: DataFrame,
+    by: StringOrIter = None,
+    copy: bool = True,
 ) -> DataFrame:
     """Modifies existing rows in a data frame
 
@@ -86,8 +88,8 @@ def rows_update(
         `x` with values of keys updated
     """
     key = _rows_check_key(by, x, y)
-    _rows_check_key_df(x, key, df_name='x')
-    _rows_check_key_df(y, key, df_name='y')
+    _rows_check_key_df(x, key, df_name="x")
+    _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
     bad = is_null(idx)
@@ -100,12 +102,13 @@ def rows_update(
     x.loc[idx, y.columns] = y.values
     return x
 
+
 @register_verb(DataFrame)
 def rows_patch(
-        x: DataFrame,
-        y: DataFrame,
-        by: Optional[StringOrIter] = None,
-        copy: bool = True
+    x: DataFrame,
+    y: DataFrame,
+    by: StringOrIter = None,
+    copy: bool = True,
 ) -> DataFrame:
     """Works like `rows_update()` but only overwrites `NA` values.
 
@@ -129,8 +132,8 @@ def rows_patch(
         `x` with values of keys updated
     """
     key = _rows_check_key(by, x, y)
-    _rows_check_key_df(x, key, df_name='x')
-    _rows_check_key_df(y, key, df_name='y')
+    _rows_check_key_df(x, key, df_name="x")
+    _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
     bad = is_null(idx)
@@ -146,12 +149,13 @@ def rows_patch(
     x.loc[idx, y.columns] = numpy.array(new_data).T
     return x
 
+
 @register_verb(DataFrame)
 def rows_upsert(
-        x: DataFrame,
-        y: DataFrame,
-        by: Optional[StringOrIter] = None,
-        copy: bool = True
+    x: DataFrame,
+    y: DataFrame,
+    by: StringOrIter = None,
+    copy: bool = True,
 ) -> DataFrame:
     """Inserts or updates depending on whether or not the
     key value in `y` already exists in `x`.
@@ -178,8 +182,8 @@ def rows_upsert(
         `x` with values of keys updated
     """
     key = _rows_check_key(by, x, y)
-    _rows_check_key_df(x, key, df_name='x')
-    _rows_check_key_df(y, key, df_name='y')
+    _rows_check_key_df(x, key, df_name="x")
+    _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
     new = is_null(idx)
@@ -189,12 +193,13 @@ def rows_upsert(
     x.loc[idx_existing, y.columns] = y.loc[~new].values
     return bind_rows(x, y.loc[new], _copy=copy)
 
+
 @register_verb(DataFrame)
 def rows_delete(
-        x: DataFrame,
-        y: DataFrame,
-        by: Optional[StringOrIter] = None,
-        copy: bool = True
+    x: DataFrame,
+    y: DataFrame,
+    by: StringOrIter = None,
+    copy: bool = True,
 ) -> DataFrame:
     """Deletes rows; key values in `y` must exist in `x`.
 
@@ -218,8 +223,8 @@ def rows_delete(
         `x` with values of keys deleted
     """
     key = _rows_check_key(by, x, y)
-    _rows_check_key_df(x, key, df_name='x')
-    _rows_check_key_df(y, key, df_name='y')
+    _rows_check_key_df(x, key, df_name="x")
+    _rows_check_key_df(y, key, df_name="y")
 
     extra_cols = setdiff(y.columns, key)
     if len(extra_cols) > 0:
@@ -236,20 +241,18 @@ def rows_delete(
 
     return x.loc[~x.index.isin(idx), :]
 
+
 # helpers -----------------------------------------------------------------
 
-def _rows_check_key(
-        by: Optional[StringOrIter],
-        x: DataFrame,
-        y: DataFrame
-) -> List[str]:
+
+def _rows_check_key(by: StringOrIter, x: DataFrame, y: DataFrame) -> List[str]:
     """Check the key and return the valid key"""
     if by is None:
         by = y.columns[0]
         logger.info("Matching, by=%r", by)
 
     if is_scalar(by):
-        by = [by]
+        by = [by] # type: ignore
 
     for by_elem in by:
         if not isinstance(by_elem, str):
@@ -261,6 +264,7 @@ def _rows_check_key(
 
     return by
 
+
 def _rows_check_key_df(df: DataFrame, by: List[str], df_name: str) -> None:
     """Check key with the data frame"""
     y_miss = setdiff(by, df.columns)
@@ -270,9 +274,10 @@ def _rows_check_key_df(df: DataFrame, by: List[str], df_name: str) -> None:
     if any(df.duplicated(by)):
         raise ValueError(f"`{df_name}` key values are not unique.")
 
+
 def _rows_match(x: DataFrame, y: DataFrame) -> numpy.ndarray:
     """Mimic vctrs::vec_match"""
-    id_col = '__id__'
+    id_col = "__id__"
     y_with_id = rownames_to_column(y, var=id_col)
     # pylint: disable=no-value-for-parameter
     return (x >> left_join(y_with_id))[id_col].values

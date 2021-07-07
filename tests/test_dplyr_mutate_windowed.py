@@ -117,8 +117,9 @@ def test_ntile_works_with_one_argument():
     exp = df >> mutate(nt=ntile(row_number(), n=9))
     assert out.equals(exp)
 
-    with pytest.raises(TypeError):
-        mutate(df, nt=ntile(row_number(), 9))
+    # with pytest.raises(TypeError):
+    out = df >> mutate(nt=ntile(row_number(), 9))
+    assert out.equals(exp)
 
     df = group_by(tibble(x=range(1,43), g=rep(range(1,8), each=6)), f.g)
     out = df >> mutate(nt=ntile(n=4))

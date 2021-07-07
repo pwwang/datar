@@ -32,7 +32,9 @@ def test_table():
 
     #-----------------
     with data_context(airquality) as _:
-        tab = table(cut(f.Temp, stats.quantile(f.Temp)), f.Month)
+        qt = stats.quantile(f.Temp)
+        ct = cut(f.Temp, qt)
+        tab = table(ct, f.Month)
 
     assert tab.iloc[0,0] == 24
 
@@ -56,7 +58,7 @@ def test_table():
     assert_iterable_equal(tab.values.flatten(), [10] * 5)
 
     #------------------
-    b = as_factor(c("A","B","C") * 10)
+    b = as_factor(rep(c("A","B","C"), 10))
     tab = table(b)
     assert tab.shape == (1, 3)
     assert_iterable_equal(tab.values.flatten(), [10] * 3)

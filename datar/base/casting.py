@@ -6,8 +6,12 @@ import numpy
 from pipda import register_func
 
 from ..core.types import (
-    Dtype, NumericOrIter, DoubleOrIter, IntOrIter,
-    is_scalar, is_categorical
+    Dtype,
+    NumericOrIter,
+    DoubleOrIter,
+    IntOrIter,
+    is_scalar,
+    is_categorical,
 )
 from ..core.contexts import Context
 from ..core.utils import categorized
@@ -17,14 +21,15 @@ from .na import NA
 
 # pylint: disable=invalid-name
 
+
 def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
     """Convert x or elements of x to certain type"""
     if is_scalar(x):
         if is_null(x) and na is not None:
             return na
-        return type_(x)
+        return type_(x) # type: ignore
 
-    if hasattr(x, 'astype'):
+    if hasattr(x, "astype"):
         if na is None:
             return x.astype(type_)
 
@@ -54,6 +59,7 @@ def as_double(x: Any) -> DoubleOrIter:
     """
     return _as_type(x, numpy.double)
 
+
 @register_func(None, context=Context.EVAL)
 def as_float(x: Any, float_dtype: Dtype = numpy.float_) -> DoubleOrIter:
     """Convert an object or elements of an iterable into double/float
@@ -66,11 +72,10 @@ def as_float(x: Any, float_dtype: Dtype = numpy.float_) -> DoubleOrIter:
     """
     return _as_type(x, float_dtype)
 
+
 @register_func(None, context=Context.EVAL)
 def as_integer(
-        x: Any,
-        integer_dtype: Dtype = numpy.int_,
-        _keep_na: bool = True
+    x: Any, integer_dtype: Dtype = numpy.int_, _keep_na: bool = True
 ) -> IntOrIter:
     """Convert an object or elements of an iterable into int64
 
@@ -97,7 +102,9 @@ def as_integer(
         return categorized(x).codes
     return _as_type(x, integer_dtype, na=NA if _keep_na else None)
 
+
 as_int = as_integer
+
 
 @register_func(None, context=Context.EVAL)
 def as_numeric(x: Any, _keep_na: bool = True) -> NumericOrIter:

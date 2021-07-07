@@ -1,6 +1,6 @@
 """Unite multiple columns into one by pasting strings together"""
 
-from typing import Optional, Union
+from typing import Union
 
 import pandas
 from pandas import DataFrame
@@ -11,15 +11,16 @@ from ..core.utils import vars_select, reconstruct_tibble
 
 from ..base import setdiff
 
+
 @register_verb(DataFrame, context=Context.SELECT)
 def unite(
-        data: DataFrame,
-        col: str,
-        *columns: Union[str, int],
-        sep: str = '_',
-        remove: bool = True,
-        na_rm: bool = False,
-        base0_: Optional[bool] = None
+    data: DataFrame,
+    col: str,
+    *columns: Union[str, int],
+    sep: str = "_",
+    remove: bool = True,
+    na_rm: bool = False,
+    base0_: bool = None,
 ) -> DataFrame:
     """Unite multiple columns into one by pasting strings together
 

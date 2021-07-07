@@ -2,11 +2,12 @@
 
 See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable, Union
 
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import Expression
+from pipda.utils import CallingEnvs
+from pipda.expression import Expression
 
 from ..core.contexts import Context
 from ..core.types import NumericOrIter, NumericType
@@ -22,15 +23,16 @@ from .summarise import summarise
 from .arrange import arrange
 from .desc import desc
 
+
 @register_verb(DataFrame, context=Context.PENDING)
 def count(
-        x: DataFrame,
-        *args: Any,
-        wt: Optional[NumericOrIter] = None,
-        sort: bool = False,
-        name: Optional[str] = None,
-        _drop: Optional[bool] = None,
-        **kwargs: Any
+    x: DataFrame,
+    *args: Any,
+    wt: NumericOrIter = None,
+    sort: bool = False,
+    name: str = None,
+    _drop: bool = None,
+    **kwargs: Any,
 ) -> DataFrame:
     """Count observations by group
 
@@ -53,26 +55,28 @@ def count(
         _drop = group_by_drop_default(x)
 
     if args or kwargs:
-        out = group_by(x, *args, **kwargs, _add=True, _drop=_drop)
+        out = x >> group_by(*args, **kwargs, _add=True, _drop=_drop)
     else:
         out = x
 
-    out = tally(out, wt=wt, sort=sort, name=name)
+    # pylint: disable=no-value-for-parameter
+    out = out >> tally(wt=wt, sort=sort, name=name)
     if isinstance(x, DataFrameGroupBy):
         out = DataFrameGroupBy(
             out,
             _group_vars=group_vars(x),
             _group_drop=_drop,
-            _group_data=group_data(x)
+            _group_data=group_data(x),
         )
     return out
 
+
 @register_verb(DataFrame, context=Context.PENDING)
 def tally(
-        x: DataFrame,
-        wt: Optional[NumericOrIter] = None,
-        sort: bool = False,
-        name: Optional[str] = None
+    x: DataFrame,
+    wt: NumericOrIter = None,
+    sort: bool = False,
+    name: str = None,
 ) -> DataFrame:
     """A ower-level function for count that assumes you've done the grouping
 
@@ -90,36 +94,35 @@ def tally(
     copy_attrs(out, x)
 
     if sort:
-        return arrange(out, desc(f[name]))
+        return out >> arrange(desc(f[name]))
     return out
+
 
 @register_verb(DataFrame, context=Context.PENDING)
 def add_count(
-        x: DataFrame,
-        *args: Any,
-        wt: Optional[str] = None,
-        sort: bool = False,
-        name: str = 'n',
-        **kwargs: Any
+    x: DataFrame,
+    *args: Any,
+    wt: str = None,
+    sort: bool = False,
+    name: str = "n",
+    **kwargs: Any,
 ) -> DataFrame:
     """Equivalents to count() but use mutate() instead of summarise()
 
     See count().
     """
     if args or kwargs:
-        out = group_by(x, *args, **kwargs, _add=True)
+        out = x >> group_by(*args, **kwargs, _add=True)
     else:
         out = x
 
     out = add_tally(out, wt=wt, sort=sort, name=name)
     return out
 
+
 @register_verb(DataFrame, context=Context.PENDING)
 def add_tally(
-        x: DataFrame,
-        wt: Optional[str] = None,
-        sort: bool = False,
-        name: str = 'n'
+    x: DataFrame, wt: str = None, sort: bool = False, name: str = "n"
 ) -> DataFrame:
     """Equivalents to tally() but use mutate() instead of summarise()
 
@@ -131,31 +134,31 @@ def add_tally(
     out = x >> mutate({name: n() if tallyn is None else tallyn})
 
     if sort:
-        return arrange(out, desc(f[name]))
+        return out >> arrange(desc(f[name]))
     return out
 
 
 # Helpers -----------------------------------------------------------------
-def _tally_n(
-        wt: Optional[Union[NumericOrIter, Expression]]
-) -> Iterable[NumericType]:
+def _tally_n(wt: Union[NumericOrIter, Expression]) -> Iterable[NumericType]:
     """Compuate the weights for counting"""
     if wt is None:
-        return None # will be n() later on
+        return None  # will be n() later on
 
     # If it's Expression, will return a Function object
     # Otherwise, sum of wt
-    return sum_(wt, na_rm=True)
+    # pylint: disable=unexpected-keyword-arg
+    return sum_(wt, na_rm=True, __calling_env=CallingEnvs.PIPING)
 
-def _check_name(name: Optional[str], invars: Iterable[str]) -> str:
+
+def _check_name(name: str, invars: Iterable[str]) -> str:
     """Check if count is valid"""
     if name is None:
         name = _n_name(invars)
 
-        if name != 'n':
+        if name != "n":
             logger.warning(
                 "Storing counts in `%s`, as `n` already present in input. "
-                "Use `name=\"new_name\" to pick a new name.`"
+                'Use `name="new_name" to pick a new name.`'
             )
     elif not isinstance(name, str):
         raise ValueError("`name` must be a single string.")
@@ -165,7 +168,7 @@ def _check_name(name: Optional[str], invars: Iterable[str]) -> str:
 
 def _n_name(invars: Iterable[str]) -> str:
     """Make sure that name does not exist in invars"""
-    name = 'n'
+    name = "n"
     while name in invars:
-        name = 'n' + name
+        name = "n" + name
     return name

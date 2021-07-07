@@ -3,7 +3,7 @@
 https://github.com/tidyverse/tidyr/blob/HEAD/R/fill.R
 """
 
-from typing import Optional, Union
+from typing import Union
 
 from pandas import DataFrame
 from pipda import register_verb
@@ -13,15 +13,12 @@ from ..core.utils import vars_select, reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy
 
 
-@register_verb(
-    DataFrame,
-    context=Context.SELECT
-)
+@register_verb(DataFrame, context=Context.SELECT)
 def fill(
-        _data: DataFrame,
-        *columns: Union[str, int],
-        _direction: str = "down",
-        base0_: Optional[bool] = None
+    _data: DataFrame,
+    *columns: Union[str, int],
+    _direction: str = "down",
+    base0_: bool = None,
 ) -> DataFrame:
     """Fills missing values in selected columns using the next or
     previous entry.
@@ -44,22 +41,21 @@ def fill(
     data = _data.copy()
     if not columns:
         data = data.fillna(
-            method='ffill' if _direction.startswith('down') else 'bfill',
+            method="ffill" if _direction.startswith("down") else "bfill",
         )
-        if _direction in ('updown', 'downup'):
+        if _direction in ("updown", "downup"):
             data = data.fillna(
-                method='ffill' if _direction.endswith('down') else 'bfill',
+                method="ffill" if _direction.endswith("down") else "bfill",
             )
     else:
         colidx = vars_select(data.columns, *columns, base0=base0_)
         data.iloc[:, colidx] = fill(data.iloc[:, colidx], _direction=_direction)
     return data
 
+
 @fill.register(DataFrameGroupBy, context=Context.SELECT)
 def _(
-        _data: DataFrameGroupBy,
-        *columns: str,
-        _direction: str = "down"
+    _data: DataFrameGroupBy, *columns: str, _direction: str = "down"
 ) -> DataFrameGroupBy:
     # DataFrameGroupBy
     out = _data.datar_apply(

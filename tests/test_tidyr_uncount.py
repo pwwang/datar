@@ -6,16 +6,16 @@ from pandas.testing import assert_frame_equal
 
 def test_symbols_weights_are_dropped_in_output():
     df = tibble(x=1, w=1)
-    assert_frame_equal(uncount(df, f.w), tibble(x=1))
+    assert_frame_equal(df >> uncount(f.w), tibble(x=1))
 
 def test_can_request_to_preserve_symbols():
     df = tibble(x=1, w=1)
-    assert_frame_equal(uncount(df, f.w, _remove=False), df)
+    assert_frame_equal(df >> uncount(f.w, _remove=False), df)
 
 def test_unique_identifiers_created_on_request():
     df = tibble(w=f[1:3])
     assert_frame_equal(
-        uncount(df, f.w, _id="id"),
+        df >> uncount(f.w, _id="id"),
         tibble(id=c(1, f[1:2], f[1:3]))
     )
 
@@ -45,7 +45,7 @@ def test_must_evaluate_to_integer():
 
 def test_works_with_0_weights():
     df = tibble(x=f[1:2], w=[0,1])
-    assert_frame_equal(uncount(df, f.w), tibble(x=2))
+    assert_frame_equal(df >> uncount(f.w), tibble(x=2))
 
 def test_errors_on_negative_weights():
     df = tibble(x=1, w=-1)

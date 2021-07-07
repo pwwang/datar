@@ -28,8 +28,8 @@ def test_can_chop_empty_frame():
     df.index = []
     df['x'] = df['x'].astype(object)
     df['y'] = df['y'].astype(object)
-    assert_frame_equal(chop(df, f.y), df)
-    assert_frame_equal(chop(df, f.x), df[['y', 'x']])
+    assert_frame_equal(df >> chop(f.y), df)
+    assert_frame_equal(df >> chop(f.x), df[['y', 'x']])
 
 def test_chop_with_all_column_vals():
     df = tibble(x=[1,1,2], a=[1,2,3], b=[1,2,3])
@@ -74,7 +74,7 @@ def test_unchopping_null_inputs_are_dropped():
         x=[2,2,3,4],
         y=[1,2,4,NA],
         z=[1,2,NA,5],
-        _dtypes=float
+        dtypes_=float
     ))
 
 def test_unchop_optionally_keep_empty_rows():
@@ -85,7 +85,7 @@ def test_unchop_optionally_keep_empty_rows():
         # z = [tibble(x=[]), tibble(x=[1,2])]
     )
     out = df >> unchop(f.y, keep_empty=True)
-    assert_frame_equal(out, tibble(x=[1,2,2], y=[None, 1,2], _dtypes={'y': object}))
+    assert_frame_equal(out, tibble(x=[1,2,2], y=[None, 1,2], dtypes_={'y': object}))
 
 #   out <- df %>% unchop(z, keep_empty = TRUE)
 #   expect_equal(out$x, c(1, 2, 2))
@@ -93,7 +93,7 @@ def test_unchop_optionally_keep_empty_rows():
 # })
 
 def test_unchop_preserves_columns_of_empty_inputs():
-    df = tibble(x=[], y=[], z=[], _dtypes={'x': int})
+    df = tibble(x=[], y=[], z=[], dtypes_={'x': int})
     assert unchop(df, f.y).columns.tolist() == ['x', 'y', 'z']
     assert unchop(df, [f.y, f.z]).columns.tolist() == ['x', 'y', 'z']
 
@@ -115,7 +115,7 @@ def test_unchop_empty_list():
     df = tibble(x=[], y=tibble(z=[]))
     # support nested df?
     out = unchop(df, f['y$z']) >> pull(f.y)
-    assert_frame_equal(out >> drop_index(), tibble(z=[], _dtypes=object))
+    assert_frame_equal(out >> drop_index(), tibble(z=[], dtypes_=object))
 
 def test_unchop_recycles_size_1_inputs():
     df = tibble(x=[[1], [2,3]], y=[[2,3], [1]])

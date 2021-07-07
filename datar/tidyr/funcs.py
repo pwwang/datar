@@ -8,11 +8,10 @@ from ..core.types import NumericType
 from ..core.contexts import Context
 from ..base import seq
 
+
 @register_func(None, context=Context.EVAL)
 def full_seq(
-        x: Iterable[NumericType],
-        period: NumericType,
-        tol: float = 1e-6
+    x: Iterable[NumericType], period: NumericType, tol: float = 1e-6
 ) -> Iterable[NumericType]:
     """Create the full sequence of values in a vector
 
@@ -25,15 +24,14 @@ def full_seq(
     Returns:
         The full sequence
     """
-    minx = min(x) # na not counted
+    minx = min(x)  # na not counted
     maxx = max(x)
 
     if any(
-            (elem - minx) % period > tol and
-            period - ((elem - minx) % period) > tol
-            for elem in x
+        (elem - minx) % period > tol and period - ((elem - minx) % period) > tol
+        for elem in x
     ):
-        raise ValueError('`x` is not a regular sequence.')
+        raise ValueError("`x` is not a regular sequence.")
 
     if period - ((maxx - minx) % period) <= tol:
         maxx += tol

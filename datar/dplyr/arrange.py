@@ -13,12 +13,12 @@ from .group_data import group_vars
 from .group_by import ungroup
 from .mutate import mutate
 
+# pylint: disable=no-value-for-parameter
+
+
 @register_verb(DataFrame, context=Context.PENDING)
 def arrange(
-        _data: DataFrame,
-        *args: Any,
-        _by_group: bool = False,
-        **kwargs: Any
+    _data: DataFrame, *args: Any, _by_group: bool = False, **kwargs: Any
 ) -> DataFrame:
     """orders the rows of a data frame by the values of selected columns.
 
@@ -45,16 +45,15 @@ def arrange(
         return _data
 
     check_column_uniqueness(
-        _data,
-        "Cannot arrange a data frame with duplicate names"
+        _data, "Cannot arrange a data frame with duplicate names"
     )
 
     if not _by_group:
-        sorting_df = mutate(ungroup(_data), *args, **kwargs, _keep="none")
+        sorting_df = _data >> ungroup() >> mutate(*args, **kwargs, _keep="none")
         sorting_df = sorting_df.sort_values(by=sorting_df.columns.tolist())
     else:
         gvars = group_vars(_data)
-        sorting_df = ungroup(mutate(_data, *args, **kwargs, _keep="none"))
+        sorting_df = _data >> mutate(*args, **kwargs, _keep="none") >> ungroup()
         by = union(gvars, sorting_df.columns)
         sorting_df = sorting_df.sort_values(by=by)
 

@@ -3,7 +3,7 @@
 https://github.com/tidyverse/dplyr/blob/master/R/pull.R
 """
 
-from typing import Mapping, Optional, Union
+from typing import Mapping, Union
 
 from pandas import DataFrame, Series
 from pipda import register_verb
@@ -12,17 +12,16 @@ from ..core.contexts import Context
 from ..core.utils import arg_match, df_getitem, position_at
 from ..core.types import StringOrIter, ArrayLikeType, is_scalar
 
+
 @register_verb(
-    DataFrame,
-    context=Context.SELECT,
-    extra_contexts={'name': Context.EVAL}
+    DataFrame, context=Context.SELECT, extra_contexts={"name": Context.EVAL}
 )
 def pull(
-        _data: DataFrame,
-        var: Union[int, str] = -1,
-        name: Optional[StringOrIter] = None,
-        to: Optional[str] = None,
-        base0_: Optional[bool] = None
+    _data: DataFrame,
+    var: Union[int, str] = -1,
+    name: StringOrIter = None,
+    to: str = None,
+    base0_: bool = None,
 ) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
     # pylint: disable=too-many-branches
     """Pull a series or a dataframe from a dataframe
@@ -61,14 +60,14 @@ def pull(
     # make sure pull(df, 'x') pulls a dataframe for columns
     # x$a, x$b in df
 
-    to = arg_match(to, 'to', ['list', 'array', 'frame', 'series', 'dict', None])
+    to = arg_match(to, "to", ["list", "array", "frame", "series", "dict", None])
     if name is not None and is_scalar(name):
-        name = [name]
+        name = [name] # type: ignore
 
     if isinstance(var, int):
         var = position_at(var, _data.shape[1], base0=base0_)
         var = _data.columns[var]
-        var = var.split('$', 1)[0]
+        var = var.split("$", 1)[0]
 
     pulled = df_getitem(_data, var)
     # if var in _data.columns and isinstance(pulled, DataFrame):
@@ -76,25 +75,25 @@ def pull(
 
     if to is None:
         if name is not None and len(name) == len(pulled):
-            to = 'dict'
+            to = "dict"
         else:
-            to = 'frame' if isinstance(pulled, DataFrame) else 'series'
+            to = "frame" if isinstance(pulled, DataFrame) else "series"
 
-    if to == 'dict':
+    if to == "dict":
         if name is None or len(name) != len(pulled):
             raise ValueError(
-                'No `name` provided or length mismatches with the values.'
+                "No `name` provided or length mismatches with the values."
             )
         return dict(zip(name, pulled))
-    if to == 'list':
+    if to == "list":
         return pulled.values.tolist()
-    if to == 'array':
+    if to == "array":
         return pulled.values
-    if to == 'frame':
+    if to == "frame":
         value = pulled if isinstance(pulled, DataFrame) else pulled.to_frame()
         if name and len(name) != value.shape[1]:
             raise ValueError(
-                f'Expect {value.shape[1]} names but got {len(name)}.'
+                f"Expect {value.shape[1]} names but got {len(name)}."
             )
         if name:
             value.columns = name
@@ -108,11 +107,9 @@ def pull(
         return pulled
     # df
     if name and len(name) != pulled.shape[1]:
-        raise ValueError(
-            f'Expect {pulled.shape[1]} names but got {len(name)}.'
-        )
+        raise ValueError(f"Expect {pulled.shape[1]} names but got {len(name)}.")
 
-    out = pulled.to_dict('series')
+    out = pulled.to_dict("series")
     if not name:
         return out
 

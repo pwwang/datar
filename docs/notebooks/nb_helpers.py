@@ -24,12 +24,15 @@ def nb_header(*funcs, book=None):
     ))
 
     for func in funcs:
-        formatted = pardoc.google_parser.format(
-            func.__doc__,
-            to='markdown',
-            heading=5,
-            indent_base='&emsp;&emsp;'
-        )
+        try:
+            formatted = pardoc.google_parser.format(
+                func.__doc__,
+                to='markdown',
+                heading=5,
+                indent_base='&emsp;&emsp;'
+            )
+        except:
+            formatted = func.__doc__
         display(Markdown(f'{"#"*3} # {func.__name__}  '))
         display(Markdown(formatted))
 

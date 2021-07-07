@@ -2,7 +2,7 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/lead-lag.R
 """
-from typing import Iterable, Any, Optional
+from typing import Iterable, Any
 
 from pandas import Series, Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
@@ -13,12 +13,13 @@ from ..core.contexts import Context
 from ..base import NA
 from .order_by import with_order
 
+
 @register_func(None, context=Context.EVAL)
 def lead(
-        series: Iterable[Any],
-        n: bool = 1,
-        default: Any = NA,
-        order_by: Optional[Iterable[NumericType]] = None
+    series: Iterable[Any],
+    n: bool = 1,
+    default: Any = NA,
+    order_by: Iterable[NumericType] = None,
 ) -> Series:
     """Find next values in a vector
 
@@ -32,7 +33,7 @@ def lead(
     Returns:
         Lead or lag values with default values filled to series.
     """
-    if n == 0: # ignore other arguments
+    if n == 0:  # ignore other arguments
         return series
 
     if order_by is not None:
@@ -48,18 +49,19 @@ def lead(
         ret = Categorical(ret, categories=cats)
     return Series(ret, index=index)
 
+
 @register_func(None, context=Context.EVAL)
 def lag(
-        series: Iterable[Any],
-        n: bool = 1,
-        default: Any = NA,
-        order_by: Optional[Iterable[NumericType]] = None
+    series: Iterable[Any],
+    n: bool = 1,
+    default: Any = NA,
+    order_by: Iterable[NumericType] = None,
 ) -> Series:
     """Find previous values in a vector
 
     See lead()
     """
-    if n == 0: # ignore other arguments
+    if n == 0:  # ignore other arguments
         return series
 
     if order_by is not None:
@@ -75,11 +77,8 @@ def lag(
         ret = Categorical(ret, categories=cats)
     return Series(ret, index=index)
 
-def _lead_lag_prepare(
-        data: Iterable[Any],
-        n: int,
-        default: Any
-):
+
+def _lead_lag_prepare(data: Iterable[Any], n: int, default: Any):
     """Prepare and check arguments for lead-lag"""
     cats = None
     if is_categorical_dtype(data):

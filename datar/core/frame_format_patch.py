@@ -2,7 +2,6 @@
 1. add dtypes next to column names when printing
 2. collapse data frames when they are elements of a parent data frame.
 """
-from typing import Optional
 from pandas import DataFrame
 from pandas.io.formats import format as fmt, html, string as stringf
 from pandas.io.formats.html import (
@@ -10,7 +9,7 @@ from pandas.io.formats.html import (
     NotebookFormatter,
     Mapping,
     MultiIndex,
-    get_level_lengths
+    get_level_lengths,
 )
 from pandas.io.formats.format import (
     DataFrameFormatter,
@@ -27,11 +26,9 @@ from pandas.io.formats.format import (
     lib,
     notna,
     is_float,
-    format_array
+    format_array,
 )
-from pandas.io.formats.string import (
-    StringFormatter
-)
+from pandas.io.formats.string import StringFormatter
 from pandas.io.formats.printing import pprint_thing
 from pandas.core.dtypes.common import is_scalar
 from pandas.core.dtypes.missing import isna
@@ -48,7 +45,7 @@ from .options import add_option
 # TODO: patch more formatters
 
 # pandas 1.2.0 doesn't have this function
-def _trim_zeros_single_float(str_float: str) -> str: # pragma: no cover
+def _trim_zeros_single_float(str_float: str) -> str:  # pragma: no cover
     """
     Trims trailing zeros after a decimal point,
     leaving just one if necessary.
@@ -59,11 +56,12 @@ def _trim_zeros_single_float(str_float: str) -> str: # pragma: no cover
 
     return str_float
 
-class DatarDataFrameFormatter(DataFrameFormatter): # pragma: no cover
-    """Custom formatter for DataFrame
-    """
+
+class DatarDataFrameFormatter(DataFrameFormatter):  # pragma: no cover
+    """Custom formatter for DataFrame"""
+
     @property
-    def grouping_info(self) -> Optional[str]:
+    def grouping_info(self) -> str:
         """Get the string representation of grouping info"""
         from .grouped import DataFrameGroupBy, DataFrameRowwise
 
@@ -97,7 +95,7 @@ class DatarDataFrameFormatter(DataFrameFormatter): # pragma: no cover
         formatter = self._get_formatter(i)
         dtype = frame.iloc[:, i].dtype.name
 
-        return [f'<{dtype}>'] + format_array(
+        return [f"<{dtype}>"] + format_array(
             frame.iloc[:, i]._values,
             formatter,
             float_format=self.float_format,
@@ -107,7 +105,8 @@ class DatarDataFrameFormatter(DataFrameFormatter): # pragma: no cover
             leading_space=self.index,
         )
 
-class DatarGenericArrayFormatter(GenericArrayFormatter): # pragma: no cover
+
+class DatarGenericArrayFormatter(GenericArrayFormatter):  # pragma: no cover
     """Generic Array Formatter to show DataFrame element in a cell in a
     collpased representation
     """
@@ -185,11 +184,12 @@ class DatarGenericArrayFormatter(GenericArrayFormatter): # pragma: no cover
 
         return fmt_values
 
-class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
+
+class DatarHTMLFormatter(HTMLFormatter):  # pragma: no cover
     """Fix nrows as we added one more row (dtype)"""
 
     def _write_regular_rows(
-            self, fmt_values: Mapping[int, List[str]], indent: int
+        self, fmt_values: Mapping[int, List[str]], indent: int
     ) -> None:
         is_truncated_horizontally = self.fmt.is_truncated_horizontally
         is_truncated_vertically = self.fmt.is_truncated_vertically
@@ -210,10 +210,14 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
 
             if is_truncated_vertically and i == (self.fmt.tr_row_num):
                 str_sep_row = ["..."] * len(row)
-                tags = {
-                    j: 'style="font-style: italic;" '
-                    for j, _ in enumerate(str_sep_row)
-                } if i == 0 else None
+                tags = (
+                    {
+                        j: 'style="font-style: italic;" '
+                        for j, _ in enumerate(str_sep_row)
+                    }
+                    if i == 0
+                    else None
+                )
 
                 self.write_tr(
                     str_sep_row,
@@ -238,18 +242,22 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
                 dot_col_ix = self.fmt.tr_col_num + self.row_levels
                 row.insert(dot_col_ix, "...")
 
-            tags = {
-                j: 'style="font-style: italic;" '
-                for j, _ in enumerate(row)
-            } if i == 0 else None
+            tags = (
+                {j: 'style="font-style: italic;" ' for j, _ in enumerate(row)}
+                if i == 0
+                else None
+            )
 
             self.write_tr(
-                row, indent, self.indent_delta, tags=tags,
-                nindex_levels=self.row_levels
+                row,
+                indent,
+                self.indent_delta,
+                tags=tags,
+                nindex_levels=self.row_levels,
             )
 
     def _write_hierarchical_rows(
-            self, fmt_values: Mapping[int, List[str]], indent: int
+        self, fmt_values: Mapping[int, List[str]], indent: int
     ) -> None:
         template = 'rowspan="{span}" valign="top"'
 
@@ -260,24 +268,20 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
 
         assert isinstance(frame.index, MultiIndex)
         idx_values = frame.index.format(
-            sparsify=False,
-            adjoin=False,
-            names=False
+            sparsify=False, adjoin=False, names=False
         )
         # add dtype row
         len_idx_values = len(idx_values)
         idx_values = list(zip(*idx_values))
-        idx_values.insert(0, ("", ) * len_idx_values)
+        idx_values.insert(0, ("",) * len_idx_values)
 
         if self.fmt.sparsify:
             # GH3547
             sentinel = lib.no_default
             levels = frame.index.format(
-                sparsify=sentinel,
-                adjoin=False,
-                names=False
+                sparsify=sentinel, adjoin=False, names=False
             )
-            levels = [("", ) + level for level in levels]
+            levels = [("",) + level for level in levels]
             level_lengths = get_level_lengths(levels, sentinel)
             inner_lvl = len(level_lengths) - 1
             if is_truncated_vertically:
@@ -349,15 +353,17 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
 
                 row.extend(fmt_values[j][i] for j in range(self.ncols))
                 if i == 0:
-                    tags.update({
-                        j + k: 'style="font-style: italic;" '
-                        for k in range(self.ncols)
-                    })
+                    tags.update(
+                        {
+                            j + k: 'style="font-style: italic;" '
+                            for k in range(self.ncols)
+                        }
+                    )
 
                 if is_truncated_horizontally:
                     row.insert(
                         self.row_levels - sparse_offset + self.fmt.tr_col_num,
-                        "..."
+                        "...",
                     )
 
                 self.write_tr(
@@ -372,10 +378,14 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
             for i in range(len(frame) + 1):
                 if is_truncated_vertically and i == (self.fmt.tr_row_num):
                     str_sep_row = ["..."] * len(row)
-                    tags = {
-                        j: 'style="font-style: italic;" '
-                        for j, _ in enumerate(str_sep_row)
-                    } if i == 0 else None
+                    tags = (
+                        {
+                            j: 'style="font-style: italic;" '
+                            for j, _ in enumerate(str_sep_row)
+                        }
+                        if i == 0
+                        else None
+                    )
 
                     self.write_tr(
                         str_sep_row,
@@ -386,23 +396,27 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
                     )
 
                 idx_values = list(
-                    zip(*frame.index.format(
-                        sparsify=False,
-                        adjoin=False,
-                        names=False
-                    ))
+                    zip(
+                        *frame.index.format(
+                            sparsify=False, adjoin=False, names=False
+                        )
+                    )
                 )
-                idx_values.insert(0, ("", ) * len_idx_values)
+                idx_values.insert(0, ("",) * len_idx_values)
                 row = []
                 row.extend(idx_values[i])
                 row.extend(fmt_values[j][i] for j in range(self.ncols))
                 if is_truncated_horizontally:
                     row.insert(self.row_levels + self.fmt.tr_col_num, "...")
 
-                tags = {
-                    j: 'style="font-style: italic;" '
-                    for j, _ in enumerate(row)
-                } if i == 0 else None
+                tags = (
+                    {
+                        j: 'style="font-style: italic;" '
+                        for j, _ in enumerate(row)
+                    }
+                    if i == 0
+                    else None
+                )
 
                 self.write_tr(
                     row,
@@ -419,14 +433,10 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
         self._write_table()
 
         if isinstance(self.frame, DataFrameRowwise):
-            self.write(
-                f"<p>Rowwise: {self.frame._group_vars}</p>"
-            )
+            self.write(f"<p>Rowwise: {self.frame._group_vars}</p>")
         elif isinstance(self.frame, DataFrameGroupBy):
             ngroups = self.frame._group_data.shape[0]
-            self.write(
-                f"<p>Groups: {self.frame._group_vars} (n={ngroups})</p>"
-            )
+            self.write(f"<p>Groups: {self.frame._group_vars} (n={ngroups})</p>")
 
         if self.should_show_dimensions:
             by = chr(215)  # ×
@@ -437,21 +447,29 @@ class DatarHTMLFormatter(HTMLFormatter): # pragma: no cover
 
         return self.elements
 
+
 class DatarNotebookFormatter(DatarHTMLFormatter, NotebookFormatter):
     """Notebook Formatter"""
 
-class DatarStringFormatter(StringFormatter): # pragma: no cover
+
+class DatarStringFormatter(StringFormatter):  # pragma: no cover
     """String Formatter"""
+
     def to_string(self) -> str:
         """To string representation"""
         text = self._get_string_representation()
-        grouping_info = getattr(self.fmt, 'grouping_info')
+        grouping_info = getattr(self.fmt, "grouping_info")
 
         if grouping_info and self.fmt.should_show_dimensions:
-            return "".join([
-                # self.fmt.dimensions_info has two leading "\n"
-                text, "\n", grouping_info, self.fmt.dimensions_info[1:]
-            ])
+            return "".join(
+                [
+                    # self.fmt.dimensions_info has two leading "\n"
+                    text,
+                    "\n",
+                    grouping_info,
+                    self.fmt.dimensions_info[1:],
+                ]
+            )
         if grouping_info:
             return "".join([text, "\n", grouping_info])
         if self.fmt.should_show_dimensions:
@@ -459,7 +477,8 @@ class DatarStringFormatter(StringFormatter): # pragma: no cover
 
         return text
 
-def _patch(option: bool) -> None: # pragma: no cover
+
+def _patch(option: bool) -> None:  # pragma: no cover
     """Patch pandas?"""
     if option:
         # monkey-patch the formatter
@@ -475,4 +494,5 @@ def _patch(option: bool) -> None: # pragma: no cover
         html.NotebookFormatter = NotebookFormatter
         stringf.StringFormatter = StringFormatter
 
-add_option('frame_format_patch', True, _patch)
+
+add_option("frame_format_patch", True, _patch)

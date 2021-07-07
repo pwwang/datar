@@ -2,18 +2,18 @@
 from typing import Any, Mapping, Tuple
 from pipda.utils import DataEnv
 
+
 class CurColumn:
     """Current column in across"""
+
     @classmethod
-    def replace_args(cls, args: Tuple[Any], column: str) -> Tuple[Any]:
+    def replace_args(cls, args: Tuple[Any], column: str) -> Tuple[Any, ...]:
         """Replace self with the real column in args"""
         return tuple(column if isinstance(arg, cls) else arg for arg in args)
 
     @classmethod
     def replace_kwargs(
-            cls,
-            kwargs: Mapping[str, Any],
-            column: str
+        cls, kwargs: Mapping[str, Any], column: str
     ) -> Mapping[str, Any]:
         """Replace self with the real column in kwargs"""
         return {
@@ -24,6 +24,7 @@ class CurColumn:
 
 class WithDataEnv:
     """Implements `with data` to mimic R's `with(data, ...)`"""
+
     def __init__(self, data: Any) -> None:
         self.data = DataEnv(data)
 
