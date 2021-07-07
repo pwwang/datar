@@ -1,3 +1,7 @@
+## 0.3.1
+- Adopt `pipda` v0.4.0
+- Change argument `_dtypes` to `dtypes_` for tibble-families
+
 ## 0.3.0
 - Adopt `pipda` v0.3.0
 
