@@ -62,7 +62,6 @@ class Collection(CollectionBase, list):
             indicating the range or a list, not a generator.
         pool: The pool used to expand slice
     """
-
     def _get_base0(self, base0: bool) -> bool:
         """Get base0 if specified, otherwise self.base0"""
         if base0 is None:

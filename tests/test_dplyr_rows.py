@@ -22,7 +22,7 @@ def test_rows_update(data):
     assert_frame_equal(out, exp)
 
     with pytest.raises(ValueError, match="update missing"):
-        rows_update(data, tibble(a = [2,3], b = "z"), by = c("a", "b"))
+        rows_update(data, tibble(a = [2,3], b = "z"), by = ["a", "b"])
 
     out = rows_update(data, tibble(b = "z", a = [2,3]), by = "a")
     exp = tibble(a = seq(1,3), b = c("a", "z", "z"), c = data.c)
@@ -34,7 +34,7 @@ def test_rows_patch(data):
     assert_frame_equal(out, exp)
 
     with pytest.raises(ValueError, match="patch missing"):
-        rows_patch(data, tibble(a = [2, 3], b = "z"), by = c("a", "b"))
+        rows_patch(data, tibble(a = [2, 3], b = "z"), by = ["a", "b"])
 
     out = rows_patch(data, tibble(b = "z", a = [2,3]), by = "a")
     exp = tibble(a = seq(1,3), b = c("a", "b", "z"), c = data.c)
@@ -56,7 +56,7 @@ def test_rows_delete(data):
     assert_frame_equal(out, data.iloc[[0], :])
 
     with pytest.raises(ValueError, match="delete missing"):
-        data >> rows_delete(tibble(a = [2,3], b = "b"), by = c("a", "b"))
+        data >> rows_delete(tibble(a = [2,3], b = "b"), by = ["a", "b"])
 
 def test_rows_errors(data):
     # by must be string or strings
@@ -78,18 +78,18 @@ def test_rows_errors(data):
 
     # Update
     with pytest.raises(ValueError):
-        rows_update(data, tibble(a = [2,3], b = "z"), by = c("a", "b"))
+        rows_update(data, tibble(a = [2,3], b = "z"), by = ["a", "b"])
 
     # Variants: patch
     with pytest.raises(ValueError):
-        rows_patch(data, tibble(a = [2,3], b = "z"), by = c("a", "b"))
+        rows_patch(data, tibble(a = [2,3], b = "z"), by = ["a", "b"])
 
     # Delete and truncate
     with pytest.raises(ValueError):
         data >> rows_delete(tibble(a = [2,3,4]))
 
     with pytest.raises(ValueError):
-        data >> rows_delete(tibble(a = [2,3], b = "b"), by = c("a", "b"))
+        data >> rows_delete(tibble(a = [2,3], b = "b"), by = ["a", "b"])
 
     # works
     # rows_delete(data, tibble(a = [2,3]))

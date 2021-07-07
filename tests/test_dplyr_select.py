@@ -119,7 +119,9 @@ def test_can_select_data_pronoun():
 
 def test_can_select_with_list_of_strs():
     out = select(mtcars, "cyl", "disp", c("cyl", "am", "drat"))
-    exp = mtcars[c("cyl", "disp", "am", "drat")]
+    # https://github.com/pwwang/datar/issues/23
+    # exp = mtcars[c("cyl", "disp", "am", "drat")]
+    exp = mtcars[["cyl", "disp", "am", "drat"]]
     assert out.equals(exp)
 
 def test_treats_null_inputs_as_empty():

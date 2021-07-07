@@ -78,8 +78,15 @@ def factor(
     if x is None:
         x = []
 
+    # pandas v1.3.0
+    # FutureWarning: Allowing scalars in the Categorical constructor
+    # is deprecated and will raise in a future version.
+    if is_scalar(x):
+        x = [x]
+
     if is_categorical_(x):
         x = x.to_numpy()
+
     ret = Categorical(x, categories=levels, ordered=ordered)
     if is_scalar(exclude):
         exclude = [exclude]
