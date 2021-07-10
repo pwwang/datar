@@ -20,6 +20,8 @@ In `R`, negative indexes mean removal. However, here negative indexes are still
 selection, as `-1` for the last column, `-2` for the second last, etc. It is
 the same for both 0-based and 1-based indexing.
 
+If you want to do negative selection, use tilde `~` instead of `-`.
+
 ## Temporary index base change
 
 For example:
