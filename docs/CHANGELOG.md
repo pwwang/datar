@@ -1,3 +1,8 @@
+## 0.3.2
+- Adopt `pipda` v0.4.1 to fix `getattr()` failure for operater-connected expressions (#38)
+- Add `str_dtype` argument to `as_character()` to partially fix #36
+- Update license in `core._frame_format_patch` (#28)
+
 ## 0.3.1
 - Adopt `pipda` v0.4.0
 - Change argument `_dtypes` to `dtypes_` for tibble-families
