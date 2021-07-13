@@ -12,6 +12,15 @@ from .collections import Collection, Inverted, Negated, Intersect
 from .exceptions import DataUnrecyclable
 from .types import BoolOrIter
 
+class DatarOperatorMeta(type):
+    """Allow attributes with '_op_' to pass for operator functions"""
+    def __getattr__(cls, name: str) -> Any:
+        """If name starts with '_op_', let it go self for the real function
+        Otherwise, do regular getattr.
+        """
+        if name.startswith('_op_'):
+            return True
+        return super().__getattr__(name)
 
 @register_operator
 class DatarOperator(Operator):
@@ -30,19 +39,19 @@ class DatarOperator(Operator):
         left, right = _recycle_left_right(left, right)
         return op_func(left, right)
 
-    def invert(self, operand: Any) -> Any:
+    def _op_invert(self, operand: Any) -> Any:
         """Interpretation for ~x"""
-        if isinstance(operand, (slice, str, list, tuple, Collection)):
+        if isinstance(operand, (slice, str, list, tuple)):
             return Inverted(operand)
         return self._arithmetize1(operand, "invert")
 
-    def neg(self, operand: Any) -> Any:
+    def _op_neg(self, operand: Any) -> Any:
         """Interpretation for -x"""
         if isinstance(operand, (slice, list)):
             return Negated(operand)
         return self._arithmetize1(operand, "neg")
 
-    def and_(self, left: Any, right: Any) -> Any:
+    def _op_and_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
 
         This has to have Expression objects to be involved to work
@@ -63,7 +72,7 @@ class DatarOperator(Operator):
         right = Series(right).fillna(False)
         return left & right
 
-    def or_(self, left: Any, right: Any) -> Any:
+    def _op_or_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
 
         This has to have Expression objects to be involved to work
@@ -84,9 +93,9 @@ class DatarOperator(Operator):
         return left | right
 
     # pylint: disable=invalid-name
-    def ne(self, left: Any, right: Any) -> BoolOrIter:
+    def _op_ne(self, left: Any, right: Any) -> BoolOrIter:
         """Interpret for left != right"""
-        out = self.eq(left, right)
+        out = self._op_eq(left, right)
         if isinstance(out, (numpy.ndarray, Series)):
             neout = ~out
             # neout[pandas.isna(out)] = numpy.nan
@@ -96,11 +105,11 @@ class DatarOperator(Operator):
 
     def __getattr__(self, name: str) -> Any:
         """Other operators"""
-        if not hasattr(operator, name):
-            raise AttributeError
-        attr = partial(self._arithmetize2, op=name)
-        attr.__qualname__ = self._arithmetize2.__qualname__
-        return attr
+        if name.startswith('_op_'):
+            attr = partial(self._arithmetize2, op=name[4:])
+            attr.__qualname__ = self._arithmetize2.__qualname__
+            return attr
+        return super().__getattr__(name)
 
 
 def _recycle_left_right(left: Any, right: Any) -> Tuple:
