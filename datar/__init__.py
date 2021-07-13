@@ -4,4 +4,4 @@ from .core import operator as _
 from .core import _frame_format_patch
 from .core.defaults import f
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"

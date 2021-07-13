@@ -7,7 +7,7 @@ from pandas.core.dtypes.common import is_string_dtype
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.types import IntOrIter, StringOrIter, is_scalar, is_null
+from ..core.types import Dtype, IntOrIter, StringOrIter, is_scalar, is_null
 from ..core.utils import (
     arg_match,
     get_option,
@@ -30,13 +30,14 @@ from .na import NA
 
 
 @register_func(None, context=Context.EVAL)
-def as_character(x: Any, _na: Any = NA) -> StringOrIter:
+def as_character(x: Any, str_dtype: Dtype = str, _na: Any = NA) -> StringOrIter:
     """Convert an object or elements of an iterable into string
 
     Aliases `as_str` and `as_string`
 
     Args:
         x: The object
+        str_dtype: The string dtype to convert to
         _na: How NAs should be casted. Specify NA will keep them unchanged.
             But the dtype will be object then.
 
@@ -45,8 +46,7 @@ def as_character(x: Any, _na: Any = NA) -> StringOrIter:
         When x is iterable, convert elements of it into strings
         Otherwise, convert x to string.
     """
-    return _as_type(x, str, na=_na)
-
+    return _as_type(x, str_dtype, na=_na)
 
 as_str = as_string = as_character
 
