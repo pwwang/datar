@@ -70,12 +70,7 @@ from pandas.core.dtypes.missing import isna
 
 from .options import add_option
 
-# pylint: disable=c-extension-no-member
-# pylint: disable=invalid-name
-# pylint: disable=too-many-branches
-# pylint: disable=too-many-statements
-# pylint: disable=consider-using-enumerate
-# pylint: disable=too-many-nested-blocks
+# pylint: skip-file
 
 # TODO: patch more formatters
 
