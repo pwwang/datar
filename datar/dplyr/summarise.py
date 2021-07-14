@@ -170,7 +170,7 @@ def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
         envdata = out
         if out.shape[1] == 0 or (
             isinstance(val, Function)
-            and getattr(val.func, "summarise_prefers_input", False)
+            and getattr(val._pipda_func, "summarise_prefers_input", False)
         ):
             envdata = _data
 
