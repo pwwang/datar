@@ -136,7 +136,8 @@ def _(
     def apply_func(df):
         index = df.attrs["_group_index"]
         rows = df.attrs["_group_data"].loc[index, "_rows"]
-        ret = df.reset_index(drop=True) >> mutate(
+        ret = mutate(
+            df.reset_index(drop=True),
             *args,
             _keep=_keep,
             _before=_before,
@@ -181,7 +182,8 @@ def transmute(
     See Also:
         [`mutate()`](datar.dplyr.mutate.mutate).
     """
-    return _data >> mutate(
+    return mutate(
+        _data,
         *args,
         _keep="none",
         _before=_before,

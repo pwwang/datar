@@ -42,7 +42,7 @@ def distinct(
     else:
         # keep_none_prefers_new_order
         uniq = (
-            _data >> mutate(*args, **kwargs, _keep="none")
+            mutate(_data, *args, **kwargs, _keep="none")
         ).drop_duplicates()
 
     if not _keep_all:
@@ -66,7 +66,7 @@ def _(
 ) -> DataFrameGroupBy:
 
     out = _data.datar_apply(
-        lambda df: df >> distinct(*args, **kwargs, _keep_all=_keep_all)
+        lambda df: distinct(df, *args, **kwargs, _keep_all=_keep_all)
     )
 
     return reconstruct_tibble(_data, out)
@@ -78,7 +78,7 @@ def _(
 ) -> DataFrameRowwise:
     # pylint: disable=no-value-for-parameter
     out = distinct.dispatch(DataFrame)(
-        _data >> ungroup(), *args, **kwargs, _keep_all=_keep_all
+        ungroup(_data), *args, **kwargs, _keep_all=_keep_all
     )
 
     return reconstruct_tibble(_data, out, keep_rowwise=True)

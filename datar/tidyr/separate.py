@@ -170,7 +170,7 @@ def separate_rows(
 
     out >>= unchop(selected, keep_empty=True, ptype=convert, base0_=base0_)
     return reconstruct_tibble(
-        out, out >> ungroup(), selected, keep_rowwise=True
+        out, ungroup(out), selected, keep_rowwise=True
     )
 
 

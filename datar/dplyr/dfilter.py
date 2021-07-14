@@ -75,7 +75,7 @@ def _(
     """Filter on DataFrameGroupBy object"""
     if _data.shape[0] > 0:
         out = _data.datar_apply(
-            lambda df: df >> filter(*conditions, _drop_index=False),
+            lambda df: filter(df, *conditions, _drop_index=False),
             _drop_index=False,
         ).sort_index()
     else:

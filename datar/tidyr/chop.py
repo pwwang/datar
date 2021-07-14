@@ -79,7 +79,7 @@ def chop(
     else:
         vals = pandas.concat(compacted, ignore_index=True)
 
-    out = split_key >> bind_cols(vals)
+    out = bind_cols(split_key, vals)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 
@@ -153,10 +153,10 @@ def _vec_split(
     if isinstance(by, Series):  # pragma: no cover, always a data frame?
         by = by.to_frame()
 
-    df = x >> bind_cols(by)
+    df = bind_cols(x, by)
     if df.shape[0] == 0:
         return DataFrame(columns=["key", "val"])
-    df = df >> group_by(*by.columns)
+    df = group_by(df, *by.columns)
     gdata = group_data(df)
     gdata = arrange(gdata, gdata._rows)
     out = DataFrame(index=gdata.index)

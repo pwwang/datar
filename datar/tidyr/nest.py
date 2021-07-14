@@ -85,7 +85,7 @@ def nest(
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
-    return u_keys >> bind_cols(recycle_value(out, u_keys.shape[0]))
+    return bind_cols(u_keys, recycle_value(out, u_keys.shape[0]))
 
 
 @nest.register(DataFrameGroupBy, context=Context.SELECT)

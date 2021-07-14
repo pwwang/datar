@@ -75,7 +75,7 @@ def _(
     base0_: bool = None,
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
-    out = _data.datar_apply(lambda df: df >> slice(*rows, base0_=base0_))
+    out = _data.datar_apply(lambda df: slice(df, *rows, base0_=base0_))
     out = reconstruct_tibble(_data, out, keep_rowwise=True)
     gdata = _filter_groups(out, _data)
 

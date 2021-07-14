@@ -41,7 +41,7 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
         return data.iloc[rows, cols]
 
     if cols is not None:
-        data = data >> select(cols)
+        data = select(data, cols)
 
     if rows is not None:
         # slice only support integer index

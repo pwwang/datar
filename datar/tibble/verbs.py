@@ -362,7 +362,7 @@ def _cbind_at(
 
     part1 = data.iloc[:, :pos]
     part2 = data.iloc[:, pos:]
-    return part1 >> bind_cols(df, part2, _name_repair=_name_repair)
+    return bind_cols(part1, df, part2, _name_repair=_name_repair)
 
 
 def _pos_from_before_after(
