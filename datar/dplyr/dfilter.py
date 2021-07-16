@@ -2,16 +2,16 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/filter.R
 """
-from functools import singledispatch
 from typing import Iterable
 
+import numpy
 from pandas import DataFrame, RangeIndex
 from pipda import register_verb
 from pipda.expression import Expression
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.types import is_scalar, is_null
+from ..core.types import is_scalar, is_null, BoolOrIter
 from ..core.utils import copy_attrs, reconstruct_tibble, Array
 from .group_data import group_data, group_vars
 
@@ -40,22 +40,19 @@ def filter(  # pylint: disable=redefined-builtin
     Returns:
         The subset dataframe
     """
-    if _data.shape[0] == 0:
+    if _data.shape[0] == 0 or not conditions:
         return _data
-    # check condition, conditions
-    condition = Array([True] * _data.shape[0])
+
+    condition = None
     for cond in conditions:
-        if is_scalar(cond):
-            cond = Array([cond] * _data.shape[0])
-        condition = condition & cond
+        cond = _sanitize_condition(cond, _data.shape[0])
+        condition = (
+            cond
+            if condition is None
+            else numpy.logical_and(condition, cond)
+        )
 
-    condition[is_null(condition)] = False
-    try:
-        condition = condition.values.flatten()
-    except AttributeError:
-        ...
-
-    out = _data[condition]
+    out = _data.loc[condition, :]
     if _drop_index is None:
         _drop_index = isinstance(_data.index, RangeIndex)
 
@@ -70,27 +67,43 @@ def _(
     _data: DataFrameGroupBy,
     *conditions: Expression,
     _preserve: bool = False,
-    _drop_index: bool = None,  # TODO ?
+    _drop_index: bool = None, # TODO?
 ) -> DataFrameGroupBy:
     """Filter on DataFrameGroupBy object"""
     if _data.shape[0] > 0:
-        out = _data.datar_apply(
-            lambda df: filter(df, *conditions, _drop_index=False),
+        out = _data._datar_apply(
+            filter,
+            *conditions,
             _drop_index=False,
         ).sort_index()
     else:
         out = _data.copy()
 
-    out = reconstruct_tibble(_data, out, keep_rowwise=True)
+    out = reconstruct_tibble(_data, out)
     gdata = _filter_groups(out, _data)
 
-    if not _preserve and _data.attrs.get("_group_drop", True):
-        out._group_data = gdata[gdata["_rows"].map(len) > 0]
+    if not _preserve and _data.attrs["_group_drop"]:
+        out.attrs['_group_data'] = gdata[gdata["_rows"].map(len) > 0]
 
     return out
 
 
-@singledispatch
+@filter.register(DataFrameRowwise, context=Context.EVAL)
+def _(
+    _data: DataFrameRowwise,
+    *conditions: Expression,
+    _preserve: bool = False,
+    _drop_index: bool = None,
+) -> DataFrameGroupBy:
+    """Filter on DataFrameGroupBy object"""
+    out = filter.dispatch(DataFrame)(
+        _data,
+        *conditions,
+        _preserve=_preserve,
+        _drop_index=_drop_index
+    )
+    return reconstruct_tibble(_data, out, keep_rowwise=True)
+
 def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
     """Filter non-existing rows in groupdata"""
     gdata = group_data(new).set_index(group_vars(new))["_rows"].to_dict()
@@ -103,13 +116,17 @@ def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
         ser[-1] = gdata.get(key, [])
         new_gdata.loc[row[0], :] = ser
 
-    new._group_data = new_gdata
+    new.attrs['_group_data'] = new_gdata
     return new_gdata
 
+def _sanitize_condition(cond: BoolOrIter, length: int) -> numpy.ndarray:
+    """Handle single condition"""
+    if is_scalar(cond):
+        out = Array([cond] * length)
+    elif isinstance(cond, numpy.ndarray):
+        out = cond
+    else:
+        out = Array(cond)
+    out[is_null(out)] = False
 
-@_filter_groups.register
-def _(
-    new: DataFrameRowwise,
-    old: DataFrameRowwise,  # pylint: disable=unused-argument
-) -> DataFrame:
-    return new._group_data
+    return out.astype(bool)

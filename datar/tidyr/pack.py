@@ -11,6 +11,7 @@ from ..core.utils import vars_select, copy_attrs, reconstruct_tibble
 from ..core.contexts import Context
 from ..core.types import StringOrIter, IntOrIter, is_scalar
 from ..core.names import repair_names
+from ..core.grouped import DataFrameGroupBy
 
 from ..base import setdiff
 from ..dplyr import bind_cols
@@ -110,7 +111,11 @@ def unpack(
         base0=base0_,
     )
 
-    out = data.copy()
+    out = (
+        data.copy(copy_grouped=True)
+        if isinstance(data, DataFrameGroupBy)
+        else data.copy()
+    )
     new_cols = []
     for col in data.columns:
         if "$" in col:

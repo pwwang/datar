@@ -160,10 +160,13 @@ def with_groups(
     Returns:
         The new data frame with operations applied.
     """
-    all_columns = _data.columns
-    _groups = evaluate_expr(_groups, _data, Context.SELECT)
-    _groups = all_columns[vars_select(all_columns, _groups)]
-    grouped = group_by(_data, *_groups)
+    if _groups is None:
+        grouped = ungroup(_data)
+    else:
+        all_columns = _data.columns
+        _groups = evaluate_expr(_groups, _data, Context.SELECT)
+        _groups = all_columns[vars_select(all_columns, _groups)]
+        grouped = group_by(_data, *_groups)
 
     out = _func(grouped, *args, **kwargs)
     copy_attrs(out, _data)

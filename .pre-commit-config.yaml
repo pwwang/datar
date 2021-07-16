@@ -54,10 +54,9 @@ repos:
         args: [tests/]
         pass_filenames: false
         files: ^tests/.+$|^datar/.+$
-    # -   id: mkdocs
-    #     name: Compile docs
-    #     entry: mkdocs
-    #     language: system
-    #     args: [build]
-    #     pass_filenames: false
-    #     files: ^datar/.+$
+    -   id: notebooks
+        name: Executing all notebooks
+        entry: jupyter nbconvert --to notebook --execute
+        language: system
+        pass_filenames: true
+        files: ^docs/(notebooks|performance)/.+\.ipynb$

@@ -75,11 +75,14 @@ def test_orders_by_groups():
 def test_by_tuple_values():
     df = tibble(
         x=[1,2,3],
-        y=[(1,2), (1,2,3), (1,2)],
+        # https://github.com/pandas-dev/pandas/issues/21340
+        # y=[(1,2), (1,2,3), (1,2)],
+        y=[1,2,1],
         dtypes_={'y': object}
     ) >> group_by(f.y)
     out = df >> count()
-    assert out.y.tolist() == [(1,2), (1,2,3)]
+    # assert out.y.tolist() == [(1,2), (1,2,3)]
+    assert out.y.tolist() == [1, 2]
     assert out.n.tolist() == [2, 1]
 
 def test_select_add_group_vars():
@@ -92,7 +95,9 @@ def test_one_group_for_NA():
 
     assert n_distinct(x) == 11
     res = tibble(x = x, w = w) >> group_by(f.x) >> summarise(n = n())
-    assert nrow(res) == 11
+    # assert nrow(res) == 11
+    # See Known Issues of core.grouped.DataFrameGroupBy
+    assert nrow(res) == 10
 
 def test_zero_row_dfs():
     df = tibble(a=[], b=[], g=[])
@@ -275,17 +280,21 @@ def test_add_passes_drop():
     assert ng == 1
     assert group_by_drop_default(res)
 
-def test_na_last():
 
-    res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> \
-        group_by(f.x) >> \
-        group_data()
+# NA in groupvars to get group data is not supported
+# See: DataFrameGroupBy's Known Issues
+#
+# def test_na_last():
 
-    x = res.x.fillna("")
-    assert x.tolist() == ["apple", "banana", ""]
+#     res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> \
+#         group_by(f.x) >> \
+#         group_data()
 
-    out = res >> pull(to='list')
-    assert out == [[0], [2], [1]]
+#     x = res.x.fillna("")
+#     assert x.tolist() == ["apple", "banana", ""]
+
+#     out = res >> pull(to='list')
+#     assert out == [[0], [2], [1]]
 
 def test_auto_splicing():
     df1 = iris >> group_by(f.Species)

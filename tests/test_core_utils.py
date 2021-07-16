@@ -11,10 +11,19 @@ def test_na_if_safe():
     assert_iterable_equal(out, [NA, 2, 3])
     assert_iterable_equal(levels(out), [2, 3])
 
+    it = [1,2,3]
+    out = na_if_safe(it, 1)
+    assert_iterable_equal(out, [NA, 2, 3])
+
 def test_fillna_safe():
     it = [1,2,NA]
     with pytest.raises(ValueError):
         fillna_safe(it, 1)
+
+    it = Categorical(it, categories=[1,2])
+    out = fillna_safe(it, 3)
+    assert_iterable_equal(out, [1,2,3])
+    assert_iterable_equal(out.categories, [1,2,3])
 
 def test_df_setitem():
     df = tibble(x=1)

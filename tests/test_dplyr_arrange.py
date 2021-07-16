@@ -67,7 +67,7 @@ def test_update_grouping():
     df = tibble(g = [2, 2, 1, 1], x = [1, 3, 2, 4])
     res = df >> group_by(f.g) >> arrange(f.x)
     assert isinstance(res, DataFrameGroupBy)
-    assert group_rows(res) == [[1,3], [0,2]]
+    assert group_rows(res) == [[0,2], [1,3]]
 
 def test_across():
     df = tibble(x = [1, 3, 2, 1], y = [4, 3, 2, 1])

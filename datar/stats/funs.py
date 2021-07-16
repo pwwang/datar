@@ -90,7 +90,7 @@ def quantile(
 
 
 @register_func(None, context=Context.EVAL)
-def sd(
+def std(
     x: Iterable[Any],
     na_rm: bool = False,
     # numpy default is 0. Make it 1 to be consistent with R
@@ -102,6 +102,7 @@ def sd(
 
     return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)
 
+sd = std
 
 @register_func(None, context=Context.EVAL)
 def weighted_mean(

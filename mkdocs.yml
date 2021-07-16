@@ -28,6 +28,7 @@ plugins:
     - mkapi
     - mkdocs-jupyter:
         execute: false
+        # execute: true
 extra_css:
     - style.css
 nav:

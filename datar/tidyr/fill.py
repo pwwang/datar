@@ -58,7 +58,10 @@ def _(
     _data: DataFrameGroupBy, *columns: str, _direction: str = "down"
 ) -> DataFrameGroupBy:
     # DataFrameGroupBy
-    out = _data.datar_apply(
-        lambda df: fill(df, *columns, _direction=_direction)
-    )
+    out = _data._datar_apply(
+        fill,
+        *columns,
+        _direction=_direction,
+        _drop_index=False,
+    ).sort_index()
     return reconstruct_tibble(_data, out, keep_rowwise=True)

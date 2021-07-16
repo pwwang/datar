@@ -1,9 +1,27 @@
 
-`datar` doesn't use `pandas`' `DataFrameGroupBy`/`SeriesGroupBy` classes. Instead, we have our own `DataFrameGroupBy` class, which is actually a subclass of `DataFrame`, with 3 extra properties: `_group_data`, `_group_vars` and `_group_drop`, carring the grouping data, grouping variables/columns and whether drop the non-observable values. This is very similar to `grouped_df` from `dplyr`.
+`datar` uses `pandas`' `DataFrameGroupBy` internally.
 
-The reasons that we implement this are:
+The `datar.core.grouped.DataFrameGroupBy` and `datar.core.grouped.DataFrameRowwise` are actually subclasses of `pandas.DataFrame`.
 
-1. Pandas DataFrameGroupBy cannot handle mutilpe categorical columns as
-        groupby variables with non-obserable values
-2. It is very hard to retrieve group indices and data when doing apply
-3. NAs unmatched in grouping variables
+There are a couple of reasons that we do it this way:
+
+1. it is easier to write single dispatch functions, as DataFrameGroupBy is now a
+   subclass of pandas' DataFrame
+2. it is easier to display the frame. We can use all utilities for frame to
+   display. By `core._frame_format_patch.py`, we are also able to show the
+   grouping information
+3. it is possible for future optimizations
+
+
+Known Issues:
+- Due to https://github.com/pandas-dev/pandas/issues/35202
+        Currently `dropna` is fixed to `True` of `df.groupby(...)`
+        So no NAs will be kept in group vars
+- `_drop = FALSE` does not work when there are multiple group vars,
+        of which, even there is only one categorical variable.
+- Since group vars are required in `DataFrame.groupby()`, so virtual
+        groupings are not supported (passing group data directly).
+- Groupby on a column with tuples creates a multiindex
+        https://github.com/pandas-dev/pandas/issues/21340
+- Order of group data/groups does not follow the categories/levels of
+        a category group variable.

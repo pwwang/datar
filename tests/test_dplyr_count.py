@@ -44,11 +44,12 @@ def test_drop():
 
     out = df >> count(f.f, _drop = False)
     # note the order
-    assert out.n.tolist() == [0,1,0]
+    # assert out.n.tolist() == [0,1,0]
+    assert out.n.tolist() == [1,0,0]
 
     out = df >> group_by(f.f, _drop = FALSE) >> count()
     # print(out.obj)
-    assert out.n.tolist() == [0,1,0]
+    assert out.n.tolist() == [1,0,0]
 
 def test_preserve_grouping():
     df = tibble(g = c(1, 2, 2, 2))

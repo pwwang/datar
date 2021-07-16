@@ -13,7 +13,7 @@ def df():
         x = c(1, 2, 1, 4)
     # group_by(..., _drop=False) only works for a
     # single categorical columns
-    ) >> group_by(f.e, f.f, _drop = FALSE)
+    ) >> group_by(f.f, _drop = FALSE)
 
 def test_filter_slice_keep_zero_len_groups(df):
     out = df >> filter(f.f == 1)
@@ -28,7 +28,6 @@ def test_filter_slice_retain_zero_group_labels(df):
     # count loses _drop=False
     out = df >> filter(f.f==1) >> count() >> ungroup()
     expect = tibble(
-        e=[1,1,1],
         f=factor([1,2,3], levels=[1,2,3]),
         n=[2,0,0]
     )
@@ -36,7 +35,6 @@ def test_filter_slice_retain_zero_group_labels(df):
 
     out = df >> slice(1) >> count() >> ungroup()
     expect = tibble(
-        e=[1,1,1],
         f=factor([1,2,3], levels=[1,2,3]),
         n=[1,1,0]
     )
@@ -96,13 +94,13 @@ def test_join_respect_zero_len_groups():
     gsize = group_size(left_join(df1, df2, by=f.f))
     assert gsize == [2,4,0]
     gsize = group_size(right_join(df1, df2, by=f.f))
-    assert gsize == [0,4,2]
+    assert gsize == [4, 2, 0]
     gsize = group_size(full_join(df1, df2, by=f.f))
     assert gsize == [2,4,2]
     gsize = group_size(anti_join(df1, df2, by=f.f))
     assert gsize == [2,0,0]
     gsize = group_size(inner_join(df1, df2, by=f.f))
-    assert gsize == [0,4,0]
+    assert gsize == [4,0,0]
 
 def test_n_groups_respect_zero_len_groups():
     df = tibble(x=factor([1,2,3], levels=[1,2,3,4])) >> group_by(f.x, _drop=False)

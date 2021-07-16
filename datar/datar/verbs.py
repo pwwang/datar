@@ -2,15 +2,15 @@
 from typing import Any, List
 
 from pandas import DataFrame
-from pandas.core.groupby.generic import DataFrameGroupBy
 from pipda import register_verb
 
 from ..core.types import is_scalar
 from ..core.contexts import Context
+from ..core.grouped import DataFrameGroupBy
 from ..dplyr import select, slice_
 
 
-@register_verb((DataFrame, DataFrameGroupBy), context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT)
 def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
     """Get a single element or a subset of a dataframe
 
@@ -25,7 +25,10 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
         A single element when both rows and cols are scalar, otherwise
         a subset of _data
     """
-    data = _data.copy()
+    if isinstance(_data, DataFrameGroupBy):
+        data = _data.copy(copy_grouped=True)
+    else:
+        data = _data.copy()
     # getting single element
     if (
         rows is not None

@@ -8,6 +8,7 @@ from datar.core.grouped import DataFrameGroupBy
 from pandas.core import groupby
 import pytest
 from pandas import DataFrame
+from pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.datasets import mtcars, iris
 
@@ -74,7 +75,7 @@ def test_group_indices():
     gf = group_by(df, f.x)
 
     assert group_indices(df) == [0, 0, 0]
-    assert group_indices(gf) == [1, 0, 1]
+    assert group_indices(gf) == [0, 1, 0]
 
 def test_group_indices_handles_0row_df():
     df = tibble(x=[], y=[]) >> group_by(f.x)
@@ -122,7 +123,7 @@ def test_group_map_can_return_arbitrary_objects():
 def test_group_map_works_on_ungrouped_df():
     out = group_map(mtcars, lambda df: head(df, 2))
     out = list(out)[0]
-    assert out.equals(head(mtcars, 2).reset_index(drop=True))
+    assert_frame_equal(out, head(mtcars, 2))
 
 def test_group_modify_makes_a_grouped_df():
     res = group_by(mtcars, f.cyl) >> group_modify(
@@ -284,20 +285,21 @@ def test_group_split_works_if_no_grouping_column():
 
 def test_group_split_keep_false_does_not_try_to_remove_virtual_grouping_columns():
     # test_that("group_split(keep=FALSE) does not try to remove virtual grouping columns (#4045)", {
-    iris3 = iris.head(3)
-    rows = [[0,2,1], [2,1,2]]
+    iris3 = iris.head(4).copy()
+    rows = [[0,2], [1,3]]
     gdata = tibble(_bootstrap=[0,1], rows=rows) >> rename(_rows='rows')
-
+    iris3['_bootstrap'] = [0,1,0,1]
     df = DataFrameGroupBy(
         iris3,
-        _group_vars=[],
+        _group_vars=['_bootstrap'],
         _group_data=gdata
     )
     res = group_split.list(df, _keep=False)
-
+    iris3 = select(iris3, ~f._bootstrap)
     assert len(res) == 2
-    assert res[0].equals(iris3.iloc[rows[0], :])
-    assert res[1].equals(iris3.iloc[rows[1], :])
+    assert_frame_equal(res[0], iris3.iloc[rows[0], :])
+    assert_frame_equal(res[1], iris3.iloc[rows[1], :])
+
 
 def test_group_split_respects__drop():
     # test_that("group_split() respects .drop", {

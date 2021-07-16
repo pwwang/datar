@@ -5,6 +5,7 @@ import pytest
 from datar.all import *
 from datar.datasets import iris, mtcars
 from pandas.core.groupby import groupby
+from pandas.testing import assert_frame_equal
 from pipda import register_func
 
 
@@ -60,9 +61,10 @@ def test_handles_scalar_results():
     df1 = mtcars >> filter(min(f.mpg) > 0)
     assert df1.equals(mtcars)
 
-    df2 = mtcars >> group_by(f.cyl) >> filter(min(f.mpg)>0)
-    df3 = mtcars >> group_by(f.cyl)
-    assert df2.equals(df3)
+    df2 = mtcars >> group_by(f.cyl) >> filter(min(f.mpg)>0) >> arrange(f.cyl, f.mpg)
+    # See DataFrameGroupBy's Known issues
+    df3 = mtcars >> group_by(f.cyl) >> arrange(f.cyl, f.mpg)
+    assert_frame_equal(df2, df3)
 
 def test_discards_na():
     temp = tibble(
@@ -229,27 +231,27 @@ def test_handles_df_cols():
 
 def test_errors():
     # wrong type
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> group_by(f.Species) >> filter(range(1,10))
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> filter(range(1,10))
 
     # wrong size
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> group_by(f.Species) >> filter([True, False])
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> rowwise(f.Species) >> filter([True, False])
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> filter([True, False])
 
     # wrong size in column
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> group_by(f.Species) >> filter(tibble([True, False]))
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> rowwise() >> filter(tibble([True, False]))
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         iris >> filter(tibble([True, False]))
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         tibble(x=1) >> filter([True, False])
 
    # named inputs

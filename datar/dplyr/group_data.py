@@ -98,7 +98,7 @@ def group_vars(_data: DataFrame) -> List[str]:
 
 @group_vars.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[str]:
-    return _data._group_vars
+    return _data.attrs['_group_vars']
 
 
 # groups in dplyr returns R list

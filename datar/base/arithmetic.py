@@ -19,7 +19,6 @@ def _register_arithmetic_agg(
 ) -> Callable:
     """Register an arithmetic function"""
 
-    @register_func(None, context=Context.EVAL)
     def _arithmetric(x: Iterable, na_rm: bool = False) -> Iterable:
         """Arithmetric function"""
         # na_rm not working for numpy functions
@@ -32,7 +31,7 @@ def _register_arithmetic_agg(
 
     _arithmetric.__name__ = name
     _arithmetric.__doc__ = doc
-    return _arithmetric
+    return register_func(None, context=Context.EVAL, func=_arithmetric)
 
 
 # pylint: disable=invalid-name

@@ -47,7 +47,11 @@ def select(
     all_columns = _data.columns
     gvars = group_vars(_data)
     selected, new_names = _eval_select(
-        all_columns, *args, **kwargs, _group_vars=gvars, base0_=base0_
+        all_columns,
+        *args,
+        **kwargs,
+        _group_vars=gvars,
+        base0_=base0_,
     )
     out = _data.iloc[:, selected].copy()
 
@@ -79,12 +83,23 @@ def _eval_select(
     Returns:
         A tuple of (selected columns, dict of old-to-new renaming columns)
     """
-    selected = vars_select(_all_columns, *args, *kwargs.values(), base0=base0_)
-    missing = setdiff(_group_vars, _all_columns[selected])
+    selected = vars_select(
+        _all_columns,
+        *args,
+        *kwargs.values(),
+        base0=base0_,
+    )
+    missing = setdiff(
+        _group_vars,
+        _all_columns[selected],
+    )
     if missing:
         logger.info("Adding missing grouping variables: %s", missing)
 
-    selected = union(_all_columns.get_indexer_for(_group_vars), selected)
+    selected = union(
+        _all_columns.get_indexer_for(_group_vars),
+        selected,
+    )
 
     # dplyr takes new -> old
     # we transform it to old -> new for better access

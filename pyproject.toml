@@ -33,7 +33,10 @@ show_error_codes = true
 strict_optional = false
 
 [tool.pytest.ini_options]
-addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov=datar --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
+filterwarnings = [
+    "error"
+]
 console_output_style = "progress"
 junit_family = "xunit1"
 

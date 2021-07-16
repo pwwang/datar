@@ -64,7 +64,6 @@ def nest(
     asis = setdiff(_data.columns, usedcols)
     keys = _data[asis]
     u_keys = distinct(keys)
-
     nested = []
     for group, columns in colgroups.items():
         if _names_sep is None:  # names as is
@@ -78,8 +77,7 @@ def nest(
             to_split = _data[list(columns.values())]
             to_split.columns = list(columns)
             val = _vec_split(to_split, keys).val
-
-        nested.append(val)
+        nested.append(val.reset_index(drop=True))
 
     out = pandas.concat(nested, ignore_index=True, axis=1)
     out.columns = list(colgroups)
@@ -156,7 +154,11 @@ def unnest(
     cols = vars_select(all_columns, cols, base0=base0_)
     cols = all_columns[cols]
 
-    out = data.copy()
+    if isinstance(data, DataFrameGroupBy):
+        out = data.copy(copy_grouped=True)
+    else:
+        out = data.copy()
+
     for col in cols:
         out[col] = _as_df(data[col])
 
@@ -173,7 +175,7 @@ def _(
     names_sep: str = None,
     names_repair: Union[str, Callable] = "check_unique",
     base0_: bool = None,
-) -> DataFrame:
+) -> DataFrameGroupBy:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
         data,

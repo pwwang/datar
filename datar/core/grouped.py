@@ -1,41 +1,31 @@
-"""Provide DataFrameGroupBy class"""
-from typing import Any, Callable, List, Mapping
-from itertools import product
+"""Provide DataFrameGroupBy and DataFrameRowwise"""
+from typing import Any, Callable, Mapping, Tuple, Union
+from abc import ABC, abstractmethod
 
+import numpy
 import pandas
-from pandas import DataFrame, Series, Index
-from pandas.core.groupby.grouper import Grouping
+from pandas import DataFrame, Series, RangeIndex
 
-from .utils import fillna_safe, na_if_safe
-from .types import Dtype, is_categorical
+from pipda.function import Function, FastEvalFunction
+from pipda.symbolic import DirectRefItem, DirectRefAttr, ReferenceAttr
 
-# pylint: disable=too-many-ancestors
-# pylint: disable=too-many-branches
+from .defaults import DEFAULT_COLUMN_PREFIX
+from .types import StringOrIter, is_scalar
+from .utils import apply_dtypes
+from ..base import setdiff
+
+# pylint: disable=too-many-ancestors,invalid-overridden-method
 
 
-class DataFrameGroupBy(DataFrame):
-    """GroupBy data frame, instead of the one from pandas
-
-    Because
-    1. Pandas DataFrameGroupBy cannot handle mutilpe categorical columns as
-        groupby variables with non-obserable values
-    2. It is very hard to retrieve group indices and data when doing apply
-    3. NAs unmatched in grouping variables
-
-    Args:
-        data: and
-        **kwargs: The values used to pass to the original constructor to
-            construct the data frame
-        _group_vars: The grouping variables
-        _group_drop: Whether to drop non-observable rows
-        _group_data: Reuse other group data so we don't re-compute
-    """
+class DataFrameGroupByABC(DataFrame, ABC):
+    """Abstract class for DataFrameGroupBy"""
 
     def __init__(
         self,
         data: Any,
-        _group_vars: List[str] = None,
+        _group_vars: StringOrIter = None,
         _group_drop: bool = None,
+        # used for copy, etc so we don't need to recompute the group data
         _group_data: DataFrame = None,
         **kwargs: Any,
     ) -> None:
@@ -45,259 +35,342 @@ class DataFrameGroupBy(DataFrame):
         # drop index to align to tidyverse's APIs
         self.reset_index(drop=True, inplace=True)
 
-        if _group_drop is None:
-            _group_drop = self.attrs.get("_group_drop", True)
-        self.attrs["_group_drop"] = _group_drop
-
+        # rowwise
         if _group_vars is None:
             _group_vars = []
-        _group_vars = list(_group_vars)
-        self.__dict__["_group_vars"] = _group_vars
-        if _group_data is None:
-            self.__dict__["_group_data"] = self._compute_groups()
-        else:
-            self.__dict__["_group_data"] = _group_data
 
-    def _compute_groups(self):
-        """Compute group data"""
-        # group by values have to be hashable
-        if not self._group_vars:
-            return DataFrame({"_rows": [list(range(self.shape[0]))]})
+        if is_scalar(_group_vars):
+            _group_vars = [_group_vars]
 
-        if len(self._group_vars) == 1:
-            return self._compute_single_var_groups()
+        # In order to align to dplyr's API
+        self.attrs["_group_drop"] = True if _group_drop is None else _group_drop
+        self.attrs["_group_vars"] = _group_vars
+        self.attrs["_group_data"] = _group_data
 
-        return self._compute_multiple_var_groups()
-
-    def _compute_single_var_groups(self):
-        """Compute groups for a single variable
-
-        NAs are always exluded in pandas groupby operation
-        We replace NAs with NA_REPR, do the grouping and then replace it back
-        """
-        var = self.loc[:, self._group_vars[0]]
-        dtype = var.dtype
-        var = fillna_safe(var)
-        groups = Grouping(
-            self.index, var, sort=False, observed=self.attrs["_group_drop"]
-        ).groups
-
-        return _groups_to_group_data(
-            groups, dtypes={self._group_vars[0]: dtype}, na_if=True
-        )
-
-    def _compute_multiple_var_groups(self):
-        """Compute groups for multiple vars"""
-        from ..base import unique
-
-        dtypes = {}
-        groupings = []
-        for gvar in self._group_vars:
-            dtypes[gvar] = self[gvar].dtype
-            groupings.append(
-                Grouping(
-                    self.index,
-                    self[gvar],
-                    sort=False,
-                    observed=self.attrs["_group_drop"],
-                )
-            )
-
-        to_groupby = zip(
-            *(
-                # grouper renamed to grouping_vector in future version of pandas
-                getattr(ping, "grouping_vector", getattr(ping, "grouper", None))
-                for ping in groupings
-            )
-        )
-        # tupleize_cols = False
-        # makes nan equals
-        index = Index(to_groupby, tupleize_cols=False)
-        groups = self.index.groupby(index)
-        # pandas not including unused categories for multiple variables
-        # even with observed=False
-        # #
-        if not self.attrs["_group_drop"]:
-            # unobserved = [
-            #     self[gvar].values.categories.difference(self[gvar])
-            #     if is_categorical(dtype)
-            #     else []
-            #     for gvar, dtype in dtypes.items()
-            # ]
-            # maxlen = max((len(unobs) for unobs in unobserved))
-            # if maxlen > 0:
-            #     unobserved = [
-            #         ## Simply adding NAs would change dtype
-            #         [NA] if len(unobs) == 0 else unobs
-            #         for unobs in unobserved
-            #     ]
-            #     for row in product(*unobserved):
-            #         groups[row] = []
-            unobserved = []
-            insert_unobs = False
-            for gvar, dtype in dtypes.items():
-                if is_categorical(dtype):
-                    unobs = self[gvar].values.categories.difference(self[gvar])
-                    if len(unobs) > 0:
-                        unobserved.append(unobs)
-                        insert_unobs = True
-                    else:
-                        unobserved.append(unique(self[gvar]))
-                else:
-                    unobserved.append(unique(self[gvar]))
-            if insert_unobs:
-                for row in product(*unobserved):
-                    groups[row] = []
-
-        return _groups_to_group_data(groups, dtypes=dtypes)
-
-    def datar_apply(
+    @abstractmethod
+    def _datar_apply(
         self,
-        func: Callable,
+        _func: Callable,
         *args: Any,
+        _mappings: Mapping[str, Any] = None,
+        _method: str = "apply",
         _groupdata: bool = True,
         _drop_index: bool = True,
-        _spike_groupdata: DataFrame = None,
         **kwargs: Any,
     ) -> DataFrame:
-        """Apply function to each group
+        ...  # pragma: no cover
+
+    def copy(  # pylint: disable=arguments-differ
+        self,
+        deep: bool = True,
+        copy_grouped: bool = False,
+    ) -> "DataFrameGroupByABC":
+        """Copy the dataframe and keep the class"""
+        if not copy_grouped:
+            return super().copy(deep)
+
+        if deep:
+            return self.__class__(
+                super().copy(),
+                _group_vars=self.attrs["_group_vars"][:],
+                _group_drop=self.attrs["_group_drop"],
+                _group_data=self._group_data.copy(),
+            )
+        # we still need to calculate _grouped_df
+        return self.__class__(
+            self,
+            _group_vars=self.attrs["_group_vars"],
+            _group_drop=self.attrs["_group_drop"],
+            _group_data=self._group_data,
+        )
+
+
+class DataFrameGroupBy(DataFrameGroupByABC):
+    """A customized DataFrameGroupBy class, other than pandas' DataFrameGroupBy
+
+    Pandas' DataFrameGroupBy has obj refer to the original data frame. We do it
+    the reverse way by attaching the groupby object to the frame. So that it is:
+    1. easier to write single dispatch functions, as DataFrameGroupBy is now a
+        subclass of pandas' DataFrame
+    2. easier to display the frame. We can use all utilities for frame to
+        display. By `core._frame_format_patch.py`, we are also able to show the
+        grouping information
+    3. possible for future optimizations
+
+    Known Issues:
+        - Due to https://github.com/pandas-dev/pandas/issues/35202
+            Currently `dropna` is fixed to True of `df.groupby(...)`
+            So no NAs will be kept in group vars
+        - `_drop = FALSE` does not work when there are multiple group vars
+        - Since group vars are required in `DataFrame.groupby()`, so virtual
+            groupings are not supported.
+        - Groupby on a column with tuples creates a multiindex
+            https://github.com/pandas-dev/pandas/issues/21340
+        - Order of group data/groups does not follow the categories/levels of
+            a category group variable.
+
+    Args:
+        data: Data that used to construct the frame.
+        **kwargs: Additional keyword arguments passed to DataFrame constructor.
+        _group_vars: The grouping variables
+        _group_drop: Whether to drop non-observable rows
+        _group_data: In most cases, used for copy. Use this groupdata
+            if provided to avoid recalculate.
+
+    Attributes:
+        _grouped_df: The grouped data frame (pandas' DataFrameGroupBy object)
+    """
+
+    def __init__(
+        self,
+        data: Any,
+        _group_vars: StringOrIter = None,
+        _group_drop: bool = None,
+        _group_data: DataFrame = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(data, _group_vars, _group_drop, _group_data, **kwargs)
+        self.__dict__["_grouped_df"] = self.groupby(
+            _group_vars,
+            dropna=True,
+            sort=False,
+            observed=self.attrs["_group_drop"],
+        )
+
+    # @property
+    # def _constructor(self):
+    #     return DataFrameGroupBy
+
+    @property
+    def _group_data(self):
+        """The group data"""
+        # compose group data using self._grouped_df.grouper
+        if self.attrs["_group_data"] is None:
+            self.attrs["_group_data"] = DataFrame(
+                (
+                    [key] + [list(val)]
+                    if len(self.attrs["_group_vars"]) == 1
+                    else list(key) + [list(val)]
+                    for key, val in self._grouped_df.groups.items()
+                ),
+                columns=self.attrs["_group_vars"] + ["_rows"],
+            )
+            apply_dtypes(
+                self.attrs["_group_data"],
+                self.dtypes[self.attrs["_group_vars"]].to_dict(),
+            )
+
+        return self.attrs["_group_data"]
+
+    def _datar_apply(
+        self,
+        _func: Callable,
+        *args: Any,
+        _mappings: Mapping[str, Any] = None,
+        _method: str = "apply",
+        _groupdata: bool = True,
+        _drop_index: bool = True,
+        **kwargs: Any,
+    ) -> DataFrame:
+        """Customized apply.
+
+        Aggregation on single columns will be tried to optimized.
 
         Args:
-            func: The function applied to the groups
-            *args, **kwargs: The arguments for func
-            _groupdata: Whether to include the group data in the results or not
-            _drop_index: Should we drop the index or keep it
-            _spike_groupdata: External group data to used, instead of
-                `self._group_data`. This is useful for rowwise dataframe when
-                no group vars not specified (`self._group_data` has only
-                `_rows` column).
+            _func: The function to be applied.
+            *args: The non-keyword arguments for the function
+            _mappings: The mapping (new name => transformation/aggregation)
+                This will be used to check if we can turn the apply into agg.
+                transformations like `f.x.mean()` or `mean(f.x)` will use agg
+                to do the aggregation.
+                `_func` will be used to apply if any item fails to be optimized.
+            _method: Only optimize single column transformations
+                when `agg` is provided
+            _groupdata: Whether attach the group data to the result data frame
+                anyway. Pandas will lose them if is a transform (num. of
+                rows of result data frame is equal to the source data frame)
+                instead of an aggregation
+            _drop_index: Whether we should drop the index when the
+                sub data frame goes into the apply function (`_func`).
+
+        Returns:
+            The transformed/aggregated data frame
         """
-        groupdata = (
-            self._group_data if _spike_groupdata is None else _spike_groupdata
-        )
+        optms = _optimizable(_mappings)
+        if _method == "agg" and optms:
+            out = self._datar_agg(optms)
 
-        def apply_func(gdata_row):
-            index = gdata_row[0]
-            subdf = self.iloc[gdata_row[1]["_rows"], :]
-            if _drop_index:
-                subdf.reset_index(drop=True, inplace=True)
-            subdf.attrs["_group_index"] = index
-            subdf.attrs["_group_data"] = groupdata
-            ret = func(subdf, *args, **kwargs)
-            if ret is None:
-                return ret
+        else:
+            group_index = -1
 
-            if _groupdata:
-                # attaching grouping data
-                gdata = groupdata.loc[
-                    [index] * ret.shape[0],
-                    [gvar for gvar in self._group_vars if gvar not in ret],
-                ]
-                gdata.index = ret.index
-                ret = pandas.concat([gdata, ret], axis=1)
-            return ret
+            def _applied(subdf):
+                nonlocal group_index
+                group_index += 1
+                if _drop_index:
+                    subdf = subdf.reset_index(drop=True)
+                subdf.attrs["_group_index"] = group_index
+                subdf.attrs["_group_data"] = self._group_data
+                ret = _func(subdf, *args, **kwargs)
+                return None if ret is None else ret
 
-        to_concat = [apply_func(row) for row in groupdata.iterrows()]
-        if all(elem is None for elem in to_concat):
-            return None
-        ret = pandas.concat(to_concat, axis=0)
-        if _drop_index:
-            ret.reset_index(drop=True, inplace=True)
+            # keep the order
+            out = self._grouped_df.apply(_applied).sort_index(level=-1)
 
-        ret.attrs["_group_drop"] = self.attrs["_group_drop"]
-        return ret
+        if not _groupdata:
+            return out.reset_index(drop=True)
 
-    def copy(self, deep: bool = True) -> "DataFrameGroupBy":
-        """Copy the dataframe and keep the class"""
-        return DataFrameGroupBy(
-            super().copy() if deep else self,
-            _group_vars=self._group_vars,
-            _group_drop=self.attrs.get("_group_drop", True),
-            _group_data=self._group_data.copy() if deep else self._group_data,
-        )
+        if (
+            self.shape[0] > 0
+            and self.shape[0] == out.shape[0]
+            and out.index.names == [None]
+        ):
+            gkeys = self._group_data[
+                self._group_data.columns[:-1].difference(out.columns)
+            ]
+            return pandas.concat([gkeys, out], axis=1)
+
+        # in case the group vars are mutated
+        index_to_reset = setdiff(self.attrs["_group_vars"], out.columns)
+        return out.reset_index(level=index_to_reset).reset_index(drop=True)
+
+    def _datar_agg(
+        self,
+        _mappings: Mapping[str, Any],
+    ) -> DataFrame:
+        """Apply aggregation to the mappings"""
+        return self._grouped_df.agg(**_mappings)
 
 
 class DataFrameRowwise(DataFrameGroupBy):
-    """Group data frame rowwisely"""
+    """Rowwise dataframe"""
 
-    def _compute_groups(self):
-        _rows = Series(
-            [[i] for i in range(self.shape[0])], name="_rows", dtype=object
-        )
-        if not self._group_vars:
-            return _rows.to_frame()
+    __init__ = DataFrameGroupByABC.__init__
 
-        gdata = self[self._group_vars].copy()
-        gdata["_rows"] = _rows
-        return gdata
+    @property
+    def _group_data(self):
+        """The group data with the ori"""
+        if self.attrs["_group_data"] is None:
+            self.attrs["_group_data"] = self[self.attrs["_group_vars"]].assign(
+                _rows=[[i] for i in range(self.shape[0])]
+            )
 
-    def datar_apply(
+        return self.attrs["_group_data"]
+
+    def _datar_apply(
         self,
-        func: Callable,
+        _func: Callable,
         *args: Any,
+        _mappings: Mapping[str, Any] = None,
+        _method: str = "apply",
         _groupdata: bool = True,
         _drop_index: bool = True,
-        _spike_groupdata: DataFrame = None,
         **kwargs: Any,
     ) -> DataFrame:
-        if _spike_groupdata is not None:
-            raise ValueError("`_spike_groupdata` not allowed.")
-        if self._group_vars:
-            gdata = self._group_data
-        else:
-            gdata = self.copy()
-            gdata["_rows"] = self._group_data
+        # TODO: check if _func is optimizable.
+        def applied(ser, *args, **kwargs):
+            """Make sure a series is returned"""
+            ret = _func(ser, *args, **kwargs)
+            if isinstance(ret, DataFrame) and ret.shape[0] > 1:
+                raise ValueError(
+                    "Must return a 1d array, a Series or a DataFrame "
+                    "with 1 row when a function is applied to "
+                    "a DataFrameRowwise object."
+                )
 
-        return super().datar_apply(
-            func,
-            *args,
-            _groupdata=_groupdata,
-            _drop_index=_drop_index,
-            _spike_groupdata=gdata,
+            if isinstance(ret, DataFrame):
+                ret = ret.iloc[0, :]
+
+            if ret is None:
+                ret = []
+
+            if is_scalar(ret):
+                ret = [ret]
+
+            if len(ret) == 0:
+                ret = Series(ret, dtype=getattr(ret, "dtype", object))
+            else:
+                ret = Series(ret)
+
+            if isinstance(ret.index, RangeIndex):
+                ret.index = (
+                    f"{DEFAULT_COLUMN_PREFIX}{i}" for i in range(len(ret))
+                )
+
+            return ret
+
+        out = self.apply(
+            applied,
+            axis=1,
+            raw=False,
+            # result_type='reduce',
+            args=args,
             **kwargs,
         )
+        if not _groupdata or not self.attrs["_group_vars"]:
+            return out
 
-    def copy(self, deep: bool = True) -> "DataFrameRowwise":
-        return DataFrameRowwise(
-            DataFrame.copy(self) if deep else self,
-            _group_vars=self._group_vars,
-            _group_drop=self.attrs.get("_group_drop", True),
-            _group_data=self._group_data.copy() if deep else self._group_data,
-        )
+        return pandas.concat([self[self.attrs["_group_vars"]], out], axis=1)
 
 
-def _groups_to_group_data(
-    groups: Mapping[Any, Index],
-    dtypes: Mapping[str, Dtype],
-    na_if: bool = False,
-) -> DataFrame:
-    """Convert pandas groups dict to group data
+def _optimizable_func(
+    name: str, kwargs: Mapping[str, Any]
+) -> Union[str, Callable]:
+    """Get the name of the function that can be optimized.
 
-    From
-        >>> {1: [0], 2: [1]}
-    To
-        >>> DataFrame({'a': [1, [0]], 'b': [2, [1]]})
+    Currently, only functions avaiable with numpy is able to be optimized
+
+    Args:
+        name: The name of the function
+        kwargs: The keyword arguments to be passed to the function
+            Current, if `na_rm` is `True`, then `nan` version of the function
+            will be used
+
+    Return:
+        The name of the function that can be optimized.
     """
-    out = DataFrame(
-        [(grp,) if len(dtypes) == 1 else grp for grp in groups],
-        columns=list(dtypes),
-    )
+    if not hasattr(numpy, name):
+        return None
+    if kwargs.get("na_rm", False):
+        return getattr(numpy, f"nan{name}")
+    return getattr(numpy, name)
 
-    for gvar, dtype in dtypes.items():
-        if na_if:
-            out[gvar] = na_if_safe(out[gvar], dtype=dtype)
+
+def _optimizable(
+    mappings: Mapping[str, Any]
+) -> Mapping[str, Tuple[str, Union[str, Callable]]]:
+    """Turn mappings (new column name => transform/aggregation) to
+    (new column name => tuple(old column name, aggregation function))
+    """
+    if mappings is None:
+        return None
+
+    out = {}
+    for key, val in mappings.items():
+        # optimize constants?
+        if (
+            isinstance(val, FastEvalFunction)
+            and len(val._pipda_args) == 1
+            and isinstance(val._pipda_args[0], (DirectRefItem, DirectRefAttr))
+        ):
+            # mean(f.x)
+            ofun = _optimizable_func(
+                val._pipda_func.__name__, val._pipda_kwargs
+            )
+            if not ofun:
+                return None
+            out[key] = (val._pipda_args[0]._pipda_ref, ofun)
+        elif (
+            isinstance(val, Function)
+            and isinstance(val._pipda_func, ReferenceAttr)
+            and isinstance(
+                val._pipda_func._pipda_parent, (DirectRefItem, DirectRefAttr)
+            )
+        ):
+            # f.x.mean()
+            out[key] = (
+                val._pipda_func._pipda_parent._pipda_ref,
+                val._pipda_func._pipda_ref,
+            )
         else:
-            try:
-                same_dtype = out[gvar].dtype == dtype
-            except TypeError:  # pragma: no cover
-                # Cannot interpret 'CategoricalDtype(categories=[1, 2],
-                # ordered=False)' as a data type
-                same_dtype = False
-            if not same_dtype:
-                out[gvar] = out[gvar].astype(dtype)
-
-    out["_rows"] = Series(
-        [list(rows) for rows in groups.values()],
-        dtype=object,  # get rid of numpy warning
-    )
-    return out.sort_values(list(dtypes)).reset_index(drop=True)
+            return None
+    return out

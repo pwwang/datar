@@ -23,11 +23,11 @@ def test_cur_group_id():
 
     out = gf >> summarise(id=cur_group_id())
     # group_by not sorted
-    expect = tibble(x = c("a", "b"), id = [0,1])
-    assert out.equals(expect)
+    expect = tibble(x = c("a", "b"), id = [1,0])
+    assert_frame_equal(out, expect)
 
     out = gf >> mutate(id=cur_group_id())
-    expect = tibble(x=["b", "a","b"], id=[1,0,1])
+    expect = tibble(x=["b", "a","b"], id=[0,1,0])
     assert_frame_equal(out, expect)
 
 def test_cur_data_all():
