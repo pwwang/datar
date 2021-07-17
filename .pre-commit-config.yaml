@@ -59,4 +59,5 @@ repos:
         entry: jupyter nbconvert --to notebook --execute
         language: system
         pass_filenames: true
-        files: ^docs/(notebooks|performance)/.+\.ipynb$
+        files: ^docs/.+\.ipynb$
+        exclude: '^docs/.+\.nbconvert\.ipynb$'
