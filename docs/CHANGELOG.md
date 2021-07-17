@@ -2,14 +2,17 @@
 
 - Adopt `pipda` v0.4.2
 
-Performance improvements:
+Performance improved:
 - Refactor core.grouped to adopt pandas's groupby
 - Try to use `DataFrame.agg()`/`DataFrameGroupBy.agg()` when function applied on a single columns (Related issues: #27, #33, #37)
 
-Fixes:
+Fixed:
 - Fix when `data` or `context` as new column name for `mutate()`
 - Fix SettingwithCopyWarning in pivot_longer
 - Use regular calling internally to make sure it works in some cases that node cannot be detected (ie `Gooey`/`%%timeit` in jupyter)
+
+Added:
+- `datar.datar_versions()` to show versions of related packages for bug reporting.
 
 ## 0.3.2
 - Adopt `pipda` v0.4.1 to fix `getattr()` failure for operater-connected expressions (#38)

@@ -4,7 +4,7 @@ from pandas import Categorical, Series
 from pandas.testing import assert_frame_equal
 from datar.core.grouped import *
 from datar.base import NA, mean, as_character
-from datar import f
+from datar import f, datar_versions
 from pipda.function import FastEvalFunction
 
 
@@ -57,7 +57,8 @@ def test_group_data():
     gf = DataFrameGroupBy(df, _group_vars=["a"])
     exp = DataFrame(
         # [[1, [0]], [2, [1]], [3, [2]], [NA, [3, 4]]], columns=["a", "_rows"]
-        [[1, [0]], [2, [1]], [3, [2]]], columns=["a", "_rows"]
+        [[1, [0]], [2, [1]], [3, [2]]],
+        columns=["a", "_rows"],
     )
     assert_frame_equal(gf._group_data, exp)
 
@@ -102,7 +103,14 @@ def test_multi_cats():
     )
     gf = DataFrameGroupBy(df, _group_vars=list("abcd"), _group_drop=False)
     # assert len(gf._group_data) == 11
-    assert len(gf._group_data) == 3
+    # It's 4 with pandas 1.2
+    # But 3 with pandas 1.3
+    if (
+        datar_versions().pandas < "1.3.0"
+    ):  # note when it comes to '1.11.x' vs '1.2.x'
+        assert len(gf._group_data) == 4
+    else:
+        assert len(gf._group_data) == 3
 
     gf = DataFrameGroupBy(df, _group_vars=list("abcd"), _group_drop=True)
     assert len(gf._group_data) == 3
@@ -144,7 +152,7 @@ def test_apply():
     gf = DataFrameGroupBy(df, _group_vars=["a"])
     out = gf._datar_apply(n)
     # 3 lost
-    exp = DataFrame({"a": Categorical(df.a, categories=[1,2]), "n": [1, 1]})
+    exp = DataFrame({"a": Categorical(df.a, categories=[1, 2]), "n": [1, 1]})
     assert_frame_equal(out, exp)
 
     gf = DataFrameGroupBy(df, _group_vars=["a"], _group_drop=False)
@@ -160,59 +168,57 @@ def test_apply():
     )
     assert_frame_equal(out, exp)
 
+
 def test_agg():
-    df = DataFrame(dict(a=[1,1,2,2], b=[1,2,3,4]))
-    gf = DataFrameGroupBy(df, _group_vars='a')
-    out = gf._datar_apply(None, _mappings=dict(
-        c=f.b.mean()
-    ), _method='agg')
-    assert_frame_equal(
-        out,
-        DataFrame(dict(a=[1,2], c=[1.5,3.5]))
-    )
+    df = DataFrame(dict(a=[1, 1, 2, 2], b=[1, 2, 3, 4]))
+    gf = DataFrameGroupBy(df, _group_vars="a")
+    out = gf._datar_apply(None, _mappings=dict(c=f.b.mean()), _method="agg")
+    assert_frame_equal(out, DataFrame(dict(a=[1, 2], c=[1.5, 3.5])))
     # numpy functions
-    out = gf._datar_apply(None, _mappings=dict(
-        c=FastEvalFunction(mean, args=(f.b, ), kwargs={}, dataarg=False)
-    ), _method='agg')
-    assert_frame_equal(
-        out,
-        DataFrame(dict(a=[1,2], c=[1.5,3.5]))
+    out = gf._datar_apply(
+        None,
+        _mappings=dict(
+            c=FastEvalFunction(mean, args=(f.b,), kwargs={}, dataarg=False)
+        ),
+        _method="agg",
     )
+    assert_frame_equal(out, DataFrame(dict(a=[1, 2], c=[1.5, 3.5])))
     # numpy functions with na_rm
-    out = gf._datar_apply(None, _mappings=dict(
-        c=FastEvalFunction(mean, args=(f.b, ), kwargs={'na_rm': True}, dataarg=False)
-    ), _method='agg')
-    assert_frame_equal(
-        out,
-        DataFrame(dict(a=[1,2], c=[1.5,3.5]))
+    out = gf._datar_apply(
+        None,
+        _mappings=dict(
+            c=FastEvalFunction(
+                mean, args=(f.b,), kwargs={"na_rm": True}, dataarg=False
+            )
+        ),
+        _method="agg",
     )
+    assert_frame_equal(out, DataFrame(dict(a=[1, 2], c=[1.5, 3.5])))
     # fail
-    with pytest.raises(TypeError, match='not callable'):
-        gf._datar_apply(None, _mappings=dict(
-            c=FastEvalFunction(as_character, args=(f.b, ), kwargs={}, dataarg=False)
-        ), _method='agg')
-    with pytest.raises(TypeError, match='not callable'):
-        gf._datar_apply(None, _mappings=dict(
-            c=1
-        ), _method='agg')
+    with pytest.raises(TypeError, match="not callable"):
+        gf._datar_apply(
+            None,
+            _mappings=dict(
+                c=FastEvalFunction(
+                    as_character, args=(f.b,), kwargs={}, dataarg=False
+                )
+            ),
+            _method="agg",
+        )
+    with pytest.raises(TypeError, match="not callable"):
+        gf._datar_apply(None, _mappings=dict(c=1), _method="agg")
 
     # no groupdata
-    out = gf._datar_apply(None, _mappings=dict(
-        c=f.b.mean()
-    ), _method='agg', _groupdata=False)
-    assert_frame_equal(
-        out,
-        DataFrame(dict(c=[1.5,3.5]))
+    out = gf._datar_apply(
+        None, _mappings=dict(c=f.b.mean()), _method="agg", _groupdata=False
     )
+    assert_frame_equal(out, DataFrame(dict(c=[1.5, 3.5])))
 
     # drop index
-    out = gf._datar_apply(None, _mappings=dict(
-        c=f.b.cummax()
-    ), _method='agg', _groupdata=False)
-    assert_frame_equal(
-        out,
-        DataFrame(dict(c=[1, 2, 3, 4]))
+    out = gf._datar_apply(
+        None, _mappings=dict(c=f.b.cummax()), _method="agg", _groupdata=False
     )
+    assert_frame_equal(out, DataFrame(dict(c=[1, 2, 3, 4])))
 
 
 # def test_construct_with_give_groupdata():
@@ -245,11 +251,11 @@ def test_copy():
 
     gf2 = gf.copy(copy_grouped=True)
     assert isinstance(gf2, DataFrameGroupBy)
-    assert gf.attrs['_group_vars'] == gf2.attrs['_group_vars']
+    assert gf.attrs["_group_vars"] == gf2.attrs["_group_vars"]
     assert gf._group_data.equals(gf2._group_data)
 
     gf3 = gf.copy(deep=False, copy_grouped=True)
-    assert gf3.attrs['_group_vars'] is gf.attrs['_group_vars']
+    assert gf3.attrs["_group_vars"] is gf.attrs["_group_vars"]
     assert gf3.attrs["_group_drop"] is gf.attrs["_group_drop"]
     assert gf3._group_data is gf._group_data
 
@@ -276,13 +282,12 @@ def test_rowwise():
         lambda df: DataFrame({"c": [df.a + df.b]}), _groupdata=True
     )
     assert_frame_equal(
-        out,
-        DataFrame([[1, 5], [2, 7], [3, 9]], columns=["a", "c"])
+        out, DataFrame([[1, 5], [2, 7], [3, 9]], columns=["a", "c"])
     )
 
     # with pytest.raises(ValueError):
     out = rf._datar_apply(lambda df: None)
-    assert_frame_equal(out, df[['a']])
+    assert_frame_equal(out, df[["a"]])
 
 
 def test_rowwise_repr():
@@ -301,12 +306,14 @@ def test_gf_repr_html():
     rf = DataFrameRowwise(df, _group_vars=["a"])
     assert "Rowwise: ['a']" in rf._repr_html_()
 
+
 def test_rowwise_func_returns_multirow_df():
     rf = DataFrameRowwise(DataFrame({"a": [1, 2, 3]}))
     with pytest.raises(ValueError):
-        rf._datar_apply(lambda row: DataFrame({'b': [1,2]}))
+        rf._datar_apply(lambda row: DataFrame({"b": [1, 2]}))
+
 
 def test_rowwise_default_column_prefix_used():
     rf = DataFrameRowwise(DataFrame({"a": [1, 2, 3]}))
     out = rf._datar_apply(lambda row: row.a * 2)
-    assert out.columns.tolist() == ['_Var0']
+    assert out.columns.tolist() == ["_Var0"]

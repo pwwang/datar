@@ -290,6 +290,9 @@ def test_dup_keyword_args():
 def test_use_pandas_series_func_gh14():
     df = tibble(g=[1,1,2,2], a=[4,4,8,8]) >> group_by(f.g)
     out = df >> summarise(a=f.a.mean())
+    # out.a is float64 with pandas 1.3
+    # out.a is int64 with pandas 1.2
+    out = out >> mutate(a=as_double(f.a))
     assert_frame_equal(out, tibble(g=[1,2], a=[4.0,8.0]))
 
 def test_summarise_rowwise():
