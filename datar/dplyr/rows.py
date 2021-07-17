@@ -280,4 +280,4 @@ def _rows_match(x: DataFrame, y: DataFrame) -> numpy.ndarray:
     id_col = "__id__"
     y_with_id = rownames_to_column(y, var=id_col)
     # pylint: disable=no-value-for-parameter
-    return (x >> left_join(y_with_id))[id_col].values
+    return left_join(x, y_with_id)[id_col].values

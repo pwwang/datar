@@ -20,11 +20,11 @@ def set_names(obj: DataFrame, names: Iterable[str]) -> DataFrame:
 @set_names.register(DataFrameGroupBy)
 def _(obj: DataFrameGroupBy, names: Iterable[str]) -> DataFrameGroupBy:
     """Set names of a grouped/rowwise df"""
-    obj = obj.copy()
+    obj = obj.copy(copy_grouped=True)
     names_dict = dict(zip(obj.columns, names))
     obj.columns = names
-    gvars = [names_dict[name] for name in obj._group_vars]
-    obj._group_vars = gvars
-    obj._group_data = obj._group_data.copy()
+    gvars = [names_dict[name] for name in obj.attrs['_group_vars']]
+    obj.attrs["_group_vars"] = gvars
+    obj.attrs["_group_data"] = obj._group_data.copy()
     obj._group_data.columns = gvars + [obj._group_data.columns[-1]]
     return obj

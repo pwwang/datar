@@ -1,7 +1,8 @@
 """Summarise each group to fewer rows"""
 
 from typing import Any, Iterable, Mapping, Union
-from pandas import DataFrame
+
+from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr
 from pipda.function import Function
 
@@ -108,12 +109,24 @@ def _(
 
         def apply_func(df):
             nonlocal allone
-            out = df >> summarise(*args, **kwargs)
+            if isinstance(df, Series):
+                # rowwise
+                df.name = 0
+                df = df.to_frame().T
+            out = summarise(df, *args, **kwargs)
             if out.shape[0] != 1:
                 allone = False
             return out
 
-        out = _data.datar_apply(apply_func)
+        mappings = {}
+        for i, arg in enumerate(args):
+            if isinstance(arg, dict):
+                mappings.update(arg)
+            else:
+                mappings[f"{DEFAULT_COLUMN_PREFIX}{i}"] = arg
+        mappings.update(kwargs)
+
+        out = _data._datar_apply(apply_func, _mappings=mappings, _method="agg")
 
     g_keys = group_vars(_data)
     if _groups is None:
@@ -139,10 +152,16 @@ def _(
                 g_keys,
             )
         out = DataFrameGroupBy(
-            out, _group_vars=g_keys, _group_drop=group_by_drop_default(_data)
+            out,
+            _group_vars=g_keys,
+            _group_drop=group_by_drop_default(_data),
         )
     elif _groups == "rowwise":
-        out = reconstruct_tibble(_data, out, keep_rowwise=True)
+        out = reconstruct_tibble(
+            _data,
+            out,
+            keep_rowwise=True,
+        )
     elif isinstance(_data, DataFrameRowwise) and get_option(
         "dplyr_summarise_inform"
     ):
@@ -170,7 +189,7 @@ def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
         envdata = out
         if out.shape[1] == 0 or (
             isinstance(val, Function)
-            and getattr(val.func, "summarise_prefers_input", False)
+            and getattr(val._pipda_func, "summarise_prefers_input", False)
         ):
             envdata = _data
 

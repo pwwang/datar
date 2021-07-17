@@ -22,6 +22,7 @@ from ..core.utils import (
 )
 from ..core.exceptions import ColumnNotExistingError
 from ..core.contexts import Context
+from ..core.grouped import DataFrameGroupBy
 
 from ..base import union, NA
 from ..dplyr import bind_cols, group_by, arrange, group_data
@@ -79,7 +80,7 @@ def chop(
     else:
         vals = pandas.concat(compacted, ignore_index=True)
 
-    out = split_key >> bind_cols(vals)
+    out = bind_cols(split_key, vals)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 
@@ -130,7 +131,11 @@ def unchop(
     cols = vars_select(all_columns, cols, base0=base0_)
 
     if len(cols) == 0 or data.shape[0] == 0:
-        return data.copy()
+        return (
+            data.copy(copy_grouped=True)
+            if isinstance(data, DataFrameGroupBy)
+            else data.copy()
+        )
 
     cols = all_columns[cols]
     key_cols = all_columns.difference(cols).tolist()
@@ -153,15 +158,19 @@ def _vec_split(
     if isinstance(by, Series):  # pragma: no cover, always a data frame?
         by = by.to_frame()
 
-    df = x >> bind_cols(by)
+    df = bind_cols(x, by)
     if df.shape[0] == 0:
         return DataFrame(columns=["key", "val"])
-    df = df >> group_by(*by.columns)
+    df = group_by(df, *by.columns)
     gdata = group_data(df)
     gdata = arrange(gdata, gdata._rows)
     out = DataFrame(index=gdata.index)
     out = df_setitem(out, "key", gdata[by.columns])
-    return df_setitem(out, "val", [x.iloc[rows, :] for rows in gdata._rows])
+    return df_setitem(
+        out,
+        "val",
+        [x.iloc[rows, :].reset_index(drop=True) for rows in gdata._rows],
+    )
 
 
 def _compact_df(data: DataFrame) -> DataFrame:

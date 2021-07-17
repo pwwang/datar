@@ -33,12 +33,12 @@ def test_input_recycled():
     gf = group_by(tibble(a = [1,2]), f.a)
     df1 = gf >> summarise(x=1, y=[1,2,3], z=1)
     df2 = tibble(
-        a = rep([1,2], each = 3),
+        a = rep([1,2], 3),
         x = 1,
-        y = c([1,2,3], [1,2,3]),
+        y = rep([1,2,3], each=2),
         z = 1
     ) >> group_by(f.a)
-    assert df1.equals(df2)
+    assert_frame_equal(df1, df2)
 
     df1 = gf >> summarise(x = seq_len(f.a, base0_=True), y = 1)
     df2 = tibble(a = c(1, 2, 2), x = c(0, 0, 1), y = 1) >> group_by(f.a)
@@ -80,7 +80,7 @@ def test_no_expressions():
     out = summarise(gf)
     assert group_vars(out) == []
     exp = tibble(x=[1,2])
-    assert out.equals(exp)
+    assert_frame_equal(out, exp)
 
     out = summarise(df, {})
     assert dim(out) == (1, 0)
@@ -257,7 +257,7 @@ def test_errors(caplog):
     with pytest.raises(ColumnNotExistingError):
         summarise(mtcars, a = mean(f.not_there))
 
-    with pytest.raises(ColumnNotExistingError):
+    with pytest.raises(KeyError):
         summarise(group_by(mtcars, f.cyl), a = mean(f.not_there))
 
     # Duplicate column names
@@ -290,4 +290,21 @@ def test_dup_keyword_args():
 def test_use_pandas_series_func_gh14():
     df = tibble(g=[1,1,2,2], a=[4,4,8,8]) >> group_by(f.g)
     out = df >> summarise(a=f.a.mean())
+    # out.a is float64 with pandas 1.3
+    # out.a is int64 with pandas 1.2
+    out = out >> mutate(a=as_double(f.a))
     assert_frame_equal(out, tibble(g=[1,2], a=[4.0,8.0]))
+
+def test_summarise_rowwise():
+    params = tibble(
+        sim=[1, 2, 3],
+        n=[1, 2, 3],
+        mean=[1, 2, 1],
+        sd=[1, 4, 2]
+    )
+
+    out = params >> rowwise(f.sim) >> summarise(z=[rnorm(f.n, f.mean, f.sd)])
+    assert len(out.columns) == 2
+    assert len(out.z.values[0]) == 1
+    assert len(out.z.values[1]) == 2
+    assert len(out.z.values[2]) == 3

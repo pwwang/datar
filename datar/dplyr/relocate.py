@@ -46,7 +46,11 @@ def relocate(
     gvars = group_vars(_data)
     all_columns = _data.columns
     to_move, new_names = _eval_select(
-        all_columns, *args, **kwargs, base0_=base0_, _group_vars=gvars
+        all_columns,
+        *args,
+        **kwargs,
+        base0_=base0_,
+        _group_vars=gvars,
     )
     if _before is not None and _after is not None:
         raise ValueError("Must supply only one of `_before` and `_after`.")
@@ -54,14 +58,24 @@ def relocate(
     # length = len(all_columns)
     if _before is not None:
         where = min(
-            _eval_select(all_columns, _before, _group_vars=[], base0_=base0_)[0]
+            _eval_select(
+                all_columns,
+                _before,
+                _group_vars=[],
+                base0_=base0_,
+            )[0]
         )
         if where not in to_move:
             to_move.append(where)
 
     elif _after is not None:
         where = max(
-            _eval_select(all_columns, _after, _group_vars=[], base0_=base0_)[0]
+            _eval_select(
+                all_columns,
+                _after,
+                _group_vars=[],
+                base0_=base0_,
+            )[0]
         )
         if where not in to_move:
             to_move.insert(0, where)

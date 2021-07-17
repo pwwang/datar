@@ -16,6 +16,7 @@ from ..core.utils import (
     copy_attrs,
     name_mutatable_args,
     check_column_uniqueness,
+    reconstruct_tibble,
     vars_select,
 )
 from ..core.exceptions import ColumnNotExistingError
@@ -60,12 +61,17 @@ def group_by(
     Return:
         A `datar.core.grouped.DataFrameGroupBy` object
     """
+    if not args and not kwargs:
+        return reconstruct_tibble(_data, _data)
+
     if _drop is None:
         _drop = group_by_drop_default(_data)
 
     groups = _group_by_prepare(_data, *args, **kwargs, _add=_add)
     out = DataFrameGroupBy(
-        groups["data"], _group_vars=groups["group_names"], _group_drop=_drop
+        groups["data"],
+        _group_vars=groups["group_names"],
+        _group_drop=_drop,
     )
     copy_attrs(out, _data)
     return out

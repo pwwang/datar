@@ -147,7 +147,7 @@ def _(
             df, *args, _name_repair=_name_repair, base0_=base0_, **kwargs
         )
 
-    out = data.datar_apply(apply_func)
+    out = data._datar_apply(apply_func)
     return reconstruct_tibble(data, out)
 
 

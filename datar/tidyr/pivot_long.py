@@ -221,7 +221,7 @@ def pivot_longer(
     if values_drop_na:
         ret.dropna(subset=values_to, inplace=True)
 
-    names_data = ret[names_to]
+    names_data = ret.loc[:, names_to] # SettingwithCopyWarning
     apply_dtypes(names_data, names_ptypes)
     ret[names_to] = names_data
 

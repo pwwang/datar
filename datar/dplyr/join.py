@@ -77,7 +77,9 @@ def _join(
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def inner_join(
     x: DataFrame,
@@ -104,11 +106,21 @@ def inner_join(
     Returns:
         The joined dataframe
     """
-    return _join(x, y, how="inner", by=by, copy=copy, suffix=suffix, keep=keep)
+    return _join(
+        x,
+        y,
+        how="inner",
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep,
+    )
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def left_join(
     x: DataFrame,
@@ -123,11 +135,21 @@ def left_join(
     See Also:
         [`inner_join()`](datar.dplyr.join.inner_join)
     """
-    return _join(x, y, how="left", by=by, copy=copy, suffix=suffix, keep=keep)
+    return _join(
+        x,
+        y,
+        how="left",
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep,
+    )
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def right_join(
     x: DataFrame,
@@ -146,11 +168,21 @@ def right_join(
         The rows of the order is preserved according to `y`. But `dplyr`'s
         `right_join` preserves order from `x`.
     """
-    return _join(x, y, how="right", by=by, copy=copy, suffix=suffix, keep=keep)
+    return _join(
+        x,
+        y,
+        how="right",
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep,
+    )
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def full_join(
     x: DataFrame,
@@ -165,11 +197,21 @@ def full_join(
     See Also:
         [`inner_join()`](datar.dplyr.join.inner_join)
     """
-    return _join(x, y, how="outer", by=by, copy=copy, suffix=suffix, keep=keep)
+    return _join(
+        x,
+        y,
+        how="outer",
+        by=by,
+        copy=copy,
+        suffix=suffix,
+        keep=keep,
+    )
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def semi_join(
     x: DataFrame,
@@ -197,7 +239,9 @@ def semi_join(
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def anti_join(
     x: DataFrame,
@@ -211,7 +255,13 @@ def anti_join(
         [`inner_join()`](datar.dplyr.join.inner_join)
     """
     ret = pandas.merge(
-        x, y, on=by, how="left", copy=copy, suffixes=["", "_y"], indicator=True
+        x,
+        y,
+        on=by,
+        how="left",
+        copy=copy,
+        suffixes=["", "_y"],
+        indicator=True,
     )
     ret = ret.loc[ret._merge != "both", x.columns.tolist()]
 
@@ -219,7 +269,9 @@ def anti_join(
 
 
 @register_verb(
-    DataFrame, context=Context.EVAL, extra_contexts={"by": Context.SELECT}
+    DataFrame,
+    context=Context.EVAL,
+    extra_contexts={"by": Context.SELECT},
 )
 def nest_join(
     x: DataFrame,
@@ -242,7 +294,7 @@ def nest_join(
         common_cols = intersect(x.columns.tolist(), y.columns)
         on = dict(zip(common_cols, common_cols))
     elif not isinstance(by, dict):
-        on = {by: by} # type: ignore
+        on = {by: by}  # type: ignore
 
     if copy:
         x = x.copy()
@@ -254,7 +306,7 @@ def nest_join(
                 condition = y[on[key]] == row[key]
             else:
                 condition = condition & (y[on[key]] == row[key])
-        df = y >> filter_(condition)
+        df = filter_(y, condition)
         if not keep:
             df = df[setdiff(df.columns, on.values())]
 

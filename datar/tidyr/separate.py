@@ -12,6 +12,7 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.types import Dtype, NAType, is_scalar
+from ..core.grouped import DataFrameGroupBy
 from ..core.utils import (
     logger,
     vars_select,
@@ -77,7 +78,7 @@ def separate(
         Dataframe with separated columns.
     """
     if is_scalar(into):
-        into = [into] # type: ignore
+        into = [into]  # type: ignore
 
     if not all(isinstance(it, str) or pandas.isnull(it) for it in into):
         raise ValueError("`into` must be a string or a list of strings.")
@@ -155,7 +156,11 @@ def separate_rows(
     """
     all_columns = data.columns
     selected = all_columns[vars_select(all_columns, *columns, base0=base0_)]
-    out = data.copy()
+    out = (
+        data.copy(copy_grouped=True)
+        if isinstance(data, DataFrameGroupBy)
+        else data.copy()
+    )
     for sel in selected:
         out[sel] = out[sel].apply(
             _separate_col,
@@ -169,9 +174,7 @@ def separate_rows(
         )
 
     out >>= unchop(selected, keep_empty=True, ptype=convert, base0_=base0_)
-    return reconstruct_tibble(
-        out, out >> ungroup(), selected, keep_rowwise=True
-    )
+    return reconstruct_tibble(out, ungroup(out), selected, keep_rowwise=True)
 
 
 def _separate_col(
@@ -189,7 +192,7 @@ def _separate_col(
     if (is_scalar(elem) and pandas.isnull(elem)) or (
         not is_scalar(elem) and any(pandas.isnull(elem))
     ):
-        return [NA] * nout if nout > 0 else NA # type: ignore
+        return [NA] * nout if nout > 0 else NA  # type: ignore
 
     elem = str(elem)
     if isinstance(sep, int):
@@ -209,7 +212,7 @@ def _separate_col(
         ):
             missing_warns.append(elem)
         if fill in ("warn", "right"):
-            row += [NA] * (nout - len(row)) # type: ignore
+            row += [NA] * (nout - len(row))  # type: ignore
         else:
             row = [NA] * (nout - len(row)) + row
     elif not isinstance(sep, int):

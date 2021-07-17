@@ -12,16 +12,6 @@ from .collections import Collection, Inverted, Negated, Intersect
 from .exceptions import DataUnrecyclable
 from .types import BoolOrIter
 
-class DatarOperatorMeta(type):
-    """Allow attributes with '_op_' to pass for operator functions"""
-    def __getattr__(cls, name: str) -> Any:
-        """If name starts with '_op_', let it go self for the real function
-        Otherwise, do regular getattr.
-        """
-        if name.startswith('_op_'):
-            return True
-        return super().__getattr__(name)
-
 @register_operator
 class DatarOperator(Operator):
     """Operator class for datar"""

@@ -3,6 +3,7 @@
 from pandas.testing import assert_frame_equal
 from pipda.context import ContextError
 import pytest
+from datar.core.grouped import DataFrameRowwise
 from datar.all import *
 from datar.datasets import mtcars
 from datar.dplyr.dslice import _n_from_prop
@@ -161,8 +162,8 @@ def test_slice_handles_df_columns():
 
 def test_functions_silently_truncate_results():
     df = tibble(x=range(1,6))
-    # out = df >> slice_head(n=6) >> nrow()
-    # assert out == 5
+    out = df >> slice_head(n=6) >> nrow()
+    assert out == 5
     out = df >> slice_tail(n=6) >> nrow()
     assert out == 5
     out = df >> slice_sample(n=6) >> nrow()
@@ -377,3 +378,29 @@ def test_slice_head_tail_on_grouped_data():
     assert_frame_equal(out, tibble(g=[1,2], x=[1,4]))
     out = slice_tail(df, 1) >> ungroup()
     assert_frame_equal(out, tibble(g=[1,2], x=[3,6]))
+
+def test_slice_family_on_rowwise_df():
+    df = tibble(x=f[1:6]) >> rowwise()
+    out = df >> slice([1,2,3])
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 3
+
+    out = df >> slice_head(n=3)
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 3
+
+    out = df >> slice_tail(n=3)
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 3
+
+    out = df >> slice_min(f.x, n=3)
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 3
+
+    out = df >> slice_max(f.x, n=3)
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 3
+
+    out = df >> slice_sample(n=3)
+    assert isinstance(out, DataFrameRowwise)
+    assert nrow(out) == 3

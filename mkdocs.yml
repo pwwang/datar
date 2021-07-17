@@ -28,6 +28,7 @@ plugins:
     - mkapi
     - mkdocs-jupyter:
         execute: false
+        # execute: true
 extra_css:
     - style.css
 nav:
@@ -45,6 +46,7 @@ nav:
     - 'Porting rules': 'porting_rules.md'
     - 'Import datar': 'import.md'
     - 'The f-expression': 'f.md'
+    - 'Performance': 'performance.ipynb'
     - 'Caveats':
         'Indexing/Selection': 'caveats/indexing.md'
         'Tibble vs. DataFrame': 'caveats/tibble_vs_dataframe.md'

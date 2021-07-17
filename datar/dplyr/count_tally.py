@@ -55,12 +55,12 @@ def count(
         _drop = group_by_drop_default(x)
 
     if args or kwargs:
-        out = x >> group_by(*args, **kwargs, _add=True, _drop=_drop)
+        out = group_by(x, *args, **kwargs, _add=True, _drop=_drop)
     else:
         out = x
 
     # pylint: disable=no-value-for-parameter
-    out = out >> tally(wt=wt, sort=sort, name=name)
+    out = tally(out, wt=wt, sort=sort, name=name)
     if isinstance(x, DataFrameGroupBy):
         out = DataFrameGroupBy(
             out,
@@ -88,13 +88,13 @@ def tally(
     # thread-safety?
     with options_context(dplyr_summarise_inform=False):
         # pylint: disable=no-value-for-parameter
-        out = x >> summarise({name: n() if tallyn is None else tallyn})
+        out = summarise(x, {name: n() if tallyn is None else tallyn})
 
     # keep attributes
     copy_attrs(out, x)
 
     if sort:
-        return out >> arrange(desc(f[name]))
+        return arrange(out, desc(f[name]))
     return out
 
 
@@ -112,7 +112,7 @@ def add_count(
     See count().
     """
     if args or kwargs:
-        out = x >> group_by(*args, **kwargs, _add=True)
+        out = group_by(x, *args, **kwargs, _add=True)
     else:
         out = x
 
@@ -131,10 +131,10 @@ def add_tally(
     tallyn = _tally_n(wt)
     name = _check_name(name, x.columns)
     # pylint: disable=no-value-for-parameter
-    out = x >> mutate({name: n() if tallyn is None else tallyn})
+    out = mutate(x, {name: n() if tallyn is None else tallyn})
 
     if sort:
-        return out >> arrange(desc(f[name]))
+        return arrange(out, desc(f[name]))
     return out
 
 

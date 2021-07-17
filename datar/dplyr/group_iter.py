@@ -55,7 +55,7 @@ def _group_map_list(
     **kwargs: Any,
 ) -> List:
     """List version of group_map"""
-    return list(_data >> group_map(_f, *args, _keep=_keep, **kwargs))
+    return list(group_map(_data, _f, *args, _keep=_keep, **kwargs))
 
 
 group_map.list = register_verb(DataFrame, context=Context.PENDING)(
@@ -135,8 +135,8 @@ def _(_data: DataFrame, _drop: bool = None) -> DataFrameGroupBy:
     """Group trim on grouped data"""
     ungrouped = ungroup(_data)
     # pylint: disable=no-value-for-parameter
-    fgroups = ungrouped >> select(where(is_factor))
-    dropped = ungrouped >> mutate(across(fgroups.columns.tolist(), droplevels))
+    fgroups = select(ungrouped, where(is_factor))
+    dropped = mutate(ungrouped, across(fgroups.columns.tolist(), droplevels))
 
     return reconstruct_tibble(_data, dropped, keep_rowwise=True)
 
@@ -160,10 +160,13 @@ def with_groups(
     Returns:
         The new data frame with operations applied.
     """
-    all_columns = _data.columns
-    _groups = evaluate_expr(_groups, _data, Context.SELECT)
-    _groups = all_columns[vars_select(all_columns, _groups)]
-    grouped = group_by(_data, *_groups)
+    if _groups is None:
+        grouped = ungroup(_data)
+    else:
+        all_columns = _data.columns
+        _groups = evaluate_expr(_groups, _data, Context.SELECT)
+        _groups = all_columns[vars_select(all_columns, _groups)]
+        grouped = group_by(_data, *_groups)
 
     out = _func(grouped, *args, **kwargs)
     copy_attrs(out, _data)
@@ -214,7 +217,7 @@ def _group_split_list(
     _data: DataFrame, *args: Any, _keep: bool = True, **kwargs: Any
 ) -> Iterable[DataFrame]:
     """List version of group_split"""
-    return list(_data >> group_split(*args, _keep=_keep, **kwargs))
+    return list(group_split(_data, *args, _keep=_keep, **kwargs))
 
 
 group_split.list = register_verb(DataFrame, context=Context.PENDING)(

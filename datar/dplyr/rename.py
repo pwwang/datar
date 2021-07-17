@@ -37,7 +37,10 @@ def rename(_data: DataFrame, base0_: bool = None, **kwargs: str) -> DataFrame:
         **kwargs,
     )
 
-    out = _data.copy()
+    if isinstance(_data, DataFrameGroupBy):
+        out = _data.copy(copy_grouped=True)
+    else:
+        out = _data.copy()
     # new_names: old -> new
     # cannot do with duplicates
     # out.rename(columns=new_names, inplace=True)
@@ -47,8 +50,10 @@ def rename(_data: DataFrame, base0_: bool = None, **kwargs: str) -> DataFrame:
     ]
 
     if isinstance(out, DataFrameGroupBy):
-        out._group_vars = [new_names.get(name, name) for name in gvars]
-        out._group_data.columns = out._group_vars + ["_rows"]
+        out.attrs["_group_vars"] = [
+            new_names.get(name, name) for name in gvars
+        ]
+        out._group_data.columns = out.attrs['_group_vars'] + ["_rows"]
     # attrs copied?
     return out
 

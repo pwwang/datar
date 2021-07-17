@@ -4,7 +4,7 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 """
 
 from typing import Any, Tuple, List, Union
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr, ContextBase
 
 from ..core.contexts import Context, ContextEval
@@ -134,9 +134,17 @@ def _(
     """Mutate on DataFrameGroupBy object"""
 
     def apply_func(df):
-        index = df.attrs["_group_index"]
-        rows = df.attrs["_group_data"].loc[index, "_rows"]
-        ret = df.reset_index(drop=True) >> mutate(
+        if isinstance(df, Series):
+            df = df.to_frame().T
+            index = df.attrs["_group_index"] = df.index[0]
+            df.attrs["_group_data"] = _data._group_data
+            rows = [index]
+        else:
+            index = df.attrs["_group_index"]
+            rows = df.attrs["_group_data"].loc[index, "_rows"]
+
+        ret = mutate(
+            df.reset_index(drop=True),
             *args,
             _keep=_keep,
             _before=_before,
@@ -147,10 +155,10 @@ def _(
         ret.index = rows
         return ret
 
-    out = _data.datar_apply(apply_func, _drop_index=False)
-    if out is not None:
+    out = _data._datar_apply(apply_func, _drop_index=False).sort_index()
+    if out.shape[0] > 0:
         # keep the original row order
-        out.sort_index(inplace=True)
+        # out.sort_index(inplace=True)
         # not only DataFrameGroupBy but also DataFrameRowwise
         return reconstruct_tibble(_data, out, keep_rowwise=True)
 
@@ -181,7 +189,8 @@ def transmute(
     See Also:
         [`mutate()`](datar.dplyr.mutate.mutate).
     """
-    return _data >> mutate(
+    return mutate(
+        _data,
         *args,
         _keep="none",
         _before=_before,
@@ -192,15 +201,15 @@ def transmute(
 
 
 def _mutate_cols(
-    data: DataFrame,  # TODO: data and context could be kwargs
-    context: ContextBase,
+    _data: DataFrame,
+    _context: ContextBase,
     *args: Any,
     **kwargs: Any,
 ) -> Tuple[DataFrame, List[str]]:
     """Mutate columns"""
     if not args and not kwargs:
         return None, []
-    data = data.copy()
+    _data = _data.copy()
     named_mutatables = name_mutatable_args(*args, **kwargs)
     new_columns = []
     removed = []
@@ -209,11 +218,11 @@ def _mutate_cols(
         ddp_name = dedup_name(name, list(named_mutatables))
         # if not a dedup name, it's a new name
         add_new_name = ddp_name == name
-        mutatable = evaluate_expr(mutatable, data, context)
+        mutatable = evaluate_expr(mutatable, _data, _context)
         if mutatable is None:
-            if ddp_name in data:
+            if ddp_name in _data:
                 removed.append(ddp_name)
-                data.drop(columns=[ddp_name], inplace=True)
+                _data.drop(columns=[ddp_name], inplace=True)
             # be silent if name doesn't exist
             continue
 
@@ -221,8 +230,8 @@ def _mutate_cols(
             if mutatable.shape[1] == 0 and not ddp_name.startswith(
                 DEFAULT_COLUMN_PREFIX
             ):
-                data = df_setitem(
-                    data, ddp_name, [NA] * max(mutatable.shape[0], 1)
+                _data = df_setitem(
+                    _data, ddp_name, [NA] * max(mutatable.shape[0], 1)
                 )
                 if add_new_name:
                     new_columns.append(ddp_name)
@@ -234,18 +243,18 @@ def _mutate_cols(
                         else f"{ddp_name}${col}"
                     )
                     coldata = recycle_value(
-                        mutatable[col], data.shape[0], ddp_name
+                        mutatable[col], _data.shape[0], ddp_name
                     )
-                    data = df_setitem(data, new_name, coldata)
+                    _data = df_setitem(_data, new_name, coldata)
 
                     if add_new_name:
                         new_columns.append(new_name)
         else:
-            mutatable = recycle_value(mutatable, data.shape[0], ddp_name)
-            data = df_setitem(data, ddp_name, mutatable)
+            mutatable = recycle_value(mutatable, _data.shape[0], ddp_name)
+            _data = df_setitem(_data, ddp_name, mutatable)
 
             if add_new_name:
                 new_columns.append(ddp_name)
 
     # keep column order
-    return data[new_columns], removed
+    return _data[new_columns], removed

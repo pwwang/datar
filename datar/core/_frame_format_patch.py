@@ -96,12 +96,13 @@ class DatarDataFrameFormatter(DataFrameFormatter):  # pragma: no cover
         from .grouped import DataFrameGroupBy, DataFrameRowwise
 
         if isinstance(self.frame, DataFrameRowwise):
-            return f"\n[Rowwise: {', '.join(self.frame._group_vars)}]"
+            return f"\n[Rowwise: {', '.join(self.frame.attrs['_group_vars'])}]"
 
         if isinstance(self.frame, DataFrameGroupBy):
             ngroups = self.frame._group_data.shape[0]
             return (
-                f"\n[Groups: {', '.join(self.frame._group_vars)} (n={ngroups})]"
+                f"\n[Groups: {', '.join(self.frame.attrs['_group_vars'])} "
+                f"(n={ngroups})]"
             )
 
         return None
@@ -463,10 +464,13 @@ class DatarHTMLFormatter(HTMLFormatter):  # pragma: no cover
         self._write_table()
 
         if isinstance(self.frame, DataFrameRowwise):
-            self.write(f"<p>Rowwise: {self.frame._group_vars}</p>")
+            self.write(f"<p>Rowwise: {self.frame.attrs['_group_vars']}</p>")
         elif isinstance(self.frame, DataFrameGroupBy):
             ngroups = self.frame._group_data.shape[0]
-            self.write(f"<p>Groups: {self.frame._group_vars} (n={ngroups})</p>")
+            self.write(
+                f"<p>Groups: {self.frame.attrs['_group_vars']} "
+                f"(n={ngroups})</p>"
+            )
 
         if self.should_show_dimensions:
             by = chr(215)  # ×

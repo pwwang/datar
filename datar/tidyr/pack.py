@@ -11,6 +11,7 @@ from ..core.utils import vars_select, copy_attrs, reconstruct_tibble
 from ..core.contexts import Context
 from ..core.types import StringOrIter, IntOrIter, is_scalar
 from ..core.names import repair_names
+from ..core.grouped import DataFrameGroupBy
 
 from ..base import setdiff
 from ..dplyr import bind_cols
@@ -61,7 +62,7 @@ def pack(
             cols[f"{group}${newcol}"] = _data[oldcol]
 
     asis = setdiff(_data.columns, usedcols)
-    out = _data[asis] >> bind_cols(DataFrame(cols))
+    out = bind_cols(_data[asis], DataFrame(cols))
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 
@@ -110,7 +111,11 @@ def unpack(
         base0=base0_,
     )
 
-    out = data.copy()
+    out = (
+        data.copy(copy_grouped=True)
+        if isinstance(data, DataFrameGroupBy)
+        else data.copy()
+    )
     new_cols = []
     for col in data.columns:
         if "$" in col:

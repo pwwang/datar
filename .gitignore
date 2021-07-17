@@ -111,6 +111,8 @@ docs/logo.png
 docs/example.png
 docs/example2.png
 docs/api/
+docs/*.nbconvert.ipynb
+docs/*/*.nbconvert.ipynb
 
 # vscode's local history extension
 .history/

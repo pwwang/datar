@@ -62,12 +62,10 @@ def uncount(
     if _id:
         base = int(not get_option("index.base.0", base0_))
         # pylint: disable=no-value-for-parameter
-        out = (
-            out
-            >> group_by(INDEX_COLUMN)
-            >> mutate(**{_id: row_number() + base - 1})
-            >> ungroup()
-        )
+        out = ungroup(mutate(
+            group_by(out, INDEX_COLUMN),
+            **{_id: row_number() + base - 1}
+        ))
 
     out.drop(columns=[INDEX_COLUMN], inplace=True)
     return reconstruct_tibble(data, out)

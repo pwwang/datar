@@ -49,11 +49,11 @@ def arrange(
     )
 
     if not _by_group:
-        sorting_df = _data >> ungroup() >> mutate(*args, **kwargs, _keep="none")
+        sorting_df = mutate(ungroup(_data), *args, **kwargs, _keep="none")
         sorting_df = sorting_df.sort_values(by=sorting_df.columns.tolist())
     else:
         gvars = group_vars(_data)
-        sorting_df = _data >> mutate(*args, **kwargs, _keep="none") >> ungroup()
+        sorting_df = ungroup(mutate(_data, *args, **kwargs, _keep="none"))
         by = union(gvars, sorting_df.columns)
         sorting_df = sorting_df.sort_values(by=by)
 
