@@ -113,7 +113,12 @@ def test_multi_cats():
         assert len(gf._group_data) == 3
 
     gf = DataFrameGroupBy(df, _group_vars=list("abcd"), _group_drop=True)
-    assert len(gf._group_data) == 3
+    if (
+        datar_versions().pandas < "1.3.0"
+    ):  # note when it comes to '1.11.x' vs '1.2.x'
+        assert len(gf._group_data) == 4
+    else:
+        assert len(gf._group_data) == 3
 
 
 def test_0row_df():
