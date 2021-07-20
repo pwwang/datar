@@ -18,6 +18,7 @@ def datar_versions() -> Mapping[str, str]: # pragma: no cover
     from diot import Diot
 
     return Diot(
+        datar=__version__,
         pandas=pandas.__version__,
         pipda=pipda.__version__,
         varname=varname.__version__,
