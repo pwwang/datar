@@ -127,7 +127,7 @@ def separate(
     apply_dtypes(separated, convert)
 
     out = data.drop(columns=[col]) if remove else data
-    out >>= mutate(separated)
+    out = mutate(out, separated)
 
     return reconstruct_tibble(data, out)
 
@@ -173,7 +173,7 @@ def separate_rows(
             missing_warns=[],
         )
 
-    out >>= unchop(selected, keep_empty=True, ptype=convert, base0_=base0_)
+    out = unchop(out, selected, keep_empty=True, ptype=convert, base0_=base0_)
     return reconstruct_tibble(out, ungroup(out), selected, keep_rowwise=True)
 
 

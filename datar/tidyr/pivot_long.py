@@ -184,12 +184,12 @@ def pivot_longer(
         ret[values_to] = ret[values_to].astype("category")
 
     if names_pattern:
-        ret >>= extract(var_name, into=names_to, regex=names_pattern)
+        ret = extract(ret, var_name, into=names_to, regex=names_pattern)
 
     if names_sep:
-        ret >>= separate(var_name, into=names_to, sep=names_sep)
+        ret = separate(ret, var_name, into=names_to, sep=names_sep)
     # extract/separate puts `into` last
-    ret >>= relocate(values_to, _after=-1, base0_=True)
+    ret = relocate(ret, values_to, _after=-1, base0_=True)
 
     if ".value" in names_to:
         names_to = setdiff(names_to, [".value"])
