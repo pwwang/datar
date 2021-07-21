@@ -51,7 +51,15 @@ def test_filtering_joins_preserve_row_and_column_order():
     assert out.columns.tolist() == ["a", "b"]
     assert out.a.tolist() == [3,2]
 
+    out = semi_join(df1, df2)
+    assert out.columns.tolist() == ["a", "b"]
+    assert out.a.tolist() == [3,2]
+
     out = anti_join(df1, df2, by="a")
+    assert out.columns.tolist() == ["a", "b"]
+    assert out.a.tolist() == [4,1]
+
+    out = anti_join(df1, df2, by={"a": "a"})
     assert out.columns.tolist() == ["a", "b"]
     assert out.a.tolist() == [4,1]
 

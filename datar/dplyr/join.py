@@ -340,6 +340,4 @@ def _merge_on(
             'left_on': list(by),
             'right_on': list(by.values())
         }
-    return {
-        'on': by
-    }
+    return {'on': by}
