@@ -227,11 +227,11 @@ def semi_join(
     ret = pandas.merge(
         x,
         y,
-        on=by,
         how="left",
         copy=copy,
         suffixes=["", "_y"],
         indicator="__merge__",
+        **_merge_on(by)
     )
     ret = ret.loc[ret["__merge__"] == "both", x.columns.tolist()]
 
@@ -257,11 +257,11 @@ def anti_join(
     ret = pandas.merge(
         x,
         y,
-        on=by,
         how="left",
         copy=copy,
         suffixes=["", "_y"],
         indicator=True,
+        **_merge_on(by)
     )
     ret = ret.loc[ret._merge != "both", x.columns.tolist()]
 
@@ -327,3 +327,17 @@ def nest_join(
             _group_data=group_data(x),
         )
     return out
+
+
+def _merge_on(
+    by: Union[StringOrIter, Mapping[str, str]]
+) -> Mapping[str, StringOrIter]:
+    """Calculate argument on for pandas.merge()"""
+    if by is None:
+        return {}
+    if isinstance(by, dict):
+        return {
+            'left_on': list(by),
+            'right_on': list(by.values())
+        }
+    return {'on': by}

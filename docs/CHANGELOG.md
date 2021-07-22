@@ -1,3 +1,9 @@
+## 0.4.1
+
+- Don't use piping syntax internally (`>>=`)
+- Add `python`, `numpy` and `datar` version to `datar.datar_versions()`
+- Fix #40: anti_join/semi_join not working when by is column mapping
+
 ## 0.4.0
 
 - Adopt `pipda` v0.4.2
