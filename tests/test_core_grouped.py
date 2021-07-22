@@ -106,7 +106,7 @@ def test_multi_cats():
     # It's 4 with pandas 1.2
     # But 3 with pandas 1.3
     if (
-        datar_versions().pandas < "1.3.0"
+        datar_versions(False).pandas < "1.3.0"
     ):  # note when it comes to '1.11.x' vs '1.2.x'
         assert len(gf._group_data) == 4
     else:
@@ -114,7 +114,7 @@ def test_multi_cats():
 
     gf = DataFrameGroupBy(df, _group_vars=list("abcd"), _group_drop=True)
     if (
-        datar_versions().pandas < "1.3.0"
+        datar_versions(False).pandas < "1.3.0"
     ):  # note when it comes to '1.11.x' vs '1.2.x'
         assert len(gf._group_data) == 4
     else:
