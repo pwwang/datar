@@ -115,3 +115,39 @@ def test_strsplit():
     assert len(out) == 2
     assert out[0] == ['a', 'b', 'c']
     assert out[1] == ['a.', '.c']
+
+def test_starts_endswith():
+    assert startswith("abc", "a")
+    assert endswith("abc", "c")
+    assert_iterable_equal(startswith(["abc", "def"], "a"), [True, False])
+    assert_iterable_equal(endswith(["abc", "def"], "c"), [True, False])
+
+def test_strtoi():
+    assert strtoi("8") == 8
+    assert strtoi("0b111") == 7
+    assert strtoi("0xf") == 15
+    assert_iterable_equal(strtoi(["8", "0b111", "0xf"]), [8, 7, 15])
+
+def test_chartr():
+    assert chartr("a", "A", "abc") == "Abc"
+    with pytest.warns(UserWarning):
+        chartr(["a", "b"], ["A", "B"], "abc")
+    with pytest.raises(ValueError):
+        chartr(["a", "b"], "A", "abc")
+
+    assert_iterable_equal(
+        chartr("a", "A", ["abc", "ade"]),
+        ["Abc", "Ade"]
+    )
+
+def test_transform_case():
+    assert tolower("aBc") == "abc"
+    assert toupper("aBc") == "ABC"
+    assert_iterable_equal(tolower(["aBc", "DeF"]), ["abc", "def"])
+    assert_iterable_equal(toupper(["aBc", "DeF"]), ["ABC", "DEF"])
+
+def test_trimws():
+    assert trimws(" a ") == "a"
+    assert_iterable_equal(trimws([" a ", " b "], "both"), ["a", "b"])
+    assert_iterable_equal(trimws([" a ", " b "], "left"), ["a ", "b "])
+    assert_iterable_equal(trimws([" a ", " b "], "right"), [" a", " b"])

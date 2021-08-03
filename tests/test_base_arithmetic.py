@@ -6,6 +6,7 @@ from datar.base import NA, colnames
 from datar.datar import drop_index
 from datar.tibble import tibble, tribble
 from datar.base.arithmetic import *
+from datar.base import pi
 from .conftest import assert_iterable_equal
 
 def test_sum():
@@ -140,3 +141,19 @@ def test_scale():
 
     df = tibble(x=[1,2,3], y=[4,5,6])
     assert_frame_equal(scale(df, False, False), df)
+
+def test_signif():
+    x2 = pi * 100. ** Array([-1,0,1,2,3])
+    out = signif(x2, 3)
+    assert_iterable_equal(
+        out,
+        [3.14e-02, 3.14e+00, 3.14e+02, 3.14e+04, 3.14e+06],
+        approx=True
+    )
+
+def test_log():
+    assert pytest.approx(log(exp(1))) == 1.0
+    assert pytest.approx(log(4, 4)) == 1.0
+    assert pytest.approx(log([exp(1), exp(2)])) == [1.0, 2.0]
+    assert pytest.approx(log2(2)) == 1.0
+    assert pytest.approx(log10(10)) == 1.0

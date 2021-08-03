@@ -45,13 +45,26 @@ def levels(x: Any) -> ArrayLikeType:
         x: The categorical data
 
     Returns:
-        levels of the categorical data
+        levels of the categorical
+        None if x is not an categorical/factor
     """
     if not is_categorical_(x):
         return None
 
     return categorized(x).categories
 
+@register_func(None, context=Context.EVAL)
+def nlevels(x: Any) -> int:
+    """Get the number of levels of a factor
+
+    Args:
+        x: The data to get number of levels of
+
+    Returns:
+        Number of levels if x is a categorical/factor; otherwise 0
+    """
+    lvls = levels(x)
+    return 0 if lvls is None else len(lvls)
 
 def factor(
     x: Iterable[Any] = None,

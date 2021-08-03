@@ -94,3 +94,27 @@ def test_duplicated():
     )
     df = tibble(x=[1,1,2,2])
     assert_iterable_equal(duplicated(df), [False, True, False, True])
+
+def test_max_col():
+    df = tibble(
+        a = [1,7,4],
+        b = [8,5,3],
+        c = [6,2,9],
+        d = [8,7,9]
+    )
+    assert_iterable_equal(
+        max_col(df[["a", "b", "c"]], "random"),
+        [1,0,2]
+    )
+    out = max_col(df, "random")
+    assert out[0] in [1,3]
+    assert out[1] in [0,3]
+    assert out[2] in [2,3]
+    assert_iterable_equal(
+        max_col(df, "first"),
+        [1,0,2]
+    )
+    assert_iterable_equal(
+        max_col(df, "last"),
+        [3,3,3]
+    )

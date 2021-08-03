@@ -7,7 +7,6 @@ import numpy
 # pylint: disable=invalid-name
 
 pi = math.pi
-Inf = numpy.inf
 
 letters = numpy.array(list(ascii_letters[:26]))
 LETTERS = numpy.array(list(ascii_letters[26:]))

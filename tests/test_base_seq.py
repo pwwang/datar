@@ -87,3 +87,7 @@ def test_length():
     assert length([1,2]) == 2
     assert_iterable_equal(lengths(1), [1])
     assert_iterable_equal(lengths([[1], [2,3]]), [1,2])
+
+def test_match():
+    out = match([1,2,3], [2,3,4])
+    assert_iterable_equal(out, [-1,0,1])

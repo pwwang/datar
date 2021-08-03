@@ -205,3 +205,33 @@ def c(*elems: Any) -> Collection:
         A collection of elements
     """
     return Collection(*elems)
+
+@register_func(None, context=Context.EVAL)
+def match(
+    x: Any,
+    table: Iterable,
+    nomatch: Any = -1,
+    # incomparables ...,
+    base0_: bool = None,
+) -> Iterable[int]:
+    """match returns a vector of the positions of (first) matches of
+    its first argument in its second.
+
+    See stackoverflow#4110059/pythonor-numpy-equivalent-of-match-in-r
+
+    Args:
+        x: The values to be matched
+        table: The values to be matched against
+        nomatch: The value to be returned in the case when no match is found
+            Instead of NA in R, this function takes -1 for non-matched elements
+            to keep the type as int.
+        base0_: Whether return indices are 0-based or not.
+            If not provided, will use `get_option('which_base_0')`
+    """
+    base = int(not get_option('which_base_0', base0_))
+    return Array([
+        table.index(elem) + base
+        if elem in table
+        else nomatch
+        for elem in x
+    ], dtype=int)
