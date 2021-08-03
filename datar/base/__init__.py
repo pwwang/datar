@@ -27,6 +27,7 @@ from .arithmetic import (
     abs as abs_,
     prod,
     sign,
+    signif,
     trunc,
     exp,
     log,

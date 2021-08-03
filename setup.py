@@ -24,7 +24,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='datar',
-    version='0.4.1',
+    version='0.4.2',
     description='Port of dplyr and other related R packages in python, using pipda.',
     python_requires='==3.*,>=3.7.1',
     project_urls={"homepage": "https://github.com/pwwang/datar",
