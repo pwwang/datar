@@ -8,10 +8,12 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..core.types import is_null, is_scalar
 from ..core.defaults import NA_REPR
+from ..core.utils import register_numpy_func_x
 
 # pylint: disable=invalid-name
 NA = numpy.nan
 NaN = NA
+Inf = numpy.inf
 
 # Just for internal and testing uses
 NA_character_ = NA_REPR
@@ -58,3 +60,45 @@ def any_na(x: Any, recursive: bool = False) -> bool:
         if any_na(elem, recursive=True):
             return True
     return out
+
+is_infinite = register_numpy_func_x(
+    "is_infinite",
+    "isinf",
+    doc="""Check if a value or values are infinite numbers
+
+    Args:
+        x: The value to check
+
+    Returns:
+        True if the value is infinite, False otherwise
+        For iterable values, returns the element-wise results
+    """
+)
+
+is_finite = register_numpy_func_x(
+    "is_finite",
+    "isfinite",
+    doc="""Check if a value or values are finite numbers
+
+    Args:
+        x: The value to check
+
+    Returns:
+        True if the value is finite, False otherwise
+        For iterable values, returns the element-wise results
+    """
+)
+
+is_nan = register_numpy_func_x(
+    "is_nan",
+    "isnan",
+    doc="""Check if a value or values are NaNs
+
+    Args:
+        x: The value to check
+
+    Returns:
+        True if the value is nan, False otherwise
+        For iterable values, returns the element-wise results
+    """
+)

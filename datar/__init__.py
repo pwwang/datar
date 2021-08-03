@@ -6,10 +6,10 @@ from .core import operator as _
 from .core import _frame_format_patch
 from .core.defaults import f
 
-__all__ = ('f', 'datar_versions')
-__version__ = "0.4.1"
+__all__ = ('f', 'get_versions')
+__version__ = "0.4.2"
 
-def datar_versions(
+def get_versions(
     prnt: bool = True
 ) -> Mapping[str, str]: # pragma: no cover
     """Print or return related versions which help for bug reporting.

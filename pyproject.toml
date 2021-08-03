@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.4.1"
+version = "0.4.2"
 description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
 readme = "README.md"
@@ -13,6 +13,7 @@ python = "^3.7.1" # align with pandas
 pipda = "*"
 diot = "*"
 executing = "*"
+varname = "*"
 pandas = "^1.2"
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }

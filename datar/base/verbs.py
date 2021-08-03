@@ -1,13 +1,14 @@
 """Function from R-base that can be used as verbs"""
-from typing import Any, Iterable, List, Mapping, Tuple, Union, Sequence
+from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 
 import numpy
-from pandas import DataFrame, Series, Categorical
+from pandas import Categorical, DataFrame, Series
 from pipda import register_verb
 
-from ..core.types import IntType, is_scalar
 from ..core.contexts import Context
-from ..core.utils import Array
+from ..core.types import IntType, is_scalar
+from ..core.utils import Array, arg_match
+from ..core.options import get_option
 
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
@@ -324,3 +325,40 @@ def _(  # pylint: disable=invalid-name,unused-argument
     """
     keep = "first" if not from_last else "last"
     return x.duplicated(keep=keep).values
+
+@register_verb(DataFrame)
+def max_col(
+    df: DataFrame,
+    ties_method: str = "random",
+    base0_: bool = None
+) -> Iterable[int]:
+    """Find the maximum position for each row of a matrix
+
+    Args:
+        df: The data frame
+        ties_method: how ties are handled
+            - "random": use a random index
+            - "first" use the first index
+            - "last" use the last index
+        base0_: Whether the returned indices are 0-based
+            If not provided, will use `get_option("which_base_0")`
+
+    Returns:
+        The indices of max values for each row
+    """
+    ties_method = arg_match(
+        ties_method,
+        "ties_method",
+        ["random", "first", "last"]
+    )
+    base = int(not get_option("which_base_0", base0_))
+    def which_max_with_ties(ser: Series):
+        """Find index with max if ties happen"""
+        indices = numpy.flatnonzero(ser == max(ser)) + base
+        if len(indices) == 1 or ties_method == "first":
+            return indices[0]
+        if ties_method == "random":
+            return numpy.random.choice(indices)
+        return indices[-1]
+
+    return df.apply(which_max_with_ties, axis=1).to_numpy()

@@ -6,10 +6,16 @@ import numpy
 from pandas import DataFrame, Series
 from pipda import register_func, register_verb
 
-from ..core.contexts import Context
-from ..core.types import NumericOrIter, NumericType, is_not_null, is_scalar
-from ..core.utils import Array, register_numpy_func_x, recycle_value, length_of
 from ..core.collections import Collection
+from ..core.contexts import Context
+from ..core.types import (
+    FloatOrIter,
+    NumericOrIter,
+    NumericType,
+    is_not_null,
+    is_scalar
+)
+from ..core.utils import Array, length_of, recycle_value, register_numpy_func_x
 
 # cor?, range, summary, iqr
 
@@ -47,6 +53,20 @@ sum = _register_arithmetic_agg(
 
     Returns:
         The sum of the input
+    """,
+)
+
+prod = _register_arithmetic_agg(
+    "prod",
+    "prod",
+    doc="""Product of the input.
+
+    Args:
+        x: The input
+        na_rm: Exclude the NAs
+
+    Returns:
+        The product of the input
     """,
 )
 
@@ -161,6 +181,7 @@ def pmax(*x: Iterable, na_rm: bool = False) -> Iterable[float]:
 @register_func(None, context=Context.EVAL)
 def round(x: NumericOrIter, ndigits: int = 0) -> NumericOrIter:
     """Rounding a number"""
+    # recycle ndigits?
     return numpy.round(x, ndigits)
 
 
@@ -190,6 +211,33 @@ abs = register_numpy_func_x(
     """,
 )
 
+sign = register_numpy_func_x(
+    "sign",
+    "sign",
+    doc="""Get the signs of the corresponding elements of x
+
+    Args:
+        x: The input
+
+    Returns:
+        The signs of the corresponding elements of x
+    """,
+)
+
+trunc = register_numpy_func_x(
+    "trunc",
+    "trunc",
+    doc="""Get the integers truncated for each element in x
+
+    Args:
+        x: The input
+
+    Returns:
+        The ingeters of elements in x being truncated
+        Note the dtype is still float.
+    """,
+)
+
 ceiling = register_numpy_func_x(
     "ceiling",
     "ceil",
@@ -215,6 +263,27 @@ floor = register_numpy_func_x(
         The floor integer of the input
     """,
 )
+
+@register_func(None, context=Context.EVAL)
+def signif(
+    x: NumericOrIter,
+    digits: int = 6
+) -> NumericOrIter:
+    """Rounds the values in its first argument to the specified number of
+    significant digits
+
+    Args:
+        x: A numeric vector or scalar
+        digits: integer indicating the number of significant digits to be used
+
+    Returns:
+        The rounded values for each element in x
+    """
+    # todo complex?
+    return numpy.fromiter(
+        (round(elem, digits - int(ceiling(log10(abs(elem))))) for elem in x),
+        dtype=float
+    )
 
 # pylint: disable=unused-argument
 @register_verb(DataFrame, context=Context.EVAL)
@@ -501,3 +570,75 @@ def row_medians(
         The medians by row.
     """
     return x.agg(median, axis=1, na_rm=na_rm)
+
+@register_func(None, context=Context.EVAL)
+def log(x: NumericOrIter, base: float = numpy.e) -> FloatOrIter:
+    """Computes logarithms, by default natural logarithm
+
+    Args:
+        x: A numeric scalar or vector
+        base: The base of the logarithm
+
+    Returns:
+        The value of the logarithm if x is scalar, otherwise element-wise
+        logarithm of elements in x
+    """
+    if base == numpy.e:
+        return numpy.log(x)
+
+    return numpy.log(x) / numpy.log(base)
+
+exp = register_numpy_func_x(
+    "exp",
+    "exp",
+    doc="""Calculates the power of natural number
+
+    Args:
+        x: A numeric scalar or vector
+
+    Returns:
+        Power of natural number of element-wise power of natural number for x
+    """
+)
+
+log2 = register_numpy_func_x(
+    "log2",
+    "log2",
+    doc="""Computes logarithms with base 2
+
+    Args:
+        x: A numeric scalar or vector
+
+    Returns:
+        The value of log2 if x is scalar, otherwise element-wise
+        log2 of elements in x
+    """
+)
+
+log10 = register_numpy_func_x(
+    "log10",
+    "log10",
+    doc="""Computes logarithms with base 10
+
+    Args:
+        x: A numeric scalar or vector
+
+    Returns:
+        The value of log10 if x is scalar, otherwise element-wise
+        log10 of elements in x
+    """
+)
+
+log1p = register_numpy_func_x(
+    "log1p",
+    "log1p",
+    doc="""Computes log(1+x)
+
+    Args:
+        x: A numeric scalar or vector
+
+    Returns:
+        The value of log(1+x) if x is scalar, otherwise element-wise
+        log(1+x) of elements in x
+    """
+)

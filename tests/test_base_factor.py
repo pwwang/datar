@@ -34,3 +34,7 @@ def test_is_factor():
     out = as_factor([])
     assert is_factor(out)
     assert not is_factor([])
+
+def test_nlevels():
+    assert nlevels(1) == 0
+    assert nlevels(factor([1,2,3])) == 3

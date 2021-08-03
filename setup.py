@@ -24,7 +24,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='datar',
-    version='0.4.1',
+    version='0.4.2',
     description='Port of dplyr and other related R packages in python, using pipda.',
     python_requires='==3.*,>=3.7.1',
     project_urls={"homepage": "https://github.com/pwwang/datar",
@@ -37,6 +37,6 @@ setup(
     package_dir={"": "."},
     package_data={"datar.datasets": ["*.gz"]},
     install_requires=['diot', 'executing', 'pandas==1.*,>=1.2.0',
-                      'pipda', 'scipy==1.*,>=1.6.0', 'wcwidth==0.*,>=0.2.0'],
+                      'pipda', 'scipy==1.*,>=1.6.0', 'varname', 'wcwidth==0.*,>=0.2.0'],
     extras_require={"dev": ["pytest", "pytest-cov"]},
 )

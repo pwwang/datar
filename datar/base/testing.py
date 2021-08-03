@@ -22,6 +22,7 @@ from pipda import register_func
 from ..core.contexts import Context
 from ..core.types import TypeOrIter, BoolOrIter, is_scalar
 
+
 # pylint: disable=invalid-name
 
 
@@ -112,7 +113,7 @@ def is_atomic(x: Any) -> bool:
     return is_scalar(x)
 
 
-@register_func(None)
+@register_func(None, context=Context.EVAL)
 def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
     """R's `is.element()` or `%in%`.
 
@@ -121,11 +122,10 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
     We can't do `a %in% b` in python (`in` behaves differently), so
     use this function instead
     """
-    out = numpy.isin(elem, elems)
-    if is_scalar(elem):
+    out = numpy.in1d(elem, elems)
+    if is_scalar(elem): # necessary?
         return bool(out)
     return out
-
 
 is_in = is_element
 

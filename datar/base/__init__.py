@@ -25,11 +25,20 @@ from .arithmetic import (
     round as round_,
     sum as sum_,
     abs as abs_,
+    prod,
+    sign,
+    signif,
+    trunc,
+    exp,
+    log,
+    log2,
+    log10,
+    log1p
 )
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_double, as_float, as_int, as_integer, as_numeric
 from .complex import arg, as_complex, conj, im, is_complex, mod, re as re_
-from .constants import LETTERS, Inf, letters, month_abb, month_name, pi
+from .constants import LETTERS, letters, month_abb, month_name, pi
 from .cum import cummax, cummin, cumprod, cumsum
 from .date import as_date
 from .factor import (
@@ -52,7 +61,7 @@ from .logical import (
     is_logical,
     is_true,
 )
-from .na import NA, NaN, any_na, is_na
+from .na import NA, NaN, any_na, is_na, Inf, is_finite, is_infinite, is_nan
 from .null import NULL, as_null, is_null
 from .random import set_seed
 from .seq import (
@@ -66,6 +75,7 @@ from .seq import (
     seq_along,
     seq_len,
     unique,
+    match
 )
 from .special import (
     beta,
@@ -99,6 +109,12 @@ from .string import (
     sub,
     substr,
     substring,
+    startswith,
+    endswith,
+    strtoi,
+    chartr,
+    tolower,
+    toupper,
 )
 from .table import table
 from .testing import (
@@ -145,6 +161,7 @@ from .verbs import (
     setequal,
     t,
     union,
+    max_col,
 )
 from .which import which, which_max, which_min
 

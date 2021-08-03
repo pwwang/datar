@@ -4,7 +4,8 @@ If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
 registered by `register_verb` and should be placed in `./verbs.py`
 """
 import itertools
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable, Union
+import numpy
 
 import pandas
 from pandas import Categorical, DataFrame
@@ -86,6 +87,25 @@ def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
         list(itertools.product(*iters.values())), columns=iters.keys()
     )
 
+@register_func(None, context=Context.EVAL)
+def outer(x, y, fun: Union[str, Callable] = "*") -> DataFrame:
+    """Compute the outer product of two vectors.
+
+    Args:
+        x: The first vector
+        y: The second vector
+        fun: The function to handle how the result of the elements from
+            the first and second vectors should be computed.
+            The function has to be vectorized at the second argument, and
+            return the same shape as y.
+
+    Returns:
+        The data frame of the outer product of x and y
+    """
+    if fun == "*":
+        return DataFrame(numpy.outer(x, y))
+
+    return DataFrame([fun(xelem, y) for xelem in x])
 
 # ---------------------------------
 # Plain functions

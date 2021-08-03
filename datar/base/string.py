@@ -1,5 +1,6 @@
 """String functions in R"""
 import re
+import warnings
 from typing import Any, Iterable, Tuple, Union
 
 import numpy
@@ -7,20 +8,26 @@ from pandas.core.dtypes.common import is_string_dtype
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.types import Dtype, IntOrIter, StringOrIter, is_scalar, is_null
+from ..core.types import (
+    BoolOrIter,
+    Dtype,
+    IntOrIter,
+    StringOrIter,
+    is_null,
+    is_scalar
+)
 from ..core.utils import (
+    Array,
     arg_match,
     get_option,
     length_of,
     logger,
-    Array,
     position_at,
-    recycle_value,
+    recycle_value
 )
-
 from .casting import _as_type
-from .testing import _register_type_testing
 from .na import NA
+from .testing import _register_type_testing
 
 # agrep, agrepl
 # format, format_info, format_pval, format_c, pretty_num (_format_zeros?)
@@ -525,3 +532,181 @@ def strsplit(
     split = recycle_value(split, maxlen)
     out = [strsplit(elem, splt, fixed=fixed) for elem, splt in zip(x, split)]
     return Array(out, dtype=object)
+
+
+# startsWith, endsWith
+@register_func(None, context=Context.EVAL)
+def startswith(x: StringOrIter, prefix: StringOrIter) -> BoolOrIter:
+    """Determines if entries of x start with prefix
+
+    Args:
+        x: A vector of strings or a string
+        prefix: The prefix to test against
+
+    Returns:
+        A bool vector for each element in x if element startswith the prefix
+    """
+    if is_scalar(x):
+        x = [x]
+
+    prefix = recycle_value(prefix, len(x))
+    # NAs?
+    return Array(
+        [elem.startswith(pref) for elem, pref in zip(x, prefix)],
+        dtype=bool
+    )
+
+@register_func(None, context=Context.EVAL)
+def endswith(x: StringOrIter, suffix: StringOrIter) -> BoolOrIter:
+    """Determines if entries of x end with suffix
+
+    Args:
+        x: A vector of strings or a string
+        suffix: The suffix to test against
+
+    Returns:
+        A bool vector for each element in x if element endswith the suffix
+    """
+    if is_scalar(x):
+        x = [x]
+
+    suffix = recycle_value(suffix, len(x))
+    # NAs?
+    return Array(
+        [elem.endswith(suf) for elem, suf in zip(x, suffix)],
+        dtype=bool
+    )
+
+# strtoi
+@register_func(None, context=Context.EVAL)
+def strtoi(x: StringOrIter, base: int = 0):
+    """Convert strings to integers according to the given base
+
+    Args:
+        x: A string or vector of strings
+        base: an integer which is between 2 and 36 inclusive, or zero.
+            With zero, a suitable base will be chosen following the C rules.
+
+    Returns:
+        Converted integers
+    """
+    if is_scalar(x):
+        return int(x, base=base)
+
+    return Array([int(elem, base=base) for elem in x], dtype=int)
+
+# chartr
+@register_func(None, context=Context.EVAL)
+def chartr(old: StringOrIter, new: StringOrIter, x: Any) -> StringOrIter:
+    """Replace strings char by char
+
+    Args:
+        old: A set of characters to replace
+        new: A set of characters to replace with
+        x: A string or vector of strings
+
+    Returns:
+        The strings in x being replaced
+    """
+    if len(old) > len(new):
+        raise ValueError("'old' is longer than 'new'")
+
+    if not is_scalar(old):
+        old = old[0]
+        warnings.warn(
+            "argument 'old' has length > 1 and "
+            "only the first element will be used"
+        )
+    if not is_scalar(new):
+        new = new[0]
+        warnings.warn(
+            "argument 'new' has length > 1 and "
+            "only the first element will be used"
+        )
+
+    new = new[:len(old)]
+
+    def replace_single(elem: str) -> str:
+        """Replace a single string"""
+        out = elem[:]
+        for oldc, newc in zip(old, new):
+            out = out.replace(oldc, newc)
+        return out
+
+    if is_scalar(x):
+        return replace_single(x)
+
+    return Array([
+        replace_single(elem) for elem in as_character(x)
+    ])
+
+# tolower, toupper
+@register_func(None, context=Context.EVAL)
+def tolower(x: StringOrIter) -> StringOrIter:
+    """Convert strings to lower case
+
+    Args:
+        x: A string or vector of strings
+
+    Returns:
+        Converted strings
+    """
+    x = as_character(x)
+    if is_scalar(x):
+        return x.lower()
+
+    return Array([elem.lower() for elem in x])
+
+@register_func(None, context=Context.EVAL)
+def toupper(x: StringOrIter) -> StringOrIter:
+    """Convert strings to upper case
+
+    Args:
+        x: A string or vector of strings
+
+    Returns:
+        Converted strings
+    """
+    x = as_character(x)
+    if is_scalar(x):
+        return x.upper()
+
+    return Array([elem.upper() for elem in x])
+
+# trimws
+@register_func(None, context=Context.EVAL)
+def trimws(
+    x: StringOrIter,
+    which: str = "both",
+    whitespace: str = r"[ \t\r\n]"
+) -> StringOrIter:
+    """Remove leading and/or trailing whitespace from character strings.
+
+    Args:
+        x: A string or vector of strings
+        which: A character string specifying whether to remove
+            both leading and trailing whitespace (default),
+            or only leading ("left") or trailing ("right").
+        whitespace: a string specifying a regular expression to
+            match (one character of) “white space”
+
+    Returns:
+        The strings with whitespaces removed
+    """
+    which = arg_match(which, "which", ["both", "left", "right"])
+    x = as_character(x)
+    def trimws_single(elem: str) -> str:
+        """Trim a single string"""
+        if which == "both":
+            expr = f"^{whitespace}|{whitespace}$"
+        elif which == "left":
+            expr = f"^{whitespace}"
+        else:
+            expr = f"{whitespace}$"
+
+        return re.sub(expr, "", elem)
+
+    if is_scalar(x):
+        return trimws_single(x)
+
+    return Array([trimws_single(elem) for elem in x])

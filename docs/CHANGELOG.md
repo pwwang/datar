@@ -1,3 +1,16 @@
+## 0.4.2
+
+- Adopt `pipda` 0.4.4
+- Add `varname` to dependency to close #30
+- Rename `datar.datar_versions` to `datar.get_versions`
+- Port a set of functions from r-base, incluing:
+    - `prod`, `sign`, `signif`, `trunc`, `exp`, `log`, `log2`, `log10`, `log1p`,
+    - `is_finite`, `is_infinite`, `is_nan`,
+    - `match`,
+    - `startswith`, `endswith`, `strtoi`, `chartr`, `tolower`, `toupper`,
+    - `max_col`
+
+
 ## 0.4.1
 
 - Don't use piping syntax internally (`>>=`)

@@ -3,7 +3,7 @@ import pytest
 from pandas import Interval, DataFrame
 from pandas.testing import assert_frame_equal
 from datar.base.funs import *
-from datar.base import table, pi
+from datar.base import table, pi, paste0
 from datar.stats import rnorm
 from .conftest import assert_iterable_equal
 
@@ -68,3 +68,16 @@ def test_data_context():
         'a': [1,1,2,2],
         'b': [3,4,3,4],
     }))
+
+def test_outer():
+    out = outer([1,2], [1,2,3])
+    assert_frame_equal(out, DataFrame([
+        [1,2,3],
+        [2,4,6]
+    ]))
+
+    out = outer([1,2], [1,2,3], fun=paste0)
+    assert_frame_equal(out, DataFrame([
+        ["11", "12", "13"],
+        ["21", "22", "23"]
+    ]))

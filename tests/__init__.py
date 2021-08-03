@@ -1,3 +1,3 @@
-from pipda import register_verb, register_func
-register_verb.warn_astnode_failure = False
-register_func.warn_astnode_failure = False
+from pipda import options
+# don't warn on ast node detection failure in pytest assert statements
+options.warn_astnode_failure = False
