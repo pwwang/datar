@@ -13,6 +13,7 @@ python = "^3.7.1" # align with pandas
 pipda = "*"
 diot = "*"
 executing = "*"
+varname = "*"
 pandas = "^1.2"
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
