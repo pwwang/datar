@@ -8,6 +8,7 @@ import numpy
 from pandas import DataFrame, RangeIndex
 from pipda import register_verb
 from pipda.expression import Expression
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -75,6 +76,7 @@ def _(
             filter,
             *conditions,
             _drop_index=False,
+            __calling_env=CallingEnvs.REGULAR
         ).sort_index()
     else:
         out = _data.copy()
@@ -106,8 +108,14 @@ def _(
 
 def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
     """Filter non-existing rows in groupdata"""
-    gdata = group_data(new).set_index(group_vars(new))["_rows"].to_dict()
-    new_gdata = group_data(old).copy()
+    gdata = group_data(
+        new,
+        __calling_env=CallingEnvs.REGULAR
+    ).set_index(group_vars(
+        new,
+        __calling_env=CallingEnvs.REGULAR
+    ))["_rows"].to_dict()
+    new_gdata = group_data(old, __calling_env=CallingEnvs.REGULAR).copy()
     for row in new_gdata.iterrows():
         ser = row[1]
         key = tuple(ser[:-1])

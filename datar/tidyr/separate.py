@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Tuple, Union, Mapping
 import pandas
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.types import Dtype, NAType, is_scalar
@@ -173,8 +174,20 @@ def separate_rows(
             missing_warns=[],
         )
 
-    out = unchop(out, selected, keep_empty=True, ptype=convert, base0_=base0_)
-    return reconstruct_tibble(out, ungroup(out), selected, keep_rowwise=True)
+    out = unchop(
+        out,
+        selected,
+        keep_empty=True,
+        ptype=convert,
+        base0_=base0_,
+        __calling_env=CallingEnvs.REGULAR,
+    )
+    return reconstruct_tibble(
+        out,
+        ungroup(out, __calling_env=CallingEnvs.REGULAR),
+        selected,
+        keep_rowwise=True,
+    )
 
 
 def _separate_col(

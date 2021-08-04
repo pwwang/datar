@@ -11,6 +11,7 @@ from numpy import product
 from pandas import DataFrame, Series, Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_func, register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
@@ -311,7 +312,10 @@ def _flatten_nested(
     if isinstance(x, DataFrame):
         names = repair_names(list(named), name_repair, base0)
         named = dict(zip(names, named.values()))
-        x = {name: pull(x, name) for name in named}
+        x = {
+            name: pull(x, name, __calling_env=CallingEnvs.REGULAR)
+            for name in named
+        }
 
     to_flatten = {
         key: isinstance(val, DataFrame) and not named[key]
@@ -353,7 +357,10 @@ def _sorted_unique(x: Iterable[Any]) -> Union[Categorical, numpy.ndarray]:
     #     return pandas.unique(x)
 
     if isinstance(x, DataFrame):
-        return arrange(distinct(x))
+        return arrange(
+            distinct(x, __calling_env=CallingEnvs.REGULAR),
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     # return numpy.sort(numpy.unique(x))
     # numpy.unique() will turn ['A', 'B', numpy.nan] to ['A', 'B', 'nan']

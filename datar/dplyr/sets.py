@@ -6,6 +6,7 @@ https://github.com/tidyverse/dplyr/blob/master/R/sets.r
 import pandas
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
@@ -122,7 +123,7 @@ def union_all(x: DataFrame, y: DataFrame) -> DataFrame:
         The dataframe of union of all rows of input dataframes
     """
     _check_xy(x, y)
-    return bind_rows(x, y)
+    return bind_rows(x, y, __calling_env=CallingEnvs.REGULAR)
 
 
 @union_all.register(DataFrameGroupBy, context=Context.EVAL)

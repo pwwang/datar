@@ -5,6 +5,7 @@ from typing import Union
 import pandas
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import vars_select, reconstruct_tibble
@@ -63,7 +64,11 @@ def unite(
     out = out[relocated_cols]
 
     if remove:
-        cols_to_remove = setdiff(columns, [col])
+        cols_to_remove = setdiff(
+            columns,
+            [col],
+            __calling_env=CallingEnvs.REGULAR
+        )
         if len(cols_to_remove) > 0:
             out.drop(columns=cols_to_remove, inplace=True)
 

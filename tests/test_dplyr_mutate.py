@@ -8,6 +8,7 @@ from datar.datasets import iris, mtcars
 from pandas.core.frame import DataFrame
 from pandas.testing import assert_frame_equal
 from pipda import register_func
+from pipda.utils import CallingEnvs
 
 
 def test_empty_mutate_returns_input():

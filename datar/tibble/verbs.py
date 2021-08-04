@@ -3,6 +3,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Union
 
 from pandas import DataFrame, Series, RangeIndex
 from pipda import Context, register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.utils import (
     copy_attrs,
@@ -136,7 +137,11 @@ def add_row(
             for col in _data.columns:
                 df[col] = Series(dtype=_data[col].dtype)
 
-    extra_vars = setdiff(df.columns, _data.columns)
+    extra_vars = setdiff(
+        df.columns,
+        _data.columns,
+        __calling_env=CallingEnvs.REGULAR,
+    )
     if extra_vars:
         raise ValueError(f"New rows can't add columns: {extra_vars}")
 

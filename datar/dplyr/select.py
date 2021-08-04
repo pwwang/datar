@@ -6,6 +6,7 @@ from typing import Any, Iterable, List, Mapping, Tuple, Union
 
 from pandas import DataFrame, Index, Series
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.types import StringOrIter
@@ -45,7 +46,7 @@ def select(
         The dataframe with select columns
     """
     all_columns = _data.columns
-    gvars = group_vars(_data)
+    gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
     selected, new_names = _eval_select(
         all_columns,
         *args,
@@ -60,7 +61,7 @@ def select(
 
     if isinstance(_data, DataFrameGroupBy):
         gvars = [new_names.get(gvar, gvar) for gvar in gvars]
-        gdata = group_data(_data)
+        gdata = group_data(_data, __calling_env=CallingEnvs.REGULAR)
         gdata.columns = gvars + ["_rows"]
         return _data.__class__(
             out,
@@ -90,8 +91,7 @@ def _eval_select(
         base0=base0_,
     )
     missing = setdiff(
-        _group_vars,
-        _all_columns[selected],
+        _group_vars, _all_columns[selected], __calling_env=CallingEnvs.REGULAR
     )
     if missing:
         logger.info("Adding missing grouping variables: %s", missing)
@@ -99,6 +99,7 @@ def _eval_select(
     selected = union(
         _all_columns.get_indexer_for(_group_vars),
         selected,
+        __calling_env=CallingEnvs.REGULAR,
     )
 
     # dplyr takes new -> old

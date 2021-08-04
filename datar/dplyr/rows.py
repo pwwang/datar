@@ -7,6 +7,7 @@ from typing import List
 import numpy
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..base import setdiff
 from ..core.types import StringOrIter, is_scalar, is_null, is_not_null
@@ -56,7 +57,7 @@ def rows_insert(
     if any(bad):
         raise ValueError("Attempting to insert duplicate rows.")
 
-    return bind_rows(x, y, _copy=copy)
+    return bind_rows(x, y, _copy=copy, __calling_env=CallingEnvs.REGULAR)
 
 
 @register_verb(DataFrame)
@@ -191,7 +192,9 @@ def rows_upsert(
     idx_existing = idx[~new]
 
     x.loc[idx_existing, y.columns] = y.loc[~new].values
-    return bind_rows(x, y.loc[new], _copy=copy)
+    return bind_rows(
+        x, y.loc[new], _copy=copy, __calling_env=CallingEnvs.REGULAR
+    )
 
 
 @register_verb(DataFrame)
@@ -252,7 +255,7 @@ def _rows_check_key(by: StringOrIter, x: DataFrame, y: DataFrame) -> List[str]:
         logger.info("Matching, by=%r", by)
 
     if is_scalar(by):
-        by = [by] # type: ignore
+        by = [by]  # type: ignore
 
     for by_elem in by:
         if not isinstance(by_elem, str):
@@ -278,6 +281,10 @@ def _rows_check_key_df(df: DataFrame, by: List[str], df_name: str) -> None:
 def _rows_match(x: DataFrame, y: DataFrame) -> numpy.ndarray:
     """Mimic vctrs::vec_match"""
     id_col = "__id__"
-    y_with_id = rownames_to_column(y, var=id_col)
+    y_with_id = rownames_to_column(
+        y, var=id_col, __calling_env=CallingEnvs.REGULAR
+    )
     # pylint: disable=no-value-for-parameter
-    return left_join(x, y_with_id)[id_col].values
+    return left_join(x, y_with_id, __calling_env=CallingEnvs.REGULAR)[
+        id_col
+    ].values

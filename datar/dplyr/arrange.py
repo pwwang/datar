@@ -5,6 +5,7 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/arrange.R
 from typing import Any
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import check_column_uniqueness, reconstruct_tibble
@@ -49,12 +50,27 @@ def arrange(
     )
 
     if not _by_group:
-        sorting_df = mutate(ungroup(_data), *args, **kwargs, _keep="none")
+        sorting_df = mutate(
+            ungroup(_data, __calling_env=CallingEnvs.REGULAR),
+            *args,
+            **kwargs,
+            _keep="none",
+            __calling_env=CallingEnvs.REGULAR,
+        )
         sorting_df = sorting_df.sort_values(by=sorting_df.columns.tolist())
     else:
-        gvars = group_vars(_data)
-        sorting_df = ungroup(mutate(_data, *args, **kwargs, _keep="none"))
-        by = union(gvars, sorting_df.columns)
+        gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
+        sorting_df = ungroup(
+            mutate(
+                _data,
+                *args,
+                **kwargs,
+                _keep="none",
+                __calling_env=CallingEnvs.REGULAR,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
+        by = union(gvars, sorting_df.columns, __calling_env=CallingEnvs.REGULAR)
         sorting_df = sorting_df.sort_values(by=by)
 
     out = _data.loc[sorting_df.index, :].reset_index(drop=True)

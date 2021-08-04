@@ -3,6 +3,7 @@ from typing import Any, List
 
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.types import is_scalar
 from ..core.contexts import Context
@@ -44,7 +45,7 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
         return data.iloc[rows, cols]
 
     if cols is not None:
-        data = select(data, cols)
+        data = select(data, cols, __calling_env=CallingEnvs.REGULAR)
 
     if rows is not None:
         # slice only support integer index
@@ -53,7 +54,7 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
                 rows = [rows]
             if not isinstance(rows[0], int):
                 rows = data.index.get_indexer_for(rows)
-        data = slice_(data, rows)
+        data = slice_(data, rows, __calling_env=CallingEnvs.REGULAR)
     return data
 
 

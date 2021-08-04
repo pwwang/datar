@@ -10,6 +10,7 @@ from typing import Any, Callable, Iterable, List
 import pandas
 from pandas import DataFrame
 from pipda import register_verb, evaluate_expr
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
@@ -39,7 +40,11 @@ def group_map(
     **kwargs: Any,
 ) -> Iterable:
     """A generator to map function to data in each group"""
-    keys = group_keys(_data) if nargs(_f) > 1 else None
+    keys = (
+        group_keys(_data, __calling_env=CallingEnvs.REGULAR)
+        if nargs(_f) > 1
+        else None
+    )
     for i, chunk in enumerate(group_split(_data, _keep=_keep)):
         if keys is None:
             yield _f(chunk)
@@ -83,14 +88,14 @@ def _(
     _keep: bool = False,
     **kwargs: Any,
 ) -> DataFrameGroupBy:
-    gvars = group_vars(_data)
+    gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
     func = (lambda df, keys: _f(df)) if nargs(_f) == 1 else _f
 
     def fun(df, keys):
         res = func(df, keys, *args, **kwargs)
         if not isinstance(res, DataFrame):
             raise ValueError("The result of `_f` should be a data frame.")
-        bad = intersect(res.columns, gvars)
+        bad = intersect(res.columns, gvars, __calling_env=CallingEnvs.REGULAR)
         if bad:
             raise ValueError(
                 "The returned data frame cannot contain the original grouping "
@@ -133,10 +138,16 @@ def group_trim(_data: DataFrame, _drop: bool = None) -> DataFrame:
 @group_trim.register(DataFrameGroupBy)
 def _(_data: DataFrame, _drop: bool = None) -> DataFrameGroupBy:
     """Group trim on grouped data"""
-    ungrouped = ungroup(_data)
+    ungrouped = ungroup(_data, __calling_env=CallingEnvs.REGULAR)
     # pylint: disable=no-value-for-parameter
-    fgroups = select(ungrouped, where(is_factor))
-    dropped = mutate(ungrouped, across(fgroups.columns.tolist(), droplevels))
+    fgroups = select(
+        ungrouped, where(is_factor), __calling_env=CallingEnvs.REGULAR
+    )
+    dropped = mutate(
+        ungrouped,
+        across(fgroups.columns.tolist(), droplevels),
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
     return reconstruct_tibble(_data, dropped, keep_rowwise=True)
 
@@ -161,12 +172,12 @@ def with_groups(
         The new data frame with operations applied.
     """
     if _groups is None:
-        grouped = ungroup(_data)
+        grouped = ungroup(_data, __calling_env=CallingEnvs.REGULAR)
     else:
         all_columns = _data.columns
         _groups = evaluate_expr(_groups, _data, Context.SELECT)
         _groups = all_columns[vars_select(all_columns, _groups)]
-        grouped = group_by(_data, *_groups)
+        grouped = group_by(_data, *_groups, __calling_env=CallingEnvs.REGULAR)
 
     out = _func(grouped, *args, **kwargs)
     copy_attrs(out, _data)
@@ -178,7 +189,7 @@ def group_split(
     _data: DataFrame, *args: Any, _keep: bool = True, **kwargs: Any
 ) -> Iterable[DataFrame]:
     """Get a list of data in each group"""
-    data = group_by(_data, *args, **kwargs)
+    data = group_by(_data, *args, **kwargs, __calling_env=CallingEnvs.REGULAR)
     yield from group_split_impl(data, _keep=_keep)
 
 
@@ -227,13 +238,13 @@ group_split.list = register_verb(DataFrame, context=Context.PENDING)(
 
 def group_split_impl(data: DataFrame, _keep: bool):
     """Implement splitting data frame by groups"""
-    out = ungroup(data)
-    indices = group_rows(data)
+    out = ungroup(data, __calling_env=CallingEnvs.REGULAR)
+    indices = group_rows(data, __calling_env=CallingEnvs.REGULAR)
 
     if not _keep:
-        remove = group_vars(data)
+        remove = group_vars(data, __calling_env=CallingEnvs.REGULAR)
         _keep = out.columns
-        _keep = setdiff(_keep, remove)
+        _keep = setdiff(_keep, remove, __calling_env=CallingEnvs.REGULAR)
         out = out[_keep]
 
     for rows in indices:

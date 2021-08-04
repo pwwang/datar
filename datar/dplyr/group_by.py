@@ -8,6 +8,7 @@ from pandas import DataFrame
 from pipda import register_verb
 from pipda.symbolic import DirectRefAttr, DirectRefItem
 from pipda.expression import Expression
+from pipda.utils import CallingEnvs
 
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.contexts import Context
@@ -114,7 +115,10 @@ def _(
             "Either first `ungroup()` or call `rowwise()` without arguments."
         )
     # copy_attrs?
-    return DataFrameRowwise(_data, _group_vars=group_vars(_data))
+    return DataFrameRowwise(
+        _data,
+        _group_vars=group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+    )
 
 
 @rowwise.register(DataFrameRowwise, context=Context.SELECT)
@@ -157,9 +161,11 @@ def _(
 ) -> DataFrame:
     if not cols:
         return DataFrame(x, index=x.index)
-    old_groups = group_vars(x)
+    old_groups = group_vars(x, __calling_env=CallingEnvs.REGULAR)
     to_remove = vars_select(x.columns, *cols, base0=base0_)
-    new_groups = setdiff(old_groups, x.columns[to_remove])
+    new_groups = setdiff(
+        old_groups, x.columns[to_remove], __calling_env=CallingEnvs.REGULAR
+    )
 
     return group_by(x, *new_groups)
 
@@ -184,7 +190,11 @@ def _group_by_prepare(
     out = computed_columns["data"]
     group_names = computed_columns["added_names"]
     if _add:
-        group_names = union(group_vars(_data), group_names)
+        group_names = union(
+            group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+            group_names,
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     # checked in _add_computed_columns
     # unknown = setdiff(group_names, out.columns)
@@ -227,7 +237,9 @@ def _add_computed_columns(
     else:
         out = _data
         col_names = list(named)
-        nonexists = setdiff(col_names, out.columns)
+        nonexists = setdiff(
+            col_names, out.columns, __calling_env=CallingEnvs.REGULAR
+        )
 
     if nonexists:
         raise ColumnNotExistingError(

@@ -6,6 +6,7 @@ from typing import Any, Iterable, List
 
 from pandas import DataFrame
 from pipda import register_func
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.middlewares import CurColumn
@@ -30,7 +31,13 @@ def cur_data_all(_data: DataFrame) -> DataFrame:
 def cur_data(_data: DataFrame) -> int:
     """gives the current data for the current group
     (excluding grouping variables)."""
-    return _data[setdiff(_data.columns, group_vars(_data))]
+    return _data[
+        setdiff(
+            _data.columns,
+            group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+            __calling_env=CallingEnvs.REGULAR,
+        )
+    ]
 
 
 @register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)

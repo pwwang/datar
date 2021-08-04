@@ -8,6 +8,7 @@ from pandas import DataFrame, Series, RangeIndex
 
 from pipda.function import Function, FastEvalFunction
 from pipda.symbolic import DirectRefItem, DirectRefAttr, ReferenceAttr
+from pipda.utils import CallingEnvs
 
 from .defaults import DEFAULT_COLUMN_PREFIX
 from .types import StringOrIter, is_scalar
@@ -230,7 +231,11 @@ class DataFrameGroupBy(DataFrameGroupByABC):
             return pandas.concat([gkeys, out], axis=1)
 
         # in case the group vars are mutated
-        index_to_reset = setdiff(self.attrs["_group_vars"], out.columns)
+        index_to_reset = setdiff(
+            self.attrs["_group_vars"],
+            out.columns,
+            __calling_env=CallingEnvs.REGULAR,
+        )
         return out.reset_index(level=index_to_reset).reset_index(drop=True)
 
     def _datar_agg(

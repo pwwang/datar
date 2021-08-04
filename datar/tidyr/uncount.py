@@ -5,6 +5,7 @@ from typing import Any, Iterable
 import numpy
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.types import IntOrIter, is_scalar
@@ -39,7 +40,7 @@ def uncount(
         dataframe with rows repeated.
     """
     if is_scalar(weights):
-        weights = [weights] * data.shape[0] # type: ignore
+        weights = [weights] * data.shape[0]  # type: ignore
 
     _check_weights(weights)
 
@@ -62,10 +63,14 @@ def uncount(
     if _id:
         base = int(not get_option("index.base.0", base0_))
         # pylint: disable=no-value-for-parameter
-        out = ungroup(mutate(
-            group_by(out, INDEX_COLUMN),
-            **{_id: row_number() + base - 1}
-        ))
+        out = ungroup(
+            mutate(
+                group_by(out, INDEX_COLUMN, __calling_env=CallingEnvs.REGULAR),
+                **{_id: row_number() + base - 1},
+                __calling_env=CallingEnvs.REGULAR,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     out.drop(columns=[INDEX_COLUMN], inplace=True)
     return reconstruct_tibble(data, out)

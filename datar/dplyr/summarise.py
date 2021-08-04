@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Union
 from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr
 from pipda.function import Function
+from pipda.utils import CallingEnvs
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
@@ -103,7 +104,7 @@ def _(
     )
 
     allone = True
-    if group_data(_data).shape[0] == 0:
+    if group_data(_data, __calling_env=CallingEnvs.REGULAR).shape[0] == 0:
         out = _summarise_build(_data, *args, **kwargs).iloc[[], :]
     else:
 
@@ -128,7 +129,7 @@ def _(
 
         out = _data._datar_apply(apply_func, _mappings=mappings, _method="agg")
 
-    g_keys = group_vars(_data)
+    g_keys = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
     if _groups is None:
         if allone and not isinstance(_data, DataFrameRowwise):
             _groups = "drop_last"
@@ -181,7 +182,7 @@ def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
     context = Context.EVAL.value
     named = name_mutatable_args(*args, **kwargs)
 
-    out = group_keys(_data)
+    out = group_keys(_data, __calling_env=CallingEnvs.REGULAR)
     for key, val in named.items():
         # support: df %>% muate(a=1, a=a+1)
         key = dedup_name(key, list(named))

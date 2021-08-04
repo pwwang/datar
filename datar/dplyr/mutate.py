@@ -6,6 +6,7 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 from typing import Any, Tuple, List, Union
 from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr, ContextBase
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context, ContextEval
 from ..core.utils import (
@@ -95,26 +96,64 @@ def mutate(
     out[cols.columns.tolist()] = cols
     # out.columns.difference(removed)
     # changes column order when removed == []
-    out = out[setdiff(out.columns, removed)]
+    out = out[setdiff(out.columns, removed, __calling_env=CallingEnvs.REGULAR)]
     if _before is not None or _after is not None:
-        new = setdiff(cols.columns, _data.columns)
-        out = relocate(out, *new, _before=_before, _after=_after, base0_=base0_)
+        new = setdiff(
+            cols.columns,
+            _data.columns,
+            __calling_env=CallingEnvs.REGULAR,
+        )
+        out = relocate(
+            out,
+            *new,
+            _before=_before,
+            _after=_after,
+            base0_=base0_,
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     if keep == "all":
         keep = out.columns
     elif keep == "unused":
         used = context.used_refs.keys()
-        unused = setdiff(_data.columns, used)
+        unused = setdiff(
+            _data.columns,
+            used,
+            __calling_env=CallingEnvs.REGULAR,
+        )
         keep = intersect(
-            out.columns, c(group_vars(_data), unused, cols.columns)
+            out.columns,
+            c(
+                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+                unused,
+                cols.columns,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
         )
     elif keep == "used":
         used = context.used_refs.keys()
-        keep = intersect(out.columns, c(group_vars(_data), used, cols.columns))
+        keep = intersect(
+            out.columns,
+            c(
+                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+                used,
+                cols.columns,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
     else:  # keep == 'none':
         keep = union(
-            setdiff(group_vars(_data), cols.columns),
-            intersect(cols.columns, out.columns),
+            setdiff(
+                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+                cols.columns,
+                __calling_env=CallingEnvs.REGULAR,
+            ),
+            intersect(
+                cols.columns,
+                out.columns,
+                __calling_env=CallingEnvs.REGULAR,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
         )
 
     out = out[keep]
@@ -150,6 +189,7 @@ def _(
             _before=_before,
             _after=_after,
             base0_=base0_,
+            __calling_env=CallingEnvs.REGULAR,
             **kwargs,
         )
         ret.index = rows
@@ -169,9 +209,9 @@ def _(
     out[df.columns.tolist()] = df
     return _data.__class__(
         out,
-        _group_vars=group_vars(_data),
+        _group_vars=group_vars(_data, __calling_env=CallingEnvs.REGULAR),
         _group_drop=group_by_drop_default(_data),
-        _group_data=group_data(_data),
+        _group_data=group_data(_data, __calling_env=CallingEnvs.REGULAR),
     )
 
 

@@ -6,6 +6,7 @@ from typing import Any, Callable
 
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import vars_select
@@ -28,7 +29,7 @@ def rename(_data: DataFrame, base0_: bool = None, **kwargs: str) -> DataFrame:
     Returns:
         The dataframe with new names
     """
-    gvars = group_vars(_data)
+    gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
     all_columns = _data.columns
     selected, new_names = _eval_select(
         all_columns,

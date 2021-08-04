@@ -4,6 +4,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import numpy
 from pandas import Categorical, DataFrame, Series
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.types import IntType, is_scalar
@@ -218,7 +219,7 @@ def names(
     x: DataFrame, new: Sequence[str] = None, _nested: bool = True
 ) -> Union[List[str], DataFrame]:
     """Get the column names of a dataframe"""
-    return colnames(x, new, _nested)
+    return colnames(x, new, _nested, __calling_env=CallingEnvs.REGULAR)
 
 @names.register(dict)
 def _(

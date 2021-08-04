@@ -8,6 +8,7 @@ import re
 import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.types import Dtype, is_scalar
 from ..core.utils import vars_select, recycle_value, to_df, reconstruct_tibble
@@ -61,9 +62,9 @@ def nest(
         )
         colgroups[group] = dict(zip(newcols, old_cols))
 
-    asis = setdiff(_data.columns, usedcols)
+    asis = setdiff(_data.columns, usedcols, __calling_env=CallingEnvs.REGULAR)
     keys = _data[asis]
-    u_keys = distinct(keys)
+    u_keys = distinct(keys, __calling_env=CallingEnvs.REGULAR)
     nested = []
     for group, columns in colgroups.items():
         if _names_sep is None:  # names as is
@@ -83,7 +84,11 @@ def nest(
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
-    return bind_cols(u_keys, recycle_value(out, u_keys.shape[0]))
+    return bind_cols(
+        u_keys,
+        recycle_value(out, u_keys.shape[0]),
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 @nest.register(DataFrameGroupBy, context=Context.SELECT)
@@ -95,7 +100,13 @@ def _(
 ) -> DataFrameGroupBy:
     """Nesting grouped dataframe"""
     if not cols:
-        cols = {"data": setdiff(_data.columns, group_vars(_data))}
+        cols = {
+            "data": setdiff(
+                _data.columns,
+                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+                __calling_env=CallingEnvs.REGULAR,
+            )
+        }
     out = nest.dispatch(DataFrame)(
         _data, **cols, _names_sep=_names_sep, base0_=base0_
     )
@@ -162,8 +173,21 @@ def unnest(
     for col in cols:
         out[col] = _as_df(data[col])
 
-    out = unchop(out, cols, keep_empty=keep_empty, ptype=ptype, base0_=base0_)
-    return unpack(out, cols, names_sep=names_sep, names_repair=names_repair)
+    out = unchop(
+        out,
+        cols,
+        keep_empty=keep_empty,
+        ptype=ptype,
+        base0_=base0_,
+        __calling_env=CallingEnvs.REGULAR,
+    )
+    return unpack(
+        out,
+        cols,
+        names_sep=names_sep,
+        names_repair=names_repair,
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 @unnest.register(DataFrameRowwise, context=Context.SELECT)
@@ -188,7 +212,7 @@ def _(
     )
     return DataFrameGroupBy(
         out,
-        _group_vars=group_vars(data),
+        _group_vars=group_vars(data, __calling_env=CallingEnvs.REGULAR),
         _group_drop=group_by_drop_default(data),
     )
 

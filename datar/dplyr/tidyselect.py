@@ -5,7 +5,7 @@ from typing import Callable, Iterable, List, Union
 
 from pandas import DataFrame
 from pipda import register_func
-from pipda.utils import functype
+from pipda.utils import functype, CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import get_option, vars_select, Array
@@ -58,7 +58,11 @@ def everything(_data: DataFrame) -> List[str]:
     Returns:
         All column names of _data
     """
-    return setdiff(_data.columns, group_vars(_data))
+    return setdiff(
+        _data.columns,
+        group_vars(_data, __calling_env=CallingEnvs.REGULAR),
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 @register_func(context=Context.SELECT)
@@ -260,7 +264,9 @@ def any_of(
     #     except IndexError:
     #         ...
     # do we need intersect?
-    return intersect(vars, [vars[idx] for idx in x])
+    return intersect(
+        vars, [vars[idx] for idx in x], __calling_env=CallingEnvs.REGULAR
+    )
 
 
 @register_func(None)
@@ -310,7 +316,7 @@ def _filter_columns(
         A list of matched vars
     """
     if not isinstance(match, (tuple, list, set)):
-        match = [match] # type: ignore
+        match = [match]  # type: ignore
 
     ret = []
     for mat in match:

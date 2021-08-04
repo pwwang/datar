@@ -16,7 +16,8 @@ def test_unite_pastes_columns_togeter_and_removes_old_col():
 def test_unite_does_not_remove_new_col_in_case_of_name_clash():
     df = tibble(x = "a", y = "b")
     out = df >> unite('x', f[f.x:f.y])
-    assert_iterable_equal(names(out), ["x"])
+    cols = out >> names()
+    assert_iterable_equal(cols, ["x"])
     assert_iterable_equal(out.x, ["a_b"])
 
 
@@ -35,7 +36,7 @@ def test_drops_grouping_when_needed():
 
 def test_empty_var_spec_uses_all_vars():
     df = tibble(x = "a", y = "b")
-    assert_iterable_equal(unite(df, "z"), tibble(z = "a_b"))
+    assert_iterable_equal(df >> unite("z"), tibble(z = "a_b"))
 
 def test_can_remove_missing_vars_on_request():
     df = expand_grid(x = ["a", NA], y = ["b", NA])

@@ -267,7 +267,6 @@ def test_errors():
 
 def test_preserves_grouping():
     gf = tibble(g=[1,1,1,2,2], x=[1,2,3,4,5]) >> group_by(f.g)
-
     out = gf >> filter(is_element(f.x, [3,4]))
     assert group_vars(out) == ['g']
     assert group_rows(out) == [[0], [1]]

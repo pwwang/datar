@@ -22,6 +22,7 @@ import pandas
 from pandas import Categorical, DataFrame, Series
 from pipda import register_func
 from pipda.symbolic import Reference
+from pipda.utils import CallingEnvs
 
 from .exceptions import (
     ColumnNotExistingError,
@@ -497,8 +498,12 @@ def reconstruct_tibble(
 
     if ungrouped_vars is None:
         ungrouped_vars = []
-    old_groups = group_vars(input)
-    new_groups = intersect(setdiff(old_groups, ungrouped_vars), output.columns)
+    old_groups = group_vars(input, __calling_env=CallingEnvs.REGULAR)
+    new_groups = intersect(
+        setdiff(old_groups, ungrouped_vars, __calling_env=CallingEnvs.REGULAR),
+        output.columns,
+        __calling_env=CallingEnvs.REGULAR
+    )
 
     if isinstance(input, DataFrameRowwise):
         out = (
