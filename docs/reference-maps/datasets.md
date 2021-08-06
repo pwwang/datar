@@ -28,6 +28,7 @@
 |`iris`|Edgar Anderson's Iris Data|[`r-datasets-iris`][9]|
 |`mtcars`|Motor Trend Car Road Tests|[`r-datasets-mtcars`][10]|
 |`warpbreaks`|The Number of Breaks in Yarn during Weaving|[`r-datasets-warpbreaks`][19]|
+|`ToothGrowth`|The Effect of Vitamin C on Tooth Growth in Guinea Pigs|[`r-datasets-ToothGrowth`][21]|
 |#|#|#|
 |`band_instruments`|Band members of the Beatles and Rolling Stones|[`r-dplyr-band_members`][4]|
 |`band_instruments2`|Band members of the Beatles and Rolling Stones|[`r-dplyr-band_members`][4]|
@@ -75,3 +76,4 @@
 [18]: https://tidyr.tidyverse.org/reference/us_rent_income.html
 [19]: https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/warpbreaks
 [20]: https://tidyr.tidyverse.org/reference/world_bank_pop.html
+[21]: https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/ToothGrowth
