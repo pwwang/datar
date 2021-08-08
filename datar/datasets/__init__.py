@@ -47,4 +47,4 @@ def __getattr__(name):
     # mkapi accesses quite a lot of attributes starting with _
     if name.startswith("_"):
         raise AttributeError
-    return load_data(name)
+    return load_data(name.lower())

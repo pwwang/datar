@@ -25,6 +25,7 @@
 |#|#|#|
 |`airquality`|Daily air quality measurements in New York, May to September 1973.|[`r-datasets-airquality`][2]|
 |`anscombe`|Four x-y datasets which have the same traditional statistical properties|[`r-datasets-anscombe`][3]|
+|`faithful`|Waiting time between eruptions and the duration of the eruption for the Old Faithful geyser in Yellowstone National Park, Wyoming, USA|[`r-datasets-faithful`][31]|
 |`iris`|Edgar Anderson's Iris Data|[`r-datasets-iris`][9]|
 |`mtcars`|Motor Trend Car Road Tests|[`r-datasets-mtcars`][10]|
 |`warpbreaks`|The Number of Breaks in Yarn during Weaving|[`r-datasets-warpbreaks`][19]|
@@ -95,3 +96,4 @@
 [28]: https://ggplot2.tidyverse.org/reference/seals.html
 [29]: https://ggplot2.tidyverse.org/reference/txhousing.html
 [30]: https://ggplot2.tidyverse.org/reference/luv_colours.html
+[31]: https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/faithfulZZ

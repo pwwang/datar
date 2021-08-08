@@ -24,4 +24,14 @@ print(datasets.list_datasets())
 
     The column names are altered by replace `.` to `_`. For example `Sepal.Width` to `Sepal_Width`.
 
+!!! Note
+
+    Dataset names are case-insensitive. So you can do:
+
+    ```python
+    from datar.datasets import ToothGrowth
+    # or
+    from datar.datasets import toothgrowth
+    ```
+
 [1] ./reference-maps/datasets
