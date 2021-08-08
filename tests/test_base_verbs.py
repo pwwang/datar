@@ -1,3 +1,4 @@
+from datar.base.verbs import complete_cases
 import pytest
 from pandas import DataFrame
 from datar.base import *
@@ -118,3 +119,12 @@ def test_max_col():
         max_col(df, "last"),
         [3,3,3]
     )
+
+def test_complete_cases():
+    df = tibble(
+        a = [NA, 1, 2],
+        b = [4, NA, 6],
+        c = [7, 8, 9],
+    )
+    out = complete_cases(df)
+    assert_iterable_equal(out, [False, False, True])

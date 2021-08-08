@@ -363,3 +363,17 @@ def max_col(
         return indices[-1]
 
     return df.apply(which_max_with_ties, axis=1).to_numpy()
+
+
+@register_verb(DataFrame)
+def complete_cases(_data: DataFrame) -> Iterable[bool]:
+    """Return a logical vector indicating values of rows are complete.
+
+    Args:
+        _data: The dataframe
+
+    Returns:
+        A logical vector specifying which observations/rows have no
+        missing values across the entire sequence.
+    """
+    return _data.apply(lambda row: row.notna().all(), axis=1).values

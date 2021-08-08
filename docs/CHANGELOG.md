@@ -3,6 +3,7 @@
 - Adopt `pipda` `0.4.5`
 - Make dataset names case-insensitive;
 - Add datasets: `ToothGrowth`, `economics`, `economics_long`, `faithful`, `faithfuld`, `luv_colours`, `midwest`, `mpg`, `msleep`, `presidential`, `seals`, and `txhousing`
+- Add `base.complete_cases()`
 - Change `datasets.all_datasets()` to `datasets.list_datasets()`
 - Make sure `assume_all_piping` mode works internally: #45
 
