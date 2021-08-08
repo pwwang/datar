@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.4.2"
+version = "0.4.3"
 description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
 readme = "README.md"
