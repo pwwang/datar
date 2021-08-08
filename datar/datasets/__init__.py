@@ -9,7 +9,7 @@ HERE = Path(__file__).parent
 
 
 @functools.lru_cache()
-def all_datasets():
+def list_datasets():
     """Get the information of all datasets"""
     datasets = {}
     for datafile in HERE.glob("*.csv.gz"):
@@ -25,11 +25,11 @@ def all_datasets():
 @functools.lru_cache()
 def load_data(name: str) -> pandas.DataFrame:
     """Load the specific dataset"""
-    datasets = all_datasets()
+    datasets = list_datasets()
     if name not in datasets:
         raise ImportError(
             f"No such dataset: {name}, "
-            f"available: {list(all_datasets().keys())}"
+            f"available: {list(list_datasets().keys())}"
         )
 
     dataset = datasets[name]
