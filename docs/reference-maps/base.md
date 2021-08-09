@@ -267,6 +267,7 @@
 |[`identity`][114]|Identity Function|[:material-notebook:][4]|
 |[`expandgrid`][115]|Create a Data Frame from All Combinations of Factor Variables|[:material-notebook:][4]|
 |[`max_col`][136]|Find the maximum position for each row of a matrix||
+|[`complete_cases`][137]|Get a bool array indicating whether the values of rows are complete in a data frame.||
 |[**`data_context`**][116]|Mimic R's `with`|[:material-notebook:][4]|
 
 
@@ -406,3 +407,4 @@
 [134]: ../../api/datar.core.string/#datar.core.string.tolower
 [135]: ../../api/datar.core.string/#datar.core.string.toupper
 [136]: ../../api/datar.core.verbs/#datar.core.verbs.max_col
+[137]: ../../api/datar.core.verbs/#datar.core.verbs.complete_cases

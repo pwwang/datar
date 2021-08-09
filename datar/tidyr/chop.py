@@ -9,6 +9,7 @@ import numpy
 import pandas
 from pandas import DataFrame, Series
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.types import IntOrIter, StringOrIter, Dtype, is_scalar
 from ..core.utils import (
@@ -80,7 +81,7 @@ def chop(
     else:
         vals = pandas.concat(compacted, ignore_index=True)
 
-    out = bind_cols(split_key, vals)
+    out = bind_cols(split_key, vals, __calling_env=CallingEnvs.REGULAR)
     return reconstruct_tibble(data, out, keep_rowwise=True)
 
 
@@ -158,12 +159,12 @@ def _vec_split(
     if isinstance(by, Series):  # pragma: no cover, always a data frame?
         by = by.to_frame()
 
-    df = bind_cols(x, by)
+    df = bind_cols(x, by, __calling_env=CallingEnvs.REGULAR)
     if df.shape[0] == 0:
         return DataFrame(columns=["key", "val"])
-    df = group_by(df, *by.columns)
-    gdata = group_data(df)
-    gdata = arrange(gdata, gdata._rows)
+    df = group_by(df, *by.columns, __calling_env=CallingEnvs.REGULAR)
+    gdata = group_data(df, __calling_env=CallingEnvs.REGULAR)
+    gdata = arrange(gdata, gdata._rows, __calling_env=CallingEnvs.REGULAR)
     out = DataFrame(index=gdata.index)
     out = df_setitem(out, "key", gdata[by.columns])
     return df_setitem(
@@ -229,7 +230,12 @@ def _unchopping(
     # say y$a, then ['y'] will not select it
     out = keep_column_order(DataFrame(key_data), data.columns)
     if not keep_empty:
-        out = drop_na(out, *val_data, how_="all")
+        out = drop_na(
+            out,
+            *val_data,
+            how_="all",
+            __calling_env=CallingEnvs.REGULAR,
+        )
     apply_dtypes(out, dtypes)
     copy_attrs(out, data)
     return out
@@ -245,7 +251,11 @@ def _unchopping_df_column(
     dtypes = None
     for val in series:
         if isinstance(val, DataFrame):
-            union_cols = union(union_cols, val.columns)
+            union_cols = union(
+                union_cols,
+                val.columns,
+                __calling_env=CallingEnvs.REGULAR,
+            )
             if dtypes is None:
                 dtypes = {col: val[col].dtype for col in val}
             else:

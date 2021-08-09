@@ -4,6 +4,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import numpy
 from pandas import Categorical, DataFrame, Series
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.types import IntType, is_scalar
@@ -218,7 +219,7 @@ def names(
     x: DataFrame, new: Sequence[str] = None, _nested: bool = True
 ) -> Union[List[str], DataFrame]:
     """Get the column names of a dataframe"""
-    return colnames(x, new, _nested)
+    return colnames(x, new, _nested, __calling_env=CallingEnvs.REGULAR)
 
 @names.register(dict)
 def _(
@@ -362,3 +363,17 @@ def max_col(
         return indices[-1]
 
     return df.apply(which_max_with_ties, axis=1).to_numpy()
+
+
+@register_verb(DataFrame)
+def complete_cases(_data: DataFrame) -> Iterable[bool]:
+    """Return a logical vector indicating values of rows are complete.
+
+    Args:
+        _data: The dataframe
+
+    Returns:
+        A logical vector specifying which observations/rows have no
+        missing values across the entire sequence.
+    """
+    return _data.apply(lambda row: row.notna().all(), axis=1).values

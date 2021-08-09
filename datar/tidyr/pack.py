@@ -6,6 +6,7 @@ from typing import Iterable, Set, Union, Callable
 
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.utils import vars_select, copy_attrs, reconstruct_tibble
 from ..core.contexts import Context
@@ -61,8 +62,16 @@ def pack(
         for newcol, oldcol in columns:
             cols[f"{group}${newcol}"] = _data[oldcol]
 
-    asis = setdiff(_data.columns, usedcols)
-    out = bind_cols(_data[asis], DataFrame(cols))
+    asis = setdiff(
+        _data.columns,
+        usedcols,
+        __calling_env=CallingEnvs.REGULAR,
+    )
+    out = bind_cols(
+        _data[asis],
+        DataFrame(cols),
+        __calling_env=CallingEnvs.REGULAR,
+    )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 

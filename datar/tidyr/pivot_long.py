@@ -9,6 +9,7 @@ import pandas
 from pandas import DataFrame
 from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
@@ -140,7 +141,7 @@ def pivot_longer(
     id_columns = all_columns.difference(columns)
 
     if is_scalar(names_to):
-        names_to = [names_to] # type: ignore
+        names_to = [names_to]  # type: ignore
 
     tmp_names_to = []
     # We need to NA/names to be kept for .value pivot
@@ -184,17 +185,47 @@ def pivot_longer(
         ret[values_to] = ret[values_to].astype("category")
 
     if names_pattern:
-        ret = extract(ret, var_name, into=names_to, regex=names_pattern)
+        ret = extract(
+            ret,
+            var_name,
+            into=names_to,
+            regex=names_pattern,
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     if names_sep:
-        ret = separate(ret, var_name, into=names_to, sep=names_sep)
+        ret = separate(
+            ret,
+            var_name,
+            into=names_to,
+            sep=names_sep,
+            __calling_env=CallingEnvs.REGULAR,
+        )
     # extract/separate puts `into` last
-    ret = relocate(ret, values_to, _after=-1, base0_=True)
+    ret = relocate(
+        ret,
+        values_to,
+        _after=-1,
+        base0_=True,
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
     if ".value" in names_to:
-        names_to = setdiff(names_to, [".value"])
-        index_columns = union(id_columns, names_to)
-        names_to = setdiff(names_to, na_names_to)
+        names_to = setdiff(
+            names_to,
+            [".value"],
+            __calling_env=CallingEnvs.REGULAR,
+        )
+        index_columns = union(
+            id_columns,
+            names_to,
+            __calling_env=CallingEnvs.REGULAR,
+        )
+        names_to = setdiff(
+            names_to,
+            na_names_to,
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
         # keep the order
         value_columns = pandas.unique(ret[".value"].values)
@@ -221,7 +252,7 @@ def pivot_longer(
     if values_drop_na:
         ret.dropna(subset=values_to, inplace=True)
 
-    names_data = ret.loc[:, names_to] # SettingwithCopyWarning
+    names_data = ret.loc[:, names_to]  # SettingwithCopyWarning
     apply_dtypes(names_data, names_ptypes)
     ret[names_to] = names_data
 

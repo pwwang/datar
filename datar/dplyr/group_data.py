@@ -3,6 +3,7 @@
 from typing import List
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.grouped import DataFrameGroupBy
 from ..base import setdiff
@@ -93,7 +94,7 @@ def group_vars(_data: DataFrame) -> List[str]:
     if index is None:
         return []
     gdata = _data.attrs["_group_data"]
-    return setdiff(gdata.columns, ["_rows"])
+    return setdiff(gdata.columns, ["_rows"], __calling_env=CallingEnvs.REGULAR)
 
 
 @group_vars.register(DataFrameGroupBy)

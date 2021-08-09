@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Union
 
 from pandas import DataFrame, RangeIndex
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.collections import Collection
@@ -249,7 +250,7 @@ def _(
 ) -> DataFrameRowwise:
     """slice_min for DataFrameRowwise object"""
     out = slice_min.dispatch(DataFrame)(
-        ungroup(_data),
+        ungroup(_data, __calling_env=CallingEnvs.REGULAR),
         order_by=order_by,
         n=n,
         prop=prop,
@@ -310,7 +311,7 @@ def _(
 ) -> DataFrameRowwise:
     """slice_max for DataFrameRowwise object"""
     out = slice_max.dispatch(DataFrame)(
-        ungroup(_data),
+        ungroup(_data, __calling_env=CallingEnvs.REGULAR),
         order_by=order_by,
         n=n,
         prop=prop,

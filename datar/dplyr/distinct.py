@@ -7,6 +7,7 @@ from typing import Any
 import pandas
 from pandas import DataFrame
 from pipda import register_verb, register_func
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import copy_attrs, reconstruct_tibble
@@ -42,15 +43,30 @@ def distinct(
     else:
         # keep_none_prefers_new_order
         uniq = (
-            mutate(_data, *args, **kwargs, _keep="none")
+            mutate(
+                _data,
+                *args,
+                **kwargs,
+                _keep="none",
+                __calling_env=CallingEnvs.REGULAR,
+            )
         ).drop_duplicates()
 
     if not _keep_all:
         # keep original order
         out = uniq[
             union(
-                intersect(_data.columns, uniq.columns),
-                setdiff(uniq.columns, _data.columns),
+                intersect(
+                    _data.columns,
+                    uniq.columns,
+                    __calling_env=CallingEnvs.REGULAR,
+                ),
+                setdiff(
+                    uniq.columns,
+                    _data.columns,
+                    __calling_env=CallingEnvs.REGULAR,
+                ),
+                __calling_env=CallingEnvs.REGULAR,
             )
         ]
     else:
@@ -78,7 +94,10 @@ def _(
 ) -> DataFrameRowwise:
     # pylint: disable=no-value-for-parameter
     out = distinct.dispatch(DataFrame)(
-        ungroup(_data), *args, **kwargs, _keep_all=_keep_all
+        ungroup(_data, __calling_env=CallingEnvs.REGULAR),
+        *args,
+        **kwargs,
+        _keep_all=_keep_all,
     )
 
     return reconstruct_tibble(_data, out, keep_rowwise=True)

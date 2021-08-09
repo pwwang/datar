@@ -8,6 +8,7 @@ import numpy
 import pandas
 from pandas import Categorical, Series
 from pipda import register_func
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import logger, get_option, Array
@@ -349,7 +350,9 @@ def recode_factor(
         if isinstance(recoded, Categorical)
         else unique(recoded[pandas.notna(recoded)])
     )
-    levels = intersect(all_levels, recoded_levels)
+    levels = intersect(
+        all_levels, recoded_levels, __calling_env=CallingEnvs.REGULAR
+    )
 
     return Categorical(recoded, categories=levels, ordered=_ordered)
 

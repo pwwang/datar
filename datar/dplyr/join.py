@@ -5,6 +5,7 @@ import pandas
 from pandas import DataFrame, Series, Categorical
 from pandas.core.dtypes.common import is_categorical_dtype
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.types import StringOrIter, is_scalar
@@ -44,7 +45,9 @@ def _join(
             ret.drop(columns=right_on, inplace=True)
     elif keep:
         if by is None:
-            by = intersect(x.columns, y.columns)
+            by = intersect(
+                x.columns, y.columns, __calling_env=CallingEnvs.REGULAR
+            )
         # on=... doesn't keep both by columns in left and right
         left_on = [f"{col}{suffix[0]}" for col in by]
         right_on = [f"{col}{suffix[1]}" for col in by]
@@ -61,7 +64,9 @@ def _join(
         )
     else:
         if by is None:
-            by = intersect(x.columns, y.columns)
+            by = intersect(
+                x.columns, y.columns, __calling_env=CallingEnvs.REGULAR
+            )
         by = [by] if is_scalar(by) else by  # type: ignore
         ret = pandas.merge(x, y, on=by, how=how, copy=copy, suffixes=suffix)
         for col in by:
@@ -69,7 +74,9 @@ def _join(
                 ret[col] = Categorical(
                     ret[col],
                     categories=union(
-                        x[col].cat.categories, y[col].cat.categories
+                        x[col].cat.categories,
+                        y[col].cat.categories,
+                        __calling_env=CallingEnvs.REGULAR,
                     ),
                 )
 
@@ -231,7 +238,7 @@ def semi_join(
         copy=copy,
         suffixes=["", "_y"],
         indicator="__merge__",
-        **_merge_on(by)
+        **_merge_on(by),
     )
     ret = ret.loc[ret["__merge__"] == "both", x.columns.tolist()]
 
@@ -261,7 +268,7 @@ def anti_join(
         copy=copy,
         suffixes=["", "_y"],
         indicator=True,
-        **_merge_on(by)
+        **_merge_on(by),
     )
     ret = ret.loc[ret._merge != "both", x.columns.tolist()]
 
@@ -291,7 +298,9 @@ def nest_join(
     if isinstance(by, (list, tuple, set)):
         on = dict(zip(by, by))
     elif by is None:
-        common_cols = intersect(x.columns.tolist(), y.columns)
+        common_cols = intersect(
+            x.columns.tolist(), y.columns, __calling_env=CallingEnvs.REGULAR
+        )
         on = dict(zip(common_cols, common_cols))
     elif not isinstance(by, dict):
         on = {by: by}  # type: ignore
@@ -306,9 +315,13 @@ def nest_join(
                 condition = y[on[key]] == row[key]
             else:
                 condition = condition & (y[on[key]] == row[key])
-        df = filter_(y, condition)
+        df = filter_(y, condition, __calling_env=CallingEnvs.REGULAR)
         if not keep:
-            df = df[setdiff(df.columns, on.values())]
+            df = df[
+                setdiff(
+                    df.columns, on.values(), __calling_env=CallingEnvs.REGULAR
+                )
+            ]
 
         return df
 
@@ -322,9 +335,9 @@ def nest_join(
     if isinstance(x, DataFrameGroupBy):
         return x.__class__(
             x,
-            _group_vars=group_vars(x),
+            _group_vars=group_vars(x, __calling_env=CallingEnvs.REGULAR),
             _group_drop=group_by_drop_default(x),
-            _group_data=group_data(x),
+            _group_data=group_data(x, __calling_env=CallingEnvs.REGULAR),
         )
     return out
 
@@ -336,8 +349,5 @@ def _merge_on(
     if by is None:
         return {}
     if isinstance(by, dict):
-        return {
-            'left_on': list(by),
-            'right_on': list(by.values())
-        }
-    return {'on': by}
+        return {"left_on": list(by), "right_on": list(by.values())}
+    return {"on": by}

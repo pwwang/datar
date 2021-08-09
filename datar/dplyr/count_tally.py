@@ -55,18 +55,31 @@ def count(
         _drop = group_by_drop_default(x)
 
     if args or kwargs:
-        out = group_by(x, *args, **kwargs, _add=True, _drop=_drop)
+        out = group_by(
+            x,
+            *args,
+            **kwargs,
+            _add=True,
+            _drop=_drop,
+            __calling_env=CallingEnvs.REGULAR,
+        )
     else:
         out = x
 
     # pylint: disable=no-value-for-parameter
-    out = tally(out, wt=wt, sort=sort, name=name)
+    out = tally(
+        out,
+        wt=wt,
+        sort=sort,
+        name=name,
+        __calling_env=CallingEnvs.REGULAR,
+    )
     if isinstance(x, DataFrameGroupBy):
         out = DataFrameGroupBy(
             out,
-            _group_vars=group_vars(x),
+            _group_vars=group_vars(x, __calling_env=CallingEnvs.REGULAR),
             _group_drop=_drop,
-            _group_data=group_data(x),
+            _group_data=group_data(x, __calling_env=CallingEnvs.REGULAR),
         )
     return out
 
@@ -88,13 +101,17 @@ def tally(
     # thread-safety?
     with options_context(dplyr_summarise_inform=False):
         # pylint: disable=no-value-for-parameter
-        out = summarise(x, {name: n() if tallyn is None else tallyn})
+        out = summarise(
+            x,
+            {name: n() if tallyn is None else tallyn},
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     # keep attributes
     copy_attrs(out, x)
 
     if sort:
-        return arrange(out, desc(f[name]))
+        return arrange(out, desc(f[name]), __calling_env=CallingEnvs.REGULAR)
     return out
 
 
@@ -112,7 +129,13 @@ def add_count(
     See count().
     """
     if args or kwargs:
-        out = group_by(x, *args, **kwargs, _add=True)
+        out = group_by(
+            x,
+            *args,
+            **kwargs,
+            _add=True,
+            __calling_env=CallingEnvs.REGULAR,
+        )
     else:
         out = x
 
@@ -131,10 +154,18 @@ def add_tally(
     tallyn = _tally_n(wt)
     name = _check_name(name, x.columns)
     # pylint: disable=no-value-for-parameter
-    out = mutate(x, {name: n() if tallyn is None else tallyn})
+    out = mutate(
+        x,
+        {name: n() if tallyn is None else tallyn},
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
     if sort:
-        return arrange(out, desc(f[name]))
+        return arrange(
+            out,
+            desc(f[name]),
+            __calling_env=CallingEnvs.REGULAR,
+        )
     return out
 
 
