@@ -17,16 +17,15 @@ repos:
         pass_filenames: false
         always_run: true
         language: system
--   repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v2.4.4
-    hooks:
-    -   id: pylint
-        files: ^datar/.+$
-        pass_filenames: false
-        types: [python]
-        args: [datar]
 -   repo: local
     hooks:
+    -   id: pylint
+        name: Run pylint
+        files: ^datar/.+$
+        pass_filenames: false
+        entry: pylint datar
+        types: [python]
+        language: system
     -   id: poetry2setuppy
         name: Convert pyproject.toml to setup.py
         entry: dephell deps convert --from=poetry --to=setup.py
