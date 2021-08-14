@@ -17,6 +17,7 @@ varname = "*"
 pandas = "^1.2"
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
+python-slugify = {version = "^5.0.2", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

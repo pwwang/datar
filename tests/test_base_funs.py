@@ -81,3 +81,19 @@ def test_outer():
         ["11", "12", "13"],
         ["21", "22", "23"]
     ]))
+
+def test_make_names():
+    names = ["a", "1aA b", "_1aA b"]
+    assert_iterable_equal(
+        make_names(names),
+        ['a', '_1aA_b', '_1aA_b']
+    )
+    assert_iterable_equal(
+        make_names(names, unique=True),
+        ['a', '_1aA_b__2', '_1aA_b__3']
+    )
+    assert_iterable_equal(
+        make_unique(names),
+        ['a', '_1aA_b__2', '_1aA_b__3']
+    )
+    assert make_names(1) == ['_1']

@@ -4,7 +4,7 @@ If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
 registered by `register_verb` and should be placed in `./verbs.py`
 """
 import itertools
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Iterable, List, Union
 import numpy
 
 import pandas
@@ -12,8 +12,9 @@ from pandas import Categorical, DataFrame
 from pipda import register_func
 
 from ..core.middlewares import WithDataEnv
-from ..core.types import NumericType
+from ..core.types import NumericType, is_scalar
 from ..core.contexts import Context
+from ..core.names import repair_names
 
 
 @register_func(None, context=Context.EVAL)
@@ -131,3 +132,48 @@ def data_context(data: DataFrame) -> Any:
         The original or modified data
     """
     return WithDataEnv(data)
+
+def make_names(names: Any, unique: bool = False) -> List[str]:
+    """Make names available as columns and can be accessed by `df.<name>`
+
+    The names will be transformed using `python-slugify` with
+    `lowercase=False` and `separator="_"`. When the first character is
+    a digit, preface it with "_".
+
+    If `unique` is True, the results will be fed into
+    `datar.core.names.repair_names(names, "unique")`
+
+    Args:
+        names: The names
+            if it is scalar, will make it into a list.
+            Then all elements will be converted into strings
+        unique: Whether to make the names unique
+
+    Returns:
+        Converted names
+    """
+    from slugify import slugify
+    from . import as_character
+    if is_scalar(names):
+        names = [names]
+    names = as_character(names)
+    names = [slugify(name, separator="_", lowercase=False) for name in names]
+    names = [f"_{name}" if name[0].isdigit() else name for name in names]
+    if unique:
+        return repair_names(names, "unique")
+    return names
+
+def make_unique(names: Any) -> List[str]:
+    """Make the names unique.
+
+    It's a shortcut for make_names(names, unique=True)
+
+    Args:
+        names: The names
+            if it is scalar, will make it into a list.
+            Then all elements will be converted into strings
+
+    Returns:
+        Converted names
+    """
+    return make_names(names, unique=True)

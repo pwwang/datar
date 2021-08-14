@@ -33,7 +33,7 @@ from .arithmetic import (
     log,
     log2,
     log10,
-    log1p
+    log1p,
 )
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_double, as_float, as_int, as_integer, as_numeric
@@ -50,7 +50,14 @@ from .factor import (
     is_factor,
     levels,
 )
-from .funs import cut, data_context, expandgrid, identity
+from .funs import (
+    cut,
+    data_context,
+    expandgrid,
+    identity,
+    make_unique,
+    make_names,
+)
 from .logical import (
     FALSE,
     TRUE,
@@ -75,7 +82,7 @@ from .seq import (
     seq_along,
     seq_len,
     unique,
-    match
+    match,
 )
 from .special import (
     beta,
