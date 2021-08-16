@@ -39,6 +39,7 @@ jobs:
           poetry install -v
           pip install wcwidth
           pip install scipy
+          pip install python-slugify
           # reinstall pandas to specific version
           pip install $PANDAS
         env:
