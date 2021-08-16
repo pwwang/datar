@@ -3,7 +3,7 @@
 from typing import Any, Union, Callable, Mapping, Iterable, Tuple
 
 from pandas import DataFrame
-from varname import argname2, varname, VarnameRetrievingError
+from varname import argname, varname, VarnameException
 
 import pipda
 from pipda import register_func, evaluate_expr
@@ -59,13 +59,16 @@ def tibble(
     args = tuple((arg for arg in args if arg is not None))
     if not args and not kwargs:
         df = DataFrame() if not _rows else DataFrame(index=range(_rows))
-        df.__dfname__ = varname(raise_exc=False, ignore=pipda)
+        try:
+            df.__dfname__ = varname(ignore=pipda)
+        except VarnameException:
+            pass
         return df
 
     names = [None] * len(args)
     values = list(args)
     try:
-        argnames = argname2(
+        argnames = argname(
             "*args",
             frame=frame_,
             ignore=pipda,
@@ -73,8 +76,8 @@ def tibble(
             vars_only=False,
         )
         if len(argnames) != len(args):
-            raise VarnameRetrievingError
-    except VarnameRetrievingError:
+            raise VarnameException
+    except VarnameException:
         argnames = None
 
     if argnames:
@@ -93,7 +96,10 @@ def tibble(
         names, values, _name_repair=_name_repair, base0_=base0_, dtypes_=dtypes_
     )
 
-    out.__dfname__ = varname(raise_exc=False, frame=frame_, ignore=pipda)
+    try:
+        out.__dfname__ = varname(frame=frame_, ignore=pipda)
+    except VarnameException:
+        pass
 
     if not kwargs and len(args) == 1 and isinstance(args[0], DataFrame):
         copy_attrs(out, args[0])
@@ -139,8 +145,8 @@ def tibble_row(
     if df.shape[0] > 1:
         raise ValueError("All arguments must be size one, use `[]` to wrap.")
     try:
-        df.__dfname__ = varname(raise_exc=False)
-    except VarnameRetrievingError:  # pragma: no cover
+        df.__dfname__ = varname()
+    except VarnameException:  # pragma: no cover
         df.__dfname__ = None
 
     apply_dtypes(df, dtypes_)
