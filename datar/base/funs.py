@@ -166,7 +166,7 @@ def make_names(names: Any, unique: bool = False) -> List[str]:
 def make_unique(names: Any) -> List[str]:
     """Make the names unique.
 
-    It's a shortcut for make_names(names, unique=True)
+    It's a shortcut for `make_names(names, unique=True)`
 
     Args:
         names: The names

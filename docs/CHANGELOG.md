@@ -1,3 +1,8 @@
+## 0.4.4
+
+- Adopt `varname` `v0.8.0`
+- Add `base.make_names()` and `base.make_unique()`
+
 ## 0.4.3
 
 - Adopt `pipda` `0.4.5`
