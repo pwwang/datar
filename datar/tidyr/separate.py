@@ -128,7 +128,7 @@ def separate(
     apply_dtypes(separated, convert)
 
     out = data.drop(columns=[col]) if remove else data
-    out = mutate(out, separated)
+    out = mutate(out, separated, __calling_env=CallingEnvs.REGULAR)
 
     return reconstruct_tibble(data, out)
 

@@ -34,7 +34,7 @@ def colnames(
 
     if not _nested:
         if new is not None:
-            return set_names(df, new)
+            return set_names(df, new, __calling_env=CallingEnvs.REGULAR)
         return df.columns.tolist()
 
     if new is not None:
@@ -58,7 +58,7 @@ def colnames(
                 namei += 1
                 newnames.append(f"{new[namei]}${parts[1]}")
                 last_parts0 = parts[0]
-        return set_names(df, newnames)
+        return set_names(df, newnames, __calling_env=CallingEnvs.REGULAR)
 
     cols = [
         col.split("$", 1)[0] if isinstance(col, str) else col
@@ -106,7 +106,10 @@ def dim(x: DataFrame, _nested: bool = True) -> Tuple[int]:
     Returns:
         The shape of the dataframe.
     """
-    return (nrow(x), ncol(x, _nested))
+    return (
+        nrow(x, __calling_env=CallingEnvs.REGULAR),
+        ncol(x, _nested, __calling_env=CallingEnvs.REGULAR),
+    )
 
 
 @register_verb(DataFrame)
@@ -221,11 +224,10 @@ def names(
     """Get the column names of a dataframe"""
     return colnames(x, new, _nested, __calling_env=CallingEnvs.REGULAR)
 
+
 @names.register(dict)
 def _(
-        x: Mapping[str, Any],
-        new: Iterable[str] = None,
-        _nested: bool = True
+    x: Mapping[str, Any], new: Iterable[str] = None, _nested: bool = True
 ) -> Union[List[str], Mapping[str, Any]]:
     """Get the keys of a dict
     dict is like a list in R, mimic `names(<list>)` in R.
@@ -233,6 +235,7 @@ def _(
     if new is None:
         return list(x)
     return dict(zip(new, x.values()))
+
 
 @register_verb(context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> List[Any]:
@@ -262,7 +265,7 @@ def union(x: Any, y: Any) -> List[Any]:
     if is_scalar(y):
         y = [y]
     # pylint: disable=arguments-out-of-order
-    return list(x) + setdiff(y, x)
+    return list(x) + setdiff(y, x, __calling_env=CallingEnvs.REGULAR)
 
 
 @register_verb(context=Context.EVAL)
@@ -327,11 +330,10 @@ def _(  # pylint: disable=invalid-name,unused-argument
     keep = "first" if not from_last else "last"
     return x.duplicated(keep=keep).values
 
+
 @register_verb(DataFrame)
 def max_col(
-    df: DataFrame,
-    ties_method: str = "random",
-    base0_: bool = None
+    df: DataFrame, ties_method: str = "random", base0_: bool = None
 ) -> Iterable[int]:
     """Find the maximum position for each row of a matrix
 
@@ -348,11 +350,10 @@ def max_col(
         The indices of max values for each row
     """
     ties_method = arg_match(
-        ties_method,
-        "ties_method",
-        ["random", "first", "last"]
+        ties_method, "ties_method", ["random", "first", "last"]
     )
     base = int(not get_option("which_base_0", base0_))
+
     def which_max_with_ties(ser: Series):
         """Find index with max if ties happen"""
         indices = numpy.flatnonzero(ser == max(ser)) + base

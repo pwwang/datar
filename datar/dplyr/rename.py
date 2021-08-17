@@ -51,10 +51,8 @@ def rename(_data: DataFrame, base0_: bool = None, **kwargs: str) -> DataFrame:
     ]
 
     if isinstance(out, DataFrameGroupBy):
-        out.attrs["_group_vars"] = [
-            new_names.get(name, name) for name in gvars
-        ]
-        out._group_data.columns = out.attrs['_group_vars'] + ["_rows"]
+        out.attrs["_group_vars"] = [new_names.get(name, name) for name in gvars]
+        out._group_data.columns = out.attrs["_group_vars"] + ["_rows"]
     # attrs copied?
     return out
 
@@ -93,4 +91,6 @@ def rename_with(
     new_columns = {
         _fn(col, *args, **kwargs): col for col in cols  # type: ignore
     }
-    return rename(_data, **new_columns, base0_=True)
+    return rename(
+        _data, **new_columns, base0_=True, __calling_env=CallingEnvs.REGULAR
+    )

@@ -52,7 +52,9 @@ def group_keys(_data: DataFrame) -> DataFrame:
 @group_keys.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> DataFrame:
     # .copy() allows future modifications
-    return group_data(_data).iloc[:, :-1].copy()
+    return (
+        group_data(_data, __calling_env=CallingEnvs.REGULAR).iloc[:, :-1].copy()
+    )
 
 
 @register_verb(DataFrame)
@@ -64,7 +66,9 @@ def group_rows(_data: DataFrame) -> List[List[int]]:
 
 @group_rows.register(DataFrameGroupBy)
 def _(_data: DataFrame) -> List[List[int]]:
-    return group_data(_data)["_rows"].tolist()
+    return group_data(_data, __calling_env=CallingEnvs.REGULAR)[
+        "_rows"
+    ].tolist()
 
 
 @register_verb(DataFrame)
@@ -79,7 +83,9 @@ def group_indices(_data: DataFrame) -> List[int]:
 @group_indices.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[int]:
     ret = {}
-    for row in group_data(_data).itertuples():
+    for row in group_data(
+        _data, __calling_env=CallingEnvs.REGULAR
+    ).itertuples():
         for index in row[-1]:
             ret[index] = row.Index
     return [ret[key] for key in sorted(ret)]
@@ -99,7 +105,7 @@ def group_vars(_data: DataFrame) -> List[str]:
 
 @group_vars.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[str]:
-    return _data.attrs['_group_vars']
+    return _data.attrs["_group_vars"]
 
 
 # groups in dplyr returns R list
@@ -115,7 +121,9 @@ def group_size(_data: DataFrame) -> List[int]:
 
 @group_size.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> List[int]:
-    return list(map(len, group_data(_data)["_rows"]))
+    return list(
+        map(len, group_data(_data, __calling_env=CallingEnvs.REGULAR)["_rows"])
+    )
 
 
 @register_verb(DataFrame)
@@ -126,4 +134,4 @@ def n_groups(_data: DataFrame) -> int:
 
 @n_groups.register(DataFrameGroupBy)
 def _(_data: DataFrameGroupBy) -> int:
-    return group_data(_data).shape[0]
+    return group_data(_data, __calling_env=CallingEnvs.REGULAR).shape[0]

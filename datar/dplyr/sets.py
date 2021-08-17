@@ -24,8 +24,12 @@ def _check_xy(x: DataFrame, y: DataFrame) -> None:
             f"- different number of columns: {x.shape[1]} vs {y.shape[1]}"
         )
 
-    in_y_not_x = setdiff(y.columns, x.columns)
-    in_x_not_y = setdiff(x.columns, y.columns)
+    in_y_not_x = setdiff(
+        y.columns, x.columns, __calling_env=CallingEnvs.REGULAR
+    )
+    in_x_not_y = setdiff(
+        x.columns, y.columns, __calling_env=CallingEnvs.REGULAR
+    )
     if in_y_not_x or in_x_not_y:
         msg = ["not compatible:"]
         if in_y_not_x:
@@ -49,7 +53,9 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     _check_xy(x, y)
     from .distinct import distinct
 
-    return distinct(pandas.merge(x, y, how="inner"))
+    return distinct(
+        pandas.merge(x, y, how="inner"), __calling_env=CallingEnvs.REGULAR
+    )
 
 
 @intersect.register(DataFrameGroupBy, context=Context.EVAL)
@@ -72,7 +78,9 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     _check_xy(x, y)
     from .distinct import distinct
 
-    return distinct(pandas.merge(x, y, how="outer"))
+    return distinct(
+        pandas.merge(x, y, how="outer"), __calling_env=CallingEnvs.REGULAR
+    )
 
 
 @union.register(DataFrameGroupBy, context=Context.EVAL)
@@ -101,7 +109,8 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     return distinct(
         out[out[indicator] == "left_only"]
         .drop(columns=[indicator])
-        .reset_index(drop=True)
+        .reset_index(drop=True),
+        __calling_env=CallingEnvs.REGULAR,
     )
 
 

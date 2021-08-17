@@ -266,7 +266,15 @@ def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
 
     from ..dplyr.mutate import mutate
 
-    return remove_rownames(mutate(_data, **{var: _data.index}, _before=1))
+    return remove_rownames(
+        mutate(
+            _data,
+            **{var: _data.index},
+            _before=1,
+            __calling_env=CallingEnvs.REGULAR,
+        ),
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 index_to_column = rownames_to_column  # pylint: disable=invalid-name
@@ -293,7 +301,13 @@ def rowid_to_column(
 
     base = int(not base0_)
     return remove_rownames(
-        mutate(_data, **{var: range(base, _data.shape[0] + base)}, _before=1)
+        mutate(
+            _data,
+            **{var: range(base, _data.shape[0] + base)},
+            _before=1,
+            __calling_env=CallingEnvs.REGULAR,
+        ),
+        __calling_env=CallingEnvs.REGULAR,
     )
 
 
@@ -310,7 +324,7 @@ def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
     Returns:
         The data frame with the column converted to rownames
     """
-    if has_rownames(_data):
+    if has_rownames(_data, __calling_env=CallingEnvs.REGULAR):
         raise ValueError("`_data` must be a data frame without row names.")
 
     from ..dplyr.mutate import mutate
@@ -321,7 +335,7 @@ def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
         raise ColumnNotExistingError(
             f"Column `{var}` does not exist."
         ) from None
-    out = mutate(_data, **{var: None})
+    out = mutate(_data, **{var: None}, __calling_env=CallingEnvs.REGULAR)
     out.index = rownames
     return out
 
@@ -367,7 +381,13 @@ def _cbind_at(
 
     part1 = data.iloc[:, :pos]
     part2 = data.iloc[:, pos:]
-    return bind_cols(part1, df, part2, _name_repair=_name_repair)
+    return bind_cols(
+        part1,
+        df,
+        part2,
+        _name_repair=_name_repair,
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 def _pos_from_before_after(
@@ -391,4 +411,4 @@ def _rbind_at(data: DataFrame, df: DataFrame, pos: int) -> DataFrame:
 
     part1 = data.iloc[:pos, :]
     part2 = data.iloc[pos:, :]
-    return bind_rows(part1, df, part2)
+    return bind_rows(part1, df, part2, __calling_env=CallingEnvs.REGULAR)

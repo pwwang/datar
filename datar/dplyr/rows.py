@@ -229,7 +229,7 @@ def rows_delete(
     _rows_check_key_df(x, key, df_name="x")
     _rows_check_key_df(y, key, df_name="y")
 
-    extra_cols = setdiff(y.columns, key)
+    extra_cols = setdiff(y.columns, key, __calling_env=CallingEnvs.REGULAR)
     if len(extra_cols) > 0:
         logger.info("Ignoring extra columns: %s", extra_cols)
 
@@ -261,7 +261,7 @@ def _rows_check_key(by: StringOrIter, x: DataFrame, y: DataFrame) -> List[str]:
         if not isinstance(by_elem, str):
             raise ValueError("`by` must be a string or a list of strings.")
 
-    bad = setdiff(y.columns, x.columns)
+    bad = setdiff(y.columns, x.columns, __calling_env=CallingEnvs.REGULAR)
     if len(bad) > 0:
         raise ValueError("All columns in `y` must exist in `x`.")
 
@@ -270,7 +270,7 @@ def _rows_check_key(by: StringOrIter, x: DataFrame, y: DataFrame) -> List[str]:
 
 def _rows_check_key_df(df: DataFrame, by: List[str], df_name: str) -> None:
     """Check key with the data frame"""
-    y_miss = setdiff(by, df.columns)
+    y_miss = setdiff(by, df.columns, __calling_env=CallingEnvs.REGULAR)
     if len(y_miss) > 0:
         raise ValueError(f"All `by` columns must exist in `{df_name}`.")
 
