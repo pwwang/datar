@@ -169,7 +169,7 @@ def fct_collapse(
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_lump_min(
+def fct_lump_min(  # pylint: disable=redefined-builtin,invalid-name
     _f: ForcatsType,
     min: int,
     w: Iterable[NumericType] = None,
@@ -209,7 +209,7 @@ def fct_lump_min(
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_lump_prop(
+def fct_lump_prop(  # pylint: disable=invalid-name
     _f: ForcatsType,
     prop: NumericType,
     w: Iterable[NumericType] = None,
@@ -230,7 +230,7 @@ def fct_lump_prop(
     Returns:
         The factor with levels lumped.
     """
-    calcs = check_calc_levels(_f)
+    calcs = check_calc_levels(_f, w)
     _f = calcs["_f"]
 
     prop_n = calcs["count"] / calcs["total"]
@@ -260,7 +260,7 @@ def fct_lump_prop(
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_lump_n(
+def fct_lump_n(  # pylint: disable=invalid-name
     _f: ForcatsType,
     n: int,
     w: Iterable[NumericType] = None,
@@ -340,7 +340,7 @@ def fct_lump_lowfreq(_f: ForcatsType, other_level: Any = "Other"):
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_lump(
+def fct_lump(  # pylint: disable=invalid-name
     _f: ForcatsType,
     n: int = None,
     prop: NumericType = None,
@@ -468,8 +468,9 @@ def fct_relabel(
 # -------------
 
 
-def check_weights(
-    w: Iterable[NumericType], n: int = None
+def check_weights(  # pylint: disable=invalid-name
+    w: Iterable[NumericType],
+    n: int = None,
 ) -> Iterable[NumericType]:
     """Check the weights"""
     if w is None:
@@ -493,7 +494,7 @@ def check_weights(
     return w
 
 
-def check_calc_levels(
+def check_calc_levels(  # pylint: disable=invalid-name
     _f: ForcatsType,
     w: Iterable[NumericType] = None,
 ) -> Mapping[str, Union[ForcatsType, NumericType]]:

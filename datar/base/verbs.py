@@ -9,7 +9,6 @@ from pipda.utils import CallingEnvs
 from ..core.contexts import Context
 from ..core.types import ArrayLikeType, IntType, is_scalar
 from ..core.utils import Array, arg_match, get_option, position_after
-from ..core.options import get_option
 
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
@@ -460,6 +459,7 @@ def proportions(
         return mutate(
             x,
             across(
+                # pylint: disable=no-value-for-parameter
                 everything(__calling_env=CallingEnvs.PIPING),
                 lambda col: col / sum_(col, __calling_env=CallingEnvs.REGULAR),
                 __calling_env=CallingEnvs.PIPING,

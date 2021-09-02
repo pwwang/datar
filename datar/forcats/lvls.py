@@ -164,14 +164,15 @@ def lvls_expand(
 
     missing = setdiff(levs, new_levels, __calling_env=CallingEnvs.REGULAR)
     if len(missing) > 0:
-        raise ValueError(
-            "Must include all existing levels. Missing: {missing}"
-        )
+        raise ValueError("Must include all existing levels. Missing: {missing}")
 
     return refactor(_f, new_levels=new_levels)
 
+
 @register_verb(ForcatsRegType)
-def lvls_union(fs: Iterable[ForcatsType]) -> List:
+def lvls_union(  # pylint: disable=invalid-name
+    fs: Iterable[ForcatsType],
+) -> List:
     """Find all levels in a list of factors
 
     Args:

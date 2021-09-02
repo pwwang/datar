@@ -1,25 +1,26 @@
 """Generating and manipulating sequences"""
 
-from datar.base.null import is_null
-from typing import Iterable, Any, Union
+from typing import Any, Iterable, Union
 
 import numpy
 import pandas
 from pipda import register_func
 
-from ..core.types import (
-    IntType,
-    IntOrIter,
-    ArrayLikeType,
-    NumericType,
-    is_scalar,
-    is_not_null,
-    is_iterable,
-    is_scalar_int,
-)
-from ..core.contexts import Context
-from ..core.utils import Array, get_option, length_of, logger
 from ..core.collections import Collection
+from ..core.contexts import Context
+from ..core.types import (
+    ArrayLikeType,
+    IntOrIter,
+    IntType,
+    NumericType,
+    is_iterable,
+    is_not_null,
+    is_scalar,
+    is_scalar_int,
+    is_null,
+)
+from ..core.utils import Array, get_option, length_of, logger
+
 
 @register_func(None, context=Context.EVAL)
 def seq_along(along_with: Iterable[Any], base0_: bool = None) -> ArrayLikeType:

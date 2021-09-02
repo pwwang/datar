@@ -1,3 +1,4 @@
+"""Provides functions for multiple factors"""
 import itertools
 
 from pandas import Categorical

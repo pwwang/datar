@@ -1,3 +1,4 @@
+"""Provides functions to add or remove levels"""
 from typing import Any, Iterable, List
 
 from pandas import Categorical
@@ -101,8 +102,9 @@ def fct_drop(_f: ForcatsType, only: Any = None) -> Categorical:
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_unify(
-    fs: Iterable[ForcatsType], levels: Iterable = None
+def fct_unify(  # pylint: disable=invalid-name,redefined-outer-name
+    fs: Iterable[ForcatsType],
+    levels: Iterable = None,
 ) -> List[Categorical]:
     """Unify the levels in a list of factors
 
