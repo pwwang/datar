@@ -8,7 +8,7 @@ from pipda import evaluate_expr
 from pipda.context import ContextAnnoType
 
 from .utils import get_option
-from .types import is_iterable, is_scalar
+from .types import is_iterable, is_scalar, is_scalar_int
 from .exceptions import ColumnNotExistingError
 
 PoolType = Union[Iterable, int]
@@ -149,15 +149,15 @@ class Collection(CollectionBase, list):
 
     def _is_index(self, elem: Any) -> bool:
         """Check if an element is an index or not"""
-        if self.pool is None or not isinstance(elem, int):
+        if self.pool is None or not is_scalar_int(elem):
             return False
-        if isinstance(self.pool, int):
+        if is_scalar_int(self.pool):
             return True
         # iterable
         # If an empty pool is given, assuming integer elem is index
         # Otherwise if pool is a list of integers, then elem should match
         # the pool
-        if len(self.pool) == 0 or not isinstance(self.pool[0], int):
+        if len(self.pool) == 0 or not is_scalar_int(self.pool[0]):
             return True
         return False
 
@@ -247,7 +247,7 @@ class Inverted(Collection):
             raise ValueError("Inverted object needs `pool` to expand.")
 
         super().expand(pool, base0)  # 0-based indexes
-        pool = range(pool) if isinstance(pool, int) else range(len(pool))
+        pool = range(pool) if is_scalar_int(pool) else range(len(pool))
         # pylint: disable=unsupported-membership-test
         list.__init__(self, [elem for elem in pool if elem not in self])
         return self
@@ -352,8 +352,8 @@ class Slice(Collection):
 
         if start is None:
             start = 0
-        elif not isinstance(start, int):
-            if isinstance(pool, int) or start not in pool:
+        elif not is_scalar_int(start):
+            if is_scalar_int(pool) or start not in pool:
                 raise ColumnNotExistingError(
                     f"Column `{start}` does not exist."
                 )
@@ -361,11 +361,11 @@ class Slice(Collection):
         else:
             start -= base
 
-        len_pool = pool if isinstance(pool, int) else len(pool)
+        len_pool = pool if is_scalar_int(pool) else len(pool)
         if stop is None:
             stop = len_pool
-        elif not isinstance(stop, int):
-            if isinstance(pool, int) or stop not in pool:
+        elif not is_scalar_int(stop):
+            if is_scalar_int(pool) or stop not in pool:
                 raise ColumnNotExistingError(f"Column `{stop}` does not exist.")
             stop = self._index_from_pool(stop) + 1
         # else:

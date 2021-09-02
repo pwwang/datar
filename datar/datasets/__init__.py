@@ -34,13 +34,14 @@ def load_data(name: str) -> pandas.DataFrame:
 
     dataset = datasets[name]
     data = pandas.read_csv(
-        dataset["file"], index_col=0 if dataset["index"] else False
+        dataset["file"],
+        index_col=0 if dataset["index"] else False,
     )
     data.__dfname__ = name
     return data
 
 
-__all__ = [] # type: List[str]
+__all__ = []  # type: List[str]
 
 
 def __getattr__(name):

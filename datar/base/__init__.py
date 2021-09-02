@@ -48,7 +48,9 @@ from .factor import (
     factor,
     is_categorical,
     is_factor,
+    is_ordered,
     levels,
+    nlevels,
 )
 from .funs import (
     cut,
@@ -57,6 +59,7 @@ from .funs import (
     identity,
     make_unique,
     make_names,
+    rank,
 )
 from .logical import (
     FALSE,
@@ -75,12 +78,14 @@ from .seq import (
     c,
     length,
     lengths,
+    order,
     rep,
     rev,
     sample,
     seq,
     seq_along,
     seq_len,
+    sort,
     unique,
     match,
 )
@@ -123,7 +128,7 @@ from .string import (
     tolower,
     toupper,
 )
-from .table import table
+from .table import table, tabulate
 from .testing import (
     is_atomic,
     is_double,
@@ -155,6 +160,7 @@ from .trig_hb import (
     tanpi,
 )
 from .verbs import (
+    append,
     colnames,
     diag,
     dim,
@@ -163,6 +169,8 @@ from .verbs import (
     names,
     ncol,
     nrow,
+    prop_table,
+    proportions,
     rownames,
     setdiff,
     setequal,

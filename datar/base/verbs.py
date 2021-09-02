@@ -7,8 +7,8 @@ from pipda import register_verb
 from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.types import IntType, is_scalar
-from ..core.utils import Array, arg_match
+from ..core.types import ArrayLikeType, IntType, is_scalar
+from ..core.utils import Array, arg_match, get_option, position_after
 from ..core.options import get_option
 
 # pylint: disable=redefined-outer-name
@@ -280,6 +280,43 @@ def setequal(x: Any, y: Any) -> List[Any]:
     return x == y
 
 
+@register_verb(
+    (list, tuple, numpy.ndarray, Series, Categorical),
+    context=Context.EVAL,
+)
+def append(x: Any, values: Any, after: int = -1, base0_: bool = None) -> List:
+    """Add elements to a vector.
+
+    Args:
+        x: the vector the values are to be appended to.
+        values: to be included in the modified vector.
+        after: a subscript, after which the values are to be appended.
+        base0_: Whether after is 0-based.
+            if not given, will use `get_option("index.base.0")`.
+            When it's 1-based, after=0 will append to the beginning,
+            -1 will append to the end.
+            When 0-based, after=None will append to the beginning,
+            -1 to the end
+
+    Returns:
+        A vector containing the values in ‘x’ with the elements of
+        ‘values’ appended after the specified element of ‘x’.
+    """
+    if is_scalar(x):
+        x = [x]
+    if is_scalar(values):
+        values = [values]
+    x = list(x)
+    values = list(values)
+
+    base0_ = get_option("index.base.0", base0_)
+    # 0 is not allowed with 1-base
+    if base0_ and after is None:
+        return values + x
+    pos = position_after(after, len(x), base0_)
+    return x[:pos] + values + x[pos:]
+
+
 @register_verb((list, tuple, numpy.ndarray, Series, Categorical))
 def duplicated(  # pylint: disable=invalid-name
     x: Iterable[Any],
@@ -378,3 +415,72 @@ def complete_cases(_data: DataFrame) -> Iterable[bool]:
         missing values across the entire sequence.
     """
     return _data.apply(lambda row: row.notna().all(), axis=1).values
+
+
+@register_verb(DataFrame)
+def proportions(
+    x: DataFrame, margin: Union[int, tuple, list] = None
+) -> DataFrame:
+    """Returns conditional proportions given ‘margins’ (alias: prop_table)
+
+    Args:
+        x: A numeric table
+        margin: If x is a dataframe, 1 for rows, 2 for columns, and 3 or [1,2]
+            for both rows and columns (turns x to a unit matrix with all
+            elements equal to 1)
+
+    Returns:
+        The x but with given margin replaced with proportion
+    """
+    from ..dplyr import mutate, rename_with, across, everything
+    from . import sum_
+
+    if margin is None:
+        sumall = x.to_numpy().sum()
+        return x.applymap(lambda elem: elem / sumall, na_action="ignore")
+
+    if margin == 1:
+        index = x.index
+        out = t(
+            proportions(
+                rename_with(
+                    t(x, __calling_env=CallingEnvs.REGULAR),
+                    str,
+                    __calling_env=CallingEnvs.REGULAR,
+                ),
+                2,
+                __calling_env=CallingEnvs.REGULAR,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
+        out.index = index
+        return out
+
+    if margin == 2:
+        return mutate(
+            x,
+            across(
+                everything(__calling_env=CallingEnvs.PIPING),
+                lambda col: col / sum_(col, __calling_env=CallingEnvs.REGULAR),
+                __calling_env=CallingEnvs.PIPING,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
+
+    return x.applymap(lambda elem: 1, na_action="ignore")
+
+
+prop_table = proportions
+
+
+@proportions.register((list, tuple, numpy.array, Series))
+def _(
+    x: ArrayLikeType, margin: Union[int, tuple, list] = None
+) -> ArrayLikeType:
+    """proportions for vectors"""
+    from . import sum_
+
+    if isinstance(x, (list, tuple)):
+        x = Array(x)
+
+    return x / sum_(x, __calling_env=CallingEnvs.REGULAR)

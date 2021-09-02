@@ -12,7 +12,13 @@ from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import logger, get_option, Array
-from ..core.types import is_not_null, is_scalar, is_null, is_categorical
+from ..core.types import (
+    NoneType,
+    is_not_null,
+    is_scalar,
+    is_null,
+    is_categorical,
+)
 from ..base import NA, unique, c, intersect
 from ..base.na import NA_integer_, NA_character_
 
@@ -60,6 +66,9 @@ def _check_length(val: numpy.ndarray, x: numpy.ndarray, name: str):
 
 def _check_type(val: numpy.ndarray, out_type: type, name: str):
     """Check the type of the values to recode"""
+    if out_type is NoneType:
+        return
+
     if val.dtype is numpy.dtype(object):
         if out_type and not all(isinstance(elem, out_type) for elem in val):
             raise TypeError(
@@ -305,11 +314,18 @@ def _(
 
     for val in values:
         if out_type is None:
-            out_type = type(values[val])
+            out_type = type(_get_first([values[val]]))
         out = _replace_with(
-            out, out_type, _x.categories == val, values[val], f"`{val}`"
+            out,
+            out_type,
+            # _x.categories == val,
+            _x == val,
+            values[val],
+            f"`{val}`",
         )
-        replaced[_x.categories == val] = True
+        # _x may have duplicated values
+        # replaced[_x.categories == val] = True
+        replaced[_x == val] = True
 
     _default = _validate_recode_default(_default, _x, out, out_type, replaced)
     out = _replace_with(out, out_type, ~replaced, _default, "`_default`")
