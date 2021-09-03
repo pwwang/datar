@@ -2,28 +2,34 @@
 from typing import Any, Callable, Iterable, Sequence
 
 from pandas import Categorical, DataFrame, Series
-from pipda import register_verb, register_func
+from pipda import register_func, register_verb
 from pipda.utils import CallingEnvs, functype
 
 from ..base import (
+    NA,
     append,
     as_integer,
     duplicated,
-    factor,
     intersect,
     levels,
     match,
     median,
     nlevels,
+    order,
     rev,
     sample,
     seq_len,
     setdiff,
-    table,
-    order,
+    table
 )
 from ..core.contexts import Context
-from ..core.types import ForcatsRegType, ForcatsType, is_not_null, is_null
+from ..core.types import (
+    ForcatsRegType,
+    ForcatsType,
+    is_not_null,
+    is_null,
+    is_scalar
+)
 from ..core.utils import get_option, logger
 from .lvls import lvls_reorder, lvls_seq
 from .utils import check_factor
@@ -114,10 +120,9 @@ def fct_inorder(_f: ForcatsType, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    idx = as_integer(_f, __calling_env=CallingEnvs.REGULAR)[
-        ~duplicated(_f, __calling_env=CallingEnvs.REGULAR)
-    ]
-    idx = idx[is_not_null(idx)]
+    dups = duplicated(_f, __calling_env=CallingEnvs.REGULAR)
+    idx = as_integer(_f, __calling_env=CallingEnvs.REGULAR)[~dups]
+    idx = idx[is_not_null(_f[~dups])]
     return lvls_reorder(
         _f,
         idx,
@@ -126,6 +131,7 @@ def fct_inorder(_f: ForcatsType, ordered: bool = None) -> Categorical:
         __calling_env=CallingEnvs.REGULAR,
     )
 
+as_factor = fct_inorder
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_infreq(_f: ForcatsType, ordered: bool = None) -> Categorical:
@@ -167,10 +173,14 @@ def fct_inseq(_f: ForcatsType, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    num_levels = as_integer(
-        factor(levels(_f, __calling_env=CallingEnvs.REGULAR)),
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
+    num_levels = []
+    for lev in levs:
+        try:
+            numlev = as_integer(lev, __calling_env=CallingEnvs.REGULAR)
+        except (ValueError, TypeError):
+            numlev = NA
+        num_levels.append(numlev)
 
     if all(is_null(num_levels)):
         raise ValueError(
@@ -179,7 +189,12 @@ def fct_inseq(_f: ForcatsType, ordered: bool = None) -> Categorical:
 
     return lvls_reorder(
         _f,
-        order(num_levels, base0_=True, __calling_env=CallingEnvs.REGULAR),
+        order(
+            num_levels,
+            na_last=True,
+            base0_=True,
+            __calling_env=CallingEnvs.REGULAR,
+        ),
         ordered=ordered,
         base0_=True,
         __calling_env=CallingEnvs.REGULAR,
@@ -201,7 +216,7 @@ def last2(_x: Iterable, _y: Sequence) -> Any:
 
 
 @register_func(None, context=Context.EVAL)
-def first2(_x: Iterable, _y: Sequence) -> Any:
+def first2(_x: Sequence, _y: Sequence) -> Any:
     """Find the first element of `_y` ordered by `_x`
 
     Args:
@@ -211,7 +226,7 @@ def first2(_x: Iterable, _y: Sequence) -> Any:
     Returns:
         First element of `_y` ordered by `_x`
     """
-    return _y[order(_x)][0]
+    return _y[order(_x, base0_=True)][0]
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -237,6 +252,9 @@ def fct_reorder(
         The factor with levels reordered
     """
     _f = check_factor(_f)
+    if is_scalar(_x):
+        _x = [_x]
+
     if len(_f) != len(_x):
         raise ValueError("Unmatched length between `_x` and `_f`.")
 
@@ -250,7 +268,8 @@ def fct_reorder(
         .groupby("f", observed=False)
         .agg(lambda col: _fun(col, *args, **kwargs))
     )
-    if summary.shape[1] > 1:
+
+    if not is_scalar(summary.iloc[0, 0]):
         raise ValueError("`fun` must return a single value per group.")
 
     return lvls_reorder(
@@ -291,6 +310,10 @@ def fct_reorder2(
         The factor with levels reordered
     """
     _f = check_factor(_f)
+    if is_scalar(_x):
+        _x = [_x]
+    if is_scalar(_y):
+        _y = [_y]
     if len(_f) != len(_x) or len(_f) != len(_y):
         raise ValueError("Unmatched length between `_x` and `_f`.")
 
@@ -312,7 +335,7 @@ def fct_reorder2(
         )
     )
 
-    if not isinstance(summary, Series):
+    if not isinstance(summary, Series) or not is_scalar(summary[0]):
         raise ValueError("`fun` must return a single value per group.")
 
     return lvls_reorder(
@@ -347,6 +370,7 @@ def fct_shuffle(_f: ForcatsType) -> Categorical:
         __calling_env=CallingEnvs.REGULAR,
     )
 
+
 @register_verb(ForcatsRegType)
 def fct_rev(_f: ForcatsType) -> Categorical:
     """Reverse order of factor levels
@@ -365,6 +389,7 @@ def fct_rev(_f: ForcatsType) -> Categorical:
         base0_=True,
         __calling_env=CallingEnvs.REGULAR,
     )
+
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_shift(_f: ForcatsType, n: int = 1) -> Categorical:

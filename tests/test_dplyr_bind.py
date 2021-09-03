@@ -96,14 +96,14 @@ def test_ignores_null_empty():
     rows = out >> nrow()
     assert rows == 2
 
-    val = out.fillna(1234) >> get(1, f.a)
+    val = out.fillna(1234) >> get(2, f.a)
     assert val == 1234
 
     out = df_no_cols >> bind_rows(df)
     rows = out >> nrow()
     assert rows == 2
 
-    val = out.fillna(888) >> get(0, f.a)
+    val = out.fillna(888) >> get(1, f.a)
     assert val == 888
 
 # column coercion
@@ -147,12 +147,12 @@ def test_bind_na_cols():
     df2 = tibble(x=NA)
 
     out = df1 >> bind_rows(df2)
-    res = out >> get(2, f.x)
+    res = out >> get(3, f.x)
     y = is_na(res)
     assert y
 
     out = df2 >> bind_rows(df1)
-    res = out >> get(0, f.x)
+    res = out >> get(1, f.x)
     y = is_na(res)
     assert y
 

@@ -67,7 +67,7 @@ def _check_length(val: numpy.ndarray, x: numpy.ndarray, name: str):
 def _check_type(val: numpy.ndarray, out_type: type, name: str):
     """Check the type of the values to recode"""
     if out_type is NoneType:
-        return
+        return  # pragma: no cover
 
     if val.dtype is numpy.dtype(object):
         if out_type and not all(isinstance(elem, out_type) for elem in val):

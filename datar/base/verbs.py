@@ -301,8 +301,8 @@ def append(x: Any, values: Any, after: int = -1, base0_: bool = None) -> List:
         A vector containing the values in ‘x’ with the elements of
         ‘values’ appended after the specified element of ‘x’.
     """
-    if is_scalar(x):
-        x = [x]
+    # if is_scalar(x):
+    #     x = [x]
     if is_scalar(values):
         values = [values]
     x = list(x)

@@ -41,6 +41,7 @@ def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
     """
     f2 = check_factor(_f)  # pylint: disable=invalid-name
     n_na = sum(is_null(f2))
+
     df = DataFrame(
         {
             "f": fct_inorder(
@@ -54,6 +55,7 @@ def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
             ),
         }
     )
+
     if n_na > 0:
         df = df.append({"f": NA, "n": n_na}, ignore_index=True)
 

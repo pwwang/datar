@@ -178,10 +178,10 @@ def sort(
     if na_last is None:
         return out
 
-    nas = x[~not_na_idx].values
+    nas = x[~not_na_idx].tolist()
     if na_last:
-        return Array(out.values + nas)
-    return Array(nas + out.values)
+        return Array(out.tolist() + nas)
+    return Array(nas + out.tolist())
 
 
 @register_func(None, context=Context.EVAL)

@@ -1,5 +1,6 @@
 """Port of forcats"""
 from .lvl_order import (
+    as_factor,
     fct_relevel,
     fct_inorder,
     fct_infreq,
@@ -42,4 +43,3 @@ from .lvls import (
     lvls_revalue,
     lvls_union,
 )
-from ..base import as_factor, as_categorical

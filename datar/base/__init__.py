@@ -51,6 +51,7 @@ from .factor import (
     is_ordered,
     levels,
     nlevels,
+    ordered,
 )
 from .funs import (
     cut,

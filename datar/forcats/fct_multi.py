@@ -2,18 +2,15 @@
 import itertools
 
 from pandas import Categorical
-from pipda import register_verb
 from pipda.utils import CallingEnvs
 
-from ..core.contexts import Context
-from ..core.types import ForcatsRegType, ForcatsType
+from ..core.types import ForcatsType
 
 from ..base import factor, paste, levels, expandgrid, intersect
 from .utils import check_factor
 from .lvls import lvls_union
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_c(*fs: ForcatsType) -> Categorical:
     """Concatenate factors, combining levels
 
@@ -34,7 +31,6 @@ def fct_c(*fs: ForcatsType) -> Categorical:
     return factor(allvals, levels=levs, exclude=None)
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_cross(
     *fs: ForcatsType,
     sep: str = ":",

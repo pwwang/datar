@@ -8,7 +8,7 @@ from pipda.utils import CallingEnvs
 from ..base import levels, union, table, intersect, setdiff
 from ..core.contexts import Context
 from ..core.types import ForcatsRegType, ForcatsType, is_scalar, is_null
-from .lvls import lvls_expand, lvls_revalue, lvls_union, refactor
+from .lvls import lvls_expand, lvls_union, refactor
 from .utils import check_factor
 
 
@@ -54,18 +54,19 @@ def fct_explicit_na(
         The factor with explict na_levels
     """
     _f = check_factor(_f)
-    levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
+    # levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
     is_missing = is_null(_f)
-    is_missing_level = is_null(levs)
+    # is_missing_level = is_null(levs)
 
     if any(is_missing):
         _f = fct_expand(_f, na_level)
         _f[is_missing] = na_level
         return _f
 
-    if any(is_missing_level):
-        levs[is_missing_level] = na_level
-        return lvls_revalue(_f, levs)
+    # NAs cannot be a level in pandas.Categorical
+    # if any(is_missing_level):
+    #     levs[is_missing_level] = na_level
+    #     return lvls_revalue(_f, levs)
 
     return _f
 

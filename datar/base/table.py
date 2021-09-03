@@ -5,7 +5,7 @@ from typing import Any, Iterable, Mapping, Tuple, Union, List
 import numpy
 import pandas
 from pandas import Categorical, DataFrame, Series
-from pipda import register_verb
+from pipda import register_func
 from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
@@ -23,10 +23,7 @@ from .na import NA
 # pylint: disable=redefined-builtin
 
 
-@register_verb(
-    (list, tuple, Series, numpy.ndarray, Categorical, DataFrame),
-    context=Context.EVAL,
-)
+@register_func(None, context=Context.EVAL)
 def table(
     input: Union[ArrayLikeType, Categorical, DataFrame],
     *more_inputs: Any,
@@ -89,10 +86,7 @@ def table(
     return tab
 
 
-@register_verb(
-    (list, tuple, numpy.ndarray, Series, Categorical),
-    context=Context.EVAL,
-)
+@register_func(None, context=Context.EVAL)
 def tabulate(
     bin: Union[ArrayLikeType, Categorical],
     nbins: int = None,
@@ -111,7 +105,7 @@ def tabulate(
     from . import as_integer, t
 
     bin = as_integer(bin, base0_=False, __calling_env=CallingEnvs.REGULAR)
-    nbins = max(1, max(bin))
+    nbins = max(1, max(bin) if len(bin) > 0 else 0, nbins)
     tabled = table(bin, __calling_env=CallingEnvs.REGULAR)
     tabled = (
         t(tabled, __calling_env=CallingEnvs.REGULAR)

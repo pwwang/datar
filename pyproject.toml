@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.4.4"
+version = "0.5.0"
 description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
 readme = "README.md"
@@ -37,7 +37,7 @@ strict_optional = false
 [tool.pytest.ini_options]
 addopts = "-vv --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
-    "error"
+    #"error"
 ]
 console_output_style = "progress"
 junit_family = "xunit1"

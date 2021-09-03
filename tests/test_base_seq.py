@@ -1,6 +1,7 @@
 import pytest
 
 from datar.base.seq import *
+from datar.base import NA
 from .conftest import assert_iterable_equal
 
 @pytest.mark.parametrize('from_, to, by, length_out, along_with, expect', [
@@ -91,3 +92,15 @@ def test_length():
 def test_match():
     out = match([1,2,3], [2,3,4])
     assert_iterable_equal(out, [-1,0,1])
+
+def test_sort():
+    out = sort([1,2,3])
+    assert_iterable_equal(out, [1,2,3])
+    out = sort([1,2,3], decreasing=True)
+    assert_iterable_equal(out, [3,2,1])
+    out = sort([NA, 1,2,3])
+    assert_iterable_equal(out, [1,2,3])
+    out = sort([NA, 1,2,3], na_last=True)
+    assert_iterable_equal(out, [1,2,3, NA])
+    out = sort([NA, 1,2,3], na_last=False)
+    assert_iterable_equal(out, [NA, 1,2,3])

@@ -12,6 +12,9 @@ def test_get():
     df = tibble(x=2)
     df.index=['a']
 
+    out = df >> get(1, 1)
+    assert out == 2
+
     out = df >> get('a', 'x')
     assert out == 2
 

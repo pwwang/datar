@@ -1,4 +1,4 @@
-from datar.base.verbs import complete_cases
+from datar.base.verbs import complete_cases, proportions
 import pytest
 from pandas import DataFrame
 from datar.base import *
@@ -128,3 +128,19 @@ def test_complete_cases():
     )
     out = complete_cases(df)
     assert_iterable_equal(out, [False, False, True])
+
+def test_append():
+    out = append([1], 2)
+    assert_iterable_equal(out, [1,2])
+    out = append([1,2,3], 4, base0_=True, after=None)
+    assert_iterable_equal(out, [4, 1,2,3])
+
+def test_proportions():
+    out = proportions([1,2,3,4])
+    assert_iterable_equal(out, [.1,.2,.3,.4])
+
+    df = tibble(a=[1,2], b=[3,4])
+    proportions(df).equals(tibble(a=[.1,.2], b=[.3,.4]))
+    proportions(df, 1).equals(tibble(a=[1./4, 2./6], b=[3./4, 4./6]))
+    proportions(df, 2).equals(tibble(a=[1./3, 2./3], b=[3./7, 4./7]))
+    proportions(df, 3).equals(tibble(a=[1,1], b=[1,1]))

@@ -265,7 +265,7 @@ def fct_lump_n(  # pylint: disable=invalid-name
     n: int,
     w: Iterable[NumericType] = None,
     other_level: Any = "Other",
-    ties_method: str = "average",
+    ties_method: str = "min",
 ) -> Categorical:
     """Lumps all levels except for the `n` most frequent.
 
@@ -307,7 +307,7 @@ def fct_lump_n(  # pylint: disable=invalid-name
         _f = lvls_revalue(_f, new_levels, __calling_env=CallingEnvs.REGULAR)
         return fct_relevel(_f, other_level, after=-1)
 
-    return _f
+    return _f  # pragma: no cover
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -346,7 +346,7 @@ def fct_lump(  # pylint: disable=invalid-name
     prop: NumericType = None,
     w: Iterable[NumericType] = None,
     other_level: Any = "Other",
-    ties_method: str = "average",
+    ties_method: str = "min",
 ) -> Categorical:
     """Lump together factor levels into "other"
 
@@ -476,7 +476,7 @@ def check_weights(  # pylint: disable=invalid-name
     if w is None:
         return w
 
-    if n is None:
+    if n is None:  # pragma: no cover
         n = len(w)
 
     if len(w) != n:
@@ -530,7 +530,7 @@ def lump_cutoff(x: Iterable[NumericType]) -> int:
         if elem > left:
             return i + 1
 
-    return len(x)
+    return len(x)  # pragma: no cover
 
 
 def in_smallest(x: Iterable[NumericType]) -> Iterable[bool]:

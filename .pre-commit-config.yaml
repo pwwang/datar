@@ -26,18 +26,18 @@ repos:
         entry: pylint datar
         types: [python]
         language: system
-    -   id: poetry2setuppy
-        name: Convert pyproject.toml to setup.py
-        entry: dephell deps convert --from=poetry --to=setup.py
-        language: system
-        files: pyproject.toml
-        pass_filenames: false
-    -   id: poetry2requirements
-        name: Convert pyproject.toml to requirements.txt
-        entry: dephell deps convert --from=poetry --to=requirements.txt
-        language: system
-        files: pyproject.toml
-        pass_filenames: false
+    # -   id: poetry2setuppy
+    #     name: Convert pyproject.toml to setup.py
+    #     entry: dephell deps convert --from=poetry --to=setup.py
+    #     language: system
+    #     files: pyproject.toml
+    #     pass_filenames: false
+    # -   id: poetry2requirements
+    #     name: Convert pyproject.toml to requirements.txt
+    #     entry: dephell deps convert --from=poetry --to=requirements.txt
+    #     language: system
+    #     files: pyproject.toml
+    #     pass_filenames: false
     # -   id: mypycheck
     #     name: Type checking by mypy
     #     entry: mypy
