@@ -119,6 +119,9 @@
 |[`levels`][44]|Get levels of factors|[:material-notebook:][4]|
 |[`is_factor`][45] [`is_categorical`][45]|Test if data is factor|[:material-notebook:][4]|
 |[`as_factor`][46] [`as_categorical`][46]|Cast data to factor|[:material-notebook:][4]|
+|[`is_ordered`][140]|Check if a factor is ordered||
+|[`nlevels`][141]|Get number of levels of a factor||
+|[`ordered`][142]|Create an ordered factor||
 
 ### Logical/Boolean values
 
@@ -173,6 +176,9 @@
 |[`sample`][64]|Sample the elements from sequence|[:material-notebook:][4]|
 |[`length`][65]|Get the length of data|[:material-notebook:][4]|
 |[`match`][129]|match returns a vector of the positions of (first) matches of its first argument in its second.||
+|[`rank`][143]|Returns the sample ranks of the values in a vector.||
+|[`order`][144]|Returns a permutation which rearranges its first argument into ascending or descending order||
+|[`sort`][145]|Sorting or Ordering Vectors||
 
 ### Special functions
 
@@ -220,6 +226,7 @@
 |API|Description|Notebook example|
 |---|---|---:|
 |[`table`][91]|Cross Tabulation and Table Creation|[:material-notebook:][4]|
+|[`tabulate`][146]|Takes the integer-valued vector `bin` and counts the number of times each integer occurs in it.||
 
 ### Testing value types
 
@@ -267,7 +274,9 @@
 |[`identity`][114]|Identity Function|[:material-notebook:][4]|
 |[`expandgrid`][115]|Create a Data Frame from All Combinations of Factor Variables|[:material-notebook:][4]|
 |[`max_col`][136]|Find the maximum position for each row of a matrix||
+|[`append`][147]|Add elements to a vector.||
 |[`complete_cases`][137]|Get a bool array indicating whether the values of rows are complete in a data frame.||
+|[`proportions`][147], [`prop_table`][147]|Returns conditional proportions given `margins`||
 |[`make_names`][137]|Make names available as columns and can be accessed by `df.<name>`||
 |[`make_unique`][138]|Make the names unique, alias of `make_names(names, unique=True)`||
 |[**`data_context`**][116]|Mimic R's `with`|[:material-notebook:][4]|
@@ -412,3 +421,12 @@
 [137]: ../../api/datar.base.verbs/#datar.base.verbs.complete_cases
 [138]: ../../api/datar.base.funs/#datar.base.funs.make_names
 [139]: ../../api/datar.base.funs/#datar.base.funs.make_unique
+[140]: ../../api/datar.base.factor/#datar.base.factor.is_ordered
+[141]: ../../api/datar.base.factor/#datar.base.factor.nlevels
+[142]: ../../api/datar.base.factor/#datar.base.factor.ordered
+[143]: ../../api/datar.base.funs/#datar.base.funs.rank
+[144]: ../../api/datar.base.seq/#datar.base.seq.order
+[145]: ../../api/datar.base.seq/#datar.base.seq.sort
+[146]: ../../api/datar.base.table/#datar.base.table.tabulate
+[147]: ../../api/datar.base.verbs/#datar.base.verbs.append
+[148]: ../../api/datar.base.verbs/#datar.base.verbs.proportions

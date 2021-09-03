@@ -41,6 +41,7 @@ nav:
         'dplyr': 'reference-maps/dplyr.md'
         'tibble': 'reference-maps/tibble.md'
         'tidyr': 'reference-maps/tidyr.md'
+        'forcats': 'reference-maps/forcats.md'
         'datasets': 'reference-maps/datasets.md'
         'datar': 'reference-maps/datar.md'
     - 'Porting rules': 'porting_rules.md'

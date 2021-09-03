@@ -8,6 +8,7 @@
 |`dplyr`|APIs ported from `tidyverse/dplyr`|[:octicons-cross-reference-16:][2]|
 |`tidyr`|APIs ported from `tidyverse/tidyr`|[:octicons-cross-reference-16:][4]|
 |`tibble`|APIs ported from `tidyverse/tibble`|[:octicons-cross-reference-16:][1]|
+|`forcats`|APIs ported from `tidyverse/forcats`|[:octicons-cross-reference-16:][9]|
 |#|#|#|
 |`datasets`|Datasets collected from `tidyverse` or other related packages|[:octicons-cross-reference-16:][3]|
 |#|#|#|
@@ -21,3 +22,4 @@
 [6]: ../datar
 [7]: ../stats
 [8]: ../utils
+[9]: ../forcats

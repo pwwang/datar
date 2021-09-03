@@ -1,3 +1,21 @@
+## 0.5.0
+
+Added:
+
+- Added `forcats` (#51 )
+- Added `base.is_ordered()`, `base.nlevels()`, `base.ordered()`, `base.rank()`, `base.order()`, `base.sort()`, `base.tabulate()`, `base.append()`, `base.prop_table()` and `base.proportions()`
+- Added `gss_cat` dataset
+
+Fixed:
+
+- Fixed an issue when `Collection` dealing with `numpy.int_`
+
+Enhanced:
+
+- Added `base0_` argument for `datar.get()`
+- Passed `__calling_env` to registered functions/verbs when used internally (this makes sure the library to be robust in different environments)
+
+
 ## 0.4.4
 
 - Adopt `varname` `v0.8.0`

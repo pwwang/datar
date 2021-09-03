@@ -91,7 +91,7 @@ def tabulate(
     bin: Union[ArrayLikeType, Categorical],
     nbins: int = None,
 ) -> numpy.ndarray:
-    """Takes the integer-valued vector ‘bin’ and counts the
+    """Takes the integer-valued vector `bin` and counts the
     number of times each integer occurs in it.
 
     Args:
