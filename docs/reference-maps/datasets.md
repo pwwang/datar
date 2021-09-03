@@ -65,6 +65,8 @@
 |`seals`|Vector field of seal movements|[`r-ggplot2-seals`][28]|
 |`txhousing`|Housing sales in TX|[`r-ggplot2-txhousing`][29]|
 |`luv_colours`|`colors()` in Luv space|[`r-ggplot2-luv_colours`][30]|
+|#|#|
+|`gss_cat`|A sample of categorical variables from the General Social survey|[`r-forcats-gss_cat`][32]|
 
 [1]: https://github.com/tidyverse/nycflights13
 [2]: https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/airquality
@@ -97,3 +99,4 @@
 [29]: https://ggplot2.tidyverse.org/reference/txhousing.html
 [30]: https://ggplot2.tidyverse.org/reference/luv_colours.html
 [31]: https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/faithfulZZ
+[32]: https://forcats.tidyverse.org/reference/gss_cat.html

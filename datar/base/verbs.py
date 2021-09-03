@@ -420,7 +420,7 @@ def complete_cases(_data: DataFrame) -> Iterable[bool]:
 def proportions(
     x: DataFrame, margin: Union[int, tuple, list] = None
 ) -> DataFrame:
-    """Returns conditional proportions given ‘margins’ (alias: prop_table)
+    """Returns conditional proportions given `margins` (alias: prop_table)
 
     Args:
         x: A numeric table

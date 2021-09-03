@@ -16,6 +16,8 @@ Unlike other similar packages in python that just mimic the piping syntax, `data
 
 ```shell
 pip install -U datar
+# to make sure dependencies to be up-to-date
+# pip install -U varname pipda datar
 ```
 
 `datar` requires python 3.7.1+ and is backended by `pandas (1.2+)`.
