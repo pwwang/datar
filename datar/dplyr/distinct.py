@@ -82,7 +82,13 @@ def _(
 ) -> DataFrameGroupBy:
 
     out = _data._datar_apply(
-        lambda df: distinct(df, *args, **kwargs, _keep_all=_keep_all)
+        lambda df: distinct(
+            df,
+            *args,
+            **kwargs,
+            _keep_all=_keep_all,
+            __calling_env=CallingEnvs.REGULAR,
+        )
     )
 
     return reconstruct_tibble(_data, out)

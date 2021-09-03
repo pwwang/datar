@@ -38,3 +38,8 @@ def test_is_factor():
 def test_nlevels():
     assert nlevels(1) == 0
     assert nlevels(factor([1,2,3])) == 3
+
+def test_is_ordered():
+    assert not is_ordered(1)
+    assert not is_ordered(factor())
+    assert is_ordered(factor(ordered=True))

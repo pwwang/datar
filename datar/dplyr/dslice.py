@@ -78,18 +78,16 @@ def _(
 ) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
     out = _data._datar_apply(
-        slice,
-        *rows,
-        base0_=base0_,
-        _drop_index=False
+        slice, *rows, base0_=base0_, _drop_index=False
     ).sort_index()
     out = reconstruct_tibble(_data, out)
     gdata = _filter_groups(out, _data)
 
     if not _preserve and _data.attrs.get("_group_drop", True):
-        out.attrs['_group_data'] = gdata[gdata["_rows"].map(len) > 0]
+        out.attrs["_group_data"] = gdata[gdata["_rows"].map(len) > 0]
 
     return out
+
 
 @slice.register(DataFrameRowwise, context=Context.PENDING)
 def _(
@@ -129,7 +127,12 @@ def slice_head(
         The sliced dataframe
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(_data, builtins.slice(None, n), base0_=True)
+    return slice(
+        _data,
+        builtins.slice(None, n),
+        base0_=True,
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 @slice_head.register(DataFrameGroupBy, context=Context.PENDING)
@@ -139,24 +142,19 @@ def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
         slice_head,
         n=n,
         prop=prop,
-        _drop_index=False
+        _drop_index=False,
+        __calling_env=CallingEnvs.REGULAR,
     ).sort_index()
     return reconstruct_tibble(_data, out)
 
+
 @slice_head.register(DataFrameRowwise, context=Context.PENDING)
 def _(
-    _data: DataFrameRowwise,
-    n: int = None,
-    prop: float = None
+    _data: DataFrameRowwise, n: int = None, prop: float = None
 ) -> DataFrameRowwise:
     """Slice on grouped dataframe"""
-    out = slice_head.dispatch(DataFrame)(
-        _data,
-        n=n,
-        prop=prop
-    )
+    out = slice_head.dispatch(DataFrame)(_data, n=n, prop=prop)
     return reconstruct_tibble(_data, out, keep_rowwise=True)
-
 
 
 @register_verb(DataFrame)
@@ -167,33 +165,29 @@ def slice_tail(_data: DataFrame, n: int = 1, prop: float = None) -> DataFrame:
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(_data, builtins.slice(-n, None), base0_=True)
+    return slice(
+        _data,
+        builtins.slice(-n, None),
+        base0_=True,
+        __calling_env=CallingEnvs.REGULAR,
+    )
 
 
 @slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
 def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
     """Slice on grouped dataframe"""
     out = _data._datar_apply(
-        slice_tail,
-        n=n,
-        prop=prop,
-        _drop_index=False
+        slice_tail, n=n, prop=prop, _drop_index=False
     ).sort_index()
     return reconstruct_tibble(_data, out)
 
 
 @slice_tail.register(DataFrameRowwise, context=Context.PENDING)
 def _(
-    _data: DataFrameRowwise,
-    n: int = None,
-    prop: float = None
+    _data: DataFrameRowwise, n: int = None, prop: float = None
 ) -> DataFrameRowwise:
     """Slice on grouped dataframe"""
-    out = slice_tail.dispatch(DataFrame)(
-        _data,
-        n=n,
-        prop=prop
-    )
+    out = slice_tail.dispatch(DataFrame)(_data, n=n, prop=prop)
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 
@@ -240,6 +234,7 @@ def _(
     )
     return reconstruct_tibble(_data, out)
 
+
 @slice_min.register(DataFrameRowwise, context=Context.EVAL)
 def _(
     _data: DataFrameRowwise,
@@ -257,6 +252,7 @@ def _(
         with_ties=with_ties,
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
+
 
 @register_verb(DataFrame, extra_contexts={"order_by": Context.EVAL})
 def slice_max(
@@ -301,6 +297,7 @@ def _(
     )
     return reconstruct_tibble(_data, out)
 
+
 @slice_max.register(DataFrameRowwise, context=Context.EVAL)
 def _(
     _data: DataFrameRowwise,
@@ -318,6 +315,7 @@ def _(
         with_ties=with_ties,
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
+
 
 @register_verb(DataFrame, extra_contexts={"weight_by": Context.EVAL})
 def slice_sample(
@@ -365,6 +363,7 @@ def _(
         random_state=random_state,
     )
     return reconstruct_tibble(_data, out)
+
 
 @slice_sample.register(DataFrameRowwise, context=Context.EVAL)
 def _(

@@ -8,11 +8,17 @@ from pipda.utils import CallingEnvs
 from ..core.types import is_scalar
 from ..core.contexts import Context
 from ..core.grouped import DataFrameGroupBy
+from ..core.utils import get_option
 from ..dplyr import select, slice_
 
 
 @register_verb(DataFrame, context=Context.SELECT)
-def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
+def get(
+    _data: DataFrame,
+    rows: Any = None,
+    cols: Any = None,
+    base0_: bool = None,
+) -> Any:
     """Get a single element or a subset of a dataframe
 
     Args:
@@ -21,11 +27,14 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
         cols: The columns to subset the dataframe
             If both rows and cols are scalar, then a single element will be
             returned
+        base0_: If given by index, whether `rows` and `cols` are 0-based.
+            If not given, will use `get_option("index.base.0")`
 
     Returns:
         A single element when both rows and cols are scalar, otherwise
         a subset of _data
     """
+    base0_ = get_option("index.base.0", base0_)
     if isinstance(_data, DataFrameGroupBy):
         data = _data.copy(copy_grouped=True)
     else:
@@ -39,13 +48,21 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
     ):
         if isinstance(rows, str):  # index
             rows = data.index.get_indexer_for([rows])[0]
+        else:
+            rows = rows - int(not base0_)
         if isinstance(cols, str):
             cols = data.columns.get_indexer_for([cols])[0]
-
+        else:
+            cols = cols - int(not base0_)
         return data.iloc[rows, cols]
 
     if cols is not None:
-        data = select(data, cols, __calling_env=CallingEnvs.REGULAR)
+        data = select(
+            data,
+            cols,
+            base0_=base0_,
+            __calling_env=CallingEnvs.REGULAR,
+        )
 
     if rows is not None:
         # slice only support integer index
@@ -53,8 +70,13 @@ def get(_data: DataFrame, rows: Any = None, cols: Any = None) -> Any:
             if is_scalar(rows):
                 rows = [rows]
             if not isinstance(rows[0], int):
-                rows = data.index.get_indexer_for(rows)
-        data = slice_(data, rows, __calling_env=CallingEnvs.REGULAR)
+                rows = data.index.get_indexer_for(rows) + int(not base0_)
+        data = slice_(
+            data,
+            rows,
+            base0_=base0_,
+            __calling_env=CallingEnvs.REGULAR,
+        )
     return data
 
 

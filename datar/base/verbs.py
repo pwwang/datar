@@ -7,9 +7,8 @@ from pipda import register_verb
 from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.types import IntType, is_scalar
-from ..core.utils import Array, arg_match
-from ..core.options import get_option
+from ..core.types import ArrayLikeType, IntType, is_scalar
+from ..core.utils import Array, arg_match, get_option, position_after
 
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
@@ -34,7 +33,7 @@ def colnames(
 
     if not _nested:
         if new is not None:
-            return set_names(df, new)
+            return set_names(df, new, __calling_env=CallingEnvs.REGULAR)
         return df.columns.tolist()
 
     if new is not None:
@@ -58,7 +57,7 @@ def colnames(
                 namei += 1
                 newnames.append(f"{new[namei]}${parts[1]}")
                 last_parts0 = parts[0]
-        return set_names(df, newnames)
+        return set_names(df, newnames, __calling_env=CallingEnvs.REGULAR)
 
     cols = [
         col.split("$", 1)[0] if isinstance(col, str) else col
@@ -106,7 +105,10 @@ def dim(x: DataFrame, _nested: bool = True) -> Tuple[int]:
     Returns:
         The shape of the dataframe.
     """
-    return (nrow(x), ncol(x, _nested))
+    return (
+        nrow(x, __calling_env=CallingEnvs.REGULAR),
+        ncol(x, _nested, __calling_env=CallingEnvs.REGULAR),
+    )
 
 
 @register_verb(DataFrame)
@@ -221,11 +223,10 @@ def names(
     """Get the column names of a dataframe"""
     return colnames(x, new, _nested, __calling_env=CallingEnvs.REGULAR)
 
+
 @names.register(dict)
 def _(
-        x: Mapping[str, Any],
-        new: Iterable[str] = None,
-        _nested: bool = True
+    x: Mapping[str, Any], new: Iterable[str] = None, _nested: bool = True
 ) -> Union[List[str], Mapping[str, Any]]:
     """Get the keys of a dict
     dict is like a list in R, mimic `names(<list>)` in R.
@@ -233,6 +234,7 @@ def _(
     if new is None:
         return list(x)
     return dict(zip(new, x.values()))
+
 
 @register_verb(context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> List[Any]:
@@ -262,7 +264,7 @@ def union(x: Any, y: Any) -> List[Any]:
     if is_scalar(y):
         y = [y]
     # pylint: disable=arguments-out-of-order
-    return list(x) + setdiff(y, x)
+    return list(x) + setdiff(y, x, __calling_env=CallingEnvs.REGULAR)
 
 
 @register_verb(context=Context.EVAL)
@@ -275,6 +277,43 @@ def setequal(x: Any, y: Any) -> List[Any]:
     x = sorted(x)
     y = sorted(y)
     return x == y
+
+
+@register_verb(
+    (list, tuple, numpy.ndarray, Series, Categorical),
+    context=Context.EVAL,
+)
+def append(x: Any, values: Any, after: int = -1, base0_: bool = None) -> List:
+    """Add elements to a vector.
+
+    Args:
+        x: the vector the values are to be appended to.
+        values: to be included in the modified vector.
+        after: a subscript, after which the values are to be appended.
+        base0_: Whether after is 0-based.
+            if not given, will use `get_option("index.base.0")`.
+            When it's 1-based, after=0 will append to the beginning,
+            -1 will append to the end.
+            When 0-based, after=None will append to the beginning,
+            -1 to the end
+
+    Returns:
+        A vector containing the values in ‘x’ with the elements of
+        ‘values’ appended after the specified element of ‘x’.
+    """
+    # if is_scalar(x):
+    #     x = [x]
+    if is_scalar(values):
+        values = [values]
+    x = list(x)
+    values = list(values)
+
+    base0_ = get_option("index.base.0", base0_)
+    # 0 is not allowed with 1-base
+    if base0_ and after is None:
+        return values + x
+    pos = position_after(after, len(x), base0_)
+    return x[:pos] + values + x[pos:]
 
 
 @register_verb((list, tuple, numpy.ndarray, Series, Categorical))
@@ -327,11 +366,10 @@ def _(  # pylint: disable=invalid-name,unused-argument
     keep = "first" if not from_last else "last"
     return x.duplicated(keep=keep).values
 
+
 @register_verb(DataFrame)
 def max_col(
-    df: DataFrame,
-    ties_method: str = "random",
-    base0_: bool = None
+    df: DataFrame, ties_method: str = "random", base0_: bool = None
 ) -> Iterable[int]:
     """Find the maximum position for each row of a matrix
 
@@ -348,11 +386,10 @@ def max_col(
         The indices of max values for each row
     """
     ties_method = arg_match(
-        ties_method,
-        "ties_method",
-        ["random", "first", "last"]
+        ties_method, "ties_method", ["random", "first", "last"]
     )
     base = int(not get_option("which_base_0", base0_))
+
     def which_max_with_ties(ser: Series):
         """Find index with max if ties happen"""
         indices = numpy.flatnonzero(ser == max(ser)) + base
@@ -377,3 +414,73 @@ def complete_cases(_data: DataFrame) -> Iterable[bool]:
         missing values across the entire sequence.
     """
     return _data.apply(lambda row: row.notna().all(), axis=1).values
+
+
+@register_verb(DataFrame)
+def proportions(
+    x: DataFrame, margin: Union[int, tuple, list] = None
+) -> DataFrame:
+    """Returns conditional proportions given ‘margins’ (alias: prop_table)
+
+    Args:
+        x: A numeric table
+        margin: If x is a dataframe, 1 for rows, 2 for columns, and 3 or [1,2]
+            for both rows and columns (turns x to a unit matrix with all
+            elements equal to 1)
+
+    Returns:
+        The x but with given margin replaced with proportion
+    """
+    from ..dplyr import mutate, rename_with, across, everything
+    from . import sum_
+
+    if margin is None:
+        sumall = x.to_numpy().sum()
+        return x.applymap(lambda elem: elem / sumall, na_action="ignore")
+
+    if margin == 1:
+        index = x.index
+        out = t(
+            proportions(
+                rename_with(
+                    t(x, __calling_env=CallingEnvs.REGULAR),
+                    str,
+                    __calling_env=CallingEnvs.REGULAR,
+                ),
+                2,
+                __calling_env=CallingEnvs.REGULAR,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
+        out.index = index
+        return out
+
+    if margin == 2:
+        return mutate(
+            x,
+            across(
+                # pylint: disable=no-value-for-parameter
+                everything(__calling_env=CallingEnvs.PIPING),
+                lambda col: col / sum_(col, __calling_env=CallingEnvs.REGULAR),
+                __calling_env=CallingEnvs.PIPING,
+            ),
+            __calling_env=CallingEnvs.REGULAR,
+        )
+
+    return x.applymap(lambda elem: 1, na_action="ignore")
+
+
+prop_table = proportions
+
+
+@proportions.register((list, tuple, numpy.array, Series))
+def _(
+    x: ArrayLikeType, margin: Union[int, tuple, list] = None
+) -> ArrayLikeType:
+    """proportions for vectors"""
+    from . import sum_
+
+    if isinstance(x, (list, tuple)):
+        x = Array(x)
+
+    return x / sum_(x, __calling_env=CallingEnvs.REGULAR)

@@ -7,6 +7,7 @@ from typing import Union
 
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import vars_select, reconstruct_tibble
@@ -49,7 +50,11 @@ def fill(
             )
     else:
         colidx = vars_select(data.columns, *columns, base0=base0_)
-        data.iloc[:, colidx] = fill(data.iloc[:, colidx], _direction=_direction)
+        data.iloc[:, colidx] = fill(
+            data.iloc[:, colidx],
+            _direction=_direction,
+            __calling_env=CallingEnvs.REGULAR,
+        )
     return data
 
 

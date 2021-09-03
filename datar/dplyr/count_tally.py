@@ -97,7 +97,7 @@ def tally(
     """
     tallyn = _tally_n(wt)
 
-    name = _check_name(name, group_vars(x))
+    name = _check_name(name, group_vars(x, __calling_env=CallingEnvs.REGULAR))
     # thread-safety?
     with options_context(dplyr_summarise_inform=False):
         # pylint: disable=no-value-for-parameter
@@ -139,7 +139,9 @@ def add_count(
     else:
         out = x
 
-    out = add_tally(out, wt=wt, sort=sort, name=name)
+    out = add_tally(
+        out, wt=wt, sort=sort, name=name, __calling_env=CallingEnvs.REGULAR
+    )
     return out
 
 

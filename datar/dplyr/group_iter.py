@@ -45,7 +45,9 @@ def group_map(
         if nargs(_f) > 1
         else None
     )
-    for i, chunk in enumerate(group_split(_data, _keep=_keep)):
+    for i, chunk in enumerate(
+        group_split(_data, _keep=_keep, __calling_env=CallingEnvs.REGULAR)
+    ):
         if keys is None:
             yield _f(chunk)
         else:
@@ -60,7 +62,16 @@ def _group_map_list(
     **kwargs: Any,
 ) -> List:
     """List version of group_map"""
-    return list(group_map(_data, _f, *args, _keep=_keep, **kwargs))
+    return list(
+        group_map(
+            _data,
+            _f,
+            *args,
+            _keep=_keep,
+            **kwargs,
+            __calling_env=CallingEnvs.REGULAR,
+        )
+    )
 
 
 group_map.list = register_verb(DataFrame, context=Context.PENDING)(
@@ -110,7 +121,9 @@ def _(
             axis=1,
         )
 
-    chunks = group_map(_data, fun, _keep=_keep)
+    chunks = group_map(
+        _data, fun, _keep=_keep, __calling_env=CallingEnvs.REGULAR
+    )
     out = pandas.concat(chunks, axis=0)
 
     return reconstruct_tibble(_data, out, keep_rowwise=True)
@@ -126,7 +139,16 @@ def group_walk(
 ) -> None:
     """Walk along data in each groups, but don't return anything"""
     # list to trigger generator
-    list(group_map(_data, _f, _keep=_keep, *args, **kwargs))
+    list(
+        group_map(
+            _data,
+            _f,
+            _keep=_keep,
+            *args,
+            **kwargs,
+            __calling_env=CallingEnvs.REGULAR,
+        )
+    )
 
 
 @register_verb(DataFrame)
@@ -228,7 +250,15 @@ def _group_split_list(
     _data: DataFrame, *args: Any, _keep: bool = True, **kwargs: Any
 ) -> Iterable[DataFrame]:
     """List version of group_split"""
-    return list(group_split(_data, *args, _keep=_keep, **kwargs))
+    return list(
+        group_split(
+            _data,
+            *args,
+            _keep=_keep,
+            **kwargs,
+            __calling_env=CallingEnvs.REGULAR,
+        )
+    )
 
 
 group_split.list = register_verb(DataFrame, context=Context.PENDING)(

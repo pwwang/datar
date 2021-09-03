@@ -51,7 +51,7 @@ def levels(x: Any) -> ArrayLikeType:
     if not is_categorical_(x):
         return None
 
-    return categorized(x).categories
+    return categorized(x).categories.values.copy()
 
 @register_func(None, context=Context.EVAL)
 def nlevels(x: Any) -> int:
@@ -65,6 +65,14 @@ def nlevels(x: Any) -> int:
     """
     lvls = levels(x)
     return 0 if lvls is None else len(lvls)
+
+@register_func(None, context=Context.EVAL)
+def is_ordered(x: Any) -> bool:
+    """Check if a factor is ordered"""
+    if not is_categorical_(x):
+        return False
+
+    return categorized(x).ordered
 
 def factor(
     x: Iterable[Any] = None,
@@ -101,11 +109,29 @@ def factor(
         x = x.to_numpy()
 
     ret = Categorical(x, categories=levels, ordered=ordered)
+    if exclude in [False, None]:
+        return ret
+
     if is_scalar(exclude):
         exclude = [exclude]
 
     return ret.remove_categories(exclude)
 
+
+def ordered(
+    x: Iterable[Any] = None,
+    # pylint: disable=redefined-outer-name
+    levels: Iterable[Any] = None,
+) -> Categorical:
+    """Create an ordered factor
+
+    Args:
+        x: The values to create factor
+
+    Returns:
+        The ordered factor
+    """
+    return factor(x, levels=levels).as_ordered()
 
 @register_func(None, context=Context.EVAL)
 def as_factor(x: Iterable) -> Categorical:

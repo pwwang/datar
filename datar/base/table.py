@@ -4,11 +4,18 @@ from typing import Any, Iterable, Mapping, Tuple, Union, List
 
 import numpy
 import pandas
-from pandas import DataFrame, Series
+from pandas import Categorical, DataFrame, Series
 from pipda import register_func
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.types import is_iterable, is_scalar, is_categorical, is_null
+from ..core.types import (
+    ArrayLikeType,
+    is_iterable,
+    is_scalar,
+    is_categorical,
+    is_null,
+)
 from ..core.utils import Array, categorized, fillna_safe
 
 from .na import NA
@@ -18,7 +25,7 @@ from .na import NA
 
 @register_func(None, context=Context.EVAL)
 def table(
-    input: Any,
+    input: Union[ArrayLikeType, Categorical, DataFrame],
     *more_inputs: Any,
     exclude: Any = NA,
     # use_na: str = "no", # TODO
@@ -64,7 +71,7 @@ def table(
         obj1 = _iterable_excludes(obj1, exclude=exclude)
         obj2 = _iterable_excludes(obj2, exclude=exclude)
 
-    kwargs = {"dropna": False} # type: Mapping[str, Any]
+    kwargs = {"dropna": False}  # type: Mapping[str, Any]
     if dn1:
         kwargs["rownames"] = [dn1]
     if dn2:
@@ -77,6 +84,37 @@ def table(
         tab.columns.name = dn2
 
     return tab
+
+
+@register_func(None, context=Context.EVAL)
+def tabulate(
+    bin: Union[ArrayLikeType, Categorical],
+    nbins: int = None,
+) -> numpy.ndarray:
+    """Takes the integer-valued vector ‘bin’ and counts the
+    number of times each integer occurs in it.
+
+    Args:
+        bin: A numeric vector (of positive integers), or a factor.
+        nbins: the number of bins to be used.
+
+    Returns:
+        An integer valued ‘integer’ vector (without names).
+        There is a bin for each of the values ‘1, ..., nbins’
+    """
+    from . import as_integer, t
+
+    bin = as_integer(bin, base0_=False, __calling_env=CallingEnvs.REGULAR)
+    nbins = max(1, max(bin) if len(bin) > 0 else 0, nbins)
+    tabled = table(bin, __calling_env=CallingEnvs.REGULAR)
+    tabled = (
+        t(tabled, __calling_env=CallingEnvs.REGULAR)
+        .reindex(range(1, nbins + 1), fill_value=0)
+        .iloc[:, 0]
+        .values
+    )
+
+    return tabled
 
 
 def _check_table_inputs(

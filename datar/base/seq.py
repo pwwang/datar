@@ -1,23 +1,25 @@
 """Generating and manipulating sequences"""
 
-from typing import Iterable, Any, Union
+from typing import Any, Iterable, Union
 
 import numpy
 import pandas
 from pipda import register_func
 
-from ..core.types import (
-    IntType,
-    IntOrIter,
-    ArrayLikeType,
-    NumericType,
-    is_scalar,
-    is_iterable,
-    is_scalar_int,
-)
-from ..core.contexts import Context
-from ..core.utils import Array, get_option, length_of, logger
 from ..core.collections import Collection
+from ..core.contexts import Context
+from ..core.types import (
+    ArrayLikeType,
+    IntOrIter,
+    IntType,
+    NumericType,
+    is_iterable,
+    is_not_null,
+    is_scalar,
+    is_scalar_int,
+    is_null,
+)
+from ..core.utils import Array, get_option, length_of, logger
 
 
 @register_func(None, context=Context.EVAL)
@@ -149,6 +151,80 @@ def unique(x: Iterable[Any]) -> numpy.ndarray:
     return pandas.unique(x)  # keeps order
 
 
+@register_func(None, context=Context.EVAL)
+def sort(
+    x: Iterable[Any],
+    decreasing: bool = False,
+    na_last: bool = None,
+) -> numpy.ndarray:
+    """Sorting or Ordering Vectors
+
+    Args:
+        x: A vector to be sorted
+        decreasing: Should the vector sort be increasing or decreasing?
+        na_last: for controlling the treatment of `NA`s.  If `True`, missing
+            values in the data are put last; if `FALSE`, they are put
+            first; if `NA`, they are removed.
+
+    Returns:
+        The sorted array
+    """
+    x = Array(x)
+    not_na_idx = is_not_null(x)
+    non_nas = x[not_na_idx]
+    out = numpy.sort(non_nas)
+    if decreasing:
+        out = out[::-1]
+    if na_last is None:
+        return out
+
+    nas = x[~not_na_idx].tolist()
+    if na_last:
+        return Array(out.tolist() + nas)
+    return Array(nas + out.tolist())
+
+
+@register_func(None, context=Context.EVAL)
+def order(
+    x: Iterable[Any],
+    na_last: bool = None,
+    decreasing: bool = False,
+    # method?
+    base0_: bool = None,
+) -> numpy.ndarray:
+    """Returns a permutation which rearranges its first argument
+    into ascending or descending order
+
+    Args:
+        x: A vector to order
+        decreasing: Should the vector sort be increasing or decreasing?
+        na_last: for controlling the treatment of `NA`s.  If `True`, missing
+            values in the data are put last; if `FALSE`, they are put
+            first; if `NA`, they are removed.
+        base0_: Return a 0-based indices or not.
+            If not given, will use `get_option('which.base.0')`
+
+    Returns:
+        The ordered indices of the vector
+    """
+    na_mask = is_null(x)
+    na_idx = numpy.flatnonzero(na_mask).tolist()
+    out_idx = numpy.argsort(x)
+    if decreasing:
+        out_idx = out_idx[::-1]
+
+    non_na_idx = [idx for idx in out_idx if idx not in na_idx]
+    if na_last is None:
+        out = non_na_idx
+    elif na_last:
+        out = non_na_idx + na_idx
+    else:
+        out = na_idx + non_na_idx
+
+    out = Array(out, dtype=int)
+    return out if base0_ else out + 1
+
+
 # pylint: disable=invalid-name
 length = register_func(None, context=Context.EVAL, func=length_of)
 
@@ -206,6 +282,7 @@ def c(*elems: Any) -> Collection:
     """
     return Collection(*elems)
 
+
 @register_func(None, context=Context.EVAL)
 def match(
     x: Any,
@@ -228,10 +305,11 @@ def match(
         base0_: Whether return indices are 0-based or not.
             If not provided, will use `get_option('which_base_0')`
     """
-    base = int(not get_option('which_base_0', base0_))
-    return Array([
-        table.index(elem) + base
-        if elem in table
-        else nomatch
-        for elem in x
-    ], dtype=int)
+    base = int(not get_option("which_base_0", base0_))
+    return Array(
+        [
+            list(table).index(elem) + base if elem in table else nomatch
+            for elem in x
+        ],
+        dtype=int,
+    )

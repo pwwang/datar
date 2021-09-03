@@ -14,6 +14,7 @@ from pipda import register_func
 from ..core.middlewares import WithDataEnv
 from ..core.types import NumericType, is_scalar
 from ..core.contexts import Context
+from ..core.utils import arg_match
 from ..core.names import repair_names
 
 
@@ -40,7 +41,7 @@ def cut(
             labels are constructed using "(a,b]" interval notation.
             If labels = False, simple integer codes are returned instead
             of a factor.
-        include_lowest: bool, indicating if an ‘x[i]’ equal to the lowest
+        include_lowest: bool, indicating if an ‘x[i]` equal to the lowest
             (or highest, for right = FALSE) ‘breaks’ value should be included.
         right: bool, indicating if the intervals should be closed on the right
             (and open on the left) or vice versa.
@@ -88,6 +89,7 @@ def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
         list(itertools.product(*iters.values())), columns=iters.keys()
     )
 
+
 @register_func(None, context=Context.EVAL)
 def outer(x, y, fun: Union[str, Callable] = "*") -> DataFrame:
     """Compute the outer product of two vectors.
@@ -107,6 +109,88 @@ def outer(x, y, fun: Union[str, Callable] = "*") -> DataFrame:
         return DataFrame(numpy.outer(x, y))
 
     return DataFrame([fun(xelem, y) for xelem in x])
+
+
+@register_func(None, context=Context.EVAL)
+def make_names(names: Any, unique: bool = False) -> List[str]:
+    """Make names available as columns and can be accessed by `df.<name>`
+
+    The names will be transformed using `python-slugify` with
+    `lowercase=False` and `separator="_"`. When the first character is
+    a digit, preface it with "_".
+
+    If `unique` is True, the results will be fed into
+    `datar.core.names.repair_names(names, "unique")`
+
+    Args:
+        names: The names
+            if it is scalar, will make it into a list.
+            Then all elements will be converted into strings
+        unique: Whether to make the names unique
+
+    Returns:
+        Converted names
+    """
+    from slugify import slugify
+    from . import as_character
+
+    if is_scalar(names):
+        names = [names]
+    names = as_character(names)
+    names = [slugify(name, separator="_", lowercase=False) for name in names]
+    names = [f"_{name}" if name[0].isdigit() else name for name in names]
+    if unique:
+        return repair_names(names, "unique")
+    return names
+
+
+@register_func(None, context=Context.EVAL)
+def make_unique(names: Any) -> List[str]:
+    """Make the names unique.
+
+    It's a shortcut for `make_names(names, unique=True)`
+
+    Args:
+        names: The names
+            if it is scalar, will make it into a list.
+            Then all elements will be converted into strings
+
+    Returns:
+        Converted names
+    """
+    return make_names(names, unique=True)
+
+
+@register_func(None, context=Context.EVAL)
+def rank(
+    x: Iterable,
+    na_last: bool = True,
+    ties_method: str = "average",
+) -> Iterable:
+    """Returns the sample ranks of the values in a vector.
+
+    Args:
+        x: A numeric vector
+        na_last: for controlling the treatment of `NA`s.  If `True`, missing
+            values in the data are put last; if `False`, they are put
+            first; if `"keep"` they are kept  with rank `NA`.
+        ties_method: a character string specifying how ties are treated
+            One of `average`, `first`, `dense`, `max`, and `min`
+            Note that the ties_method candidates are different than the ones
+            from R, because we are using `pandas.Series.rank()`. See
+            https://pandas.pydata.org/docs/reference/api/pandas.Series.rank.html
+
+    Returns:
+        A numeric rank vector of the same length as `x`
+    """
+    ties_method = arg_match(
+        ties_method,
+        "ties_method",
+        ["average", "first", "dense", "max", "min"],
+    )
+
+    from ..dplyr.rank import _rank
+    return _rank(x, na_last, method=ties_method)
 
 # ---------------------------------
 # Plain functions
@@ -132,48 +216,3 @@ def data_context(data: DataFrame) -> Any:
         The original or modified data
     """
     return WithDataEnv(data)
-
-def make_names(names: Any, unique: bool = False) -> List[str]:
-    """Make names available as columns and can be accessed by `df.<name>`
-
-    The names will be transformed using `python-slugify` with
-    `lowercase=False` and `separator="_"`. When the first character is
-    a digit, preface it with "_".
-
-    If `unique` is True, the results will be fed into
-    `datar.core.names.repair_names(names, "unique")`
-
-    Args:
-        names: The names
-            if it is scalar, will make it into a list.
-            Then all elements will be converted into strings
-        unique: Whether to make the names unique
-
-    Returns:
-        Converted names
-    """
-    from slugify import slugify
-    from . import as_character
-    if is_scalar(names):
-        names = [names]
-    names = as_character(names)
-    names = [slugify(name, separator="_", lowercase=False) for name in names]
-    names = [f"_{name}" if name[0].isdigit() else name for name in names]
-    if unique:
-        return repair_names(names, "unique")
-    return names
-
-def make_unique(names: Any) -> List[str]:
-    """Make the names unique.
-
-    It's a shortcut for `make_names(names, unique=True)`
-
-    Args:
-        names: The names
-            if it is scalar, will make it into a list.
-            Then all elements will be converted into strings
-
-    Returns:
-        Converted names
-    """
-    return make_names(names, unique=True)

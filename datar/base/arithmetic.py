@@ -5,6 +5,7 @@ from typing import Any, Callable, Iterable, Union
 import numpy
 from pandas import DataFrame, Series
 from pipda import register_func, register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.collections import Collection
 from ..core.contexts import Context
@@ -13,7 +14,7 @@ from ..core.types import (
     NumericOrIter,
     NumericType,
     is_not_null,
-    is_scalar
+    is_scalar,
 )
 from ..core.utils import Array, length_of, recycle_value, register_numpy_func_x
 
@@ -264,11 +265,9 @@ floor = register_numpy_func_x(
     """,
 )
 
+
 @register_func(None, context=Context.EVAL)
-def signif(
-    x: NumericOrIter,
-    digits: int = 6
-) -> NumericOrIter:
+def signif(x: NumericOrIter, digits: int = 6) -> NumericOrIter:
     """Rounds the values in its first argument to the specified number of
     significant digits
 
@@ -282,8 +281,9 @@ def signif(
     # todo complex?
     return numpy.fromiter(
         (round(elem, digits - int(ceiling(log10(abs(elem))))) for elem in x),
-        dtype=float
+        dtype=float,
     )
+
 
 # pylint: disable=unused-argument
 @register_verb(DataFrame, context=Context.EVAL)
@@ -329,11 +329,11 @@ def scale(
     out_attrs = {}
 
     if center is True:
-        center = col_means(x)
+        center = col_means(x, __calling_env=CallingEnvs.REGULAR)
 
     elif center is not False:
         if is_scalar(center):
-            center = [center] # type: ignore
+            center = [center]  # type: ignore
         if len(center) != ncols:
             raise ValueError(
                 f"length of `center` ({len(center)}) must equal "
@@ -351,11 +351,15 @@ def scale(
             nonnas = col[is_not_null(col)] ** 2
             return sqrt(nonnas.sum() / (len(nonnas) - 1))
 
-        scale = col_sds(x) if center_is_true else x.agg(_rms)
+        scale = (
+            col_sds(x, __calling_env=CallingEnvs.REGULAR)
+            if center_is_true
+            else x.agg(_rms)
+        )
 
     elif scale is not False:
         if is_scalar(scale):
-            scale = [scale] # type: ignore
+            scale = [scale]  # type: ignore
         if len(scale) != ncols:
             raise ValueError(
                 f"length of `scale` ({len(center)}) must equal "
@@ -571,6 +575,7 @@ def row_medians(
     """
     return x.agg(median, axis=1, na_rm=na_rm)
 
+
 @register_func(None, context=Context.EVAL)
 def log(x: NumericOrIter, base: float = numpy.e) -> FloatOrIter:
     """Computes logarithms, by default natural logarithm
@@ -588,6 +593,7 @@ def log(x: NumericOrIter, base: float = numpy.e) -> FloatOrIter:
 
     return numpy.log(x) / numpy.log(base)
 
+
 exp = register_numpy_func_x(
     "exp",
     "exp",
@@ -598,7 +604,7 @@ exp = register_numpy_func_x(
 
     Returns:
         Power of natural number of element-wise power of natural number for x
-    """
+    """,
 )
 
 log2 = register_numpy_func_x(
@@ -612,7 +618,7 @@ log2 = register_numpy_func_x(
     Returns:
         The value of log2 if x is scalar, otherwise element-wise
         log2 of elements in x
-    """
+    """,
 )
 
 log10 = register_numpy_func_x(
@@ -626,7 +632,7 @@ log10 = register_numpy_func_x(
     Returns:
         The value of log10 if x is scalar, otherwise element-wise
         log10 of elements in x
-    """
+    """,
 )
 
 log1p = register_numpy_func_x(
@@ -640,5 +646,5 @@ log1p = register_numpy_func_x(
     Returns:
         The value of log(1+x) if x is scalar, otherwise element-wise
         log(1+x) of elements in x
-    """
+    """,
 )

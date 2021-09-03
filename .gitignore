@@ -116,3 +116,6 @@ docs/*/*.nbconvert.ipynb
 
 # vscode's local history extension
 .history/
+
+# For quick test
+/_t.py

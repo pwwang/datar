@@ -114,7 +114,9 @@ def _(
                 # rowwise
                 df.name = 0
                 df = df.to_frame().T
-            out = summarise(df, *args, **kwargs)
+            out = summarise(
+                df, *args, **kwargs, __calling_env=CallingEnvs.REGULAR
+            )
             if out.shape[0] != 1:
                 allone = False
             return out

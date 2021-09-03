@@ -7,7 +7,7 @@ from .core import _frame_format_patch
 from .core.defaults import f
 
 __all__ = ('f', 'get_versions')
-__version__ = "0.4.4"
+__version__ = "0.5.0"
 
 def get_versions(
     prnt: bool = True

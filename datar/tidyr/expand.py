@@ -145,7 +145,12 @@ def _(
 
     def apply_func(df):
         return expand(
-            df, *args, _name_repair=_name_repair, base0_=base0_, **kwargs
+            df,
+            *args,
+            _name_repair=_name_repair,
+            base0_=base0_,
+            **kwargs,
+            __calling_env=CallingEnvs.REGULAR,
         )
 
     out = data._datar_apply(apply_func)

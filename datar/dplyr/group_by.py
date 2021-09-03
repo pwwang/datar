@@ -167,7 +167,7 @@ def _(
         old_groups, x.columns[to_remove], __calling_env=CallingEnvs.REGULAR
     )
 
-    return group_by(x, *new_groups)
+    return group_by(x, *new_groups, __calling_env=CallingEnvs.REGULAR)
 
 
 @ungroup.register(DataFrameRowwise, context=Context.SELECT)
@@ -224,7 +224,10 @@ def _add_computed_columns(
         context = Context.EVAL.value
         try:
             cols, nonexists = _mutate_cols(
-                ungroup(_data), context, *args, **kwargs
+                ungroup(_data, __calling_env=CallingEnvs.REGULAR),
+                context,
+                *args,
+                **kwargs,
             )
         except Exception as exc:
             raise ValueError(
