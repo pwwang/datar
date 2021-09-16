@@ -125,6 +125,7 @@ from .string import (
     startswith,
     endswith,
     strtoi,
+    trimws,
     chartr,
     tolower,
     toupper,
