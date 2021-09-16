@@ -37,7 +37,7 @@ jobs:
       - name: Deploy docs
         run: |
           mkdocs gh-deploy --clean --force
-        if: success() && github.ref == 'refs/heads/master'
+        # if: success() && github.ref == 'refs/heads/master'
 
   fix-index:
     needs: docs
@@ -45,7 +45,7 @@ jobs:
     # if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.9]
     steps:
       - uses: actions/checkout@v2
         with:
