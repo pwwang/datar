@@ -1,4 +1,7 @@
 
+.md-main__inner.md-grid {
+    max-width: 80%;
+}
 
 .md-typeset .admonition, .md-typeset details {
     font-size: .7rem !important;
