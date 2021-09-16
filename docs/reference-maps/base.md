@@ -109,6 +109,7 @@
 |API|Description|Notebook example|
 |---|---|---:|
 |[`as_date`][41]|Cast data to date|[:material-notebook:][4]|
+|[**`as_pd_date`**][150]|Alias of `pandas.to_datetime()`||
 
 ### Factor data
 
@@ -432,3 +433,4 @@
 [147]: ../../api/datar.base.verbs/#datar.base.verbs.append
 [148]: ../../api/datar.base.verbs/#datar.base.verbs.proportions
 [149]: ../../api/datar.base.string/#datar.base.string.trimws
+[150]: ../../api/datar.base.date/#datar.base.date.as_pd_date

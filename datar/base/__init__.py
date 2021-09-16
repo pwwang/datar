@@ -40,7 +40,7 @@ from .casting import as_double, as_float, as_int, as_integer, as_numeric
 from .complex import arg, as_complex, conj, im, is_complex, mod, re as re_
 from .constants import LETTERS, letters, month_abb, month_name, pi
 from .cum import cummax, cummin, cumprod, cumsum
-from .date import as_date
+from .date import as_date, as_pd_date
 from .factor import (
     as_categorical,
     as_factor,
