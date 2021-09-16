@@ -14,6 +14,7 @@ from ..core.types import IntType, is_scalar, is_scalar_int
 from .na import NA
 
 if TYPE_CHECKING:  # pragma: no cover
+    # pylint: disable=ungrouped-imports
     from pandas import DatetimeIndex, Timestamp
 
 # pylint: disable=invalid-name
