@@ -1,5 +1,6 @@
 import pytest
 
+import pandas
 from datar.base.date import *
 from .conftest import assert_iterable_equal
 
@@ -47,7 +48,7 @@ def test_as_date(x, format, try_formats, optional, tz, origin, expected):
         optional,
         tz,
         origin
-    ), expected)
+    ), pandas.to_datetime(expected))
 
 def test_as_date_error():
     with pytest.raises(ValueError):
@@ -57,3 +58,7 @@ def test_as_date_error():
         as_date("1990-1-1", "%Y")
 
     assert as_date("1990-1-1", "Y", optional=True).isna().all()
+
+def test_as_pd_date():
+
+    assert as_pd_date("Sep 16, 2021") == pandas.Timestamp('2021-09-16 00:00:00')

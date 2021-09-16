@@ -2,15 +2,20 @@
 
 import datetime
 import functools
-from typing import Any, Union, List, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, List, Union
 
 import numpy
-from pandas import Series, DataFrame
+import pandas
+from pandas import DataFrame, Series
 from pipda import register_func
 
-from ..core.types import IntType, is_scalar_int, is_scalar
 from ..core.contexts import Context
+from ..core.types import IntType, is_scalar, is_scalar_int
 from .na import NA
+
+if TYPE_CHECKING:  # pragma: no cover
+    # pylint: disable=ungrouped-imports
+    from pandas import DatetimeIndex, Timestamp
 
 # pylint: disable=invalid-name
 # pylint: disable=redefined-builtin
@@ -144,7 +149,7 @@ def as_date(
     optional: bool = False,
     tz: Union[IntType, datetime.timedelta] = 0,
     origin: Any = None,
-) -> Iterable[datetime.date]:
+) -> Union[Series, "Timestamp", "DatetimeIndex"]:
     """Convert an object to a datetime.date object
 
     See: https://rdrr.io/r/base/as.Date.html
@@ -155,6 +160,11 @@ def as_date(
             the first non-NA element, and give an error if none works.
             Otherwise, the processing is via strptime
         try_formats: vector of format strings to try if format is not specified.
+            Default formats to try:
+            "%Y-%m-%d"
+            "%Y/%m/%d"
+            "%Y-%m-%d %H:%M:%S"
+            "%Y/%m/%d %H:%M:%S"
         optional: indicating to return NA (instead of signalling an error)
             if the format guessing does not succeed.
         origin: a datetime.date/datetime object, or something which can be
@@ -168,7 +178,7 @@ def as_date(
     if not isinstance(x, Series):
         x = Series([x]) if is_scalar(x) else Series(x)
 
-    return x.transform(
+    out = x.transform(
         _as_date_dummy,
         format=format,
         try_formats=try_formats,
@@ -176,3 +186,25 @@ def as_date(
         tz=tz,
         origin=origin,
     )
+    return pandas.to_datetime(out)
+
+@register_func(None, context=Context.EVAL)
+def as_pd_date(
+    arg: Union[int, str, float, datetime.datetime, Iterable],
+    *args: Any,
+    **kwargs: Any,
+) -> Union[Series, "Timestamp", "DatetimeIndex"]:
+    """Alias of pandas.to_datetime(), but registered as a function
+    so that it can be used in verbs.
+
+    See https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html
+
+    Args:
+        arg: The argument to be converted to datetime
+        *args: and
+        **kwargs: Other arguments passing to `pandas.to_datetime()`
+
+    Returns:
+        Converted datetime
+    """
+    return pandas.to_datetime(arg, *args, **kwargs)

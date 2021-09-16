@@ -109,6 +109,7 @@
 |API|Description|Notebook example|
 |---|---|---:|
 |[`as_date`][41]|Cast data to date|[:material-notebook:][4]|
+|[**`as_pd_date`**][150]|Alias of `pandas.to_datetime()`||
 
 ### Factor data
 
@@ -220,6 +221,7 @@
 |[`chartr`][133]|Replace characters in strings||
 |[`tolower`][134]|Transform strings to lower case||
 |[`toupper`][135]|Transform strings to upper case||
+|[`trimws`][149]|Remove leading and/or trailing whitespace from character strings.||
 
 ### Table
 
@@ -430,3 +432,5 @@
 [146]: ../../api/datar.base.table/#datar.base.table.tabulate
 [147]: ../../api/datar.base.verbs/#datar.base.verbs.append
 [148]: ../../api/datar.base.verbs/#datar.base.verbs.proportions
+[149]: ../../api/datar.base.string/#datar.base.string.trimws
+[150]: ../../api/datar.base.date/#datar.base.date.as_pd_date

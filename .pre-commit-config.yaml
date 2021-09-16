@@ -55,7 +55,7 @@ repos:
         files: ^tests/.+$|^datar/.+$
     -   id: notebooks
         name: Executing all notebooks
-        entry: jupyter nbconvert --to notebook --execute
+        entry: jupyter nbconvert --output-dir /tmp --to notebook --execute
         language: system
         pass_filenames: true
         files: ^docs/.+\.ipynb$
