@@ -2,19 +2,19 @@
 
 import datetime
 import functools
-from typing import Any, Union, List, Iterable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Iterable, List, Union
 
 import numpy
 import pandas
-from pandas import Series, DataFrame
+from pandas import DataFrame, Series
 from pipda import register_func
 
-from ..core.types import IntType, is_scalar_int, is_scalar
 from ..core.contexts import Context
+from ..core.types import IntType, is_scalar, is_scalar_int
 from .na import NA
 
 if TYPE_CHECKING:  # pragma: no cover
-    from pandas import Timestamp, DatetimeIndex
+    from pandas import DatetimeIndex, Timestamp
 
 # pylint: disable=invalid-name
 # pylint: disable=redefined-builtin

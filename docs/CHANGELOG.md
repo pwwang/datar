@@ -1,3 +1,9 @@
+## 0.5.1
+- Add documentation about "blind" environment (#45, #54, #55)
+- Change `base.as_date()` to return pandas datetime types instead python datetime types (#56)
+- Add `base.as_pd_date()` to be an alias of `pandas.to_datetime()` (#56)
+- Expose `trimws` to `datar.all` (#58)
+
 ## 0.5.0
 
 Added:
