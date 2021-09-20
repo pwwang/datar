@@ -43,5 +43,5 @@ def __getattr__(name):
     # mkapi accesses quite a lot of attributes starting with _
     try:
         return load_data(name.lower())
-    except ImportError:
-        raise AttributeError from None
+    except ImportError as imerr:
+        raise AttributeError from imerr

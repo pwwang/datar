@@ -103,6 +103,42 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 
 ![example](./example2.png)
 
+## CLI interface
+
+See [datar-cli][19]
+
+Example:
+```shell
+❯ datar import table2 | datar head
+       country    year        type      count
+      <object> <int64>    <object>    <int64>
+0  Afghanistan    1999       cases        745
+1  Afghanistan    1999  population   19987071
+2  Afghanistan    2000       cases       2666
+3  Afghanistan    2000  population   20595360
+4       Brazil    1999       cases      37737
+5       Brazil    1999  population  172006362
+```
+
+```shell
+❯ datar import table2 | \
+    datar mutate --count "if_else(f.year==1999, f.count*2, f.count)"
+        country    year        type       count
+       <object> <int64>    <object>     <int64>
+0   Afghanistan    1999       cases        1490
+1   Afghanistan    1999  population    39974142
+2   Afghanistan    2000       cases        2666
+3   Afghanistan    2000  population    20595360
+4        Brazil    1999       cases       75474
+5        Brazil    1999  population   344012724
+6        Brazil    2000       cases       80488
+7        Brazil    2000  population   174504898
+8         China    1999       cases      424516
+9         China    1999  population  2545830544
+10        China    2000       cases      213766
+11        China    2000  population  1280428583
+```
+
 [1]: https://tidyr.tidyverse.org/index.html
 [2]: https://dplyr.tidyverse.org/index.html
 [3]: https://github.com/pwwang/pipda
@@ -121,3 +157,4 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [16]: https://pwwang.github.io/datar/notebooks/across/
 [17]: https://pwwang.github.io/datar/api/datar/
 [18]: https://pwwang.github.io/datar-blog
+[19]: https://github.com/pwwang/datar-cli
