@@ -4,9 +4,7 @@ repos:
     rev: 5df1a4bf6f04a1ed3a643167b38d502575e29aef
     hooks:
     -   id: trailing-whitespace
-        exclude: 'docs/|README\.rst'
     -   id: end-of-file-fixer
-        exclude: 'docs/|README\.rst'
     -   id: check-yaml
         exclude: 'mkdocs.yml'
 -   repo: local
@@ -19,6 +17,17 @@ repos:
         args: [datar]
         types: [python]
         language: system
+    -   id: versionchecker
+        name: Check version agreement in pyproject and __version__
+        entry: bash -c
+        language: system
+        args:
+            - get_ver() { echo $(egrep "^__version|^version" $1 | cut -d= -f2 | sed 's/\"\| //g'); };
+              v1=`get_ver pyproject.toml`;
+              v2=`get_ver datar/__init__.py`;
+              if [[ $v1 == $v2 ]]; then exit 0; else exit 1; fi
+        pass_filenames: false
+        files: ^pyproject\.toml|datar/__init__\.py$
     -   id: pytest
         name: Run pytest
         entry: pytest
