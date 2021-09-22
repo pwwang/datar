@@ -23,8 +23,6 @@ from .na import NA
 # factorial(x)            => scipy.special.factoral(x)
 # lfactorial(x)           => numpy.log(scipy.special.factoral(x))
 
-# pylint: disable=invalid-name
-
 
 @register_func(None, context=Context.EVAL)
 def beta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:

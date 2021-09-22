@@ -16,8 +16,6 @@ from ..base.na import NA_integer_
 
 ROWID_COLUMN = "_PIVOT_ROWID_"
 
-# pylint: disable=too-many-branches
-
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_wider(
@@ -74,11 +72,11 @@ def pivot_wider(
         The pivoted dataframe.
     """
     if is_scalar(names_from):
-        names_from = [names_from] # type: ignore
+        names_from = [names_from]  # type: ignore
     if is_scalar(values_from):
-        values_from = [values_from] # type: ignore
+        values_from = [values_from]  # type: ignore
     if id_cols is not None and is_scalar(id_cols):
-        id_cols = [id_cols] # type: ignore
+        id_cols = [id_cols]  # type: ignore
 
     if id_cols is None:
         all_cols = _data.columns

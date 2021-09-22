@@ -29,12 +29,6 @@ from .casting import _as_type
 from .na import NA
 from .testing import _register_type_testing
 
-# agrep, agrepl
-# format, format_info, format_pval, format_c, pretty_num (_format_zeros?)
-#
-
-# pylint: disable=invalid-name
-
 
 @register_func(None, context=Context.EVAL)
 def as_character(x: Any, str_dtype: Dtype = str, _na: Any = NA) -> StringOrIter:
@@ -54,6 +48,7 @@ def as_character(x: Any, str_dtype: Dtype = str, _na: Any = NA) -> StringOrIter:
         Otherwise, convert x to string.
     """
     return _as_type(x, str_dtype, na=_na)
+
 
 as_str = as_string = as_character
 
@@ -107,7 +102,7 @@ def grep(
         (or values (`value=True`)).
     """
     if is_scalar(x):
-        x = [x] # type: ignore
+        x = [x]  # type: ignore
     x = Array(as_character(x), dtype=object)
     matched = grepl(
         pattern=pattern,
@@ -149,7 +144,7 @@ def grepl(
         pattern, text, ignore_case=ignore_case, invert=invert, fixed=fixed
     )
     if is_scalar(x):
-        x = [x] # type: ignore
+        x = [x]  # type: ignore
     x = Array(as_character(x), dtype=object)
     return Array(list(map(match_fun, x)), dtype=bool)
 
@@ -277,11 +272,6 @@ def _sub(
     )
 
 
-# nchar family -------------------------------
-
-# pylint: disable=redefined-builtin
-
-
 @register_func(None, context=Context.EVAL)
 def nchar(
     x: StringOrIter,
@@ -315,7 +305,7 @@ def nzchar(x: StringOrIter, keep_na: bool = False) -> Iterable[bool]:
         A bool array to tell whether elements in x are non-empty strings
     """
     if is_scalar(x):
-        x = [x] # type: ignore
+        x = [x]  # type: ignore
     x = as_character(x, _na=NA if keep_na else None)
     out = [NA if is_null(elem) else bool(elem) for elem in x]
     if is_null(out).any():
@@ -335,7 +325,7 @@ def _prepare_nchar(
         keep_na = type != "width"
 
     if is_scalar(x):
-        x = [x] # type: ignore
+        x = [x]  # type: ignore
     x = Array(as_character(x), dtype=object)
     return x, keep_na
 
@@ -463,11 +453,11 @@ def substr(
         return x[start0 : stop0 + 1]
 
     if is_scalar(x):
-        x = [x] # type: ignore
+        x = [x]  # type: ignore
     if is_scalar(start):
-        start = [start] # type: ignore
+        start = [start]  # type: ignore
     if is_scalar(stop):
-        stop = [stop] # type: ignore
+        stop = [stop]  # type: ignore
     maxlen = max(length_of(x), length_of(start), length_of(stop))
     x = recycle_value(x, maxlen)
     start = recycle_value(start, maxlen)
@@ -556,6 +546,7 @@ def startswith(x: StringOrIter, prefix: StringOrIter) -> BoolOrIter:
         dtype=bool
     )
 
+
 @register_func(None, context=Context.EVAL)
 def endswith(x: StringOrIter, suffix: StringOrIter) -> BoolOrIter:
     """Determines if entries of x end with suffix
@@ -577,7 +568,7 @@ def endswith(x: StringOrIter, suffix: StringOrIter) -> BoolOrIter:
         dtype=bool
     )
 
-# strtoi
+
 @register_func(None, context=Context.EVAL)
 def strtoi(x: StringOrIter, base: int = 0):
     """Convert strings to integers according to the given base
@@ -595,7 +586,7 @@ def strtoi(x: StringOrIter, base: int = 0):
 
     return Array([int(elem, base=base) for elem in x], dtype=int)
 
-# chartr
+
 @register_func(None, context=Context.EVAL)
 def chartr(old: StringOrIter, new: StringOrIter, x: Any) -> StringOrIter:
     """Replace strings char by char
@@ -640,7 +631,7 @@ def chartr(old: StringOrIter, new: StringOrIter, x: Any) -> StringOrIter:
         replace_single(elem) for elem in as_character(x)
     ])
 
-# tolower, toupper
+
 @register_func(None, context=Context.EVAL)
 def tolower(x: StringOrIter) -> StringOrIter:
     """Convert strings to lower case
@@ -656,6 +647,7 @@ def tolower(x: StringOrIter) -> StringOrIter:
         return x.lower()
 
     return Array([elem.lower() for elem in x])
+
 
 @register_func(None, context=Context.EVAL)
 def toupper(x: StringOrIter) -> StringOrIter:
@@ -673,7 +665,7 @@ def toupper(x: StringOrIter) -> StringOrIter:
 
     return Array([elem.upper() for elem in x])
 
-# trimws
+
 @register_func(None, context=Context.EVAL)
 def trimws(
     x: StringOrIter,
@@ -695,6 +687,7 @@ def trimws(
     """
     which = arg_match(which, "which", ["both", "left", "right"])
     x = as_character(x)
+
     def trimws_single(elem: str) -> str:
         """Trim a single string"""
         if which == "both":

@@ -102,7 +102,7 @@ class Collection(CollectionBase, list):
                 if not is_scalar(elem) or not pandas.isnull(elem)
             ]
         else:
-            elems = self.elems # type: ignore
+            elems = self.elems  # type: ignore
 
         if not elems:
             list.__init__(self, [])
@@ -217,7 +217,6 @@ class Negated(Collection):
         super().expand(pool, base0)
         # self is now 0-based indexes
 
-        # pylint: disable=bad-reversed-sequence
         if pool is not None:
             elems = [
                 self._index_from_pool(-elem - int(not base0), base0=True)
@@ -248,7 +247,7 @@ class Inverted(Collection):
 
         super().expand(pool, base0)  # 0-based indexes
         pool = range(pool) if is_scalar_int(pool) else range(len(pool))
-        # pylint: disable=unsupported-membership-test
+
         list.__init__(self, [elem for elem in pool if elem not in self])
         return self
 
@@ -256,7 +255,7 @@ class Inverted(Collection):
 class Intersect(Collection):
     """Intersect of two collections, designed for `&` operator"""
 
-    def __init__(  # pylint: disable=super-init-not-called
+    def __init__(
         self, *args: Any, pool: PoolType = None, base0: bool = None
     ) -> None:
         if len(args) != 2:

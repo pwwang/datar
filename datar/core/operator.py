@@ -12,6 +12,7 @@ from .collections import Collection, Inverted, Negated, Intersect
 from .exceptions import DataUnrecyclable
 from .types import BoolOrIter
 
+
 @register_operator
 class DatarOperator(Operator):
     """Operator class for datar"""
@@ -82,7 +83,6 @@ class DatarOperator(Operator):
         right = Series(right).fillna(False)
         return left | right
 
-    # pylint: disable=invalid-name
     def _op_ne(self, left: Any, right: Any) -> BoolOrIter:
         """Interpret for left != right"""
         out = self._op_eq(left, right)

@@ -21,7 +21,6 @@ class ContextEval(ContextEvalPipda):
     def __init__(self):
         self.used_refs = defaultdict(lambda: 0)
 
-    # pylint: disable=arguments-differ
     def getitem(
         self, parent: Any, ref: Any, is_direct: bool = False, _attr=False
     ) -> Any:

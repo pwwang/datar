@@ -13,12 +13,8 @@ from ..core.contexts import Context
 from ..core.types import IntType, is_scalar, is_scalar_int
 from .na import NA
 
-if TYPE_CHECKING:  # pragma: no cover
-    # pylint: disable=ungrouped-imports
+if TYPE_CHECKING:
     from pandas import DatetimeIndex, Timestamp
-
-# pylint: disable=invalid-name
-# pylint: disable=redefined-builtin
 
 
 @functools.singledispatch
@@ -187,6 +183,7 @@ def as_date(
         origin=origin,
     )
     return pandas.to_datetime(out)
+
 
 @register_func(None, context=Context.EVAL)
 def as_pd_date(

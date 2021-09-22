@@ -177,7 +177,7 @@ def _(
     return out
 
 
-summarize = summarise  # pylint: disable=invalid-name
+summarize = summarise
 
 
 def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:

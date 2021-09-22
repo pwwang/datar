@@ -41,8 +41,6 @@ def _register_arithmetic_agg(
     return register_func(None, context=Context.EVAL, func=_arithmetric)
 
 
-# pylint: disable=invalid-name
-# pylint: disable=redefined-builtin
 sum = _register_arithmetic_agg(
     "sum",
     "sum",
@@ -285,7 +283,6 @@ def signif(x: NumericOrIter, digits: int = 6) -> NumericOrIter:
     )
 
 
-# pylint: disable=unused-argument
 @register_verb(DataFrame, context=Context.EVAL)
 def cov(x: DataFrame, y: Iterable = None, ddof: int = 1) -> DataFrame:
     """Compute pairwise covariance of dataframe columns,
@@ -306,7 +303,7 @@ def _(x: Iterable, y: Iterable, ddof: int = 1) -> DataFrame:
 def scale(
     x: DataFrame,
     center: Union[bool, NumericOrIter] = True,
-    # pylint: disable=redefined-outer-name
+
     scale: Union[bool, NumericOrIter] = True,
 ) -> DataFrame:
     """Scaling and Centering of a numeric data frame
@@ -386,7 +383,7 @@ _scale = scale
 def _(
     x: Series,
     center: Union[bool, NumericOrIter] = True,
-    # pylint: disable=redefined-outer-name
+
     scale: Union[bool, NumericOrIter] = True,
 ) -> DataFrame:
     """Scaling on series"""
@@ -397,7 +394,7 @@ def _(
 def _(
     x: Iterable,
     center: Union[bool, NumericOrIter] = True,
-    # pylint: disable=redefined-outer-name
+
     scale: Union[bool, NumericOrIter] = True,
 ) -> DataFrame:
     """Scaling on iterables"""

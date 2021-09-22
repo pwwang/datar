@@ -19,8 +19,6 @@ from ..core.types import is_null
 
 from .na import NA
 
-# pylint: disable=invalid-name
-
 
 def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
     """Convert x or elements of x to certain type"""

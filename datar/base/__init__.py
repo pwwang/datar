@@ -1,5 +1,4 @@
 """Public APIs from this submodule"""
-# pylint: disable=unused-import
 from ..core.options import get_option, options, options_context
 from .arithmetic import (
     ceiling,
@@ -185,7 +184,7 @@ from .which import which, which_max, which_min
 
 __all__ = [name for name in locals() if not name.startswith("_")]
 
-_builtin_names = {  # pylint: disable=invalid-name
+_builtin_names = {
     "min": min_,
     "max": max_,
     "sum": sum_,
@@ -198,7 +197,6 @@ _builtin_names = {  # pylint: disable=invalid-name
 __all__.extend(_builtin_names)
 
 # warn when builtin names are imported directly
-# pylint: disable=wrong-import-position
 from ..core.warn_builtin_names import warn_builtin_names
 
 __getattr__ = warn_builtin_names(**_builtin_names)

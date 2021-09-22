@@ -62,7 +62,7 @@ def uncount(
 
     if _id:
         base = int(not get_option("index.base.0", base0_))
-        # pylint: disable=no-value-for-parameter
+
         out = ungroup(
             mutate(
                 group_by(out, INDEX_COLUMN, __calling_env=CallingEnvs.REGULAR),

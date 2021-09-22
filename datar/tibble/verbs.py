@@ -155,7 +155,7 @@ def add_row(
     return out
 
 
-add_case = add_row  # pylint: disable=invalid-name
+add_case = add_row
 
 
 @register_verb(
@@ -225,7 +225,7 @@ def has_rownames(_data: DataFrame) -> bool:
     return not isinstance(_data.index, RangeIndex)
 
 
-has_index = has_rownames  # pylint: disable=invalid-name
+has_index = has_rownames
 
 
 @register_verb(DataFrame)
@@ -244,7 +244,7 @@ def remove_rownames(_data: DataFrame) -> DataFrame:
     return _data.reset_index(drop=True)
 
 
-remove_index = drop_index = remove_rownames  # pylint: disable=invalid-name
+remove_index = drop_index = remove_rownames
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -277,7 +277,7 @@ def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
     )
 
 
-index_to_column = rownames_to_column  # pylint: disable=invalid-name
+index_to_column = rownames_to_column
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -340,7 +340,7 @@ def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
     return out
 
 
-column_to_index = column_to_rownames  # pylint: disable=invalid-name
+column_to_index = column_to_rownames
 
 # Helpers ------------------------------------------------------------------
 

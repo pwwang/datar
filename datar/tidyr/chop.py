@@ -188,12 +188,10 @@ def _unchopping(
     key_cols: Iterable[str],
     keep_empty: bool,
 ) -> DataFrame:
-    # pylint: disable=line-too-long
     """Unchop the data frame
 
     See https://stackoverflow.com/questions/53218931/how-to-unnest-explode-a-column-in-a-pandas-dataframe
-    """
-    # pylint: enable=line-too-long
+    """  # noqa: E501
     # key_cols could be empty
     rsize = None
     val_data = {}
@@ -260,8 +258,6 @@ def _unchopping_df_column(
                 dtypes = {col: val[col].dtype for col in val}
             else:
                 for col in val:
-                    # pylint: disable=unsupported-membership-test
-                    # pylint: disable=unsupported-delete-operation
                     # TODO: test
                     if col in dtypes and dtypes[col] != val[col].dtype:
                         del dtypes[col]  # pragma: no cover

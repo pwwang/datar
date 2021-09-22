@@ -1,14 +1,12 @@
 """Types for convenience"""
 from typing import Any, Iterable, Union, List, Type, Tuple
 
-# pylint: disable=unused-import
 import numpy
 
 from pandas import Categorical, Index, Series, isnull as is_null
 from pandas.api.types import is_scalar as is_scalar_, is_list_like
 from pandas.core.dtypes.common import is_categorical_dtype as is_categorical
 
-# used for type annotations
 Dtype = Union[
     str, numpy.dtype, Type[Union[str, float, int, complex, bool, object]]
 ]
@@ -30,13 +28,14 @@ TypeOrIter = Union[Type, Iterable[Type]]
 DtypeOrIter = Union[Dtype, Iterable[Dtype]]
 NoneType = type(None)
 # nan is float, a better NA annotation?
-NAType = Union[NoneType, type(numpy.nan)]  # type: ignore
-NAOrIter = Union[NAType, Iterable[NAType]] # type: ignore
+NAType = Union[NoneType, type(numpy.nan)]   # type: ignore
+NAOrIter = Union[NAType, Iterable[NAType]]  # type: ignore
 
 # Used for register_verb in forcats
 # Except for cattegorical, string vectors are also avaiable
 ForcatsRegType = (Series, Categorical, list, tuple, Index, numpy.ndarray)
 ForcatsType = Union[CategoricalLikeType, ArrayLikeType]
+
 
 # used for type checks
 def is_scalar_int(x: Any) -> bool:

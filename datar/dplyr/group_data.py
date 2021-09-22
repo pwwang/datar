@@ -109,8 +109,8 @@ def _(_data: DataFrameGroupBy) -> List[str]:
 
 
 # groups in dplyr returns R list
-groups = group_vars  # pylint: disable=invalid-name
-group_cols = group_vars  # pylint: disable=invalid-name
+groups = group_vars
+group_cols = group_vars
 
 
 @register_verb(DataFrame)

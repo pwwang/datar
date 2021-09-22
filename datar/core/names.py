@@ -150,28 +150,28 @@ def repair_names(
 
     base0_ = get_option("index.base.0", base0_)
     if isinstance(repair, str):
-        repair = BUILTIN_REPAIR_METHODS[repair] # type: ignore
+        repair = BUILTIN_REPAIR_METHODS[repair]  # type: ignore
     elif is_iterable(repair) and all(isinstance(elem, str) for elem in repair):
-        return repair # type: ignore
+        return repair  # type: ignore
     elif not callable(repair):
         raise ValueError("Expect a function for name repairing.")
 
-    parameters = inspect.signature(repair).parameters # type: ignore
+    parameters = inspect.signature(repair).parameters  # type: ignore
     annotation = list(parameters.values())[0].annotation
     if annotation is inspect._empty or annotation._name not in (
         "Iterable",
         "Sequence",
     ):  # scalar input
         return [
-            repair(name, base0_=base0_) # type: ignore[operator]
+            repair(name, base0_=base0_)  # type: ignore[operator]
             if "base0_" in parameters
-            else repair(name) # type: ignore[operator]
+            else repair(name)  # type: ignore[operator]
             for name in names
         ]
 
     names = list(names)
     return (
-        repair(names, base0_=base0_) # type: ignore[operator]
+        repair(names, base0_=base0_)  # type: ignore[operator]
         if "base0_" in parameters
-        else repair(names) # type: ignore[operator]
+        else repair(names)  # type: ignore[operator]
     )

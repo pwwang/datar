@@ -103,7 +103,7 @@ def fct_drop(_f: ForcatsType, only: Any = None) -> Categorical:
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_unify(  # pylint: disable=invalid-name,redefined-outer-name
+def fct_unify(
     fs: Iterable[ForcatsType],
     levels: Iterable = None,
 ) -> List[Categorical]:

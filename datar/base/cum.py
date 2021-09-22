@@ -29,7 +29,6 @@ def _ensure_nas_after_na(x: Any) -> Any:
     return x
 
 
-# pylint: disable=invalid-name
 cumsum = register_numpy_func_x(
     "cumsum",
     "cumsum",

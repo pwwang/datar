@@ -42,7 +42,6 @@ from .types import (
 from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
 # logger
-# pylint: disable=invalid-name
 logger = logging.getLogger("datar")
 logger.setLevel(logging.INFO)
 stream_handler = logging.StreamHandler(sys.stderr)
@@ -332,7 +331,7 @@ def name_mutatable_args(
                 if ret_key == key or ret_key.startswith(f"{key}$")
             ]
             if existing_keys:
-                ret = dict_insert_at( # type: ignore
+                ret = dict_insert_at(  # type: ignore
                     ret, existing_keys, {key: val}, remove=True
                 )
             else:
@@ -392,7 +391,7 @@ def position_at(
 
     coll = Collection(pos, pool=length, base0=base0)
     if raise_exc and coll.error:
-        # pylint: disable=raising-bad-type
+
         raise coll.error
     return coll[0]
 
@@ -447,7 +446,7 @@ def apply_dtypes(
         return
 
     if not isinstance(dtypes, dict):
-        dtypes = dict(zip(df.columns, [dtypes] * df.shape[1])) # type: ignore
+        dtypes = dict(zip(df.columns, [dtypes] * df.shape[1]))  # type: ignore
 
     for column, dtype in dtypes.items():
         if column in df:
@@ -478,7 +477,7 @@ def keep_column_order(df: DataFrame, order: Iterable[str]):
 
 
 def reconstruct_tibble(
-    input: DataFrame,  # pylint: disable=redefined-builtin
+    input: DataFrame,
     output: DataFrame,
     ungrouped_vars: List[str] = None,
     keep_rowwise: bool = False,

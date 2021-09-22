@@ -98,7 +98,7 @@ def seq(
 def rep(
     x: Any,
     times: IntOrIter = 1,
-    length: int = None,  # pylint: disable=redefined-outer-name
+    length: int = None,
     each: int = 1,
 ) -> ArrayLikeType:
     """replicates the values in x
@@ -225,7 +225,6 @@ def order(
     return out if base0_ else out + 1
 
 
-# pylint: disable=invalid-name
 length = register_func(None, context=Context.EVAL, func=length_of)
 
 

@@ -23,9 +23,6 @@ from ..core.contexts import Context
 from ..core.types import TypeOrIter, BoolOrIter, is_scalar
 
 
-# pylint: disable=invalid-name
-
-
 def _register_type_testing(
     name: str,
     scalar_types: TypeOrIter,
@@ -123,13 +120,14 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrIter:
     use this function instead
     """
     out = numpy.in1d(elem, elems)
-    if is_scalar(elem): # necessary?
+    if is_scalar(elem):  # necessary?
         return bool(out)
     return out
 
+
 is_in = is_element
 
-# pylint: disable=unnecessary-lambda, redefined-builtin
+
 all = register_func(None, context=Context.EVAL)(
     # can't set attributes to builtins.all, so wrap it.
     lambda arg: builtins.all(arg)

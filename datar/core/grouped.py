@@ -15,8 +15,6 @@ from .types import StringOrIter, is_scalar
 from .utils import apply_dtypes
 from ..base import setdiff
 
-# pylint: disable=too-many-ancestors,invalid-overridden-method
-
 
 class DataFrameGroupByABC(DataFrame, ABC):
     """Abstract class for DataFrameGroupBy"""
@@ -59,9 +57,9 @@ class DataFrameGroupByABC(DataFrame, ABC):
         _drop_index: bool = True,
         **kwargs: Any,
     ) -> DataFrame:
-        ...  # pragma: no cover
+        ...
 
-    def copy(  # pylint: disable=arguments-differ
+    def copy(
         self,
         deep: bool = True,
         copy_grouped: bool = False,

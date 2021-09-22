@@ -2,6 +2,7 @@
 from pandas import Categorical
 from ..core.types import ForcatsType, is_categorical, is_scalar
 
+
 def check_factor(_f: ForcatsType) -> Categorical:
     """Make sure the input become a factor"""
     if not is_categorical(_f):

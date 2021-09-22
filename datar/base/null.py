@@ -6,7 +6,6 @@ from pipda import register_func
 
 from ..core.contexts import Context
 
-# pylint: disable=unused-argument
 
 NULL = None
 

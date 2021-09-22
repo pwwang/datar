@@ -39,7 +39,7 @@ def mutate(
     base0_: bool = None,
     **kwargs: Any,
 ) -> DataFrame:
-    # pylint: disable=too-many-branches
+
     """Adds new variables and preserves existing ones
 
     The original API:

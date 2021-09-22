@@ -11,41 +11,14 @@ repos:
         exclude: 'mkdocs.yml'
 -   repo: local
     hooks:
-    -   id: masterpylintrc
-        name: Overwrite local .pylintrc by master one
-        entry: cp ../.pylintrc ./.pylintrc
-        pass_filenames: false
-        always_run: true
-        language: system
--   repo: local
-    hooks:
-    -   id: pylint
-        name: Run pylint
+    -   id: flake8
+        name: Run flake8
         files: ^datar/.+$
         pass_filenames: false
-        entry: pylint datar
+        entry: flake8
+        args: [datar]
         types: [python]
         language: system
-    # -   id: poetry2setuppy
-    #     name: Convert pyproject.toml to setup.py
-    #     entry: dephell deps convert --from=poetry --to=setup.py
-    #     language: system
-    #     files: pyproject.toml
-    #     pass_filenames: false
-    # -   id: poetry2requirements
-    #     name: Convert pyproject.toml to requirements.txt
-    #     entry: dephell deps convert --from=poetry --to=requirements.txt
-    #     language: system
-    #     files: pyproject.toml
-    #     pass_filenames: false
-    # -   id: mypycheck
-    #     name: Type checking by mypy
-    #     entry: mypy
-    #     language: system
-    #     files: ^datar/.+$
-    #     pass_filenames: false
-    #     types: [python]
-    #     args: [-p, datar]
     -   id: pytest
         name: Run pytest
         entry: pytest
