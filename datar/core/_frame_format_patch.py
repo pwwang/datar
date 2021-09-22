@@ -35,8 +35,9 @@
 1. add dtypes next to column names when printing
 2. collapse data frames when they are elements of a parent data frame.
 """
+# flake8: noqa
 # code grabbed from pandas v1.2.5
-# works with v1.3.0.
+# works with v1.3.3.
 from pandas import DataFrame
 from pandas.io.formats import format as fmt, html, string as stringf
 from pandas.io.formats.html import (
@@ -70,7 +71,6 @@ from pandas.core.dtypes.missing import isna
 
 from .options import add_option
 
-# pylint: skip-file
 
 # TODO: patch more formatters
 

@@ -1,5 +1,4 @@
 """Load operator, provide f and __version__"""
-# pylint: disable=unused-import
 from typing import Mapping
 
 from .core import operator as _
@@ -7,11 +6,12 @@ from .core import _frame_format_patch
 from .core.defaults import f
 
 __all__ = ('f', 'get_versions')
-__version__ = "0.5.1"
+__version__ = "0.5.2"
+
 
 def get_versions(
     prnt: bool = True
-) -> Mapping[str, str]: # pragma: no cover
+) -> Mapping[str, str]:  # pragma: no cover
     """Print or return related versions which help for bug reporting.
 
     Args:

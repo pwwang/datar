@@ -1,0 +1,289 @@
+
+[airlines]
+descr = "Translation between two letter carrier codes and names"
+ref = "https://github.com/tidyverse/nycflights13"
+index = false
+source = "airlines.csv.gz"
+
+[airports]
+descr = "airport names and locations"
+ref = "https://github.com/tidyverse/nycflights13"
+index = false
+source = "airports.csv.gz"
+
+[airquality]
+descr = "Daily air quality measurements in New York, May to September 1973."
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/airquality"
+index = false
+source = "airquality.csv.gz"
+
+
+[anscombe]
+descr = "Four x-y datasets which have the same traditional statistical properties"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/anscombe"
+index = false
+source = "anscombe.csv.gz"
+
+[band_instruments]
+descr = "Band members of the Beatles and Rolling Stones"
+ref = "https://dplyr.tidyverse.org/reference/band_members.html"
+index = false
+source = "band_instruments.csv.gz"
+
+[band_instruments2]
+descr = "Band members of the Beatles and Rolling Stones"
+ref = "https://dplyr.tidyverse.org/reference/band_members.html"
+index = false
+source = "band_instruments2.csv.gz"
+
+[band_members]
+descr = "Band members of the Beatles and Rolling Stones"
+ref = "https://dplyr.tidyverse.org/reference/band_members.html"
+index = false
+source = "band_members.csv.gz"
+
+[billboard]
+descr = "Song rankings for Billboard top 100 in the year 2000"
+ref = "https://tidyr.tidyverse.org/reference/billboard.html"
+index = false
+source = "billboard.csv.gz"
+
+[chickweight]
+descr = "Weight versus age of chicks on different diets"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/ChickWeight"
+index = false
+source = "chickweight.csv.gz"
+
+[construction]
+descr = "Completed construction in the US in 2018"
+ref = "https://tidyr.tidyverse.org/reference/construction.html"
+index = false
+source = "construction.csv.gz"
+
+[diamonds]
+descr = "A dataset containing the prices and other attributes of almost 54,000 diamonds"
+ref = "https://ggplot2.tidyverse.org/reference/diamonds.html"
+index = false
+source = "diamonds.csv.gz"
+
+[economics]
+descr = "US economic time series"
+ref = "https://ggplot2.tidyverse.org/reference/economics.html"
+index = false
+source = "economics.csv.gz"
+
+[economics_long]
+descr = "US economic time series"
+ref = "https://ggplot2.tidyverse.org/reference/economics.html"
+index = false
+source = "economics_long.csv.gz"
+
+[faithful]
+descr = "Waiting time between eruptions and the duration of the eruption for the Old Faithful geyser in Yellowstone National Park, Wyoming, USA"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/faithful"
+index = false
+source = "faithful.csv.gz"
+
+[faithfuld]
+descr = "2d density estimate of Old Faithful data"
+ref = "https://ggplot2.tidyverse.org/reference/faithfuld.html"
+index = false
+source = "faithfuld.csv.gz"
+
+[fish_encounters]
+descr = "Information about fish swimming down a river"
+ref = "https://tidyr.tidyverse.org/reference/fish_encounters.html"
+index = false
+source = "fish_encounters.csv.gz"
+
+[flights]
+descr = "all flights that departed from NYC in 2013"
+ref = "https://github.com/tidyverse/nycflights13"
+index = false
+source = "flights.csv.gz"
+
+[gss_cat]
+descr = "A sample of categorical variables from the General Social survey"
+ref = "https://forcats.tidyverse.org/reference/gss_cat.html"
+index = false
+source = "gss_cat.csv.gz"
+
+[iris]
+descr = "Edgar Anderson's Iris Data"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/iris"
+index = false
+source = "iris.csv.gz"
+
+[luv_colours]
+descr = "colors() in Luv space"
+ref = "https://ggplot2.tidyverse.org/reference/luv_colours.html"
+index = false
+source = "luv_colours.csv.gz"
+
+[midwest]
+descr = "Midwest demographics"
+ref = "https://ggplot2.tidyverse.org/reference/midwest.html"
+index = false
+source = "midwest.csv.gz"
+
+[mpg]
+descr = "Fuel economy data from 1999 to 2008 for 38 popular models of cars"
+ref = "https://ggplot2.tidyverse.org/reference/mpg.html"
+index = false
+source = "mpg.csv.gz"
+
+[msleep]
+descr = "An updated and expanded version of the mammals sleep dataset"
+ref = "https://ggplot2.tidyverse.org/reference/msleep.html"
+index = false
+source = "msleep.csv.gz"
+
+[mtcars]
+descr = "Motor Trend Car Road Tests"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/mtcars"
+index = true
+source = "mtcars.csv.gz"
+
+[planes]
+descr = "construction information about each plane"
+ref = "https://github.com/tidyverse/nycflights13"
+index = false
+source = "planes.csv.gz"
+
+[population]
+descr = "A subset of data from the World Health Organization Global Tuberculosis Report, and accompanying global populations."
+ref = "https://tidyr.tidyverse.org/reference/who.html"
+index = false
+source = "population.csv.gz"
+
+[presidential]
+descr = "Terms of 11 presidents from Eisenhower to Obama"
+ref = "https://ggplot2.tidyverse.org/reference/presidential.html"
+index = false
+source = "presidential.csv.gz"
+
+[relig_income]
+descr = "Pew religion and income survey"
+ref = "https://tidyr.tidyverse.org/reference/relig_income.html"
+index = false
+source = "relig_income.csv.gz"
+
+[seals]
+descr = "Vector field of seal movements"
+ref = "https://ggplot2.tidyverse.org/reference/seals.html"
+index = false
+source = "seals.csv.gz"
+
+[smith]
+descr = "A small demo dataset describing John and Mary Smith."
+ref = "https://tidyr.tidyverse.org/reference/smiths.html"
+index = false
+source = "smith.csv.gz"
+
+[starwars]
+descr = "tarwars characters (columns films, vehicles and starships are not included)"
+ref = "https://dplyr.tidyverse.org/reference/starwars.html"
+index = false
+source = "starwars.csv.gz"
+
+[state_abb]
+descr = "character vector of 2-letter abbreviations for the state names."
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/state"
+index = false
+source = "state_abb.csv.gz"
+
+[state_division]
+descr = "factor giving state divisions (New England, Middle Atlantic, South Atlantic, East South Central, West South Central, East North Central, West North Central, Mountain, and Pacific)."
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/state"
+index = false
+source = "state_division.csv.gz"
+
+[state_region]
+descr = "factor giving the region (Northeast, South, North Central, West) that each state belongs to."
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/state"
+index = false
+source = "state_region.csv.gz"
+
+[storms]
+descr = "This data is a subset of the NOAA Atlantic hurricane database best track data"
+ref = "https://dplyr.tidyverse.org/reference/storms.html"
+index = false
+source = "storms.csv.gz"
+
+[table1]
+descr = "Example tabular representations"
+ref = "https://tidyr.tidyverse.org/reference/table1.html"
+index = false
+source = "table1.csv.gz"
+
+[table2]
+descr = "Example tabular representations"
+ref = "https://tidyr.tidyverse.org/reference/table1.html"
+index = false
+source = "table2.csv.gz"
+
+[table3]
+descr = "Example tabular representations"
+ref = "https://tidyr.tidyverse.org/reference/table1.html"
+index = false
+source = "table3.csv.gz"
+
+[table4a]
+descr = "Example tabular representations"
+ref = "https://tidyr.tidyverse.org/reference/table1.html"
+index = false
+source = "table4a.csv.gz"
+
+[table4b]
+descr = "Example tabular representations"
+ref = "https://tidyr.tidyverse.org/reference/table1.html"
+index = false
+source = "table4b.csv.gz"
+
+[table5]
+descr = "Example tabular representations"
+ref = "https://tidyr.tidyverse.org/reference/table1.html"
+index = false
+source = "table5.csv.gz"
+
+[toothgrowth]
+descr = "The Effect of Vitamin C on Tooth Growth in Guinea Pigs"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/ToothGrowth"
+index = false
+source = "toothgrowth.csv.gz"
+
+[txhousing]
+descr = "Housing sales in TX"
+ref = "https://ggplot2.tidyverse.org/reference/txhousing.html"
+index = false
+source = "txhousing.csv.gz"
+
+[us_rent_income]
+descr = "US rent and income data"
+ref = "https://tidyr.tidyverse.org/reference/us_rent_income.html"
+index = false
+source = "us_rent_income.csv.gz"
+
+[warpbreaks]
+descr = "The Number of Breaks in Yarn during Weaving"
+ref = "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/warpbreaks"
+index = false
+source = "warpbreaks.csv.gz"
+
+[weather]
+descr = "hourly meterological data for each airport"
+ref = "https://github.com/tidyverse/nycflights13"
+index = false
+source = "weather.csv.gz"
+
+[who]
+descr = "A subset of data from the World Health Organization Global Tuberculosis Report, and accompanying global populations."
+ref = "https://tidyr.tidyverse.org/reference/who.html"
+index = false
+source = "who.csv.gz"
+
+[world_bank_pop]
+descr = "Population data from the world bank"
+ref = "https://tidyr.tidyverse.org/reference/world_bank_pop.html"
+index = false
+source = "world_bank_pop.csv.gz"

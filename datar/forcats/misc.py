@@ -39,7 +39,7 @@ def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
     Returns:
         A data frame with columns `f`, `n` and `p`, if prop is True
     """
-    f2 = check_factor(_f)  # pylint: disable=invalid-name
+    f2 = check_factor(_f)
     n_na = sum(is_null(f2))
 
     df = DataFrame(

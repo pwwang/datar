@@ -73,7 +73,8 @@ def summarise(
             - "drop": All levels of grouping are dropped.
             - "keep": Same grouping structure as _data.
             - "rowwise": Each row is its own group.
-        *args, **kwargs: Name-value pairs, where value is the summarized
+        *args: and
+        **kwargs: Name-value pairs, where value is the summarized
             data for each group
 
     Returns:
@@ -176,7 +177,7 @@ def _(
     return out
 
 
-summarize = summarise  # pylint: disable=invalid-name
+summarize = summarise
 
 
 def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:

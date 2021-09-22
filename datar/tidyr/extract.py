@@ -48,7 +48,7 @@ def extract(
         Dataframe with extracted columns.
     """
     if is_scalar(into):
-        into = [into] # type: ignore
+        into = [into]  # type: ignore
 
     all_columns = data.columns
     col = vars_select(all_columns, col, base0=base0_)
@@ -57,8 +57,8 @@ def extract(
     outcols = {}
     # merge columns with same name
     # all columns are already strs
-    ## 'col' => i, j, k
-    ## i, j, k are indexes that have same name 'col'
+    # # 'col' => i, j, k
+    # # i, j, k are indexes that have same name 'col'
     mergedcols = {}
     for i, outcol in enumerate(into):
         if is_scalar(outcol) and pandas.isnull(outcol):

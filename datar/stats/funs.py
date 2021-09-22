@@ -16,8 +16,6 @@ from ..core.contexts import Context
 from ..core.utils import Array
 from ..base import NA
 
-# pylint: disable=redefined-builtin, redefined-outer-name
-
 
 @register_func(None, context=Context.EVAL)
 def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
@@ -102,20 +100,21 @@ def std(
 
     return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)
 
+
 sd = std
+
 
 @register_func(None, context=Context.EVAL)
 def weighted_mean(
-    # pylint: disable=invalid-name
     x: NumericOrIter,
     w: NumericOrIter = None,
     na_rm: bool = False,
 ) -> NumericType:
     """Calculate weighted mean"""
     if is_scalar(x):
-        x = [x] # type: ignore
+        x = [x]  # type: ignore
     if w is not None and is_scalar(w):
-        w = [w] # type: ignore
+        w = [w]  # type: ignore
     x = Array(x)
     if w is not None:
         w = Array(w)

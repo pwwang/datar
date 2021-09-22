@@ -20,8 +20,6 @@ from ..core.utils import Array, categorized, fillna_safe
 
 from .na import NA
 
-# pylint: disable=redefined-builtin
-
 
 @register_func(None, context=Context.EVAL)
 def table(
@@ -35,7 +33,7 @@ def table(
     # TODO: varname.argname2() now supports it
     # deparse_level: int = 1
 ) -> DataFrame:
-    # pylint: disable=too-many-statements,too-many-branches
+
     """uses the cross-classifying factors to build a contingency table of
     the counts at each combination of factor levels.
 

@@ -10,7 +10,6 @@ from ..core.types import is_null, is_scalar
 from ..core.defaults import NA_REPR
 from ..core.utils import register_numpy_func_x
 
-# pylint: disable=invalid-name
 NA = numpy.nan
 NaN = NA
 Inf = numpy.inf
@@ -60,6 +59,7 @@ def any_na(x: Any, recursive: bool = False) -> bool:
         if any_na(elem, recursive=True):
             return True
     return out
+
 
 is_infinite = register_numpy_func_x(
     "is_infinite",

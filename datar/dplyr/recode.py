@@ -81,7 +81,7 @@ def _check_type(val: numpy.ndarray, out_type: type, name: str):
 
 
 def _replace_with(
-    # pylint: disable=invalid-name
+
     x: numpy.ndarray,
     out_type: type,
     i: numpy.ndarray,
@@ -373,4 +373,4 @@ def recode_factor(
     return Categorical(recoded, categories=levels, ordered=_ordered)
 
 
-recode_categorical = recode_factor  # pylint: disable=invalid-name
+recode_categorical = recode_factor

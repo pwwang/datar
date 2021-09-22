@@ -13,6 +13,7 @@ from ..core.middlewares import CurColumn
 from ..base import setdiff
 from .group_data import group_vars
 
+
 # n used directly in count
 @register_func(context=Context.EVAL, summarise_prefers_input=True)
 def n(series: Iterable[Any]) -> int:

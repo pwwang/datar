@@ -10,9 +10,6 @@ from ..core.contexts import Context
 from ..core.types import ArrayLikeType, IntType, is_scalar
 from ..core.utils import Array, arg_match, get_option, position_after
 
-# pylint: disable=redefined-outer-name
-# pylint: disable=unused-argument
-
 
 @register_verb(DataFrame, context=Context.EVAL)
 def colnames(
@@ -146,8 +143,8 @@ def ncol(_data: DataFrame, _nested: bool = True):
 @register_verb(context=Context.EVAL)
 def diag(
     x: Any = 1,
-    nrow: IntType = None,  # pylint: disable=redefined-outer-name
-    ncol: IntType = None,  # pylint: disable=redefined-outer-name
+    nrow: IntType = None,
+    ncol: IntType = None,
 ) -> DataFrame:
     """Extract, construct a diagonal dataframe or replace the diagnal of
     a dataframe.
@@ -188,8 +185,8 @@ def diag(
 @diag.register(DataFrame)
 def _(
     x: DataFrame,
-    nrow: Any = None,  # pylint: disable=redefined-outer-name
-    ncol: IntType = None,  # pylint: disable=redefined-outer-name
+    nrow: Any = None,
+    ncol: IntType = None,
 ) -> Union[DataFrame, numpy.ndarray]:
     """Diag when x is a dataframe"""
     if nrow is not None and ncol is not None:
@@ -263,7 +260,7 @@ def union(x: Any, y: Any) -> List[Any]:
         x = [x]
     if is_scalar(y):
         y = [y]
-    # pylint: disable=arguments-out-of-order
+
     return list(x) + setdiff(y, x, __calling_env=CallingEnvs.REGULAR)
 
 
@@ -317,7 +314,7 @@ def append(x: Any, values: Any, after: int = -1, base0_: bool = None) -> List:
 
 
 @register_verb((list, tuple, numpy.ndarray, Series, Categorical))
-def duplicated(  # pylint: disable=invalid-name
+def duplicated(
     x: Iterable[Any],
     incomparables: Sequence[Any] = None,
     from_last: bool = False,
@@ -354,7 +351,7 @@ def duplicated(  # pylint: disable=invalid-name
 
 
 @duplicated.register(DataFrame)
-def _(  # pylint: disable=invalid-name,unused-argument
+def _(
     x: DataFrame,
     incomparables: Iterable[Any] = None,
     from_last: bool = False,
@@ -459,7 +456,7 @@ def proportions(
         return mutate(
             x,
             across(
-                # pylint: disable=no-value-for-parameter
+
                 everything(__calling_env=CallingEnvs.PIPING),
                 lambda col: col / sum_(col, __calling_env=CallingEnvs.REGULAR),
                 __calling_env=CallingEnvs.PIPING,

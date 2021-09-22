@@ -98,7 +98,7 @@ def _(
 def _(
     _data: DataFrameRowwise, *args: Any, _keep_all: bool = False, **kwargs: Any
 ) -> DataFrameRowwise:
-    # pylint: disable=no-value-for-parameter
+
     out = distinct.dispatch(DataFrame)(
         ungroup(_data, __calling_env=CallingEnvs.REGULAR),
         *args,

@@ -69,7 +69,7 @@ def everything(_data: DataFrame) -> List[str]:
 def last_col(
     _data: DataFrame,
     offset: int = 0,
-    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
+    vars: Iterable[str] = None,
 ) -> str:
     """Select last variable, possibly with an offset.
 
@@ -92,7 +92,7 @@ def starts_with(
     _data: DataFrame,
     match: StringOrIter,
     ignore_case: bool = True,
-    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
+    vars: Iterable[str] = None,
 ) -> List[str]:
     """Select columns starting with a prefix.
 
@@ -119,7 +119,7 @@ def ends_with(
     _data: DataFrame,
     match: str,
     ignore_case: bool = True,
-    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
+    vars: Iterable[str] = None,
 ) -> List[str]:
     """Select columns ending with a suffix.
 
@@ -146,7 +146,7 @@ def contains(
     _data: DataFrame,
     match: str,
     ignore_case: bool = True,
-    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
+    vars: Iterable[str] = None,
 ) -> List[str]:
     """Select columns containing substrings.
 
@@ -173,7 +173,7 @@ def matches(
     _data: DataFrame,
     match: str,
     ignore_case: bool = True,
-    vars: Iterable[str] = None,  # pylint: disable=redefined-builtin
+    vars: Iterable[str] = None,
 ) -> List[str]:
     """Select columns matching regular expressions.
 
@@ -237,7 +237,7 @@ def all_of(
 def any_of(
     _data: DataFrame,
     x: Iterable[Union[int, str]],
-    # pylint: disable=redefined-builtin
+
     vars: Iterable[str] = None,
     base0_: bool = None,
 ) -> List[str]:
@@ -272,7 +272,7 @@ def any_of(
 @register_func(None)
 def num_range(
     prefix: str,
-    range: Iterable[int],  # pylint: disable=redefined-builtin
+    range: Iterable[int],
     width: int = None,
     base0_: bool = None,
 ) -> List[str]:

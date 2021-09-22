@@ -14,8 +14,6 @@ from .group_data import group_vars
 from .group_by import ungroup
 from .mutate import mutate
 
-# pylint: disable=no-value-for-parameter
-
 
 @register_verb(DataFrame, context=Context.PENDING)
 def arrange(

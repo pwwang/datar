@@ -80,8 +80,8 @@ def expand_grid(
             for key, val in dots.items()
         }
 
-    ## tibble will somehow flatten the nested dataframes into fake nested df.
-    ## do it inside _flatten_nested
+    # # tibble will somehow flatten the nested dataframes into fake nested df.
+    # # do it inside _flatten_nested
     # out = tibble(out, _name_repair=_name_repair, base0_=base0_)
     return _flatten_nested(out, named, _name_repair, base0_)
 

@@ -19,10 +19,6 @@ from ..core.utils import categorized
 
 from .na import NA
 
-# factor, ordered, is_factor, is_ordered, as_factor, as_ordered, add_na
-
-# pylint: disable=invalid-name
-
 
 @register_func(None, context=Context.EVAL)
 def droplevels(x: Categorical) -> Categorical:
@@ -53,6 +49,7 @@ def levels(x: Any) -> ArrayLikeType:
 
     return categorized(x).categories.values.copy()
 
+
 @register_func(None, context=Context.EVAL)
 def nlevels(x: Any) -> int:
     """Get the number of levels of a factor
@@ -66,6 +63,7 @@ def nlevels(x: Any) -> int:
     lvls = levels(x)
     return 0 if lvls is None else len(lvls)
 
+
 @register_func(None, context=Context.EVAL)
 def is_ordered(x: Any) -> bool:
     """Check if a factor is ordered"""
@@ -74,9 +72,10 @@ def is_ordered(x: Any) -> bool:
 
     return categorized(x).ordered
 
+
 def factor(
     x: Iterable[Any] = None,
-    # pylint: disable=redefined-outer-name
+
     levels: Iterable[Any] = None,
     exclude: Any = NA,
     ordered: bool = False,
@@ -120,7 +119,7 @@ def factor(
 
 def ordered(
     x: Iterable[Any] = None,
-    # pylint: disable=redefined-outer-name
+
     levels: Iterable[Any] = None,
 ) -> Categorical:
     """Create an ordered factor
@@ -132,6 +131,7 @@ def ordered(
         The ordered factor
     """
     return factor(x, levels=levels).as_ordered()
+
 
 @register_func(None, context=Context.EVAL)
 def as_factor(x: Iterable) -> Categorical:

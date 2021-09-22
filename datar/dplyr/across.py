@@ -44,7 +44,7 @@ class Across:
         cols = data.columns[vars_select(data.columns, cols, base0=base0)]
         base0 = get_option("index.base.0", base0)
 
-        fns_list = [] # type: List[str, Union[int, Callable]]
+        fns_list = []  # type: List[str, Union[int, Callable]]
         if callable(fns):
             fns_list.append({"fn": fns})
         elif isinstance(fns, (list, tuple)):

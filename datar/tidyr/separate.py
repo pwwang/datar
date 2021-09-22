@@ -27,8 +27,6 @@ from ..dplyr import ungroup, mutate
 
 from .chop import unchop
 
-# pylint: disable=no-value-for-parameter
-
 
 @register_verb(DataFrame, context=Context.SELECT)
 def separate(
@@ -197,7 +195,7 @@ def _separate_col(
     extra: str,
     fill: str,
     base0: bool,
-    # pylint: disable=dangerous-default-value
+
     extra_warns: List[str] = [],  # mutatable to save warnings
     missing_warns: List[str] = [],
 ) -> List[Union[str, NAType]]:

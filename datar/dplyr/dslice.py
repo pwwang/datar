@@ -19,11 +19,9 @@ from ..base import NA, unique
 from .group_by import ungroup
 from .dfilter import _filter_groups
 
-# pylint: disable=no-value-for-parameter
-
 
 @register_verb(DataFrame, context=Context.SELECT)
-def slice(  # pylint: disable=redefined-builtin
+def slice(
     _data: DataFrame,
     *rows: NumericOrIter,
     _preserve: bool = False,
@@ -408,7 +406,7 @@ def _sanitize_rows(rows: Iterable, nrow: int, base0: bool = None) -> List[int]:
     """Sanitize rows passed to slice"""
     rows = Collection(*rows, pool=nrow, base0=base0)
     if rows.error:
-        # pylint: disable=raising-bad-type
+
         raise rows.error from None
     invalid_type_rows = [
         row

@@ -23,10 +23,6 @@ from ..dplyr import relocate
 from .extract import extract
 from .separate import separate
 
-# pylint: disable=too-many-branches
-# pylint: disable=too-many-statements
-# pylint: disable=no-value-for-parameter
-
 
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(

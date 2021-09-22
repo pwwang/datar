@@ -131,7 +131,9 @@ def fct_inorder(_f: ForcatsType, ordered: bool = None) -> Categorical:
         __calling_env=CallingEnvs.REGULAR,
     )
 
+
 as_factor = fct_inorder
+
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_infreq(_f: ForcatsType, ordered: bool = None) -> Categorical:

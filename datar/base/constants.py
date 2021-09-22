@@ -4,7 +4,6 @@ from string import ascii_letters
 
 import numpy
 
-# pylint: disable=invalid-name
 
 pi = math.pi
 

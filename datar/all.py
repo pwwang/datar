@@ -1,6 +1,4 @@
 """Import all constants, verbs and functions"""
-# pylint: disable=wildcard-import, unused-wildcard-import
-# pylint: disable=unused-import, reimported, invalid-name
 from . import f
 from .base import _no_warn as _  # don't override from datar.all import _no_warn
 from .base import _builtin_names as _base_builtin_names
@@ -28,7 +26,7 @@ for name in _builtin_names:
     # will not warn
     del locals()[name]
 
-from .core.warn_builtin_names import (  # pylint: disable=wrong-import-position
+from .core.warn_builtin_names import (
     warn_builtin_names as _warn_builtin_names,
 )
 

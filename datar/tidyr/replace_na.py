@@ -15,7 +15,7 @@ from ..core.contexts import Context
 @singledispatch
 def _replace_na(data: Iterable[Any], replace: Any) -> Iterable[Any]:
     """Replace NA for any iterables"""
-    return type(data)( # type: ignore
+    return type(data)(  # type: ignore
         replace if is_scalar(elem) and pandas.isnull(elem) else elem
         for elem in data
     )

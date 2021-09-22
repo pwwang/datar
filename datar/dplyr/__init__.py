@@ -1,6 +1,5 @@
 """Public APIs for dplyr"""
 
-# pylint: disable=unused-import
 from .across import across, c_across, if_all, if_any
 from .arrange import arrange
 from .bind import bind_cols, bind_rows
@@ -94,7 +93,7 @@ from .tidyselect import (
 
 # make sure builtin names are included when
 # from datar.dplyr import *
-_builtin_names = {  # pylint: disable=invalid-name
+_builtin_names = {
     "filter": filter_,
     "slice": slice_,
 }
@@ -103,7 +102,6 @@ __all__ = [var_ for var_ in locals() if not var_.startswith("_")]
 __all__.extend(_builtin_names)
 
 # warn when builtin names are imported directly
-# pylint: disable=wrong-import-position
 from ..core.warn_builtin_names import warn_builtin_names
 
 __getattr__ = warn_builtin_names(**_builtin_names)

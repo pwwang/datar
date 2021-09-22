@@ -170,7 +170,7 @@ def lvls_expand(
 
 
 @register_verb(ForcatsRegType)
-def lvls_union(  # pylint: disable=invalid-name
+def lvls_union(
     fs: Iterable[ForcatsType],
 ) -> List:
     """Find all levels in a list of factors

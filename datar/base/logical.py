@@ -14,8 +14,6 @@ from .casting import _as_type
 TRUE = True
 FALSE = False
 
-# pylint: disable=invalid-name
-
 
 @register_func(None, context=Context.EVAL)
 def as_logical(x: Any) -> BoolOrIter:

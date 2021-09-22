@@ -9,8 +9,6 @@ from ..core.utils import register_numpy_func_x
 from ..core.types import ComplexOrIter
 from ..core.contexts import Context
 
-# pylint: disable=invalid-name
-# pylint: disable=unused-import
 
 from .testing import _register_type_testing
 from .casting import _as_type

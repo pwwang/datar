@@ -284,7 +284,7 @@ def _rows_match(x: DataFrame, y: DataFrame) -> numpy.ndarray:
     y_with_id = rownames_to_column(
         y, var=id_col, __calling_env=CallingEnvs.REGULAR
     )
-    # pylint: disable=no-value-for-parameter
+
     return left_join(x, y_with_id, __calling_env=CallingEnvs.REGULAR)[
         id_col
     ].values

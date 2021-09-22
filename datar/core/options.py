@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 from diot import Diot
 
-# pylint: disable=invalid-name
+
 _key_transform = lambda key: key.replace("_", ".")
 _dict_transform_back = lambda dic: {
     key.replace(".", "_"): val for key, val in dic.items()
@@ -84,7 +84,6 @@ def options_context(**kwargs: Any) -> Generator:
     options(opts)
 
 
-# pylint: disable=invalid-name
 def get_option(x: str, default: Any = None) -> Any:
     """Get the current value set for option ‘x’,
     or ‘default’ (which defaults to ‘NULL’) if the option is unset.

@@ -66,7 +66,6 @@ def count(
     else:
         out = x
 
-    # pylint: disable=no-value-for-parameter
     out = tally(
         out,
         wt=wt,
@@ -100,7 +99,7 @@ def tally(
     name = _check_name(name, group_vars(x, __calling_env=CallingEnvs.REGULAR))
     # thread-safety?
     with options_context(dplyr_summarise_inform=False):
-        # pylint: disable=no-value-for-parameter
+
         out = summarise(
             x,
             {name: n() if tallyn is None else tallyn},
@@ -155,7 +154,7 @@ def add_tally(
     """
     tallyn = _tally_n(wt)
     name = _check_name(name, x.columns)
-    # pylint: disable=no-value-for-parameter
+
     out = mutate(
         x,
         {name: n() if tallyn is None else tallyn},
@@ -179,7 +178,7 @@ def _tally_n(wt: Union[NumericOrIter, Expression]) -> Iterable[NumericType]:
 
     # If it's Expression, will return a Function object
     # Otherwise, sum of wt
-    # pylint: disable=unexpected-keyword-arg
+
     return sum_(wt, na_rm=True, __calling_env=CallingEnvs.PIPING)
 
 

@@ -8,4 +8,4 @@ from pipda import Symbolic
 DEFAULT_COLUMN_PREFIX = "_Var"
 NA_REPR = "<NA>"
 
-f = Symbolic()  # pylint: disable=invalid-name
+f = Symbolic()

@@ -1,3 +1,12 @@
+## 0.5.2
+More of a maintenance release.
+
+- 🔧 Add metadata for datasets
+- 🔊 Send logs to stderr, instead of stdout
+- 📌Pin dependency versions
+- 🚨 Switch linter to flake8
+- 📝 Update some docs to fit `datar-cli`
+
 ## 0.5.1
 - Add documentation about "blind" environment (#45, #54, #55)
 - Change `base.as_date()` to return pandas datetime types instead python datetime types (#56)

@@ -26,7 +26,7 @@ def bind_rows(
     _copy: bool = True,
     **kwargs: Union[DataFrame, dict],
 ) -> DataFrame:
-    # pylint: disable=too-many-branches
+
     """Bind rows of give dataframes
 
     Original APIs https://dplyr.tidyverse.org/reference/bind.html

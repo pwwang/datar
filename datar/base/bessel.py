@@ -6,8 +6,6 @@ from pipda import register_func
 
 from ..core.contexts import Context
 
-# pylint: disable=invalid-name
-
 
 def _get_special_func_from_scipy(name: str) -> Callable:
     """Import bessel functions from scipy on the fly

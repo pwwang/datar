@@ -7,7 +7,7 @@ from pipda import register_verb
 from ..core.defaults import NA_REPR
 from ..core.grouped import DataFrameGroupBy
 
-# pylint: disable=invalid-name
+
 @register_verb(DataFrame)
 def set_names(obj: DataFrame, names: Iterable[str]) -> DataFrame:
     """Set names of a dataframe"""

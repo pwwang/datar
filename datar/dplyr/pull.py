@@ -23,7 +23,7 @@ def pull(
     to: str = None,
     base0_: bool = None,
 ) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
-    # pylint: disable=too-many-branches
+
     """Pull a series or a dataframe from a dataframe
 
     Args:
@@ -62,7 +62,7 @@ def pull(
 
     to = arg_match(to, "to", ["list", "array", "frame", "series", "dict", None])
     if name is not None and is_scalar(name):
-        name = [name] # type: ignore
+        name = [name]  # type: ignore
 
     if isinstance(var, int):
         var = position_at(var, _data.shape[1], base0=base0_)

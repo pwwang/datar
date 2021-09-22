@@ -9,8 +9,6 @@ from ..core.contexts import Context
 from ..core.types import FloatOrIter
 from .constants import pi
 
-# pylint: disable=invalid-name
-
 
 def _register_trig_hb_func(name: str, np_name: str, doc: str) -> Callable:
     """Register trigonometric and hyperbolic function"""
@@ -19,7 +17,7 @@ def _register_trig_hb_func(name: str, np_name: str, doc: str) -> Callable:
         func = lambda x: np_fun(x * pi)
     else:
         # ufunc cannot set context
-        func = lambda x: np_fun(x)  # pylint: disable=unnecessary-lambda
+        func = lambda x: np_fun(x)
 
     func = register_func(None, context=Context.EVAL, func=func)
     func.__name__ = name

@@ -41,6 +41,6 @@ def tail(
 
     out = _data[-n:]
     try:
-        return out.reset_index(drop=True) # type: ignore[union-attr]
+        return out.reset_index(drop=True)  # type: ignore[union-attr]
     except AttributeError:
         return out

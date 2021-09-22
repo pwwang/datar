@@ -16,11 +16,9 @@ from ..core.types import is_scalar, is_null, BoolOrIter
 from ..core.utils import copy_attrs, reconstruct_tibble, Array
 from .group_data import group_data, group_vars
 
-# pylint: disable=no-value-for-parameter
-
 
 @register_verb(DataFrame, context=Context.EVAL)
-def filter(  # pylint: disable=redefined-builtin
+def filter(
     _data: DataFrame,
     *conditions: Iterable[bool],
     _preserve: bool = False,
@@ -68,7 +66,7 @@ def _(
     _data: DataFrameGroupBy,
     *conditions: Expression,
     _preserve: bool = False,
-    _drop_index: bool = None, # TODO?
+    _drop_index: bool = None,  # TODO?
 ) -> DataFrameGroupBy:
     """Filter on DataFrameGroupBy object"""
     if _data.shape[0] > 0:
@@ -106,6 +104,7 @@ def _(
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
+
 def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
     """Filter non-existing rows in groupdata"""
     gdata = group_data(
@@ -126,6 +125,7 @@ def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
 
     new.attrs['_group_data'] = new_gdata
     return new_gdata
+
 
 def _sanitize_condition(cond: BoolOrIter, length: int) -> numpy.ndarray:
     """Handle single condition"""

@@ -161,7 +161,7 @@ def group_trim(_data: DataFrame, _drop: bool = None) -> DataFrame:
 def _(_data: DataFrame, _drop: bool = None) -> DataFrameGroupBy:
     """Group trim on grouped data"""
     ungrouped = ungroup(_data, __calling_env=CallingEnvs.REGULAR)
-    # pylint: disable=no-value-for-parameter
+
     fgroups = select(
         ungrouped, where(is_factor), __calling_env=CallingEnvs.REGULAR
     )
