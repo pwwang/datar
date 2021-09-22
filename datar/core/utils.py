@@ -1,5 +1,6 @@
 """Core utilities"""
 
+import sys
 import logging
 import inspect
 from functools import singledispatch
@@ -41,9 +42,10 @@ from .types import (
 from .defaults import DEFAULT_COLUMN_PREFIX, NA_REPR
 
 # logger
-logger = logging.getLogger("datar")  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+logger = logging.getLogger("datar")
 logger.setLevel(logging.INFO)
-stream_handler = logging.StreamHandler()  # pylint: disable=invalid-name
+stream_handler = logging.StreamHandler(sys.stderr)
 stream_handler.setFormatter(
     logging.Formatter(
         "[%(asctime)s][%(name)s][%(levelname)7s] %(message)s",

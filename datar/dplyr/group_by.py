@@ -31,7 +31,7 @@ from .group_data import group_vars
 @register_verb(DataFrame, context=Context.PENDING)
 def group_by(
     _data: DataFrame,
-    *args: Any,
+    *cols: Any,
     _add: bool = False,  # not working, since _data is not grouped
     _drop: bool = None,
     **kwargs: Any,
@@ -53,7 +53,7 @@ def group_by(
         _drop: Drop groups formed by factor levels that don't appear in the
             data? The default is True except when `_data` has been previously
             grouped with `_drop=False`.
-        *args: variables or computations to group by.
+        *cols: variables or computations to group by.
             Note that columns here cannot be selected by indexes. As they are
             treated as computations to be added as new columns.
             So no `base0_` argument is supported.
@@ -62,13 +62,13 @@ def group_by(
     Return:
         A `datar.core.grouped.DataFrameGroupBy` object
     """
-    if not args and not kwargs:
+    if not cols and not kwargs:
         return reconstruct_tibble(_data, _data)
 
     if _drop is None:
         _drop = group_by_drop_default(_data)
 
-    groups = _group_by_prepare(_data, *args, **kwargs, _add=_add)
+    groups = _group_by_prepare(_data, *cols, **kwargs, _add=_add)
     out = DataFrameGroupBy(
         groups["data"],
         _group_vars=groups["group_names"],
@@ -80,7 +80,7 @@ def group_by(
 
 @register_verb(DataFrame, context=Context.SELECT)
 def rowwise(
-    _data: DataFrame, *columns: Union[str, int], base0_: bool = None
+    _data: DataFrame, *cols: Union[str, int], base0_: bool = None
 ) -> DataFrameRowwise:
     """Compute on a data frame a row-at-a-time
 
@@ -88,7 +88,7 @@ def rowwise(
 
     Args:
         _data: The dataframe
-        *columns:  Variables to be preserved when calling summarise().
+        *cols:  Variables to be preserved when calling summarise().
             This is typically a set of variables whose combination
             uniquely identify each row.
         base0_: Whether indexes are 0-based if columns are selected by indexes.
@@ -98,7 +98,7 @@ def rowwise(
         A row-wise data frame
     """
     check_column_uniqueness(_data)
-    idxes = vars_select(_data.columns, *columns, base0=base0_)
+    idxes = vars_select(_data.columns, *cols, base0=base0_)
     if len(idxes) == 0:
         return DataFrameRowwise(_data)
     return DataFrameRowwise(_data, _group_vars=_data.columns[idxes].tolist())
@@ -106,10 +106,10 @@ def rowwise(
 
 @rowwise.register(DataFrameGroupBy, context=Context.SELECT)
 def _(
-    _data: DataFrameGroupBy, *columns: str, base0_: bool = None
+    _data: DataFrameGroupBy, *cols: str, base0_: bool = None
 ) -> DataFrameRowwise:
     # grouped dataframe's columns are unique already
-    if columns:
+    if cols:
         raise ValueError(
             "Can't re-group when creating rowwise data. "
             "Either first `ungroup()` or call `rowwise()` without arguments."
@@ -123,9 +123,9 @@ def _(
 
 @rowwise.register(DataFrameRowwise, context=Context.SELECT)
 def _(
-    _data: DataFrameRowwise, *columns: str, base0_: bool = None
+    _data: DataFrameRowwise, *cols: str, base0_: bool = None
 ) -> DataFrameRowwise:
-    idxes = vars_select(_data.columns, *columns, base0=base0_)
+    idxes = vars_select(_data.columns, *cols, base0=base0_)
     if len(idxes) == 0:
         # copy_attrs?
         return DataFrameRowwise(_data)
