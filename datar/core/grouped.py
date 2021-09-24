@@ -57,7 +57,7 @@ class DataFrameGroupByABC(DataFrame, ABC):
         _drop_index: bool = True,
         **kwargs: Any,
     ) -> DataFrame:
-        ...
+        pass
 
     def copy(
         self,

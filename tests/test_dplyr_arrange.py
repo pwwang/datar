@@ -1,5 +1,6 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-arrange.r
 
+from datar.dplyr.arrange import arrange
 import pytest
 from pandas.testing import assert_frame_equal
 from datar.all import *
@@ -87,3 +88,12 @@ def test_across():
     out = df >> arrange(across(f.y))
     expect = df >> arrange(f.y)
     assert out.equals(expect)
+
+def test_cases_cannot_be_optimized():
+    df = tibble(x = [1, 2, 2, 1], y = [4, 3, 2, 1]) >> group_by(f.x)
+    out = df >> arrange(z=[2,1], _by_group=True)
+    assert out.equals(tibble(x=[1,1,2,2], y=[1,4,2,3]))
+
+    df = tibble(x = [1, 2, 2, 1], y = [3, 4, 2, 1])
+    out = df >> arrange(desc(-f.y))
+    assert out.equals(tibble(x=[1,2,1,2], y=[1,2,3,4]))
