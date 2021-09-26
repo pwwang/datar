@@ -101,6 +101,8 @@ def inner_join(
     Args:
         x, y: A pair of data frames
         by: A character vector of variables to join by.
+            If keys from `x` and `y` are different, use a dict
+            (i.e. `{"colX": "colY"}`) instead of a list.
         copy: If x and y are not from the same data source, and copy is
             TRUE, then y will be copied into the same src as x.
             This allows you to join tables across srcs, but it is a
