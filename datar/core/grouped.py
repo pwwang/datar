@@ -338,9 +338,15 @@ def _optimizable_func(
     """
     if not hasattr(numpy, name):
         return None
+
     if kwargs.get("na_rm", False):
+        # Only optimize when na_rm is True, because
+        # pandas will ignore NAs anyway
         return getattr(numpy, f"nan{name}")
-    return getattr(numpy, name)
+
+    # return getattr(numpy, name)
+    # refuse to optimize, as NAs get lost by pandas
+    return None
 
 
 def _optimizable(

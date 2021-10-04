@@ -183,7 +183,9 @@ def test_agg():
     out = gf._datar_apply(
         None,
         _mappings=dict(
-            c=FastEvalFunction(mean, args=(f.b,), kwargs={}, dataarg=False)
+            c=FastEvalFunction(
+                mean, args=(f.b,), kwargs={"na_rm": True}, dataarg=False
+            )
         ),
         _method="agg",
     )

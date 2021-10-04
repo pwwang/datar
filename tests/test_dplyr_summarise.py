@@ -257,7 +257,7 @@ def test_errors(caplog):
     with pytest.raises(ColumnNotExistingError):
         summarise(mtcars, a = mean(f.not_there))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotExistingError):
         summarise(group_by(mtcars, f.cyl), a = mean(f.not_there))
 
     # Duplicate column names
