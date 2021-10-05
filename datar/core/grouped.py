@@ -57,7 +57,7 @@ class DataFrameGroupByABC(DataFrame, ABC):
         _drop_index: bool = True,
         **kwargs: Any,
     ) -> DataFrame:
-        ...
+        pass
 
     def copy(
         self,
@@ -150,7 +150,12 @@ class DataFrameGroupBy(DataFrameGroupByABC):
                     [key] + [list(val)]
                     if len(self.attrs["_group_vars"]) == 1
                     else list(key) + [list(val)]
-                    for key, val in self._grouped_df.groups.items()
+                    for key, val in sorted(
+                        self._grouped_df.groups.items(),
+                        key=lambda item: item[1][0]
+                        if len(item[1]) > 0
+                        else self.shape[0],
+                    )
                 ),
                 columns=self.attrs["_group_vars"] + ["_rows"],
             )
@@ -333,9 +338,15 @@ def _optimizable_func(
     """
     if not hasattr(numpy, name):
         return None
+
     if kwargs.get("na_rm", False):
+        # Only optimize when na_rm is True, because
+        # pandas will ignore NAs anyway
         return getattr(numpy, f"nan{name}")
-    return getattr(numpy, name)
+
+    # return getattr(numpy, name)
+    # refuse to optimize, as NAs get lost by pandas
+    return None
 
 
 def _optimizable(
