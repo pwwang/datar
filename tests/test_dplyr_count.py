@@ -134,9 +134,6 @@ def test_can_add_tallies_of_a_variable():
     # sort
     out = df >> group_by(f.a) >> add_tally(sort=True)
     exp = tibble(a=c(1,1,2), n=c(2,2,1)) >> group_by(f.a)
-    print()
-    print(out)
-    print(exp)
     assert out.equals(exp)
     # assert_frame_equal(out, exp)
     assert group_vars(out) == group_vars(exp)
