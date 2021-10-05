@@ -6,7 +6,7 @@ from .core import _frame_format_patch
 from .core.defaults import f
 
 __all__ = ('f', 'get_versions')
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 
 def get_versions(

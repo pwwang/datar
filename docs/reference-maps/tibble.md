@@ -38,6 +38,7 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 |<s>`tbl_df-class`</s>|||
 |<s>`print(<tbl_df>)`</s> <s>`format(<tbl_df>)`</s>|||
 |[`tribble()`][3]|Row-wise tibble creation|[:material-notebook:][2]|
+|[**`zibble()`**][19]|Zip version of tibble, where names specify together and so do values.||
 
 ### Coercion
 
@@ -69,18 +70,19 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 
 [1]: https://tibble.tidyverse.org/reference/index.html
 [2]: ../../notebooks/tibble
-[3]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.tribble
-[4]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.enframe
+[3]: ../../api/datar.tibble.tibble/#datar.tibble.tibble.tribble
+[4]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.enframe
 [5]: ../../notebooks/enframe
-[6]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.add_row
+[6]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.add_row
 [7]: ../../notebooks/add_row
-[8]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.add_column
+[8]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.add_column
 [9]: ../../notebooks/add_column
-[10]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.has_rownames
+[10]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.has_rownames
 [11]: ../../notebooks/rownames
-[12]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.tibble
-[14]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.deframe
-[15]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.remove_rownames
-[16]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.rownames_to_column
-[17]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.rowid_to_column
-[18]: ../../api/datar.tibble.funcs/#datar.tibble.funcs.tibble_row
+[12]: ../../api/datar.tibble.tibble/#datar.tibble.tibble.tibble
+[14]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.deframe
+[15]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.remove_rownames
+[16]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.rownames_to_column
+[17]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.rowid_to_column
+[18]: ../../api/datar.tibble.tibble/#datar.tibble.tibble.tibble_row
+[19]: ../../api/datar.tibble.tibble/#datar.tibble.tibble.zibble

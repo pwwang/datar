@@ -1,3 +1,10 @@
+## 0.5.3
+
+- ⚡️ Optimize dplyr.arrange when data are series from the df itself
+- 🐛 Fix sub-df order of apply for grouped df (#63)
+- 📝 Update doc for argument by for join functions (#62)
+- 🐛 Fix mean() with option na_rm=False does not work (#65)
+
 ## 0.5.2
 More of a maintenance release.
 
