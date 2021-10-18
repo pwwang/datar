@@ -150,12 +150,7 @@ class DataFrameGroupBy(DataFrameGroupByABC):
                     [key] + [list(val)]
                     if len(self.attrs["_group_vars"]) == 1
                     else list(key) + [list(val)]
-                    for key, val in sorted(
-                        self._grouped_df.groups.items(),
-                        key=lambda item: item[1][0]
-                        if len(item[1]) > 0
-                        else self.shape[0],
-                    )
+                    for key, val in self._grouped_df.grouper.groups.items()
                 ),
                 columns=self.attrs["_group_vars"] + ["_rows"],
             )

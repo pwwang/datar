@@ -79,7 +79,7 @@ def _(
         slice, *rows, base0_=base0_, _drop_index=False
     ).sort_index()
     out = reconstruct_tibble(_data, out)
-    gdata = _filter_groups(out, _data)
+    gdata = _filter_groups(out, _data, sort_rows=False)
 
     if not _preserve and _data.attrs.get("_group_drop", True):
         out.attrs["_group_data"] = gdata[gdata["_rows"].map(len) > 0]

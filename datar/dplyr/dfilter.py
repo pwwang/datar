@@ -46,9 +46,7 @@ def filter(
     for cond in conditions:
         cond = _sanitize_condition(cond, _data.shape[0])
         condition = (
-            cond
-            if condition is None
-            else numpy.logical_and(condition, cond)
+            cond if condition is None else numpy.logical_and(condition, cond)
         )
 
     out = _data.loc[condition, :]
@@ -74,7 +72,7 @@ def _(
             filter,
             *conditions,
             _drop_index=False,
-            __calling_env=CallingEnvs.REGULAR
+            __calling_env=CallingEnvs.REGULAR,
         ).sort_index()
     else:
         out = _data.copy()
@@ -83,7 +81,9 @@ def _(
     gdata = _filter_groups(out, _data)
 
     if not _preserve and _data.attrs["_group_drop"]:
-        out.attrs['_group_data'] = gdata[gdata["_rows"].map(len) > 0]
+        out.attrs["_group_data"] = gdata[
+            gdata["_rows"].map(len) > 0
+        ].reset_index(drop=True)
 
     return out
 
@@ -97,23 +97,22 @@ def _(
 ) -> DataFrameGroupBy:
     """Filter on DataFrameGroupBy object"""
     out = filter.dispatch(DataFrame)(
-        _data,
-        *conditions,
-        _preserve=_preserve,
-        _drop_index=_drop_index
+        _data, *conditions, _preserve=_preserve, _drop_index=_drop_index
     )
     return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 
-def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
+def _filter_groups(
+    new: DataFrameGroupBy,
+    old: DataFrameGroupBy,
+    sort_rows: bool = True,
+) -> DataFrame:
     """Filter non-existing rows in groupdata"""
-    gdata = group_data(
-        new,
-        __calling_env=CallingEnvs.REGULAR
-    ).set_index(group_vars(
-        new,
-        __calling_env=CallingEnvs.REGULAR
-    ))["_rows"].to_dict()
+    gdata = (
+        group_data(new, __calling_env=CallingEnvs.REGULAR)
+        .set_index(group_vars(new, __calling_env=CallingEnvs.REGULAR))["_rows"]
+        .to_dict()
+    )
     new_gdata = group_data(old, __calling_env=CallingEnvs.REGULAR).copy()
     for row in new_gdata.iterrows():
         ser = row[1]
@@ -123,7 +122,19 @@ def _filter_groups(new: DataFrameGroupBy, old: DataFrameGroupBy) -> DataFrame:
         ser[-1] = gdata.get(key, [])
         new_gdata.loc[row[0], :] = ser
 
-    new.attrs['_group_data'] = new_gdata
+    if sort_rows:
+        # GH69
+        # The order changes when top row number filtered
+        new_gdata = new_gdata.sort_values(
+            ["_rows"],
+            # keep empty rows at last
+            key=lambda rowss: Array(
+                [new.shape[0] if len(rows) == 0 else rows[0] for rows in rowss],
+                dtype=int,
+            ),
+        ).reset_index(drop=True)
+
+    new.attrs["_group_data"] = new_gdata
     return new_gdata
 
 
