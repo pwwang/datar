@@ -284,3 +284,15 @@ def test_works_with_if_any_if_all():
     df1 = df >> filter(if_any(starts_with("x"), lambda x: x>6))
     df2 = df >> filter((f.x1 > 6) | (f.x2 > 6))
     assert df1.equals(df2)
+
+# GH69
+def test_filter_restructures_group_data_correctly():
+    df = (
+        mtcars
+        >> arrange(f.gear)
+        >> group_by(f.cyl)
+        >> mutate(cum=f.drat.cumsum())
+        >> filter(f.cum >=5)
+        >> mutate(ranking=f.cum.rank())
+    )
+    assert nrow(df) == 29
