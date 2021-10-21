@@ -373,6 +373,7 @@ def test_group_trim_always_regroups_even_if_no_factors():
 
 def test_group_trim_drops_factor_levels_in_data_and_grouping_structure():
     res = iris >> \
+        mutate(Species=as_factor(f.Species)) >> \
         group_by(f.Species) >> \
         filter(f.Species == "setosa") >> \
         group_trim()

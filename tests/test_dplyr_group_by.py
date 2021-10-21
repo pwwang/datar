@@ -436,3 +436,12 @@ def test_compound_ungroup():
 
     with pytest.raises(ColumnNotExistingError):
         group_by(df, f.w)
+
+# GH63
+def test_group_by_keeps_the_right_order_of_subdfs():
+    df = tibble(
+        g1=['a', 'b', 'c', 'a', 'b', 'c', 'a', 'b', 'c'],
+        g2=['a', 'b', 'c', 'a', 'b', 'c', 'a', 'b', 'b']
+    ) >> mutate(x=range(9))
+    out = df >> group_by(f.g1, f.g2) >> mutate(x=f.x)
+    assert_iterable_equal(out.x, range(9))

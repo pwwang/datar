@@ -1,3 +1,7 @@
+## 0.5.4
+
+- Fix `filter()` restructures group_data incorrectly (#69)
+
 ## 0.5.3
 
 - ⚡️ Optimize dplyr.arrange when data are series from the df itself
