@@ -1,3 +1,7 @@
+## 0.5.5
+
+- Fix #71: semi_join returns duplicated rows
+
 ## 0.5.4
 
 - Fix `filter()` restructures group_data incorrectly (#69)
