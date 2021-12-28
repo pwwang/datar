@@ -233,14 +233,18 @@ def semi_join(
     See Also:
         [`inner_join()`](datar.dplyr.join.inner_join)
     """
+    on = _merge_on(by)
+    right_on = on.get("right_on", on.get("on", y.columns))
+
     ret = pandas.merge(
         x,
-        y,
+        # fix #71: semi_join returns duplicated rows
+        y.drop_duplicates(right_on),
         how="left",
         copy=copy,
         suffixes=["", "_y"],
         indicator="__merge__",
-        **_merge_on(by),
+        **on,
     )
     ret = ret.loc[ret["__merge__"] == "both", x.columns.tolist()]
 
