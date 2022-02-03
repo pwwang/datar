@@ -647,6 +647,9 @@ def na_if_safe(
         # ignore dtype
         data = categorized(data)
         # value to NA, value in categories removed
+        if isinstance(data, Categorical) and not callable(Categorical.replace):
+            # Categorical.replace() is deprecated since pandas 1.4
+            return Series(data).replace(value, None)
         return data.replace(value, None)
 
     from ..base import NA

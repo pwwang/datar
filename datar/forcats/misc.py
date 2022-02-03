@@ -1,7 +1,7 @@
 """Provides other helper functions for factors"""
 from typing import Any, Iterable
 import numpy
-from pandas import Categorical, DataFrame
+from pandas import Categorical, DataFrame, concat
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
@@ -57,7 +57,10 @@ def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
     )
 
     if n_na > 0:
-        df = df.append({"f": NA, "n": n_na}, ignore_index=True)
+        df = concat(
+            [df, DataFrame({"f": [NA], "n": [n_na]})],
+            ignore_index=True
+        )
 
     if sort:
         df = arrange(

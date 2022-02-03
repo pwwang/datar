@@ -2,6 +2,9 @@ name: Build and Deploy
 
 on:
   push:
+    branches:
+      - dev
+  pull_request:
   release:
     types: [published]
 
@@ -40,7 +43,7 @@ jobs:
           pip install scipy
           pip install python-slugify
           # reinstall pandas to specific version
-          pip install $PANDAS
+          pip install -U $PANDAS
         env:
           PANDAS: ${{ matrix.pandas }}
       - name: Run flake8

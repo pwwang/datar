@@ -15,7 +15,7 @@ from ..core.utils import reconstruct_tibble
 from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
 from ..core.types import NumericOrIter
 
-from ..base import NA, unique
+from ..base import NA, unique, is_na
 from .group_by import ungroup
 from .dfilter import _filter_groups
 
@@ -208,6 +208,7 @@ def slice_min(
     sorting_df["x"] = order_by
     keep = {True: "all", False: "first"}.get(with_ties, with_ties)
     sorting_df = sorting_df.nsmallest(n, "x", keep)
+    sorting_df = sorting_df.loc[~is_na(sorting_df.x), :]
 
     out = _data.copy()  # attrs copied
     out = out.loc[sorting_df.index, :]  # attrs kept
@@ -271,6 +272,7 @@ def slice_max(
     sorting_df["x"] = order_by
     keep = {True: "all", False: "first"}.get(with_ties, with_ties)
     sorting_df = sorting_df.nlargest(n, "x", keep)
+    sorting_df = sorting_df.loc[~is_na(sorting_df.x), :]
 
     out = _data.copy()  # attrs copied
     out = out.loc[sorting_df.index, :]  # attrs kept

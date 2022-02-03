@@ -127,6 +127,8 @@ def max(*x, na_rm: bool = False) -> Any:
     """
     fun = numpy.nanmax if na_rm else numpy.max
     x = Collection(*x)  # flatten
+    if len(x) == 0:
+        return -numpy.inf
     return fun(x)
 
 

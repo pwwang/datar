@@ -180,7 +180,10 @@ def _(
             rows = [index]
         else:
             index = df.attrs["_group_index"]
-            rows = df.attrs["_group_data"].loc[index, "_rows"]
+            if df.attrs["_group_data"].shape[0] == 0:
+                rows = []
+            else:
+                rows = df.attrs["_group_data"].loc[index, "_rows"]
 
         ret = mutate(
             df.reset_index(drop=True),

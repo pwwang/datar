@@ -1,3 +1,7 @@
+import warnings
+
+
+import warnings
 import pytest
 
 from pandas.testing import assert_frame_equal
@@ -7,7 +11,12 @@ from .conftest import assert_iterable_equal
 
 def test_na_if_safe():
     fct = factor([1,2,3])
-    out = na_if_safe(fct, 1)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            action="ignore",
+            category=FutureWarning,
+        )
+        out = na_if_safe(fct, 1)
     assert_iterable_equal(out, [NA, 2, 3])
     assert_iterable_equal(levels(out), [2, 3])
 
