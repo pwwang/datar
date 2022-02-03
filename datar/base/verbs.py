@@ -470,7 +470,7 @@ def proportions(
 prop_table = proportions
 
 
-@proportions.register((list, tuple, numpy.array, Series))
+@proportions.register((list, tuple, numpy.ndarray, Series))
 def _(
     x: ArrayLikeType, margin: Union[int, tuple, list] = None
 ) -> ArrayLikeType:
