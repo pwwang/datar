@@ -1,3 +1,8 @@
+## 0.5.6
+
+- 🐛 Hotfix for types registered for `base.proportions` (#77)
+- 👽️ Fix for pandas 1.4
+
 ## 0.5.5
 
 - Fix #71: semi_join returns duplicated rows
