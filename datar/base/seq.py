@@ -4,6 +4,7 @@ from typing import Any, Iterable, Union
 
 import numpy
 import pandas
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
 from ..core.collections import Collection
@@ -233,6 +234,8 @@ def lengths(x: Any) -> IntOrIter:
     """Lengths of elements in x"""
     if is_scalar(x):
         return Array([1], dtype=numpy.int_)
+    if isinstance(x, SeriesGroupBy):
+        return x.count()
     return Array([length(elem) for elem in x], dtype=numpy.int_)
 
 

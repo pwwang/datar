@@ -11,7 +11,7 @@ from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import copy_attrs, reconstruct_tibble
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.types import is_scalar
 from ..core.collections import Collection
 from ..base import union, setdiff, intersect
@@ -76,10 +76,10 @@ def distinct(
     return out.reset_index(drop=True)
 
 
-@distinct.register(DataFrameGroupBy, context=Context.PENDING)
+@distinct.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy, *args: Any, _keep_all: bool = False, **kwargs: Any
-) -> DataFrameGroupBy:
+    _data: DatarGroupBy, *args: Any, _keep_all: bool = False, **kwargs: Any
+) -> DatarGroupBy:
 
     out = _data._datar_apply(
         lambda df: distinct(
@@ -94,10 +94,10 @@ def _(
     return reconstruct_tibble(_data, out)
 
 
-@distinct.register(DataFrameRowwise, context=Context.PENDING)
+@distinct.register(DatarRowwise, context=Context.PENDING)
 def _(
-    _data: DataFrameRowwise, *args: Any, _keep_all: bool = False, **kwargs: Any
-) -> DataFrameRowwise:
+    _data: DatarRowwise, *args: Any, _keep_all: bool = False, **kwargs: Any
+) -> DatarRowwise:
 
     out = distinct.dispatch(DataFrame)(
         ungroup(_data, __calling_env=CallingEnvs.REGULAR),

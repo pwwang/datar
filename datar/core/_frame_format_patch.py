@@ -87,7 +87,7 @@ def _trim_zeros_single_float(str_float: str) -> str:  # pragma: no cover
     return str_float
 
 
-class DatarDataFrameFormatter(DataFrameFormatter):  # pragma: no cover
+class DatarDataFrameFormatter(DataFrameFormatter):
     """Custom formatter for DataFrame"""
 
     @property

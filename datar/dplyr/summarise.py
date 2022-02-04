@@ -22,7 +22,7 @@ from ..core.utils import (
     dedup_name,
 )
 from ..core.exceptions import ColumnNotExistingError
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 
 from .group_data import group_keys, group_vars, group_data
 from .group_by import group_by_drop_default
@@ -88,13 +88,13 @@ def summarise(
     )
     out = _summarise_build(_data, *args, **kwargs)
     if _groups == "rowwise":
-        return DataFrameRowwise(out, _group_drop=group_by_drop_default(_data))
+        return DatarRowwise(out, _group_drop=group_by_drop_default(_data))
     return out
 
 
-@summarise.register(DataFrameGroupBy, context=Context.PENDING)
+@summarise.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     *args: Union[DataFrame, Mapping[str, Iterable[Any]]],
     _groups: str = None,
     **kwargs: Any,
@@ -134,7 +134,7 @@ def _(
 
     g_keys = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
     if _groups is None:
-        if allone and not isinstance(_data, DataFrameRowwise):
+        if allone and not isinstance(_data, DatarRowwise):
             _groups = "drop_last"
         else:
             _groups = "keep"
@@ -155,7 +155,7 @@ def _(
                 "%s (override with `_groups` argument)",
                 g_keys,
             )
-        out = DataFrameGroupBy(
+        out = DatarGroupBy(
             out,
             _group_vars=g_keys,
             _group_drop=group_by_drop_default(_data),
@@ -166,7 +166,7 @@ def _(
             out,
             keep_rowwise=True,
         )
-    elif isinstance(_data, DataFrameRowwise) and get_option(
+    elif isinstance(_data, DatarRowwise) and get_option(
         "dplyr_summarise_inform"
     ):
         logger.info(

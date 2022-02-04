@@ -280,6 +280,9 @@ def zibble(
         # Evaluate value if neccessary
 
         value = evaluate_expr(value, out, Context.EVAL)
+        # If it is grouped data, ungroup it
+        value = getattr(value, "obj", value)
+
         if isinstance(value, Collection):
             value.expand()
         expanded = _expand_value(value)

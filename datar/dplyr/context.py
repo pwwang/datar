@@ -8,6 +8,8 @@ from pandas import DataFrame
 from pipda import register_func
 from pipda.utils import CallingEnvs
 
+from datar.core.grouped import DatarGroupBy
+
 from ..core.contexts import Context
 from ..core.middlewares import CurColumn
 from ..base import setdiff
@@ -56,7 +58,13 @@ def cur_group(_data: DataFrame) -> DataFrame:
 @register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
 def cur_group_id(_data: DataFrame) -> int:
     """gives a unique numeric identifier for the current group."""
-    return _data.attrs.get("_group_index", 1)
+    return 0
+
+
+@cur_group_id.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> List[int]:
+    grouper = _data.attrs["_grouped"].grouper
+    return list(range(grouper.ngroups))
 
 
 @register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)

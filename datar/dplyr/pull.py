@@ -6,10 +6,11 @@ https://github.com/tidyverse/dplyr/blob/master/R/pull.R
 from typing import Mapping, Union
 
 from pandas import DataFrame, Series
+from pandas.core.groupby import DataFrameGroupBy
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import arg_match, df_getitem, position_at
+from ..core.utils import arg_match, df_getitem, position_at, regcall
 from ..core.types import StringOrIter, ArrayLikeType, is_scalar
 
 
@@ -60,7 +61,9 @@ def pull(
     # make sure pull(df, 'x') pulls a dataframe for columns
     # x$a, x$b in df
 
-    to = arg_match(to, "to", ["list", "array", "frame", "series", "dict", None])
+    to = arg_match(
+        to, "to", ["list", "array", "frame", "series", "dict", None]
+    )
     if name is not None and is_scalar(name):
         name = [name]  # type: ignore
 
@@ -70,6 +73,7 @@ def pull(
         var = var.split("$", 1)[0]
 
     pulled = df_getitem(_data, var)
+    pulled = getattr(pulled, "obj", pulled)
     # if var in _data.columns and isinstance(pulled, DataFrame):
     #     pulled = pulled.iloc[:, 0]
 
@@ -107,7 +111,9 @@ def pull(
         return pulled
     # df
     if name and len(name) != pulled.shape[1]:
-        raise ValueError(f"Expect {pulled.shape[1]} names but got {len(name)}.")
+        raise ValueError(
+            f"Expect {pulled.shape[1]} names but got {len(name)}."
+        )
 
     out = pulled.to_dict("series")
     if not name:
@@ -116,3 +122,25 @@ def pull(
     for newname, oldname in zip(name, out):
         out[newname] = out.pop(oldname)
     return out
+
+
+@pull.register(
+    DataFrameGroupBy,
+    context=Context.PENDING,
+)
+def _(
+    _data: DataFrameGroupBy,
+    var: Union[int, str] = -1,
+    name: StringOrIter = None,
+    to: str = None,
+    base0_: bool = None,
+) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
+    """Pull a column from a grouped data frame"""
+    return regcall(
+        pull,
+        _data.obj,
+        var=var,
+        name=name,
+        to=to,
+        base0_=base0_,
+    )

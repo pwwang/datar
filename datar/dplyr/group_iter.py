@@ -13,7 +13,7 @@ from pipda import register_verb, evaluate_expr
 from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.utils import (
     copy_attrs,
     logger,
@@ -91,14 +91,14 @@ def group_modify(
     return _f(_data, *args, **kwargs)
 
 
-@group_modify.register(DataFrameGroupBy)
+@group_modify.register(DatarGroupBy)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     _f: Callable,
     *args: Any,
     _keep: bool = False,
     **kwargs: Any,
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
     func = (lambda df, keys: _f(df)) if nargs(_f) == 1 else _f
 
@@ -157,8 +157,8 @@ def group_trim(_data: DataFrame, _drop: bool = None) -> DataFrame:
     return _data
 
 
-@group_trim.register(DataFrameGroupBy)
-def _(_data: DataFrame, _drop: bool = None) -> DataFrameGroupBy:
+@group_trim.register(DatarGroupBy)
+def _(_data: DataFrame, _drop: bool = None) -> DatarGroupBy:
     """Group trim on grouped data"""
     ungrouped = ungroup(_data, __calling_env=CallingEnvs.REGULAR)
 
@@ -181,7 +181,7 @@ def with_groups(
     _func: Callable,
     *args: Any,
     **kwargs: Any,
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     """Modify the grouping variables for a single operation.
 
     Args:
@@ -215,32 +215,32 @@ def group_split(
     yield from group_split_impl(data, _keep=_keep)
 
 
-@group_split.register(DataFrameGroupBy, context=Context.EVAL)
+@group_split.register(DatarGroupBy, context=Context.EVAL)
 def _(
     _data: DataFrame, *args: Any, _keep: bool = True, **kwargs: Any
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     # data = group_by(_data, *args, **kwargs, _add=True)
     if args or kwargs:
         logger.warning(
             "`*args` and `**kwargs` are ignored in "
-            "`group_split(<DataFrameGroupBy)`, please use "
+            "`group_split(<DatarGroupBy)`, please use "
             "`group_by(..., _add=True) >> group_split()`."
         )
     return group_split_impl(_data, _keep=_keep)
 
 
-@group_split.register(DataFrameRowwise, context=Context.EVAL)
+@group_split.register(DatarRowwise, context=Context.EVAL)
 def _(
     _data: DataFrame, *args: Any, _keep: bool = None, **kwargs: Any
-) -> DataFrameRowwise:
+) -> DatarRowwise:
     if args or kwargs:
         logger.warning(
             "`*args` and `**kwargs` is ignored in "
-            "`group_split(<DataFrameRowwise>)`."
+            "`group_split(<DatarRowwise>)`."
         )
     if _keep is not None:
         logger.warning(
-            "`_keep` is ignored in " "`group_split(<DataFrameRowwise>)`."
+            "`_keep` is ignored in " "`group_split(<DatarRowwise>)`."
         )
 
     return group_split_impl(_data, _keep=True)

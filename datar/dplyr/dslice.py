@@ -12,7 +12,7 @@ from pipda.utils import CallingEnvs
 from ..core.contexts import Context
 from ..core.collections import Collection
 from ..core.utils import reconstruct_tibble
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.types import NumericOrIter
 
 from ..base import NA, unique
@@ -67,13 +67,13 @@ def slice(
     return out
 
 
-@slice.register(DataFrameGroupBy, context=Context.PENDING)
+@slice.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     *rows: Any,
     _preserve: bool = False,
     base0_: bool = None,
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     """Slice on grouped dataframe"""
     out = _data._datar_apply(
         slice, *rows, base0_=base0_, _drop_index=False
@@ -87,13 +87,13 @@ def _(
     return out
 
 
-@slice.register(DataFrameRowwise, context=Context.PENDING)
+@slice.register(DatarRowwise, context=Context.PENDING)
 def _(
-    _data: DataFrameRowwise,
+    _data: DatarRowwise,
     *rows: Any,
     _preserve: bool = False,
     base0_: bool = None,
-) -> DataFrameRowwise:
+) -> DatarRowwise:
     """Slice on grouped dataframe"""
     out = slice.dispatch(DataFrame)(
         _data,
@@ -133,8 +133,8 @@ def slice_head(
     )
 
 
-@slice_head.register(DataFrameGroupBy, context=Context.PENDING)
-def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
+@slice_head.register(DatarGroupBy, context=Context.PENDING)
+def _(_data: DataFrame, n: int = None, prop: float = None) -> DatarGroupBy:
     """Slice on grouped dataframe"""
     out = _data._datar_apply(
         slice_head,
@@ -146,10 +146,10 @@ def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
     return reconstruct_tibble(_data, out)
 
 
-@slice_head.register(DataFrameRowwise, context=Context.PENDING)
+@slice_head.register(DatarRowwise, context=Context.PENDING)
 def _(
-    _data: DataFrameRowwise, n: int = None, prop: float = None
-) -> DataFrameRowwise:
+    _data: DatarRowwise, n: int = None, prop: float = None
+) -> DatarRowwise:
     """Slice on grouped dataframe"""
     out = slice_head.dispatch(DataFrame)(_data, n=n, prop=prop)
     return reconstruct_tibble(_data, out, keep_rowwise=True)
@@ -171,8 +171,8 @@ def slice_tail(_data: DataFrame, n: int = 1, prop: float = None) -> DataFrame:
     )
 
 
-@slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
-def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
+@slice_tail.register(DatarGroupBy, context=Context.PENDING)
+def _(_data: DataFrame, n: int = None, prop: float = None) -> DatarGroupBy:
     """Slice on grouped dataframe"""
     out = _data._datar_apply(
         slice_tail, n=n, prop=prop, _drop_index=False
@@ -180,10 +180,10 @@ def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
     return reconstruct_tibble(_data, out)
 
 
-@slice_tail.register(DataFrameRowwise, context=Context.PENDING)
+@slice_tail.register(DatarRowwise, context=Context.PENDING)
 def _(
-    _data: DataFrameRowwise, n: int = None, prop: float = None
-) -> DataFrameRowwise:
+    _data: DatarRowwise, n: int = None, prop: float = None
+) -> DatarRowwise:
     """Slice on grouped dataframe"""
     out = slice_tail.dispatch(DataFrame)(_data, n=n, prop=prop)
     return reconstruct_tibble(_data, out, keep_rowwise=True)
@@ -214,15 +214,15 @@ def slice_min(
     return out
 
 
-@slice_min.register(DataFrameGroupBy, context=Context.PENDING)
+@slice_min.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     order_by: Iterable[Any],
     n: int = 1,
     prop: float = None,
     with_ties: Union[bool, str] = True,
-) -> DataFrameGroupBy:
-    """slice_min for DataFrameGroupBy object"""
+) -> DatarGroupBy:
+    """slice_min for DatarGroupBy object"""
     out = _data._datar_apply(
         slice_min,
         order_by=order_by,
@@ -233,15 +233,15 @@ def _(
     return reconstruct_tibble(_data, out)
 
 
-@slice_min.register(DataFrameRowwise, context=Context.EVAL)
+@slice_min.register(DatarRowwise, context=Context.EVAL)
 def _(
-    _data: DataFrameRowwise,
+    _data: DatarRowwise,
     order_by: Iterable[Any],
     n: int = 1,
     prop: float = None,
     with_ties: Union[bool, str] = True,
-) -> DataFrameRowwise:
-    """slice_min for DataFrameRowwise object"""
+) -> DatarRowwise:
+    """slice_min for DatarRowwise object"""
     out = slice_min.dispatch(DataFrame)(
         ungroup(_data, __calling_env=CallingEnvs.REGULAR),
         order_by=order_by,
@@ -277,15 +277,15 @@ def slice_max(
     return out
 
 
-@slice_max.register(DataFrameGroupBy, context=Context.PENDING)
+@slice_max.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     order_by: Iterable[Any],
     n: int = 1,
     prop: float = None,
     with_ties: Union[bool, str] = True,
-) -> DataFrameGroupBy:
-    """slice_max for DataFrameGroupBy object"""
+) -> DatarGroupBy:
+    """slice_max for DatarGroupBy object"""
     out = _data._datar_apply(
         slice_max,
         order_by=order_by,
@@ -296,15 +296,15 @@ def _(
     return reconstruct_tibble(_data, out)
 
 
-@slice_max.register(DataFrameRowwise, context=Context.EVAL)
+@slice_max.register(DatarRowwise, context=Context.EVAL)
 def _(
-    _data: DataFrameRowwise,
+    _data: DatarRowwise,
     order_by: Iterable[Any],
     n: int = 1,
     prop: float = None,
     with_ties: Union[bool, str] = True,
-) -> DataFrameRowwise:
-    """slice_max for DataFrameRowwise object"""
+) -> DatarRowwise:
+    """slice_max for DatarRowwise object"""
     out = slice_max.dispatch(DataFrame)(
         ungroup(_data, __calling_env=CallingEnvs.REGULAR),
         order_by=order_by,
@@ -343,15 +343,15 @@ def slice_sample(
     )
 
 
-@slice_sample.register(DataFrameGroupBy, context=Context.PENDING)
+@slice_sample.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     n: int = 1,
     prop: float = None,
     weight_by: Iterable[Union[int, float]] = None,
     replace: bool = False,
     random_state: Any = None,
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     out = _data._datar_apply(
         slice_sample,
         n=n,
@@ -363,15 +363,15 @@ def _(
     return reconstruct_tibble(_data, out)
 
 
-@slice_sample.register(DataFrameRowwise, context=Context.EVAL)
+@slice_sample.register(DatarRowwise, context=Context.EVAL)
 def _(
-    _data: DataFrameRowwise,
+    _data: DatarRowwise,
     n: int = 1,
     prop: float = None,
     weight_by: Iterable[Union[int, float]] = None,
     replace: bool = False,
     random_state: Any = None,
-) -> DataFrameRowwise:
+) -> DatarRowwise:
     out = slice_sample.dispatch(DataFrame)(
         _data,
         n=n,

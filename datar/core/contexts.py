@@ -67,4 +67,5 @@ class Context(Enum):
     PENDING = ContextPending()
     SELECT = ContextSelect()
     EVAL = ContextEval()
+    PIPDA_EVAL = ContextEvalPipda()
     MIXED = ContextMixed()

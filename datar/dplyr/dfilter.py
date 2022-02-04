@@ -11,7 +11,7 @@ from pipda.expression import Expression
 from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.types import is_scalar, is_null, BoolOrIter
 from ..core.utils import copy_attrs, reconstruct_tibble, Array
 from .group_data import group_data, group_vars
@@ -59,14 +59,14 @@ def filter(
     return out
 
 
-@filter.register(DataFrameGroupBy, context=Context.PENDING)
+@filter.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     *conditions: Expression,
     _preserve: bool = False,
     _drop_index: bool = None,  # TODO?
-) -> DataFrameGroupBy:
-    """Filter on DataFrameGroupBy object"""
+) -> DatarGroupBy:
+    """Filter on DatarGroupBy object"""
     if _data.shape[0] > 0:
         out = _data._datar_apply(
             filter,
@@ -88,14 +88,14 @@ def _(
     return out
 
 
-@filter.register(DataFrameRowwise, context=Context.EVAL)
+@filter.register(DatarRowwise, context=Context.EVAL)
 def _(
-    _data: DataFrameRowwise,
+    _data: DatarRowwise,
     *conditions: Expression,
     _preserve: bool = False,
     _drop_index: bool = None,
-) -> DataFrameGroupBy:
-    """Filter on DataFrameGroupBy object"""
+) -> DatarGroupBy:
+    """Filter on DatarGroupBy object"""
     out = filter.dispatch(DataFrame)(
         _data, *conditions, _preserve=_preserve, _drop_index=_drop_index
     )
@@ -103,8 +103,8 @@ def _(
 
 
 def _filter_groups(
-    new: DataFrameGroupBy,
-    old: DataFrameGroupBy,
+    new: DatarGroupBy,
+    old: DatarGroupBy,
     sort_rows: bool = True,
 ) -> DataFrame:
     """Filter non-existing rows in groupdata"""

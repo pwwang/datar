@@ -4,6 +4,7 @@ from typing import Any, Callable, Iterable, Union
 
 import numpy
 from pandas import DataFrame, Series
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func, register_verb
 from pipda.utils import CallingEnvs
 
@@ -16,7 +17,14 @@ from ..core.types import (
     is_not_null,
     is_scalar,
 )
-from ..core.utils import Array, length_of, recycle_value, register_numpy_func_x
+from ..core.utils import (
+    Array,
+    concat_groupby,
+    length_of,
+    recycle_value,
+    register_numpy_func_x,
+    logger,
+)
 
 # cor?, range, summary, iqr
 
@@ -114,8 +122,22 @@ def min(*x, na_rm: bool = False) -> Any:
     return fun(x)
 
 
+def _max_grouped(*x: SeriesGroupBy, na_rm: bool = True) -> Series:
+    """Get the max values of grouped serieses"""
+    if not na_rm:
+        logger.warning(
+            "In max(...): `na_rm` on SeriesGroupBy objects is always True."
+        )
+
+    if len(x) == 1:
+        return x[0].max()
+
+    df = concat_groupby(*x)
+    return df.max()
+
+
 @register_func(None, context=Context.EVAL)
-def max(*x, na_rm: bool = False) -> Any:
+def max(*x, na_rm: bool = True) -> Any:
     """Max of the input.
 
     Args:
@@ -125,8 +147,15 @@ def max(*x, na_rm: bool = False) -> Any:
     Returns:
         The max of the input
     """
+    if all(isinstance(elem, SeriesGroupBy) for elem in x):
+        return _max_grouped(*x)
+
     fun = numpy.nanmax if na_rm else numpy.max
-    x = Collection(*x)  # flatten
+    if len(x) > 0:
+        x = Collection(*x)  # flatten
+    if len(x) == 0:
+        logger.warning("In max(...): no non-missing arguments, returning -inf")
+        return -numpy.inf
     return fun(x)
 
 
@@ -303,7 +332,6 @@ def _(x: Iterable, y: Iterable, ddof: int = 1) -> DataFrame:
 def scale(
     x: DataFrame,
     center: Union[bool, NumericOrIter] = True,
-
     scale: Union[bool, NumericOrIter] = True,
 ) -> DataFrame:
     """Scaling and Centering of a numeric data frame
@@ -383,7 +411,6 @@ _scale = scale
 def _(
     x: Series,
     center: Union[bool, NumericOrIter] = True,
-
     scale: Union[bool, NumericOrIter] = True,
 ) -> DataFrame:
     """Scaling on series"""
@@ -394,7 +421,6 @@ def _(
 def _(
     x: Iterable,
     center: Union[bool, NumericOrIter] = True,
-
     scale: Union[bool, NumericOrIter] = True,
 ) -> DataFrame:
     """Scaling on iterables"""

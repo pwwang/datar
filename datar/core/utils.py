@@ -21,6 +21,8 @@ from numpy import array as Array
 
 import pandas
 from pandas import Categorical, DataFrame, Series
+from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby.ops import BaseGrouper
 from pipda import register_func
 from pipda.symbolic import Reference
 from pipda.utils import CallingEnvs
@@ -503,7 +505,7 @@ def reconstruct_tibble(
     new_groups = intersect(
         setdiff(old_groups, ungrouped_vars, __calling_env=CallingEnvs.REGULAR),
         output.columns,
-        __calling_env=CallingEnvs.REGULAR
+        __calling_env=CallingEnvs.REGULAR,
     )
 
     if isinstance(input, DataFrameRowwise):
@@ -615,7 +617,9 @@ def fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
     # elementwise comparison failed; returning scalar instead
     # if rep in data:
     if rep in list(data):
-        raise ValueError("The value to replace NAs is already present in data.")
+        raise ValueError(
+            "The value to replace NAs is already present in data."
+        )
 
     if not is_null(data).any():
         return data
@@ -668,10 +672,10 @@ def dedup_name(name: str, all_names: Iterable[str]):
     return the deduplicated name.
 
     In other to support duplicated keyword arguments in R:
-        >>> df %>% mutate(a=1, a=a*2)
+    >>> df %>% mutate(a=1, a=a*2)
 
     Now you can to it with datar:
-        >>> df >> mutate(a_=1, a=f.a*2)
+    >>> df >> mutate(a_=1, a=f.a*2)
 
     Args:
         name: The name to deduplicate
@@ -728,3 +732,85 @@ def register_numpy_func_x(
     _func.__name__ = name
     _func.__doc__ = doc
     return _func
+
+
+def regcall(func: Callable, *args: Any, **kwargs: Any) -> Any:
+    """Call function with regular calling env"""
+    return func(*args, **kwargs, __calling_env=CallingEnvs.REGULAR)
+
+
+def _broadcast_to_grouped(value: Any, grouped: SeriesGroupBy) -> Any:
+    """Broadcast a value to a grouped series object"""
+    if is_scalar(value):
+        return value
+
+    if isinstance(value, Series):
+        index = grouped.grouper.result_index
+        # broadcast values in all groups
+        return Series(value, index=index.repeat(grouped.grouper.size()))
+
+    usizes = grouped.grouper.size().unique()
+    if len(usizes) > 1:
+        for usize in usizes:
+            if len(value) != usize:
+                raise ValueError(
+                    f"Length of values ({len(value)}) does not match "
+                    f"length of index ({usize})"
+                )
+
+    usize = usizes[0]
+    if len(value) != usize:
+        raise ValueError(
+            f"Length of values ({len(value)}) does not match "
+            f"length of index ({usize})"
+        )
+
+    return Series(numpy.tile(value, grouped.ngroups))
+
+
+# multiple dispatch?
+def broadcast(value1: Any, value2: Any) -> Tuple[Any, Any, BaseGrouper]:
+    """Broadcast value1 to the dimension of value2 or vice versa
+
+
+    """
+    if isinstance(value1, SeriesGroupBy) and isinstance(value2, SeriesGroupBy):
+        if value1.grouper is not value2.grouper:
+            raise ValueError(
+                "Cannot broadcast a SeriesGroupBy object to another "
+                "with a different grouper."
+            )
+        return value1.obj, value2.obj, value1.grouper
+
+    if isinstance(value1, SeriesGroupBy):
+        value2 = _broadcast_to_grouped(value2, value1)
+        return value1.obj, value2, value1.grouper
+
+    if isinstance(value2, SeriesGroupBy):
+        value1 = _broadcast_to_grouped(value1, value2)
+        return value1, value2.obj, value2.grouper
+
+    if is_scalar(value1) or is_scalar(value2):
+        return value1, value2, None
+
+    if len(value1) == 1:
+        value1 = [value1[0]] * len(value2)
+        return value1, value2, None
+
+    if len(value2) == 1:
+        value2 = [value2[0]] * len(value1)
+        return value1, value2, None
+
+    return value1, value2, None
+
+
+def concat_groupby(*x: SeriesGroupBy) -> DataFrameGroupBy:
+    """Concatenate the grouped serieses into a grouped dataframe"""
+    df = DataFrame(index=x[0].obj.index).groupby(x[0].grouper)
+    for sgb in x:
+        if sgb.grouper is not df.grouper:
+            raise ValueError(
+                "Unable to concat SeriesGroupBy objects, inconsistant groupers."
+            )
+        df.obj[sgb.obj.name] = sgb.obj
+    return df

@@ -17,7 +17,7 @@ from ..core.contexts import Context
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.types import is_scalar, is_null, is_not_null
 from ..core.utils import categorized, copy_attrs, reconstruct_tibble
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.names import repair_names
 
 from ..base import NA, NULL, factor, levels
@@ -133,14 +133,14 @@ def expand(
     return out
 
 
-@expand.register(DataFrameGroupBy, context=Context.PENDING)
+@expand.register(DatarGroupBy, context=Context.PENDING)
 def _(
-    data: DataFrameGroupBy,
+    data: DatarGroupBy,
     *args: Union[Series, DataFrame],
     _name_repair: Union[str, Callable] = "check_unique",
     base0_: bool = None,
     **kwargs: Union[Series, DataFrame],
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     """Expand on grouped data frame"""
 
     def apply_func(df):
@@ -157,9 +157,9 @@ def _(
     return reconstruct_tibble(data, out)
 
 
-@expand.register(DataFrameRowwise, context=Context.EVAL)
+@expand.register(DatarRowwise, context=Context.EVAL)
 def _(
-    data: DataFrameRowwise,
+    data: DatarRowwise,
     *args: Union[Series, DataFrame],
     _name_repair: Union[str, Callable] = "check_unique",
     base0_: bool = None,

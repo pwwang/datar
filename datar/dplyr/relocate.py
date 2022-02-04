@@ -3,9 +3,9 @@ from typing import Any, Union
 
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
+from ..core.utils import regcall
 from ..base import setdiff, union
 from .group_data import group_vars
 from .select import _eval_select
@@ -44,7 +44,8 @@ def relocate(
         - Data frame attributes are preserved.
         - Groups are not affected
     """
-    gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
+    gvars = regcall(group_vars, _data)
+
     all_columns = _data.columns
     to_move, new_names = _eval_select(
         all_columns,
@@ -85,18 +86,12 @@ def relocate(
         if where not in to_move:
             to_move.append(where)
 
-    lhs = setdiff(range(where), to_move, __calling_env=CallingEnvs.REGULAR)
-    rhs = setdiff(
-        range(where + 1, _data.shape[1]),
-        to_move,
-        __calling_env=CallingEnvs.REGULAR,
-    )
-    pos = union(
-        lhs,
-        union(to_move, rhs, __calling_env=CallingEnvs.REGULAR),
-        __calling_env=CallingEnvs.REGULAR,
-    )
-    out = _data.iloc[:, pos].copy()
+    lhs = regcall(setdiff, range(where), to_move)
+    rhs = regcall(setdiff, range(where + 1, len(all_columns)), to_move)
+    pos = regcall(union, lhs, regcall(union, to_move, rhs))
+
+    out = _data.iloc[:, pos]
+    # out = out.copy()
     if new_names:
         out.rename(columns=new_names, inplace=True)
 

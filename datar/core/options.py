@@ -20,9 +20,11 @@ OPTIONS = Diot(
     dplyr_summarise_inform=True,
     # whether warn about importing functions that override builtin ones.
     warn_builtin_names=True,
-    add_option=True,
+    # add_option=True,
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform,
+    # immutable for data when piped to a verb
+    inplace_mode=False,
 )
 
 OPTION_CALLBACKS = Diot(

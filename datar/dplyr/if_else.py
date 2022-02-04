@@ -35,11 +35,12 @@ def if_else(
     Returns:
         A series with values replaced.
     """
+    orig_condition = condition = getattr(condition, "obj", condition)
     condition = Array(condition)
     na_indexes = is_null(condition)
     condition[na_indexes] = False
     condition = condition.astype(bool)
-    return case_when(
+    out = case_when(
         na_indexes,
         missing,
         numpy.invert(condition),
@@ -49,6 +50,10 @@ def if_else(
         True,
         missing,
     )
+    if isinstance(orig_condition, Series):
+        # keep the index
+        return Series(out, index=orig_condition.index)
+    return out
 
 
 @register_func(None, context=Context.EVAL)
@@ -76,6 +81,8 @@ def case_when(*when_cases: Any) -> Series:
     out = Array([NA] * out_len, dtype=object)
     when_cases = reversed(list(zip(when_cases[0::2], when_cases[1::2])))
     for case, rep in when_cases:
+        case = getattr(case, "obj", case)
+        rep = getattr(rep, "obj", rep)
         if case is True:
             out[:] = rep
         elif (

@@ -3,25 +3,21 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 """
 
-from typing import Any, Tuple, List, Union
-from pandas import DataFrame, Series
-from pipda import register_verb, evaluate_expr, ContextBase
-from pipda.utils import CallingEnvs
+from typing import Any, List, Union
+from itertools import chain
 
+from pandas import DataFrame, Series
+from pandas.core.groupby import SeriesGroupBy
+from pipda import register_verb, evaluate_expr, ContextBase
+
+
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.contexts import Context, ContextEval
-from ..core.utils import (
-    dedup_name,
-    recycle_value,
-    arg_match,
-    df_setitem,
-    name_mutatable_args,
-    reconstruct_tibble,
-)
+from ..core.utils import arg_match, regcall, broadcast
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
-from ..core.grouped import DataFrameGroupBy
-from ..base import setdiff, union, intersect, c, NA
-from .group_by import group_by_drop_default
-from .group_data import group_vars, group_data
+from ..base import setdiff, union, intersect, c
+from ..tibble import tibble
+from .group_data import group_vars
 from .relocate import relocate
 
 
@@ -39,7 +35,6 @@ def mutate(
     base0_: bool = None,
     **kwargs: Any,
 ) -> DataFrame:
-
     """Adds new variables and preserves existing ones
 
     The original API:
@@ -86,133 +81,67 @@ def mutate(
     """
     keep = arg_match(_keep, "_keep", ["all", "unused", "used", "none"])
 
-    context = ContextEval()
-    cols, removed = _mutate_cols(_data, context, *args, **kwargs)
-    if cols is None:
-        cols = DataFrame(index=_data.index)
+    gvars = regcall(group_vars, _data)
+    data = _data.copy()
+    all_columns = data.columns
 
-    out = _data.copy()
-    # order is the same as _data
-    out[cols.columns.tolist()] = cols
-    # out.columns.difference(removed)
-    # changes column order when removed == []
-    out = out[setdiff(out.columns, removed, __calling_env=CallingEnvs.REGULAR)]
+    mutated_cols = []
+    context = ContextEval()
+    for key, val in chain(enumerate(args), kwargs.items()):
+        mut_cols = _mutate_single_argument(data, key, val, context)
+        mutated_cols.extend(mut_cols)
+    # names end with "_" are temporary names
+    tmp_cols = [
+        mcol
+        for mcol in mutated_cols
+        if mcol.endswith("_") and mcol in context.used_refs
+    ]
+    data = data.loc[:, data.columns.difference(tmp_cols)]
+    mutated_cols = regcall(setdiff, mutated_cols, tmp_cols)
+
     if _before is not None or _after is not None:
-        new = setdiff(
-            cols.columns,
-            _data.columns,
-            __calling_env=CallingEnvs.REGULAR,
-        )
-        out = relocate(
-            out,
+        new = regcall(setdiff, mutated_cols, all_columns)
+        data = regcall(
+            relocate,
+            data,
             *new,
             _before=_before,
             _after=_after,
             base0_=base0_,
-            __calling_env=CallingEnvs.REGULAR,
         )
 
     if keep == "all":
-        keep = out.columns
+        keep = data.columns
     elif keep == "unused":
         used = context.used_refs.keys()
-        unused = setdiff(
-            _data.columns,
-            used,
-            __calling_env=CallingEnvs.REGULAR,
-        )
-        keep = intersect(
-            out.columns,
-            c(
-                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-                unused,
-                cols.columns,
-            ),
-            __calling_env=CallingEnvs.REGULAR,
-        )
+        unused = regcall(setdiff, all_columns, used)
+        keep = regcall(intersect, data.columns, c(gvars, unused, mutated_cols))
     elif keep == "used":
         used = context.used_refs.keys()
-        keep = intersect(
-            out.columns,
-            c(
-                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-                used,
-                cols.columns,
-            ),
-            __calling_env=CallingEnvs.REGULAR,
-        )
+        keep = regcall(intersect, data.columns, c(gvars, used, mutated_cols))
     else:  # keep == 'none':
-        keep = union(
-            setdiff(
-                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-                cols.columns,
-                __calling_env=CallingEnvs.REGULAR,
-            ),
-            intersect(
-                cols.columns,
-                out.columns,
-                __calling_env=CallingEnvs.REGULAR,
-            ),
-            __calling_env=CallingEnvs.REGULAR,
+        keep = regcall(
+            union,
+            regcall(setdiff, gvars, mutated_cols),
+            regcall(intersect, mutated_cols, data.columns),
         )
 
-    out = out[keep]
-    return out.loc[[], :] if len(_data) == 0 else out
-
-
-@mutate.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-    _data: DataFrameGroupBy,
-    *args: Any,
-    _keep: str = "all",
-    _before: str = None,
-    _after: str = None,
-    base0_: bool = None,
-    **kwargs: Any,
-) -> DataFrameGroupBy:
-    """Mutate on DataFrameGroupBy object"""
-
-    def apply_func(df):
-        if isinstance(df, Series):
-            df = df.to_frame().T
-            index = df.attrs["_group_index"] = df.index[0]
-            df.attrs["_group_data"] = _data._group_data
-            rows = [index]
-        else:
-            index = df.attrs["_group_index"]
-            rows = df.attrs["_group_data"].loc[index, "_rows"]
-
-        ret = mutate(
-            df.reset_index(drop=True),
-            *args,
-            _keep=_keep,
-            _before=_before,
-            _after=_after,
-            base0_=base0_,
-            __calling_env=CallingEnvs.REGULAR,
-            **kwargs,
+    data = data[keep]
+    data = data.loc[[], :] if len(data) == 0 else data
+    data.attrs["_mutated_cols"] = mutated_cols
+    # redo grouping if group vars are mutated
+    # rowwise data frame doesn't need it
+    if not isinstance(data, DatarRowwise) and intersect(gvars, mutated_cols):
+        grouped = data.attrs["_grouped"]
+        return DatarGroupBy.from_grouped(
+            grouped.obj.copy().groupby(
+                gvars,
+                observed=grouped.observed,
+                sort=grouped.sort,
+            )
         )
-        ret.index = rows
-        return ret
 
-    out = _data._datar_apply(apply_func, _drop_index=False).sort_index()
-    if out.shape[0] > 0:
-        # keep the original row order
-        # out.sort_index(inplace=True)
-        # not only DataFrameGroupBy but also DataFrameRowwise
-        return reconstruct_tibble(_data, out, keep_rowwise=True)
-
-    # 0-row
-    named = name_mutatable_args(*args, **kwargs)
-    df = DataFrame({key: [] for key in named})
-    out = _data.copy()
-    out[df.columns.tolist()] = df
-    return _data.__class__(
-        out,
-        _group_vars=group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-        _group_drop=group_by_drop_default(_data),
-        _group_data=group_data(_data, __calling_env=CallingEnvs.REGULAR),
-    )
+    return data
 
 
 @register_verb(DataFrame, context=Context.PENDING)
@@ -229,73 +158,97 @@ def transmute(
     See Also:
         [`mutate()`](datar.dplyr.mutate.mutate).
     """
-    return mutate(
+    return regcall(
+        mutate,
         _data,
         *args,
         _keep="none",
         _before=_before,
         _after=_after,
         base0_=base0_,
-        __calling_env=CallingEnvs.REGULAR,
         **kwargs,
     )
 
 
-def _mutate_cols(
-    _data: DataFrame,
-    _context: ContextBase,
-    *args: Any,
-    **kwargs: Any,
-) -> Tuple[DataFrame, List[str]]:
-    """Mutate columns"""
-    if not args and not kwargs:
-        return None, []
-    _data = _data.copy()
-    named_mutatables = name_mutatable_args(*args, **kwargs)
-    new_columns = []
-    removed = []
-    add_new_name = True
-    for name, mutatable in named_mutatables.items():
-        ddp_name = dedup_name(name, list(named_mutatables))
-        # if not a dedup name, it's a new name
-        add_new_name = ddp_name == name
-        mutatable = evaluate_expr(mutatable, _data, _context)
-        if mutatable is None:
-            if ddp_name in _data:
-                removed.append(ddp_name)
-                _data.drop(columns=[ddp_name], inplace=True)
-            # be silent if name doesn't exist
-            continue
-
-        if isinstance(mutatable, DataFrame):
-            if mutatable.shape[1] == 0 and not ddp_name.startswith(
-                DEFAULT_COLUMN_PREFIX
-            ):
-                _data = df_setitem(
-                    _data, ddp_name, [NA] * max(mutatable.shape[0], 1)
-                )
-                if add_new_name:
-                    new_columns.append(ddp_name)
-            else:
-                for col in mutatable.columns:
-                    new_name = (
-                        col
-                        if ddp_name.startswith(DEFAULT_COLUMN_PREFIX)
-                        else f"{ddp_name}${col}"
-                    )
-                    coldata = recycle_value(
-                        mutatable[col], _data.shape[0], ddp_name
-                    )
-                    _data = df_setitem(_data, new_name, coldata)
-
-                    if add_new_name:
-                        new_columns.append(new_name)
+# multiple dispatch?
+def _mutate_single_argument(
+    data: DataFrame,
+    key: Union[int, str],
+    value: Any,
+    context: ContextBase,
+) -> List[str]:
+    """Mutate a single column/argument to data and return the new column name"""
+    out = []
+    value = evaluate_expr(value, data, context)
+    grouped = data.attrs.get("_grouped", None)
+    grouper = getattr(grouped, "grouper", None)
+    if isinstance(key, int):
+        if isinstance(value, Series):
+            _mutate_single_col(data, value.name, value)
+            out.append(value.name)
+        elif isinstance(value, SeriesGroupBy):
+            _mutate_single_col(data, value.obj.name, value)
+            out.append(value.obj.name)
+        elif isinstance(value, dict):
+            for key, val in value.items():
+                _mutate_single_col(data, key, val)
+                if val is not None:
+                    out.append(key)
+        elif isinstance(value, DataFrame):
+            for key, val in value.to_dict("series").items():
+                if grouper is not None:
+                    val = val.groupby(grouper)
+                _mutate_single_col(data, key, val)
+                out.append(key)
+        elif isinstance(value, str):
+            _mutate_single_col(data, value, value)
+            out.append(value)
         else:
-            mutatable = recycle_value(mutatable, _data.shape[0], ddp_name)
-            _data = df_setitem(_data, ddp_name, mutatable)
+            key = f"{DEFAULT_COLUMN_PREFIX}{key}"
+            _mutate_single_col(data, key, value)
+            if value is not None:
+                out.append(key)
 
-            if add_new_name:
-                new_columns.append(ddp_name)
+    elif isinstance(value, (Series, SeriesGroupBy)):
+        _mutate_single_col(data, key, value)
+        out.append(key)
 
-    # keep column order
-    return _data[new_columns], removed
+    elif isinstance(value, dict):
+        value = tibble(value)
+        for col, val in value.to_dict("series").items():
+            _mutate_single_col(data, f"{key}${col}", val)
+            out.append(f"{key}${col}")
+
+    elif isinstance(value, DataFrame):
+        for col, val in value.to_dict("series").items():
+            if grouper is not None:
+                val = val.groupby(grouper)
+            _mutate_single_col(data, f"{key}${col}", val)
+            out.append(f"{key}${col}")
+
+    else:
+        _mutate_single_col(data, key, value)
+        if value is not None:
+            out.append(key)
+
+    return out
+
+
+def _mutate_single_col(data: DataFrame, key: str, value: Any) -> None:
+    """Mutate a single column to data, return the new column name"""
+    if value is None:
+        try:
+            del data[key]
+        except KeyError:
+            ...
+
+    elif data.shape[0] == 0:
+        data[key] = []
+
+    elif data.shape[1] == 0:
+        data[key] = value
+
+    else:
+        # use data[col] instead of
+        # data.iloc[:, 0] to trigger DatarGroupBy.__getitem__()
+        data[key] = broadcast(value, data[data.columns[0]])[0]

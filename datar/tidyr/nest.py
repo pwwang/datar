@@ -12,7 +12,7 @@ from pipda.utils import CallingEnvs
 
 from ..core.types import Dtype, is_scalar
 from ..core.utils import vars_select, recycle_value, to_df, reconstruct_tibble
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.contexts import Context
 
 from ..base import setdiff, NA
@@ -91,13 +91,13 @@ def nest(
     )
 
 
-@nest.register(DataFrameGroupBy, context=Context.SELECT)
+@nest.register(DatarGroupBy, context=Context.SELECT)
 def _(
-    _data: DataFrameGroupBy,
+    _data: DatarGroupBy,
     _names_sep: str = None,
     base0_: bool = None,
     **cols: Mapping[str, Union[str, int]],
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     """Nesting grouped dataframe"""
     if not cols:
         cols = {
@@ -165,7 +165,7 @@ def unnest(
     cols = vars_select(all_columns, cols, base0=base0_)
     cols = all_columns[cols]
 
-    if isinstance(data, DataFrameGroupBy):
+    if isinstance(data, DatarGroupBy):
         out = data.copy(copy_grouped=True)
     else:
         out = data.copy()
@@ -190,16 +190,16 @@ def unnest(
     )
 
 
-@unnest.register(DataFrameRowwise, context=Context.SELECT)
+@unnest.register(DatarRowwise, context=Context.SELECT)
 def _(
-    data: DataFrameRowwise,
+    data: DatarRowwise,
     *cols: Union[str, int],
     keep_empty: bool = False,
     ptype: Union[Dtype, Mapping[str, Dtype]] = None,
     names_sep: str = None,
     names_repair: Union[str, Callable] = "check_unique",
     base0_: bool = None,
-) -> DataFrameGroupBy:
+) -> DatarGroupBy:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
         data,
@@ -210,7 +210,7 @@ def _(
         names_repair=names_repair,
         base0_=base0_,
     )
-    return DataFrameGroupBy(
+    return DatarGroupBy(
         out,
         _group_vars=group_vars(data, __calling_env=CallingEnvs.REGULAR),
         _group_drop=group_by_drop_default(data),

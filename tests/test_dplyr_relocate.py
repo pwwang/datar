@@ -1,6 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-relocate.R
 import pytest
+from pandas.testing import assert_frame_equal
 from datar.all import *
 
 def test_before_after_relocate_individual_cols():
@@ -10,6 +11,8 @@ def test_before_after_relocate_individual_cols():
 
     out = relocate(df, f.y, _before=f.x)
     assert out.columns.tolist() == ['y', 'x']
+
+    assert_frame_equal(df, tibble(x=1, y=2))
 
 def test_can_move_blocks_of_vars():
     df = tibble(x = 1, a = "a", y = 2, b = "a")

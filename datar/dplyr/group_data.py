@@ -5,8 +5,8 @@ from pandas import DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
-from ..core.grouped import DataFrameGroupBy
-from ..base import setdiff
+from ..core.grouped import DatarGroupBy, DatarRowwise
+from ..core.utils import regcall
 
 
 @register_verb(DataFrame)
@@ -23,13 +23,23 @@ def group_data(_data: DataFrame) -> DataFrame:
 
         Note that `_rows` are always 0-based.
     """
-    rows = list(range(_data.shape[0]))
-    return DataFrame({"_rows": [rows]})
+    return DataFrame({"_rows": regcall(group_rows, _data)})
 
 
-@group_data.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> DataFrame:
-    return _data._group_data
+@group_data.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> DataFrame:
+    grouper = _data.attrs["_grouped"].grouper
+    gpdata = DataFrame(grouper.group_keys_seq, columns=grouper.names)
+    gpdata["_rows"] = regcall(group_rows, _data)
+    return gpdata
+
+
+@group_data.register(DatarRowwise)
+def _(_data: DatarRowwise) -> DataFrame:
+    gvars = _data.attrs["_group_vars"]
+    gpdata = _data.attrs["_grouped"].obj.loc[:, gvars]
+    gpdata["_rows"] = regcall(group_rows, _data)
+    return gpdata
 
 
 @register_verb(DataFrame)
@@ -49,11 +59,13 @@ def group_keys(_data: DataFrame) -> DataFrame:
     return DataFrame(index=[0])
 
 
-@group_keys.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> DataFrame:
+@group_keys.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> DataFrame:
     # .copy() allows future modifications
     return (
-        group_data(_data, __calling_env=CallingEnvs.REGULAR).iloc[:, :-1].copy()
+        group_data(_data, __calling_env=CallingEnvs.REGULAR)
+        .iloc[:, :-1]
+        .copy()
     )
 
 
@@ -64,11 +76,13 @@ def group_rows(_data: DataFrame) -> List[List[int]]:
     return [rows]
 
 
-@group_rows.register(DataFrameGroupBy)
-def _(_data: DataFrame) -> List[List[int]]:
-    return group_data(_data, __calling_env=CallingEnvs.REGULAR)[
-        "_rows"
-    ].tolist()
+@group_rows.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> List[List[int]]:
+    """Get row indices for each group"""
+    grouper = _data.attrs["_grouped"].grouper
+    return [
+        list(grouper.groups[group_key]) for group_key in grouper.group_keys_seq
+    ]
 
 
 @register_verb(DataFrame)
@@ -80,8 +94,8 @@ def group_indices(_data: DataFrame) -> List[int]:
     return [0] * _data.shape[0]
 
 
-@group_indices.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> List[int]:
+@group_indices.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> List[int]:
     ret = {}
     for row in group_data(
         _data, __calling_env=CallingEnvs.REGULAR
@@ -94,18 +108,7 @@ def _(_data: DataFrameGroupBy) -> List[int]:
 @register_verb(DataFrame)
 def group_vars(_data: DataFrame) -> List[str]:
     """Gives names of grouping variables as character vector"""
-    # If it is a subdf of a DataFrameGroupBy, still be able to
-    # return the group_vars
-    index = _data.attrs.get("_group_index", None)
-    if index is None:
-        return []
-    gdata = _data.attrs["_group_data"]
-    return setdiff(gdata.columns, ["_rows"], __calling_env=CallingEnvs.REGULAR)
-
-
-@group_vars.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> List[str]:
-    return _data.attrs["_group_vars"]
+    return _data.attrs.get("_group_vars", [])
 
 
 # groups in dplyr returns R list
@@ -119,8 +122,8 @@ def group_size(_data: DataFrame) -> List[int]:
     return [_data.shape[0]]
 
 
-@group_size.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> List[int]:
+@group_size.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> List[int]:
     return list(
         map(len, group_data(_data, __calling_env=CallingEnvs.REGULAR)["_rows"])
     )
@@ -132,6 +135,6 @@ def n_groups(_data: DataFrame) -> int:
     return 1
 
 
-@n_groups.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> int:
+@n_groups.register(DatarGroupBy)
+def _(_data: DatarGroupBy) -> int:
     return group_data(_data, __calling_env=CallingEnvs.REGULAR).shape[0]

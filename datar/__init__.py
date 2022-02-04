@@ -2,7 +2,7 @@
 from typing import Mapping
 
 from .core import operator as _
-from .core import _frame_format_patch
+# from .core import _frame_format_patch
 from .core.defaults import f
 
 __all__ = ('f', 'get_versions')

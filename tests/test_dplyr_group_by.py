@@ -7,7 +7,7 @@ import numpy
 from datar.all import *
 from datar.datasets import mtcars, iris
 from datar.core.exceptions import ColumnNotExistingError
-from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
+from datar.core.grouped import DatarGroupBy, DatarRowwise
 from .conftest import assert_iterable_equal
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def test_one_group_for_NA():
     assert n_distinct(x) == 11
     res = tibble(x = x, w = w) >> group_by(f.x) >> summarise(n = n())
     # assert nrow(res) == 11
-    # See Known Issues of core.grouped.DataFrameGroupBy
+    # See Known Issues of core.grouped.DatarGroupBy
     assert nrow(res) == 10
 
 def test_zero_row_dfs():
@@ -282,7 +282,7 @@ def test_add_passes_drop():
 
 
 # NA in groupvars to get group data is not supported
-# See: DataFrameGroupBy's Known Issues
+# See: DatarGroupBy's Known Issues
 #
 # def test_na_last():
 
@@ -356,47 +356,47 @@ def test_rowwise_preserved_by_major_verbs():
     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
 
     out = arrange(rf, f.y)
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     out = filter(rf, f.x < 3)
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     out = mutate(rf, x = f.x + 1)
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     out = rename(rf, X = f.x)
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['X']
 
     out = select(rf, "x")
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     out = slice(rf, c(1, 1))
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     # Except for summarise
     out = summarise(rf, z = mean([f.x, f.y]))
-    assert isinstance(out, DataFrameGroupBy)
+    assert isinstance(out, DatarGroupBy)
     assert group_vars(out) == ['x']
 
 def test_rowwise_preserved_by_subsetting():
     rf = rowwise(tibble(x=range(1,6), y=range(5,0,-1)), f.x)
 
     out = get(rf, [1])
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     out = mutate(rf, z=f.y)
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['x']
 
     out = set_names(rf, [name.upper() for name in names(rf)])
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert group_vars(out) == ['X']
 
 def test_rowwise_captures_group_vars():

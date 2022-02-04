@@ -7,7 +7,7 @@ import numpy
 from pandas import Series
 from pipda import register_operator, Operator
 
-from .utils import length_of, recycle_value
+from .utils import length_of, broadcast, recycle_value
 from .collections import Collection, Inverted, Negated, Intersect
 from .exceptions import DataUnrecyclable
 from .types import BoolOrIter
@@ -27,8 +27,11 @@ class DatarOperator(Operator):
     def _arithmetize2(self, left: Any, right: Any, op: str) -> Any:
         """Operator for paired operands"""
         op_func = getattr(operator, op)
-        left, right = _recycle_left_right(left, right)
-        return op_func(left, right)
+        left, right, grouper = broadcast(left, right)
+        out = op_func(left, right)
+        if grouper is not None:
+            return out.groupby(grouper)
+        return out
 
     def _op_invert(self, operand: Any) -> Any:
         """Interpretation for ~x"""
@@ -97,7 +100,7 @@ class DatarOperator(Operator):
         """Other operators"""
         if name.startswith('_op_'):
             attr = partial(self._arithmetize2, op=name[4:])
-            attr.__qualname__ = self._arithmetize2.__qualname__
+            attr.__qualname__ = name
             return attr
         return super().__getattr__(name)
 

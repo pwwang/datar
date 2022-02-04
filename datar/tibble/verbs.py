@@ -14,7 +14,7 @@ from ..core.utils import (
     logger,
     reconstruct_tibble,
 )
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.grouped import DatarGroupBy, DatarRowwise
 from ..core.types import is_scalar, Dtype
 from ..core.exceptions import ColumnNotExistingError
 from ..base import setdiff
@@ -124,8 +124,8 @@ def add_row(
         The dataframe with the added rows
 
     """
-    if isinstance(_data, DataFrameGroupBy) and not isinstance(
-        _data, DataFrameRowwise
+    if isinstance(_data, DatarGroupBy) and not isinstance(
+        _data, DatarRowwise
     ):
         raise ValueError("Can't add rows to grouped data frames.")
 
@@ -148,7 +148,7 @@ def add_row(
     pos = _pos_from_before_after(_before, _after, _data.shape[0], base0_)
     out = _rbind_at(_data, df, pos)
 
-    if isinstance(_data, DataFrameRowwise):
+    if isinstance(_data, DatarRowwise):
         out = reconstruct_tibble(_data, out, keep_rowwise=True)
     else:
         copy_attrs(out, _data)
