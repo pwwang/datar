@@ -90,11 +90,12 @@ def mutate(
     for key, val in chain(enumerate(args), kwargs.items()):
         mut_cols = _mutate_single_argument(data, key, val, context)
         mutated_cols.extend(mut_cols)
-    # names end with "_" are temporary names
+    # names start with "_" are temporary names
     tmp_cols = [
-        mcol
-        for mcol in mutated_cols
-        if mcol.endswith("_") and mcol in context.used_refs
+        mcol for mcol in mutated_cols
+        if mcol.startswith("_") and
+        mcol in context.used_refs and
+        mcol not in data.columns
     ]
     data = data.loc[:, data.columns.difference(tmp_cols)]
     mutated_cols = regcall(setdiff, mutated_cols, tmp_cols)
@@ -182,51 +183,34 @@ def _mutate_single_argument(
     value = evaluate_expr(value, data, context)
     grouped = data.attrs.get("_grouped", None)
     grouper = getattr(grouped, "grouper", None)
-    if isinstance(key, int):
-        if isinstance(value, Series):
-            _mutate_single_col(data, value.name, value)
-            out.append(value.name)
-        elif isinstance(value, SeriesGroupBy):
-            _mutate_single_col(data, value.obj.name, value)
-            out.append(value.obj.name)
-        elif isinstance(value, dict):
-            for key, val in value.items():
-                _mutate_single_col(data, key, val)
-                if val is not None:
-                    out.append(key)
-        elif isinstance(value, DataFrame):
-            for key, val in value.to_dict("series").items():
-                if grouper is not None:
-                    val = val.groupby(grouper)
-                _mutate_single_col(data, key, val)
-                out.append(key)
-        elif isinstance(value, str):
-            _mutate_single_col(data, value, value)
-            out.append(value)
-        else:
-            key = f"{DEFAULT_COLUMN_PREFIX}{key}"
-            _mutate_single_col(data, key, value)
-            if value is not None:
-                out.append(key)
 
-    elif isinstance(value, (Series, SeriesGroupBy)):
+    if isinstance(value, (Series, SeriesGroupBy)):
+        key = getattr(value, "obj", value).name if isinstance(key, int) else key
         _mutate_single_col(data, key, value)
         out.append(key)
-
-    elif isinstance(value, dict):
-        value = tibble(value)
-        for col, val in value.to_dict("series").items():
-            _mutate_single_col(data, f"{key}${col}", val)
-            out.append(f"{key}${col}")
 
     elif isinstance(value, DataFrame):
         for col, val in value.to_dict("series").items():
             if grouper is not None:
                 val = val.groupby(grouper)
-            _mutate_single_col(data, f"{key}${col}", val)
-            out.append(f"{key}${col}")
+            colname = col if isinstance(key, int) else f"{key}${col}"
+            _mutate_single_col(data, colname, val)
+            out.append(colname)
+
+    elif isinstance(value, dict):
+        for col, val in value.items():
+            colname = col if isinstance(key, int) else f"{key}${col}"
+            _mutate_single_col(data, colname, val)
+            if val is not None:
+                out.append(colname)
 
     else:
+        if isinstance(key, int):
+            key = (
+                value
+                if isinstance(value, str)
+                else f"{DEFAULT_COLUMN_PREFIX}{key}"
+            )
         _mutate_single_col(data, key, value)
         if value is not None:
             out.append(key)

@@ -370,21 +370,21 @@ def test_transmute_errors():
 
 def test_dup_keyword_args():
     df = tibble(a=1)
-    out = df >> mutate(b_=f.a+1, b=f.b_*2)
+    out = df >> mutate(_b=f.a+1, b=f._b*2)
     assert_frame_equal(out, tibble(a=1, b=4))
     # order doesn't matter
-    out = df >> mutate(b=f.a+1, b_=f.b*2)
-    assert_frame_equal(out, tibble(a=1, b=2, b_=4))
+    out = df >> mutate(b=f.a+1, _b=f.b*2)
+    assert_frame_equal(out, tibble(a=1, b=2, _b=4))
     # support >= 2 dups
-    out = df >> mutate(b__=f.a+1, b_=f.b__*2, b=f.b_/4.)
+    out = df >> mutate(__b=f.a+1, _b=f.__b*2, b=f._b/4.)
     assert_frame_equal(out, tibble(a=1, b=1.))
     # has to be consective
-    out = df >> mutate(b__=f.a+1, b_=f.b__*2, b=f.b_/4.)
+    out = df >> mutate(__b=f.a+1, _b=f.__b*2, b=f._b/4.)
     assert_frame_equal(out, tibble(a=1, b=1.))
-    out = df >> mutate(b__=f.a+1, b_=f.b__*2)
-    assert_frame_equal(out, tibble(a=1, b_=4))
-    out = df >> mutate(b_=f.a+1)
-    assert_frame_equal(out, tibble(a=1, b_=2))
+    out = df >> mutate(__b=f.a+1, _b=f.__b*2)
+    assert_frame_equal(out, tibble(a=1, _b=4))
+    out = df >> mutate(_b=f.a+1)
+    assert_frame_equal(out, tibble(a=1, _b=2))
 
 def test_complex_expression_as_value():
     # https://stackoverflow.com/questions/30714810/pandas-group-by-and-aggregate-column-1-with-condition-from-column-2

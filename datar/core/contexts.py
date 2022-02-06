@@ -25,7 +25,6 @@ class ContextEval(ContextEvalPipda):
         self, parent: Any, ref: Any, is_direct: bool = False, _attr=False
     ) -> Any:
         """Interpret f[ref]"""
-
         if is_direct and isinstance(ref, slice):
             # Allow f[1:3] to be interpreted as 1:3
             from .collections import Collection
@@ -67,5 +66,4 @@ class Context(Enum):
     PENDING = ContextPending()
     SELECT = ContextSelect()
     EVAL = ContextEval()
-    PIPDA_EVAL = ContextEvalPipda()
     MIXED = ContextMixed()

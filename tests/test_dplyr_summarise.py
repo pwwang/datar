@@ -1,6 +1,5 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-summarise.r
-from tokenize import group
 
 import pytest
 from datar.all import *
@@ -10,9 +9,8 @@ from datar.core.exceptions import (
     DataUnrecyclable,
     NameNonUniqueError
 )
-from datar.core.grouped import DataFrameRowwise
+from datar.core.grouped import DatarRowwise
 from datar.datasets import mtcars
-from pandas.core.frame import DataFrame
 from pandas.testing import assert_frame_equal
 from pipda import register_func
 
@@ -33,14 +31,14 @@ def test_input_recycled():
     gf = group_by(tibble(a = [1,2]), f.a)
     df1 = gf >> summarise(x=1, y=[1,2,3], z=1)
     df2 = tibble(
-        a = rep([1,2], 3),
+        a = rep([1,2], each=3),
         x = 1,
-        y = rep([1,2,3], each=2),
+        y = rep([1,2,3], 2),
         z = 1
     ) >> group_by(f.a)
     assert_frame_equal(df1, df2)
 
-    df1 = gf >> summarise(x = seq_len(f.a, base0_=True), y = 1)
+    df1 = gf >> summarise(x = seq_len(f.a), y = 1)
     df2 = tibble(a = c(1, 2, 2), x = c(0, 0, 1), y = 1) >> group_by(f.a)
     # assert df1.equals(df2)
     assert_frame_equal(df1, df2)
@@ -174,8 +172,8 @@ def test_groups_arg(caplog):
     df = tibble(x = 1, y = 2)
     df1 = df >> summarise(z = 3, _groups= "rowwise")
     df2 = rowwise(tibble(z = 3))
-    assert isinstance(df1, DataFrameRowwise)
-    assert isinstance(df2, DataFrameRowwise)
+    assert isinstance(df1, DatarRowwise)
+    assert isinstance(df2, DatarRowwise)
     assert df1.equals(df2)
     assert group_vars(df1) == group_vars(df2)
 

@@ -1,9 +1,11 @@
 """Generating and manipulating sequences"""
 
+from functools import singledispatch
 from typing import Any, Iterable, Union
 
 import numpy
 import pandas
+from pandas import Series
 from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
@@ -40,18 +42,20 @@ def seq_along(along_with: Iterable[Any], base0_: bool = None) -> ArrayLikeType:
 
 
 @register_func(None, context=Context.EVAL)
-def seq_len(length_out: IntOrIter, base0_: bool = None) -> ArrayLikeType:
+def seq_len(length_out: IntOrIter) -> ArrayLikeType:
     """Generate sequences with the length"""
-    base0_ = get_option("index.base.0", base0_)
+    if isinstance(length_out, SeriesGroupBy):
+        return length_out.apply(seq_len).explode().astype(int)
+
     if is_scalar(length_out):
-        return Array(range(int(length_out))) + int(not base0_)
+        return Array(range(int(length_out)), dtype=int)
+
     if len(length_out) > 1:
         logger.warning(
-            "In seq_len(%r) : first element used of 'length_out' argument",
-            length_out,
+            "In seq_len(...) : first element used of 'length_out' argument"
         )
     length_out = int(list(length_out)[0])
-    return Array(range(length_out)) + int(not base0_)
+    return Array(range(length_out), dtype=int)
 
 
 @register_func(None, context=Context.EVAL)
