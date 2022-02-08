@@ -278,7 +278,6 @@ def zibble(
     suffix = 0
     for name, value in zip(names, values):
         # Evaluate value if neccessary
-
         value = evaluate_expr(value, out, Context.EVAL)
         # If it is grouped data, ungroup it
         value = getattr(value, "obj", value)

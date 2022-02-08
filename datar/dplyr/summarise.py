@@ -3,13 +3,15 @@
 from itertools import chain
 from typing import Any, Union
 
-from pandas import DataFrame, Index, Series
+import numpy
+from pandas import DataFrame, Index, Series, concat
 from pandas.core.groupby import SeriesGroupBy
 from pipda import register_verb, evaluate_expr
+from pipda.function import Function
 
 from ..core.types import is_scalar
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
-from ..core.contexts import Context
+from ..core.contexts import Context, ContextEval, ContextBase
 from ..core.utils import (
     arg_match,
     check_column_uniqueness,
@@ -20,7 +22,8 @@ from ..core.utils import (
 from ..core.exceptions import ColumnNotExistingError
 from ..core.grouped import DatarGroupBy, DatarRowwise
 
-from .group_data import group_vars, group_keys
+from ..base import setdiff
+from .group_data import group_vars
 from .group_by import group_by_drop_default
 
 
@@ -86,7 +89,14 @@ def summarise(
     out = _summarise_build(_data, *args, **kwargs)
     gvars = regcall(group_vars, _data)
     if _groups is None:
-        if out.shape[0] == 1 and not isinstance(_data, DatarRowwise):
+        allones = (
+            not isinstance(_data, DatarGroupBy) and out.shape[0] == 1
+        ) or (
+            isinstance(_data, DatarGroupBy)
+            and out.shape[0]
+            == len(_data.attrs["_grouped"].grouper.result_index)
+        )
+        if allones and not isinstance(_data, DatarRowwise):
             _groups = "drop_last"
         else:
             _groups = "keep"
@@ -100,10 +110,10 @@ def summarise(
                     gvars[:-1],
                 )
             out = DatarGroupBy.from_grouped(
-                out.obj.groupby(
+                out.groupby(
                     gvars[:-1],
                     observed=_data.attrs["_grouped"].observed,
-                    sort=_data.attrs["_sort"].sort,
+                    sort=_data.attrs["_grouped"].sort,
                 )
             )
 
@@ -114,11 +124,12 @@ def summarise(
                 "%s (override with `_groups` argument)",
                 gvars,
             )
+        grouped = _data.attrs["_grouped"]
         out = DatarGroupBy.from_grouped(
             out.groupby(
                 gvars,
-                observed=_data.attrs["_grouped"].observed,
-                sort=_data.attrs["_grouped"].sort,
+                observed=grouped.observed,
+                sort=grouped.sort,
             )
         )
 
@@ -128,7 +139,8 @@ def summarise(
                 list(range(_data.shape[0])),
                 observed=group_by_drop_default(_data),
                 sort=False,
-            )
+            ),
+            group_vars=gvars,
         )
 
     elif isinstance(_data, DatarRowwise) and get_option(
@@ -154,6 +166,7 @@ def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
         result_index = Index([0])
 
     outframe = DataFrame(index=result_index)
+    context = ContextEval()
     for key, val in chain(enumerate(args), kwargs.items()):
         outframe = _summarise_single_argument(
             _data,
@@ -161,21 +174,31 @@ def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
             key,
             val,
             result_index,
+            context,
+        )
+
+    gvars = regcall(group_vars, _data)
+    tmp_cols = [
+        mcol
+        for mcol in outframe.columns
+        if mcol.startswith("_")
+        and mcol in context.used_refs
+        and mcol not in gvars
+    ]
+    outframe = outframe[outframe.columns.difference(tmp_cols)]
+
+    if isinstance(_data, DatarRowwise):
+        return concat(
+            (_data.loc[outframe.index, gvars], outframe),
+            axis=1,
         )
 
     if isinstance(_data, DatarGroupBy):
-        return outframe.reset_index()
+        # in case group variables are replaced
+        reset_cols = regcall(setdiff, gvars, outframe.columns)
+        outframe = outframe.reset_index(reset_cols)
+
     return outframe.reset_index(drop=True)
-
-
-def _is_series_compatible(
-    ser: Union[Series, SeriesGroupBy, DataFrame], index: Index
-) -> bool:
-    """Check if given series compatible with given index"""
-    if not isinstance(ser, SeriesGroupBy):
-        ser = ser.groupby(ser.index)
-
-    return ser.grouper.result_index.equals(index)
 
 
 def _summarise_single_argument(
@@ -184,53 +207,76 @@ def _summarise_single_argument(
     key: Union[int, str],
     value: Any,
     result_index: Index,
+    context: ContextBase,
 ) -> DataFrame:
     """Do summarise for a single argument"""
+    envdata = outframe
+    if outframe.shape[1] == 0 or (
+        isinstance(value, Function)
+        and getattr(value._pipda_func, "summarise_prefers_input", False)
+    ):
+        envdata = data
+
     try:
-        value = evaluate_expr(value, outframe, Context.EVAL)
+        value = evaluate_expr(value, envdata, context)
     except (KeyError, ColumnNotExistingError):
         # also recycle input
-        value = evaluate_expr(value, data, Context.EVAL)
+        value = evaluate_expr(value, data, context)
 
-    if isinstance(value, (Series, SeriesGroupBy)):
-        obj = getattr(value, "obj", value)
-        key = obj.name if isinstance(key, int) else key
-
-        # check if index matches
-        if not _is_series_compatible(value, result_index):
+    if isinstance(value, Series):
+        # x = f.x.mean()
+        # Requires the index matches result_index
+        # Note that it is not necessarily all-ones series
+        # (only one record in each group)
+        if not value.index.unique().equals(result_index):
             logger.warning("Incompatible Series, ignoring index.")
-            obj = obj.values
+            value = value.values
 
-        outframe = _summarise_single_col(outframe, key, obj, result_index)
+        outframe = _summarise_single_col(
+            outframe,
+            key,
+            value,
+            result_index,
+        )
+
+    elif isinstance(value, SeriesGroupBy):
+        # x = f.x + 1
+        if not value.grouper.result_index.equals(result_index):
+            raise ValueError("Incompatible SeriesGroupBy object.")
+
+        outframe = _summarise_single_col(outframe, key, value, result_index)
 
     elif isinstance(value, DataFrame):
-        to_dict_type = "series"
-
-        if not _is_series_compatible(value, result_index):
+        if value.shape[0] > 0 and not value.index.equals(result_index):
             logger.warning("Incompatible DataFrame, ignoring index.")
-            to_dict_type = "list"
+            index = result_index.repeat(value.shape[0])
+            value = value.loc[numpy.tile(value.index, len(result_index)), :]
+            value.index = index
+            outframe = outframe.loc[index, :]
+            outframe[
+                [
+                    col if isinstance(key, int) else f"{key}${col}"
+                    for col in value.columns
+                ]
+            ] = value
 
-        for col, val in value.to_dict(to_dict_type).items():
-            outframe = _summarise_single_col(
-                outframe,
-                col if isinstance(key, int) else f"{key}${col}",
-                value,
-                result_index,
-            )
+        else:
+            for col, val in value.to_dict("series").items():
+                outframe = _summarise_single_col(
+                    outframe,
+                    col if isinstance(key, int) else f"{key}${col}",
+                    val,
+                    result_index,
+                )
 
     elif isinstance(value, dict):
         for col, val in value.items():
-            if isinstance(val, (Series, SeriesGroupBy)):
-                obj = getattr(val, "obj", val)
-                if not _is_series_compatible(val, result_index):
-                    obj = obj.values
-            else:
-                obj = val
-
-            outframe = _summarise_single_col(
+            colname = col if isinstance(key, int) else f"{key}${col}"
+            outframe = _summarise_single_argument(
+                data,
                 outframe,
-                col if isinstance(key, int) else f"{key}${col}",
-                obj,
+                colname,
+                val,
                 result_index,
             )
 
@@ -255,17 +301,23 @@ def _summarise_single_col(
 ) -> DataFrame:
     """Mutate a single column to data, return the new column name"""
     if value is None:
-        return
+        return outframe
 
     if is_scalar(value):
         outframe[key] = value
 
     elif isinstance(value, Series):
-        if len(value) == outframe.shape[0]:
-            outframe[key] = value
-        else:
-            outframe = outframe.loc[value.index, :]
-            outframe[key] = value
+        # y = f.x.mean()
+        outframe = outframe.loc[value.index, :]
+        outframe[key] = value
+
+    elif isinstance(value, SeriesGroupBy):
+        # y = f.x + 1
+        size = value.grouper.size()
+        index = size.index.repeat(size)
+        outframe = outframe.loc[index, :]
+        value.obj.index = index
+        outframe[key] = value.obj
 
     else:
         index = result_index.repeat(len(value))

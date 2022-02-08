@@ -10,7 +10,8 @@ from pipda.context import (
     ContextPending,
     ContextSelect,
 )
-from .exceptions import ColumnNotExistingError
+
+from .grouped import DatarGroupBy
 
 
 class ContextEval(ContextEvalPipda):
@@ -33,13 +34,14 @@ class ContextEval(ContextEvalPipda):
 
         if is_direct:
             self.used_refs[ref] += 1
+
+        if isinstance(parent, DatarGroupBy):
+            # what about nested grouped df?
+            return parent.attrs["_grouped"][ref]
+
         if isinstance(parent, DataFrame):
             from .utils import df_getitem
-
-            try:
-                return df_getitem(parent, ref)
-            except KeyError as keyerr:
-                raise ColumnNotExistingError(str(keyerr)) from None
+            return df_getitem(parent, ref)
 
         return (
             super().getitem(parent, ref)
@@ -66,4 +68,5 @@ class Context(Enum):
     PENDING = ContextPending()
     SELECT = ContextSelect()
     EVAL = ContextEval()
+    EVAL_PIPDA = ContextEvalPipda()
     MIXED = ContextMixed()

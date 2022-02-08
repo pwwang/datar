@@ -745,9 +745,21 @@ def _broadcast_to_grouped(value: Any, grouped: SeriesGroupBy) -> Any:
         return value
 
     if isinstance(value, Series):
-        index = grouped.grouper.result_index
-        # broadcast values in all groups
-        return Series(value, index=index.repeat(grouped.grouper.size()))
+        result_index = grouped.grouper.result_index
+        index = grouped.obj.index
+        # Aggregated results like f.x.mean()
+        if value.index.equals(result_index):
+            # broadcast values in all groups
+            out = Series(
+                value,
+                index=result_index.repeat(grouped.grouper.size()),
+            )
+            out.index = index
+            return out
+        if value.index.equals(index):
+            return value
+
+        logger.warning("Incompatible Series, ignoring index.")
 
     usizes = grouped.grouper.size().unique()
     if len(usizes) > 1:
@@ -769,7 +781,7 @@ def _broadcast_to_grouped(value: Any, grouped: SeriesGroupBy) -> Any:
 
 
 # multiple dispatch?
-def broadcast(value1: Any, value2: Any) -> Tuple[Any, Any, BaseGrouper]:
+def broadcast(value1: Any, value2: Any, ) -> Tuple[Any, Any, BaseGrouper]:
     """Broadcast value1 to the dimension of value2 or vice versa
 
 

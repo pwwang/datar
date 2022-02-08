@@ -116,13 +116,15 @@ def test_correctly_reconstructs_groups():
     d = tibble(x=[1,2,3,4], g1=rep([1,2], 2), g2=[1,2,3,4]) >> group_by(
         f.g1, f.g2
     ) >> summarise(x = f.x + 1)
-    assert group_rows(d) == [[0,1], [2,3]]
+    # Different from dplyr, original df does not reorder.
+    assert group_rows(d) == [[0,2], [1,3]]
+    # assert group_rows(d) == [[0,1], [2,3]]
 
 def test_modify_grouping_vars():
     df = tibble(a = c(1, 2, 1, 2), b = c(1, 1, 2, 2))
     gf = group_by(df, f.a, f.b)
     out = summarise(gf, a=f.a+1)
-    assert out.a.tolist() == [2,2,3,3]
+    assert out.a.tolist() == [2,3,2,3]
 
 def test_allows_names():
     res = tibble(x = [1,2,3], y = letters[:3]) >> group_by(
@@ -135,7 +137,7 @@ def test_allows_names():
 
 def test_list_output_columns():
     df = tibble(x = range(1,11), g = rep([1,2], each = 5))
-    res = df >> group_by(f.g) >> summarise(y = [f.x]) >> pull(f.y, to='list')
+    res = df >> group_by(f.g) >> summarise(y = f.x.apply(list)) >> pull(f.y, to='list')
     assert_iterable_equal(res[0], [1,2,3,4,5])
 
 def test_unnamed_tibbles_are_unpacked():
@@ -166,8 +168,8 @@ def test_groups_arg(caplog):
     assert "has grouped output by ['x']" in caplog.text
     caplog.clear()
 
-    out = repr(df >> rowwise(f.x, f.y) >> summarise())
-    assert "[Groups: x, y (n=1)]" in out
+    out = df >> rowwise(f.x, f.y) >> summarise()
+    assert "[Groups: x, y (n=1)]" in out.attrs["_str_footer"]
 
     df = tibble(x = 1, y = 2)
     df1 = df >> summarise(z = 3, _groups= "rowwise")
@@ -188,6 +190,7 @@ def test_groups_arg(caplog):
     assert gvars == ['x', 'y']
     gvars = gf >> summarise(_groups = "rowwise") >> group_vars()
     assert gvars == ['x', 'y']
+    # assert gvars == []
 
 
     rf = df >> rowwise(f.x, f.y)
@@ -201,12 +204,14 @@ def test_casts_data_frame_results_to_common_type():
 
     @register_func(None, context=Context.EVAL)
     def df_of_g(g):
-        if g.tolist() == [1]:
+        if g.obj.tolist() == [1]:
             return tibble(y=1)
         return tibble(y=1, z=2)
 
     res = df >> summarise(df_of_g(f.g), _groups='drop')
-    assert res.z.fillna(0).tolist() == [0, 2]
+    # broadcasted
+    # assert res.z.fillna(0).tolist() == [0, 2]
+    assert res.z.fillna(0).tolist() == [2, 2]
 
 def test_silently_skips_when_all_results_are_null():
     df = tibble(x = [1,2], g = [1,2]) >> group_by(f.g)
@@ -244,18 +249,18 @@ def test_errors(caplog):
     tibble(x = 1, y = c(1, 2, 2), z = runif(3)) >> summarise(a=object())
 
     # incompatible size
-    with pytest.raises(DataUnrecyclable):
+    with pytest.raises(ValueError):
         tibble(z = 1) >> summarise(x = [1,2,3], y = [1,2])
-    with pytest.raises(DataUnrecyclable):
+    with pytest.raises(ValueError):
         tibble(z = [1,2]) >> group_by(f.z) >> summarise(x = [1,2,3], y = [1,2])
-    with pytest.raises(DataUnrecyclable):
+    with pytest.raises(ValueError):
         tibble(z=c(1, 3)) >> group_by(f.z) >> summarise(x=seq_len(f.z), y=[1,2])
 
     # Missing variable
-    with pytest.raises(ColumnNotExistingError):
+    with pytest.raises(KeyError):
         summarise(mtcars, a = mean(f.not_there))
 
-    with pytest.raises(ColumnNotExistingError):
+    with pytest.raises(KeyError):
         summarise(group_by(mtcars, f.cyl), a = mean(f.not_there))
 
     # Duplicate column names
@@ -272,17 +277,17 @@ def test_summarise_with_multiple_acrosses():
     )
 
     exp = tibble(
-        cyl=[4,6,8],
-        disp=[1156.5, 1283.2, 4943.4],
-        hp=[909, 856, 2929],
-        drat=[4.070909, 3.585714, 3.229286],
-        wt=[2.285727, 3.117143, 3.999214]
+        cyl=[6,4,8],
+        disp=[1283.2, 1156.5, 4943.4],
+        hp=[856, 909, 2929],
+        drat=[3.585714, 4.070909, 3.229286],
+        wt=[3.117143, 2.285727, 3.999214]
     )
     assert_frame_equal(out, exp)
 
 def test_dup_keyword_args():
     df = tibble(g=[1,1], a=[1.0,2.0]) >> group_by(f.g)
-    out = df >> summarise(b_=mean(f.a), b=f.b*2)
+    out = df >> summarise(_b=mean(f.a), b=f._b*2)
     assert_frame_equal(out, tibble(g=1, b=3.0))
 
 def test_use_pandas_series_func_gh14():
@@ -301,7 +306,7 @@ def test_summarise_rowwise():
         sd=[1, 4, 2]
     )
 
-    out = params >> rowwise(f.sim) >> summarise(z=[rnorm(f.n, f.mean, f.sd)])
+    out = params >> rowwise(f.sim) >> summarise(z=rnorm(f.n, f.mean, f.sd))
     assert len(out.columns) == 2
     assert len(out.z.values[0]) == 1
     assert len(out.z.values[1]) == 2

@@ -2,7 +2,8 @@
 from typing import Any, Iterable, List
 
 import numpy
-from pandas import Series
+from pandas import DataFrame, Series
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
 from ..core.types import (
@@ -13,8 +14,9 @@ from ..core.types import (
     is_scalar,
 )
 from ..core.contexts import Context
-from ..core.utils import Array
+from ..core.utils import Array, logger
 from ..base import NA
+from ..tibble import tibble
 
 
 @register_func(None, context=Context.EVAL)
@@ -31,6 +33,47 @@ def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
     Returns:
         Randomly generated deviates.
     """
+    grouper = None
+    if isinstance(n, SeriesGroupBy):
+        if grouper is None:
+            grouper = n.grouper
+        if grouper is not n.grouper:
+            raise ValueError("Incompatible SeriesGroupBy objects.")
+    if isinstance(mean, SeriesGroupBy):
+        if grouper is None:
+            grouper = mean.grouper
+        if grouper is not n.grouper:
+            raise ValueError("Incompatible SeriesGroupBy objects.")
+    if isinstance(sd, SeriesGroupBy):
+        if grouper is None:
+            grouper = sd.grouper
+        if grouper is not n.grouper:
+            raise ValueError("Incompatible SeriesGroupBy objects.")
+
+    # Any of the arguments is a SeriesGroupBy
+    if grouper:
+
+        def apply_func(subdf: DataFrame):
+            if subdf.shape[0] > 1:
+                logger.warning(
+                    "In rnorm(...), use first value from the arguments."
+                )
+            return rnorm(
+                subdf["n"].values[0],
+                subdf["mean"].values[0],
+                subdf["sd"].values[0],
+            )
+
+        return (
+            tibble(
+                n=getattr(n, "obj", n),
+                mean=getattr(mean, "obj", mean),
+                sd=getattr(sd, "obj", sd),
+            )
+            .groupby(grouper)
+            .apply(apply_func)
+        )
+
     return numpy.random.normal(loc=mean, scale=sd, size=n)
 
 
@@ -80,6 +123,9 @@ def quantile(
     Returns:
         An array of quantile values
     """
+    if isinstance(series, SeriesGroupBy):
+        return series.quantile(q=probs)
+
     return (
         numpy.nanquantile(series, probs)
         if na_rm

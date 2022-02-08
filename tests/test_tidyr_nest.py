@@ -4,7 +4,7 @@ from pandas.core.dtypes.common import is_categorical_dtype
 import pytest
 from pandas.testing import assert_frame_equal
 from datar.all import *
-from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
+from datar.core.grouped import DatarGroupBy, DatarRowwise
 from .conftest import assert_iterable_equal
 
 # nest --------------------------------------------------------------------
@@ -24,7 +24,7 @@ def test_nest_uses_grouping_vars_if_present():
 def test_nest_provides_grouping_vars_override_grouped_defaults():
     df = tibble(x=1, y=2, z=3) >> group_by(f.x)
     out = nest(df, data=f.y)
-    assert isinstance(out, DataFrameGroupBy)
+    assert isinstance(out, DatarGroupBy)
     assert out.columns.tolist() == ['x', 'z', 'data']
     assert out.data.values[0].columns.tolist() == ['y']
 
@@ -217,15 +217,15 @@ def test_unnest_list_of_empty_dfs():
 def test_unnest_rowwise_df_becomes_grouped_df():
     df = tibble(g=1, x=[[1,2,3]]) >> rowwise(f.g)
     rs = df >> unnest(f.x)
-    assert isinstance(rs, DataFrameGroupBy)
-    assert not isinstance(rs, DataFrameRowwise)
+    assert isinstance(rs, DatarGroupBy)
+    assert not isinstance(rs, DatarRowwise)
     assert group_vars(rs) == ['g']
 
 def test_unnest_grouping_preserved():
     df = tibble(g=1, x=[[1,2,3]]) >> group_by(f.g)
     rs = df >> unnest(f.x)
-    assert isinstance(rs, DataFrameGroupBy)
-    assert not isinstance(rs, DataFrameRowwise)
+    assert isinstance(rs, DatarGroupBy)
+    assert not isinstance(rs, DatarRowwise)
     assert group_vars(rs) == ['g']
 
 # Empty inputs ------------------------------------------------------------

@@ -12,6 +12,8 @@ from pipda.function import Function
 from pipda.utils import functype, CallingEnvs
 from pipda.context import ContextBase
 
+from datar.core.grouped import DatarGroupBy
+
 from ..core.utils import (
     df_setitem,
     length_of,
@@ -69,6 +71,12 @@ class Across:
         self.args = args or ()
         self.kwargs = kwargs or {}
 
+    def _get_series(self, col: str):
+        if isinstance(self.data, DatarGroupBy):
+            return self.data.attrs["_grouped"][col]
+
+        return self.data[col]
+
     def evaluate(
         self, context: Union[Context, ContextBase] = None
     ) -> DataFrame:
@@ -95,14 +103,14 @@ class Across:
                 kwargs = CurColumn.replace_kwargs(self.kwargs, column)
                 if functype(fn) == "plain":
                     value = fn(
-                        self.data[column],
+                        self._get_series(column),
                         *evaluate_expr(args, self.data, context),
                         **evaluate_expr(kwargs, self.data, context),
                     )
                 else:
                     # use fn's own context
                     value = fn(
-                        self.data[column],
+                        self._get_series(column),
                         *args,
                         **kwargs,
                         __calling_env=CallingEnvs.PIPING,

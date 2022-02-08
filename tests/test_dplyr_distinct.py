@@ -1,6 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-distinct.R
-from datar.core.grouped import DataFrameRowwise
+from datar.core.grouped import DatarRowwise
 import pytest
 from datar.all import *
 
@@ -145,4 +145,4 @@ def test_rowwise_df():
     out = distinct(rf)
     exp = distinct(df)
     assert out.equals(exp)
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)

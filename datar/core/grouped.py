@@ -1,11 +1,7 @@
 """Provide DataFrameGroupBy and DataFrameRowwise"""
-from typing import Any, Union
+from typing import Union
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
-from pandas._libs import lib
-from pandas.core import common as com
-from pandas.core.dtypes.common import is_hashable, is_iterator
-from pandas.core.indexes.multi import MultiIndex
 
 from .types import StringOrIter
 
@@ -30,15 +26,14 @@ class DatarGroupBy(DataFrame):
     def from_grouped(
         cls,
         grouped: Union[DataFrameGroupBy, "DatarGroupBy"],
-        group_vars: StringOrIter = None
+        group_vars: StringOrIter = None,
     ) -> "DatarGroupBy":
         """Initiate a DatarGroupBy object"""
         if isinstance(grouped, DataFrameGroupBy):
             out = cls(grouped.obj)
             out.attrs["_grouped"] = grouped
             out.attrs["_group_vars"] = group_vars or [
-                name for name in grouped.grouper.names
-                if name is not None
+                name for name in grouped.grouper.names if name is not None
             ]
             out.attrs["_html_footer"] = (
                 f"<p>Groups: {', '.join(out.attrs['_group_vars'])} "
@@ -63,6 +58,9 @@ class DatarGroupBy(DataFrame):
         If deep is True, also copy the grouped object (use the grouper object
         to redo the groupby)
         """
+        if "_grouepd" not in self.attrs:
+            return super().copy(deep=deep)
+
         if not deep:
             # attrs also copyied
             return self.__class__.from_grouped(self)
@@ -74,19 +72,6 @@ class DatarGroupBy(DataFrame):
             sort=self.attrs["_grouped"].sort,
         )
         return self.__class__.from_grouped(out, self.attrs["_group_vars"][:])
-
-    def __getitem__(self, key: Any) -> Any:
-        """Make sure df.x or df['x'] returns SeriesGroupBy instead of a Series
-        """
-        key = lib.item_from_zerodim(key)
-        key = com.apply_if_callable(key, self)
-
-        if is_hashable(key) and not is_iterator(key):
-            if self.columns.is_unique and key in self.columns:
-                assert not isinstance(self.columns, MultiIndex)
-                return self.attrs["_grouped"][key]
-
-        return super().__getitem__(key)
 
 
 class DatarRowwise(DatarGroupBy):
@@ -100,7 +85,7 @@ class DatarRowwise(DatarGroupBy):
     def from_grouped(
         cls,
         grouped: Union[DataFrameGroupBy, "DatarRowwise"],
-        group_vars: StringOrIter = None
+        group_vars: StringOrIter = None,
     ) -> "DatarGroupBy":
         """Initiate a DatarGroupBy object"""
         if isinstance(grouped, DataFrameGroupBy):

@@ -38,6 +38,9 @@ def _register_arithmetic_agg(
         """Arithmetric function"""
         # na_rm not working for numpy functions
         # with x is a Series object
+        if isinstance(x, SeriesGroupBy):
+            return getattr(x, name)()
+
         if isinstance(x, Series):
             return getattr(x, np_name)(skipna=na_rm)
 

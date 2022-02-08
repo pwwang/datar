@@ -1,7 +1,7 @@
 # https://github.com/tidyverse/tibble/blob/master/tests/testthat/test-tibble.R
 
 from datar.dplyr.group_data import group_vars
-from datar.core.grouped import DataFrameGroupBy, DataFrameRowwise
+from datar.core.grouped import DataFrameGroupBy, DatarRowwise
 from datar.base.verbs import ncol
 import pandas
 from pandas.testing import assert_frame_equal
@@ -448,7 +448,7 @@ def test_rownames_errors():
 def test_add_row_for_rowwise_df():
     df = tibble(x=[1,2,3]) >> rowwise()
     df2 = add_row(df, x=4)
-    assert isinstance(df2, DataFrameRowwise)
+    assert isinstance(df2, DatarRowwise)
     assert_iterable_equal(df2.x, [1,2,3,4])
 
 # add_column for rowwise df

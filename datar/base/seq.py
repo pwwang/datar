@@ -5,7 +5,6 @@ from typing import Any, Iterable, Union
 
 import numpy
 import pandas
-from pandas import Series
 from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
@@ -230,7 +229,12 @@ def order(
     return out if base0_ else out + 1
 
 
-length = register_func(None, context=Context.EVAL, func=length_of)
+@register_func(None, context=Context.EVAL)
+def length(x: Any) -> IntOrIter:
+    if isinstance(x, SeriesGroupBy):
+        return x.count()
+
+    return length_of(x)
 
 
 @register_func(None, context=Context.EVAL)

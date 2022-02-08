@@ -7,7 +7,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.exceptions import DataUnrecyclable
-from datar.core.grouped import DataFrameRowwise
+from datar.core.grouped import DatarRowwise
 from .conftest import assert_iterable_equal
 
 def test_on_one_column():
@@ -336,7 +336,7 @@ def test_nb_fail_c_across():
         sd = sd(c_across(f[f.w:f.z]))
     )
 
-    assert isinstance(out, DataFrameRowwise)
+    assert isinstance(out, DatarRowwise)
     assert nrow(out) == 4
 
 def test_if_any_if_all_no_args():

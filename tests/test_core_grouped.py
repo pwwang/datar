@@ -276,13 +276,13 @@ def test_gf_repr_html():
 # rowwise ---------------------------------------
 def test_rowwise():
     df = DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-    rf = DataFrameRowwise(df)
+    rf = DatarRowwise(df)
     assert rf._group_data.columns.tolist() == ["_rows"]
     assert rf._group_data.shape == (3, 1)
     out = rf._datar_apply(lambda df: Series({"c": df.a + df.b}))
     assert_frame_equal(out, DataFrame([[5], [7], [9]], columns=["c"]))
 
-    rf = DataFrameRowwise(df, _group_vars=["a"])
+    rf = DatarRowwise(df, _group_vars=["a"])
     assert rf._group_data.columns.tolist() == ["a", "_rows"]
     assert rf._group_data.shape == (3, 2)
     out = rf._datar_apply(
@@ -299,28 +299,28 @@ def test_rowwise():
 
 def test_rowwise_repr():
     df = DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-    rf = DataFrameRowwise(df)
+    rf = DatarRowwise(df)
     out = repr(rf)
     assert "[Rowwise: ]" in out
 
-    rf = DataFrameRowwise(df, _group_vars=["a"])
+    rf = DatarRowwise(df, _group_vars=["a"])
     out = repr(rf)
     assert "[Rowwise: a]" in out
 
 
 def test_gf_repr_html():
     df = DataFrame({"a": [1, 2, 3]})
-    rf = DataFrameRowwise(df, _group_vars=["a"])
+    rf = DatarRowwise(df, _group_vars=["a"])
     assert "Rowwise: ['a']" in rf._repr_html_()
 
 
 def test_rowwise_func_returns_multirow_df():
-    rf = DataFrameRowwise(DataFrame({"a": [1, 2, 3]}))
+    rf = DatarRowwise(DataFrame({"a": [1, 2, 3]}))
     with pytest.raises(ValueError):
         rf._datar_apply(lambda row: DataFrame({"b": [1, 2]}))
 
 
 def test_rowwise_default_column_prefix_used():
-    rf = DataFrameRowwise(DataFrame({"a": [1, 2, 3]}))
+    rf = DatarRowwise(DataFrame({"a": [1, 2, 3]}))
     out = rf._datar_apply(lambda row: row.a * 2)
     assert out.columns.tolist() == ["_Var0"]

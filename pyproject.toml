@@ -40,7 +40,7 @@ strict_optional = false
 # addopts = "-vv -n auto --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 addopts = "-vv --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
-    "error"
+    # "error"
 ]
 console_output_style = "progress"
 junit_family = "xunit1"
