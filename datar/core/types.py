@@ -7,6 +7,8 @@ from pandas import Categorical, Index, Series, isnull as is_null
 from pandas.api.types import is_scalar as is_scalar_, is_list_like
 from pandas.core.dtypes.common import is_categorical_dtype as is_categorical
 
+Array = numpy.array
+
 Dtype = Union[
     str, numpy.dtype, Type[Union[str, float, int, complex, bool, object]]
 ]
@@ -15,7 +17,8 @@ IntType = Union[int, numpy.integer]
 FloatType = Union[float, numpy.float_]
 ComplexType = Union[complex, numpy.complex_]
 StringType = Union[str, numpy.str_]
-ArrayLikeType = Union[Series, List, Tuple, numpy.ndarray, Index]
+ArrayType = numpy.ndarray
+ArrayLikeType = Union[Series, List, Tuple, ArrayType, Index]
 CategoricalLikeType = Union[Series, Categorical]
 StringOrIter = Union[StringType, Iterable[StringType]]
 IntOrIter = Union[IntType, Iterable[IntType]]
@@ -33,7 +36,7 @@ NAOrIter = Union[NAType, Iterable[NAType]]  # type: ignore
 
 # Used for register_verb in forcats
 # Except for cattegorical, string vectors are also avaiable
-ForcatsRegType = (Series, Categorical, list, tuple, Index, numpy.ndarray)
+ForcatsRegType = (Series, Categorical, list, tuple, Index, ArrayType)
 ForcatsType = Union[CategoricalLikeType, ArrayLikeType]
 
 

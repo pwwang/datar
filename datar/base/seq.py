@@ -1,7 +1,6 @@
 """Generating and manipulating sequences"""
 
-from functools import singledispatch
-from typing import Any, Iterable, Union
+from typing import Any, Callable, Iterable, Union
 
 import numpy
 import pandas
@@ -21,23 +20,20 @@ from ..core.types import (
     is_scalar_int,
     is_null,
 )
-from ..core.utils import Array, get_option, length_of, logger
+from ..core.utils import Array, length_of, logger
 
 
 @register_func(None, context=Context.EVAL)
-def seq_along(along_with: Iterable[Any], base0_: bool = None) -> ArrayLikeType:
+def seq_along(along_with: Iterable[Any]) -> ArrayLikeType:
     """Generate sequences along an iterable
 
     Args:
         along_with: An iterable to seq along with
-        base0_: Whether the generated sequence should be 0-based.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The generated sequence.
     """
-    base0_ = get_option("index.base.0", base0_)
-    return Array(range(len(along_with))) + int(not base0_)
+    return Array(range(len(along_with)))
 
 
 @register_func(None, context=Context.EVAL)
@@ -64,7 +60,6 @@ def seq(
     by: IntType = None,
     length_out: IntType = None,
     along_with: IntType = None,
-    base0_: bool = None,
 ) -> ArrayLikeType:
     """Generate a sequence
 
@@ -72,29 +67,26 @@ def seq(
 
     Note that this API is consistent with r-base's seq. 1-based and inclusive.
     """
-    base0_ = get_option("index.base.0", base0_)
     if along_with is not None:
-        return seq_along(along_with, base0_)
+        return seq_along(along_with)
     if from_ is not None and not is_scalar(from_):
-        return seq_along(from_, base0_)
+        return seq_along(from_)
     if length_out is not None and from_ is None and to is None:
         return seq_len(length_out)
 
-    base = int(not base0_)
-
     if from_ is None:
-        from_ = base
+        from_ = 0
     elif to is None:
-        from_, to = base, from_
+        from_, to = 0, from_
 
     if length_out is not None:
-        by = (float(to) - float(from_)) / float(length_out - 1)
+        by = (float(to) - float(from_)) / float(length_out)
 
     elif by is None:
         by = 1 if to > from_ else -1
-        length_out = to - from_ + base if to > from_ else from_ - to + base
+        length_out = to - from_ if to > from_ else from_ - to
     else:
-        length_out = (to - from_ + 0.1 * by + float(base) * by) // by
+        length_out = (to - from_ + 0.1 * by) // by
     return Array([from_ + n * by for n in range(int(length_out))])
 
 
@@ -152,6 +144,8 @@ def rev(x: Iterable[Any]) -> numpy.ndarray:
 def unique(x: Iterable[Any]) -> numpy.ndarray:
     """Get unique elements"""
     # return numpy.unique(x)
+    if isinstance(x, SeriesGroupBy):
+        return x.unique()
     return pandas.unique(x)  # keeps order
 
 
@@ -194,7 +188,6 @@ def order(
     na_last: bool = None,
     decreasing: bool = False,
     # method?
-    base0_: bool = None,
 ) -> numpy.ndarray:
     """Returns a permutation which rearranges its first argument
     into ascending or descending order
@@ -205,8 +198,6 @@ def order(
         na_last: for controlling the treatment of `NA`s.  If `True`, missing
             values in the data are put last; if `FALSE`, they are put
             first; if `NA`, they are removed.
-        base0_: Return a 0-based indices or not.
-            If not given, will use `get_option('which.base.0')`
 
     Returns:
         The ordered indices of the vector
@@ -226,7 +217,7 @@ def order(
         out = na_idx + non_na_idx
 
     out = Array(out, dtype=int)
-    return out if base0_ else out + 1
+    return out
 
 
 @register_func(None, context=Context.EVAL)
@@ -299,7 +290,6 @@ def match(
     table: Iterable,
     nomatch: Any = -1,
     # incomparables ...,
-    base0_: bool = None,
 ) -> Iterable[int]:
     """match returns a vector of the positions of (first) matches of
     its first argument in its second.
@@ -312,14 +302,8 @@ def match(
         nomatch: The value to be returned in the case when no match is found
             Instead of NA in R, this function takes -1 for non-matched elements
             to keep the type as int.
-        base0_: Whether return indices are 0-based or not.
-            If not provided, will use `get_option('which_base_0')`
     """
-    base = int(not get_option("which_base_0", base0_))
     return Array(
-        [
-            list(table).index(elem) + base if elem in table else nomatch
-            for elem in x
-        ],
+        [list(table).index(elem) if elem in table else nomatch for elem in x],
         dtype=int,
     )

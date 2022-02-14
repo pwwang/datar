@@ -3,6 +3,7 @@
 from typing import Any
 
 import numpy
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
 from ..core.types import (
@@ -14,7 +15,7 @@ from ..core.types import (
     is_categorical,
 )
 from ..core.contexts import Context
-from ..core.utils import categorized, get_option
+from ..core.utils import categorized
 from ..core.types import is_null
 
 from .na import NA
@@ -26,6 +27,9 @@ def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
         if is_null(x) and na is not None:
             return na
         return type_(x)  # type: ignore
+
+    if isinstance(x, SeriesGroupBy):
+        return x.transform(_as_type, type_, na).groupby(x.grouper)
 
     if hasattr(x, "astype"):
         if na is None:
@@ -76,7 +80,6 @@ def as_integer(
     x: Any,
     integer_dtype: Dtype = numpy.int_,
     _keep_na: bool = True,
-    base0_: bool = None,
 ) -> IntOrIter:
     """Convert an object or elements of an iterable into int64
 
@@ -95,16 +98,14 @@ def as_integer(
             - `numpy.intp`
         _keep_na: If True, NAs will be kept, then the dtype will be object
             (interger_dtype ignored)
-        base0_: When converting factors with strings, whether convert them into
-            0-based codes or not.
-            If not provided, will use `get_option('which.base.0')`
 
     Returns:
         Converted values according to the integer_dtype
     """
+    if isinstance(x, SeriesGroupBy) and is_categorical(x.obj):
+        return x.obj.cat.codes.groupby(x.grouper)
     if is_categorical(x):
-        base0_ = get_option("which.base.0", base0_)
-        return categorized(x).codes + int(not base0_)
+        return categorized(x).codes
     return _as_type(x, integer_dtype, na=NA if _keep_na else None)
 
 

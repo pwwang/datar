@@ -5,7 +5,6 @@ from .conftest import assert_iterable_equal
 
 def test_which():
     assert_iterable_equal(which([True, False, True]), [0,2])
-    assert_iterable_equal(which([True, False, True], base0_=False), [1,3])
 
 def test_which_min():
     assert which_min([2,1,3]) == 1

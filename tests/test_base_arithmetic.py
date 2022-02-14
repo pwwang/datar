@@ -12,7 +12,7 @@ from .conftest import assert_iterable_equal
 def test_sum():
     assert sum(1) == 1
     assert sum([1,2]) == 3
-    assert_iterable_equal([sum([1,2, NA])], [NA])
+    assert_iterable_equal([sum([1,2, NA], na_rm=False)], [NA])
     assert sum([1,2,NA], na_rm=True) == 3
 
 def test_mean():
@@ -37,11 +37,11 @@ def test_var():
     assert var([1,2,3]) == 1
 
 def test_pmin():
-    assert pmin(1,2,3) == 1
+    assert_iterable_equal(pmin(1,2,3), [1])
     assert_iterable_equal(pmin(1,[-1, 2], [0, 3]), [-1, 1])
 
 def test_pmax():
-    assert pmax(1,2,3) == 3
+    assert_iterable_equal(pmax(1,2,3), [3])
     assert_iterable_equal(pmax(1,[-1, 2], [0, 3]), [1, 3])
 
 def test_round():

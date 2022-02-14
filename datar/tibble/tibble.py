@@ -10,13 +10,12 @@ from pipda import register_func, evaluate_expr
 from pipda.expression import Expression
 from pipda.symbolic import DirectRefItem, DirectRefAttr
 
-from ..core.types import Dtype, is_null
+from ..core.types import Dtype, is_null, Array
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.collections import Collection
 from ..core.contexts import Context
 from ..core.names import repair_names
 from ..core.utils import (
-    Array,
     to_df,
     length_of,
     recycle_df,

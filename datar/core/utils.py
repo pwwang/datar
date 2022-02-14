@@ -816,10 +816,23 @@ def broadcast(value1: Any, value2: Any, ) -> Tuple[Any, Any, BaseGrouper]:
     return value1, value2, None
 
 
+def all_groupby(*x: Any) -> bool:
+    """Check if all arguments are SeriesGroupBy objects"""
+    for elem in x:
+        if not is_scalar(elem) and not isinstance(elem, SeriesGroupBy):
+            return False
+
+    return True
+
+
 def concat_groupby(*x: SeriesGroupBy) -> DataFrameGroupBy:
     """Concatenate the grouped serieses into a grouped dataframe"""
     df = DataFrame(index=x[0].obj.index).groupby(x[0].grouper)
-    for sgb in x:
+    for i, sgb in enumerate(x):
+        if is_scalar(sgb):
+            df.obj[f"{DEFAULT_COLUMN_PREFIX}_g{i}"] = sgb
+            continue
+
         if sgb.grouper is not df.grouper:
             raise ValueError(
                 "Unable to concat SeriesGroupBy objects, inconsistant groupers."
