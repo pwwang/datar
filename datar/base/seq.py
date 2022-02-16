@@ -1,6 +1,6 @@
 """Generating and manipulating sequences"""
 
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Iterable, Union
 
 import numpy
 import pandas
