@@ -1,6 +1,16 @@
+import warnings
+
 import pytest
 import pandas as pd
 
+
+@pytest.fixture(scope="function", autouse=True)
+def no_astnode_warn():
+    warnings.filterwarnings(
+        action='ignore',
+        category=UserWarning,
+        message=r'Failed to fetch the node.+',
+    )
 
 SENTINEL = 85258525.85258525
 

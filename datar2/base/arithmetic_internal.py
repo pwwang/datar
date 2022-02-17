@@ -7,6 +7,7 @@ from pandas.core.series import Series
 from pandas.core.groupby import SeriesGroupBy
 
 from ..core.collections import Collection
+from ..core.tibble import TibbleRowwise
 # from ..core.utils import all_groupby, logger, concat_groupby
 from ..core.utils import logger
 
@@ -37,6 +38,17 @@ def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
         "Use f.x.sum(min_count=...) to control NA produces."
     )
     return x.sum()
+
+
+@sum_internal.register
+def _(x: TibbleRowwise, na_rm: bool = True) -> Series:
+    """Do sum on SeriesGroupBy object"""
+    _warn_na_rm(
+        "sum",
+        na_rm,
+        "Use f.x.sum(min_count=...) to control NA produces."
+    )
+    return x.sum(axis=1)
 
 
 @singledispatch
@@ -165,4 +177,3 @@ def pmin_internal(*x: Any, na_rm: bool = True) -> Iterable:
         return _pmin_grouped(*x, na_rm)
 
     df = tibble(*x)
-

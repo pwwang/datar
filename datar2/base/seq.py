@@ -81,7 +81,7 @@ def seq(
 
 
 @register_func(None, context=Context.UNSET)
-def c(*elems: Any) -> AnyArrayLike:
+def c(*elems: Any) -> np.ndarray:
     """Mimic R's concatenation. Named one is not supported yet
     All elements passed in will be flattened.
 
@@ -91,7 +91,7 @@ def c(*elems: Any) -> AnyArrayLike:
     Returns:
         A collection of elements
     """
-    return Collection(*elems)
+    return np.array(Collection(*elems))
 
 
 @register_func(None, context=Context.EVAL)

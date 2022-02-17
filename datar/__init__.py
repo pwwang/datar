@@ -1,7 +1,7 @@
 """Load operator, provide f and __version__"""
 from typing import Mapping
 
-from .core import operator as _
+# from .core import operator as _
 # from .core import _frame_format_patch
 from .core.defaults import f
 

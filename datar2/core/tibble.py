@@ -10,7 +10,7 @@ from pipda import evaluate_expr
 
 from .collections import Collection
 from .contexts import Context
-from .utils import name_of, add_to_tibble
+from .utils import broadcast, name_of, add_to_tibble, regcall
 from .names import repair_names
 
 
@@ -100,7 +100,7 @@ class Tibble(DataFrame):
             if not subdf_cols:
                 raise
 
-            result = self.loc[:, subdf_cols]
+            result = Tibble(self.loc[:, subdf_cols])
             result.columns = [col[len(key) + 1 :] for col in subdf_cols]
 
         return result
@@ -157,9 +157,19 @@ class Tibble(DataFrame):
         """Group a tibble by variants"""
         if drop is None:
             drop = False
+
+        cols = [cols] if is_scalar(cols) else list(cols)
         grouped = self.groupby(cols, observed=drop, sort=sort, dropna=dropna)
         meta = {"grouped": grouped}
+
         return TibbleGroupby(self, meta=meta)
+
+    def rowwise(self, cols) -> "TibbleRowwise":
+        return TibbleRowwise(self, meta={"group_vars": cols})
+
+    @property
+    def group_vars(self) -> Sequence[str]:
+        return []
 
 
 class TibbleGroupby(Tibble):
@@ -168,12 +178,6 @@ class TibbleGroupby(Tibble):
     @property
     def _constructor(self):
         return TibbleGroupby
-
-    def get_obj(self, key=None):
-        if key is None:
-            return self._datar_meta["grouped"].obj
-
-        return self._datar_meta["grouped"].obj[key]
 
     @classmethod
     def from_grouped(
@@ -198,10 +202,90 @@ class TibbleGroupby(Tibble):
 
         return result
 
+    def __setitem__(self, key, value):
+        grouped = self._datar_meta["grouped"]
+        first_col = self.columns[0]
+        if isinstance(value, TibbleGroupby):
+            if grouped.grouper is not value._datar_meta["grouped"].grouper:
+                raise ValueError(
+                    "Cannot broadcast a TibbleGroupby object to another "
+                    "with a different grouper."
+                )
 
-class TibbleRowwise(TibbleGroupby):
+        elif isinstance(value, SeriesGroupBy):
+            if grouped.grouper is not value.grouper:
+                raise ValueError(
+                    "Cannot broadcast a SeriesGroupby object to another "
+                    "with a different grouper."
+                )
+            value = value.obj
+
+        elif isinstance(value, DataFrame):
+            if value.shape[1] == 0:
+                return
+
+            _, ser, _ = broadcast(grouped[first_col], value.iloc[:, 0])
+            value = value.loc[ser.index, :]
+
+        else:
+            _, value, _ = broadcast(grouped[first_col], value)
+
+        out = super().__setitem__(key, value)
+        self._datar_meta["grouped"].obj.__setitem__(key, value)
+        return out
+
+    def copy(self, deep: bool = True) -> "TibbleGroupby":
+        grouped = self._datar_meta["grouped"]
+        obj = grouped.obj.copy() if deep else grouped.obj
+        return TibbleGroupby.from_grouped(obj.groupby(
+            grouped.grouper,
+            observed=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
+        ))
+
+    def group_by(
+        self,
+        cols,
+        add=False,
+        drop=None,
+        sort=False,
+        dropna=False,
+    ) -> "TibbleGroupby":
+        """Group a tibble by variants"""
+        if add and "grouped" in self._datar_meta:
+            from ..base import union
+
+            cols = regcall(union, self.group_vars, cols)
+
+        return Tibble(self).group_by(cols, drop=drop, sort=sort, dropna=dropna)
+
+    @property
+    def group_vars(self) -> Sequence[str]:
+        return self._datar_meta["grouped"].grouper.names
+
+
+class SeriesRowwise(Series):
+    @property
+    def _constructor(self):
+        return SeriesRowwise
+
+    @property
+    def _constructor_expanddim(self):
+        return TibbleRowwise
+
+
+class TibbleRowwise(Tibble):
     """"""
 
     @property
     def _constructor(self):
         return TibbleRowwise
+
+    @property
+    def _constructor_sliced(self):
+        return SeriesRowwise
+
+    @property
+    def group_vars(self) -> Sequence[str]:
+        return self._datar_meta["group_vars"]

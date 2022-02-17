@@ -8,7 +8,6 @@ from pandas.core.groupby import DataFrameGroupBy
 
 from ..core.tibble import Tibble, TibbleGroupby
 from ..core.contexts import Context
-from ..core.names import repair_names
 
 
 # Register as a function, so that
@@ -161,3 +160,9 @@ def as_tibble(df: DataFrame) -> Tibble:
 def _(df: DataFrameGroupBy) -> TibbleGroupby:
     """Convert a pandas DataFrame object to TibbleGroupBy object"""
     return TibbleGroupby(df.obj, meta={"grouped": df})
+
+
+@as_tibble.register
+def _(df: Tibble) -> Tibble:
+    """Convert a pandas DataFrame object to TibbleGroupBy object"""
+    return df

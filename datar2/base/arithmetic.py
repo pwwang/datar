@@ -107,40 +107,40 @@ def sum(x: Any, na_rm: bool = True):
 #     return median_internal(x, na_rm)
 
 
-# @register_func(None, context=Context.EVAL)
-# def min(*x, na_rm: bool = True) -> Any:
-#     """Min of the input.
+@register_func(None, context=Context.EVAL)
+def min(*x, na_rm: bool = True) -> Any:
+    """Min of the input.
 
-#     Args:
-#         x: The input
-#         na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
-#             True, and you might want to use `f.x.min(min_count=...)` to control
-#             NA produces
-#             And also unlike the function in `R`. It defaults to `True` rather
-#             than `False`
+    Args:
+        x: The input
+        na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
+            True, and you might want to use `f.x.min(min_count=...)` to control
+            NA produces
+            And also unlike the function in `R`. It defaults to `True` rather
+            than `False`
 
-#     Returns:
-#         The min of the input
-#     """
-#     return min_internal(x, na_rm)
+    Returns:
+        The min of the input
+    """
+    return min_internal(x, na_rm)
 
 
-# @register_func(None, context=Context.EVAL)
-# def max(*x, na_rm: bool = True) -> Any:
-#     """Max of the input.
+@register_func(None, context=Context.EVAL)
+def max(*x, na_rm: bool = True) -> Any:
+    """Max of the input.
 
-#     Args:
-#         x: The input
-#         na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
-#             True, and you might want to use `f.x.max(min_count=...)` to control
-#             NA produces
-#             And also unlike the function in `R`. It defaults to `True` rather
-#             than `False`
+    Args:
+        x: The input
+        na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
+            True, and you might want to use `f.x.max(min_count=...)` to control
+            NA produces
+            And also unlike the function in `R`. It defaults to `True` rather
+            than `False`
 
-#     Returns:
-#         The max of the input
-#     """
-#     return max_internal(x, na_rm)
+    Returns:
+        The max of the input
+    """
+    return max_internal(x, na_rm)
 
 
 # @register_func(None, context=Context.EVAL)
