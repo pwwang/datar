@@ -53,7 +53,7 @@ stream_handler.setFormatter(
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 )
-logger.addHandler(stream_handler)
+# logger.addHandler(stream_handler)
 
 
 def vars_select(

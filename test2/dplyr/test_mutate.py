@@ -173,7 +173,7 @@ def test_works_on_0row_rowwise_df():
     res = dat >> rowwise() >> mutate(a2=f.a * 2)
 
     assert isinstance(res, TibbleRowwise)
-    assert res.a2.tolist() == []
+    assert res.a2.obj.tolist() == []
 
 
 def test_works_on_empty_data_frames():
@@ -285,7 +285,7 @@ def test_deals_with_0_groups():
     df = tibble(x=[]) >> group_by(f.x)
     out = mutate(df, y=f.x + 1)
     exp = tibble(x=[], y=[]) >> group_by(f.x)
-    assert out.equals(exp)
+    assert_iterable_equal(out, exp)
     assert group_vars(out) == group_vars(exp)
 
     out = mutate(df, y=max(f.x))
@@ -322,18 +322,18 @@ def test_errors():
     with pytest.raises(KeyError, match="y"):
         tbl >> group_by(f.x) >> mutate(y=None, a=sum(f.y))
 
-    # Valid: function can be an object in pandas dataframe.
-    tibble(x=1) >> mutate(y=len)
+    with pytest.raises(TypeError):
+        tibble(x=1) >> mutate(y=len)
 
     # incompatible size
     with pytest.raises(ValueError, match=r"\(5\).+\(4\)"):
         tibble(x=c(2, 2, 3, 3)) >> mutate(i=range(1, 6))
-    with pytest.raises(ValueError, match=r"\(5\).+\(2\)"):
+    with pytest.raises(ValueError, match=r"\(10\).+\(4\)"):
         tibble(x=c(2, 2, 3, 3)) >> group_by(f.x) >> mutate(i=range(1, 6))
-    with pytest.raises(ValueError, match=r"\(5\).+\(1\)"):
+    with pytest.raises(ValueError, match=r"\(10\).+\(3\)"):
         tibble(x=c(2, 3, 3)) >> group_by(f.x) >> mutate(i=range(1, 6))
-    # with pytest.raises(ValueError, match=r"\(5\).+\(1\)"):
-    #     tibble(x=c(2, 2, 3, 3)) >> rowwise() >> mutate(i=range(1, 6))
+    with pytest.raises(ValueError, match=r"\(20\).+\(4\)"):
+        tibble(x=c(2, 2, 3, 3)) >> rowwise() >> mutate(i=range(1, 6))
     with pytest.raises(ValueError, match=r"\(3\).+\(10\)"):
         tibble(x=range(1, 11)) >> mutate(y=range(11, 21), z=[1, 2, 3])
 

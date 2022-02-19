@@ -1,8 +1,6 @@
 """Provides specific contexts for datar"""
 from collections import defaultdict
 from enum import Enum
-from pandas.core.frame import DataFrame
-from pandas.core.groupby import DataFrameGroupBy
 from pipda.context import (
     ContextBase,
     ContextEval as ContextEvalPipda,
@@ -15,16 +13,17 @@ from pipda.context import (
 class ContextEval(ContextEvalPipda):
     """Evaluation context"""
 
-    def eval_symbolic(self, data):
-        from .tibble import Tibble
+    # make it slow
+    # def eval_symbolic(self, data):
+    #     from .tibble import Tibble
 
-        if isinstance(data, (DataFrameGroupBy, DataFrame)) and not isinstance(
-            data, Tibble
-        ):
-            from ..tibble import as_tibble
-            return as_tibble(data)
+    #     if isinstance(data, (DataFrameGroupBy, DataFrame)) and not isinstance(
+    #         data, Tibble
+    #     ):
+    #         from ..tibble import as_tibble
+    #         return as_tibble(data)
 
-        return super().eval_symbolic(data)
+    #     return super().eval_symbolic(data)
 
     def getitem(self, parent, ref, level):
         """Interpret f[ref]"""
@@ -38,7 +37,7 @@ class ContextEval(ContextEvalPipda):
         if isinstance(parent, Tibble):
             return parent[ref]
 
-        super().getitem(parent, ref, level)
+        return super().getitem(parent, ref, level)
 
     def getattr(self, parent, ref, level):
         """Evaluate f.a"""
@@ -46,7 +45,7 @@ class ContextEval(ContextEvalPipda):
         if isinstance(parent, Tibble):
             return parent[ref]
 
-        super().getattr(parent, ref, level)
+        return super().getattr(parent, ref, level)
 
     @property
     def ref(self) -> ContextBase:
@@ -59,8 +58,8 @@ class ContextEval(ContextEvalPipda):
 class ContextEvalRefCounts(ContextEval):
     """Evaluation context with used references traced"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, meta=None):
+        super().__init__(meta)
         self.used_refs = defaultdict(lambda: 0)
 
     def getitem(self, parent, ref, level):

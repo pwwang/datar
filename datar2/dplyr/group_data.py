@@ -58,7 +58,7 @@ def _(_data: TibbleGroupby) -> Tibble:
 
 @group_keys.register(TibbleRowwise)
 def _(_data: TibbleRowwise) -> Tibble:
-    return _data.loc[:, _data.group_vars]
+    return Tibble(_data.loc[:, _data.group_vars])
 
 
 @register_verb(DataFrame)

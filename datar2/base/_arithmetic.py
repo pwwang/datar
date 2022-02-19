@@ -23,13 +23,13 @@ def _warn_na_rm(funcname: str, na_rm: bool, extra_info: str = "") -> None:
 
 
 @singledispatch
-def sum_internal(x, na_rm: bool = True):
+def _sum(x, na_rm: bool = True):
     """Default way to sum"""
     func = np.nansum if na_rm else np.sum
     return func(x)
 
 
-@sum_internal.register
+@_sum.register
 def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
     """Do sum on SeriesGroupBy object"""
     _warn_na_rm(
@@ -40,7 +40,7 @@ def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
     return x.sum()
 
 
-@sum_internal.register
+@_sum.register
 def _(x: TibbleRowwise, na_rm: bool = True) -> Series:
     """Do sum on SeriesGroupBy object"""
     _warn_na_rm(
@@ -52,13 +52,13 @@ def _(x: TibbleRowwise, na_rm: bool = True) -> Series:
 
 
 @singledispatch
-def prod_internal(x, na_rm: bool = True):
+def _prod(x, na_rm: bool = True):
     """Default way to prod"""
     func = np.nanprod if na_rm else np.prod
     return func(x)
 
 
-@prod_internal.register
+@_prod.register
 def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
     """Do prod on SeriesGroupBy object"""
     _warn_na_rm(
@@ -70,27 +70,33 @@ def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
 
 
 @singledispatch
-def mean_internal(x, na_rm: bool = True):
+def _mean(x, na_rm: bool = True):
     """Default way to mean"""
     func = np.nanmean if na_rm else np.mean
     return func(x)
 
 
-@mean_internal.register
+@_mean.register
 def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
     """Do mean on SeriesGroupBy object"""
     _warn_na_rm("mean", na_rm)
     return x.mean()
 
 
+@_mean.register
+def _(x: TibbleRowwise, na_rm: bool = True) -> Series:
+    _warn_na_rm("mean", na_rm)
+    return x.mean(axis=1)
+
+
 @singledispatch
-def median_internal(x, na_rm: bool = True):
+def _median(x, na_rm: bool = True):
     """Default way to median"""
     func = np.nanmedian if na_rm else np.median
     return func(x)
 
 
-@median_internal.register
+@_median.register
 def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
     """Do median on SeriesGroupBy object"""
     _warn_na_rm("median", na_rm)
@@ -98,13 +104,13 @@ def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
 
 
 @singledispatch
-def var_internal(x, na_rm: bool = True, ddof: int = 1):
+def _var(x, na_rm: bool = True, ddof: int = 1):
     """Default way to do var"""
     func = np.nanvar if na_rm else np.var
     return func(x)
 
 
-@var_internal.register
+@_var.register
 def _(x: SeriesGroupBy, na_rm: bool = True, ddof: int = 1) -> Series:
     """Do median on SeriesGroupBy object"""
     _warn_na_rm("var", na_rm)
@@ -126,7 +132,7 @@ def _min_grouped(*x: SeriesGroupBy, na_rm: bool = True) -> Series:
     return concat_groupby(*x).min()
 
 
-def min_internal(*x: Any, na_rm: bool = True):
+def _min(*x: Any, na_rm: bool = True):
     """Min of groups of values"""
     if all(is_scalar(elem) or isinstance(elem, SeriesGroupBy) for elem in x):
         return _min_grouped(*x)
@@ -155,7 +161,7 @@ def _max_grouped(*x: SeriesGroupBy, na_rm: bool = True) -> Series:
     return concat_groupby(*x).max()
 
 
-def max_internal(*x: Any, na_rm: bool = True):
+def _max(*x: Any, na_rm: bool = True):
     """Max of groups of values"""
     if all(is_scalar(elem) or isinstance(elem, SeriesGroupBy) for elem in x):
         return _max_grouped(*x)
@@ -171,7 +177,7 @@ def max_internal(*x: Any, na_rm: bool = True):
 
 
 # pmin/pmax
-def pmin_internal(*x: Any, na_rm: bool = True) -> Iterable:
+def _pmin(*x: Any, na_rm: bool = True) -> Iterable:
     """Do pmin internally"""
     if all_groupby(*x):
         return _pmin_grouped(*x, na_rm)

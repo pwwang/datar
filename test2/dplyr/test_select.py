@@ -68,7 +68,7 @@ def test_with_no_args_returns_nothing():
 
 
 def test_excluding_all_vars_returns_nothing():
-    out = select(mtcars, ~f[f.mpg : f.carb])
+    out = select(mtcars, ~f[f.mpg : ])
     assert out.shape == (32, 0)
 
     out = mtcars >> select(starts_with("x"))
@@ -87,9 +87,9 @@ def test_negating_empty_match_returns_everything():
 def test_can_select_with_duplicate_columns():
 
     df = tibble(tibble(x=1), x=2, y=1, _name_repair="minimal")
-    out = select(df, 1, 3)
+    out = select(df, 0, 2)
     assert out.columns.tolist() == ["x", "y"]
-    out = select(df, 3, 1)
+    out = select(df, 2, 0)
     assert out.columns.tolist() == ["y", "x"]
 
     out = select(df, f.y)
@@ -236,7 +236,7 @@ def test_tidyselect_funs():
     assert out.columns.tolist() == ["x"]
 
     out = num_range("a", 3, width=2)
-    assert out.tolist() == ["a01", "a02", "a03"]
+    assert out.tolist() == ["a00", "a01", "a02"]
 
     df = tibble(tibble(X=1), X=2, _name_repair="minimal")
     out = df >> select(contains("X"))

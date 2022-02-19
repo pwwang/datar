@@ -4,7 +4,8 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/group-by.r
 
 from typing import Any, Union
 
-from pandas import DataFrame
+from pandas.core.frame import DataFrame
+from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pipda import register_verb
 
 from ..core.exceptions import NameNonUniqueError
@@ -89,8 +90,8 @@ def _(
         Tibble(_data),
         *gvars,
         _drop=_drop,
-        _sort_=_sort,
-        _dropna_=_dropna,
+        _sort=_sort,
+        _dropna=_dropna,
     )
 
 
@@ -115,7 +116,9 @@ def rowwise(
         A row-wise data frame
     """
     if not _data.columns.is_unique:
-        raise NameNonUniqueError()
+        raise NameNonUniqueError(
+            "Cann't rowwise a data frame with duplicated names."
+        )
     idxes = vars_select(_data.columns, *cols)
     gvars = _data.columns[idxes]
     return as_tibble(_data).rowwise(gvars)
@@ -143,9 +146,9 @@ def _(_data: TibbleRowwise, *cols: Union[str, int]) -> TibbleRowwise:
     return _data.rowwise(gvars)
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(context=Context.SELECT)
 def ungroup(
-    x: DataFrame,
+    x: Any,
     *cols: Union[str, int],
 ) -> DataFrame:
     """Ungroup a grouped data
@@ -171,7 +174,7 @@ def _(
     x: TibbleGroupby,
     *cols: Union[str, int],
 ) -> Union[Tibble, TibbleGroupby]:
-    obj = x._datar_meta["_grouped"].obj
+    obj = x._datar_meta["grouped"].obj
     if not cols:
         return Tibble(obj)
 
@@ -194,6 +197,16 @@ def _(
     if cols:
         raise ValueError("`*cols` is not empty.")
     return Tibble(x)
+
+
+@ungroup.register((DataFrameGroupBy, SeriesGroupBy), context=Context.SELECT)
+def _(
+    x: Union[DataFrameGroupBy, SeriesGroupBy],
+    *cols: Union[str, int],
+) -> DataFrame:
+    if cols:
+        raise ValueError("`*cols` is not empty.")
+    return x.obj
 
 
 def group_by_drop_default(_tbl: DataFrame) -> bool:

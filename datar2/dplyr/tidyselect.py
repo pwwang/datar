@@ -16,7 +16,7 @@ from .group_by import ungroup
 from .group_data import group_vars
 
 
-@register_func(DataFrame, context=Context.EVAL, verb_arg_only=True)
+@register_func(DataFrame, context=Context.EVAL)
 def where(_data: DataFrame, fn: Callable) -> Sequence[str]:
     """Selects the variables for which a function returns True.
 
@@ -29,7 +29,7 @@ def where(_data: DataFrame, fn: Callable) -> Sequence[str]:
     Returns:
         The matched columns
     """
-    columns = everything(_data)
+    columns = regcall(everything, _data)
     _data = regcall(ungroup, _data)
     pipda_type = functype(fn)
     mask = [
@@ -46,7 +46,7 @@ def where(_data: DataFrame, fn: Callable) -> Sequence[str]:
     return columns[mask]
 
 
-@register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame)
 def everything(_data: DataFrame) -> Sequence[str]:
     """Matches all columns.
 
@@ -63,7 +63,7 @@ def everything(_data: DataFrame) -> Sequence[str]:
     )
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_func(context=Context.SELECT)
 def last_col(
     _data: DataFrame,
     offset: int = 0,
@@ -85,7 +85,7 @@ def last_col(
     return vars[-(offset + 1)]
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_func(context=Context.SELECT)
 def starts_with(
     _data: DataFrame,
     match: Union[str, Sequence[str]],
@@ -112,7 +112,7 @@ def starts_with(
     )
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_func(context=Context.SELECT)
 def ends_with(
     _data: DataFrame,
     match: Union[str, Sequence[str]],
@@ -139,7 +139,7 @@ def ends_with(
     )
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_func(context=Context.SELECT)
 def contains(
     _data: DataFrame,
     match: str,
@@ -166,7 +166,7 @@ def contains(
     )
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_func(context=Context.SELECT)
 def matches(
     _data: DataFrame,
     match: str,
@@ -193,7 +193,7 @@ def matches(
     )
 
 
-@register_func(context=Context.EVAL, verb_arg_only=True)
+@register_func(context=Context.EVAL)
 def all_of(
     _data: DataFrame,
     x: Sequence[Union[int, str]],
@@ -228,7 +228,7 @@ def all_of(
     return x.values
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_func(context=Context.SELECT)
 def any_of(
     _data: DataFrame,
     x: Sequence[Union[int, str]],

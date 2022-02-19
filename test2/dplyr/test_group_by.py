@@ -7,9 +7,19 @@ import numpy
 from datar import f
 from datar.datasets import mtcars, iris
 from datar2.core.tibble import TibbleGroupby, TibbleRowwise
-from datar2.dplyr import group_by, group_vars
+from datar2.dplyr import (
+    group_by,
+    group_vars,
+    mutate,
+    ungroup,
+    group_data,
+    select,
+    group_size,
+    group_by_drop_default,
+    n_groups,
+)
 from datar2.tibble import tibble
-from datar2.base import rep
+from datar2.base import rep, c, NA, mean
 from ..conftest import assert_iterable_equal
 
 
@@ -70,15 +80,15 @@ def test_tibble_lose_grouping(df):
 
 
 # def test_orders_by_groups():
-#     df = tibble(a=sample(range(1, 11), 3000, replace=TRUE)) >> group_by(f.a)
+#     df = tibble(a=sample(range(1, 11), 3000, replace=True)) >> group_by(f.a)
 #     out = df >> count()
 #     assert_iterable_equal(out.a, range(1, 11))
 
-#     df = tibble(a=sample(letters[:10], 3000, replace=TRUE)) >> group_by(f.a)
+#     df = tibble(a=sample(letters[:10], 3000, replace=True)) >> group_by(f.a)
 #     out = df >> count()
 #     assert_iterable_equal(out.a, letters[:10])
 
-#     df = tibble(a=sample(sqrt(range(1, 11)), 3000, replace=TRUE)) >> group_by(
+#     df = tibble(a=sample(sqrt(range(1, 11)), 3000, replace=True)) >> group_by(
 #         f.a
 #     )
 #     out = df >> count()
@@ -97,10 +107,10 @@ def test_by_tuple_values():
         )
         >> group_by(f.y)
     )
-    out = df >> count()
-    # assert out.y.tolist() == [(1,2), (1,2,3)]
-    assert out.y.tolist() == [1, 2]
-    assert out.n.tolist() == [2, 1]
+    # out = df >> count()
+    # # assert out.y.tolist() == [(1,2), (1,2,3)]
+    # assert out.y.tolist() == [1, 2]
+    # assert out.n.tolist() == [2, 1]
 
 
 def test_select_add_group_vars():
@@ -112,41 +122,41 @@ def test_one_group_for_NA():
     x = c(NA, NA, NA, range(10, 0, -1), range(10, 0, -1))
     w = numpy.array(c(20, 30, 40, range(1, 11), range(1, 11))) * 10
 
-    assert n_distinct(x) == 11
-    res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
-    # assert nrow(res) == 11
-    # See Known Issues of core.grouped.TibbleGroupby
-    assert nrow(res) == 10
+    # assert n_distinct(x) == 11
+    # res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
+    # # assert nrow(res) == 11
+    # # See Known Issues of core.grouped.TibbleGroupby
+    # assert nrow(res) == 10
 
 
 def test_zero_row_dfs():
     df = tibble(a=[], b=[], g=[])
     dfg = group_by(df, f.g, _drop=False)
-    assert dim(dfg) == (0, 3)
+    assert dfg.shape == (0, 3)
     assert group_vars(dfg) == ["g"]
     assert group_size(dfg) == []
 
-    x = summarise(dfg, n=n())
-    assert dim(x) == (0, 2)
-    assert group_vars(x) == []
+    # x = summarise(dfg, n=n())
+    # assert x.shape == (0, 2)
+    # assert group_vars(x) == []
 
     x = mutate(dfg, c=f.b + 1)
-    assert dim(x) == (0, 4)
+    assert x.shape == (0, 4)
     assert group_vars(x) == ["g"]
     assert group_size(x) == []
 
-    x = filter(dfg, f.a == 100)
-    assert dim(x) == (0, 3)
-    assert group_vars(x) == ["g"]
-    assert group_size(x) == []
+    # x = filter(dfg, f.a == 100)
+    # assert x.shape == (0, 3)
+    # assert group_vars(x) == ["g"]
+    # assert group_size(x) == []
 
-    x = arrange(dfg, f.a, f.g)
-    assert dim(x) == (0, 3)
-    assert group_vars(x) == ["g"]
-    assert group_size(x) == []
+    # x = arrange(dfg, f.a, f.g)
+    # assert x.shape == (0, 3)
+    # assert group_vars(x) == ["g"]
+    # assert group_size(x) == []
 
     x = select(dfg, f.a)
-    assert dim(x) == (0, 2)
+    assert x.shape == (0, 2)
     assert group_vars(x) == ["g"]
     assert group_size(x) == []
 
@@ -208,20 +218,20 @@ def test_drop():
     res = (
         iris
         >> filter(f.Species == "setosa")
-        >> group_by(f.Species, _drop=TRUE)
+        >> group_by(f.Species, _drop=True)
     )
     out = res >> count() >> nrow()
     assert out == 1
 
 
-def test_remember_drop_true():
+def test_remember_drop_True():
     res = iris >> group_by(f.Species, _drop=True)
     assert group_by_drop_default(res)
 
     res2 = res >> filter(f.Sepal_Length > 5)
     assert group_by_drop_default(res2)
 
-    res3 = res >> filter(f.Sepal_Length > 5, _preserve=FALSE)
+    res3 = res >> filter(f.Sepal_Length > 5, _preserve=False)
     assert group_by_drop_default(res3)
 
     res4 = res3 >> group_by(f.Species)
@@ -230,11 +240,11 @@ def test_remember_drop_true():
     # group_data to be implemented
 
 
-def test_remember_drop_false():
+def test_remember_drop_False():
     res = (
         iris
         >> filter(f.Species == "setosa")
-        >> group_by(f.Species, _drop=FALSE)
+        >> group_by(f.Species, _drop=False)
     )
     assert not group_by_drop_default(res)
 
@@ -243,7 +253,7 @@ def test_remember_drop_false():
 
 
 # todo
-# def test_drop_false_preserve_ordered_factors():
+# def test_drop_False_preserve_ordered_factors():
 #     ...
 
 
@@ -253,7 +263,7 @@ def test_summarise_maintains_drop():
         f2=factor("d", levels=c("d", "e", "f", "g")),
         x=42,
     )
-    res = df >> group_by(f.f1, f.f2, _drop=TRUE)
+    res = df >> group_by(f.f1, f.f2, _drop=True)
     ng = n_groups(res)
     assert ng == 1
     assert group_by_drop_default(res)
@@ -263,35 +273,35 @@ def test_summarise_maintains_drop():
     # ng = n_groups(res1)
     # assert ng == 12
 
-    res1 = df >> group_by(f.f1, _drop=TRUE)
+    res1 = df >> group_by(f.f1, _drop=True)
     ng = n_groups(res1)
     assert ng == 1
 
-    res1 = df >> group_by(f.f1, _drop=FALSE)
+    res1 = df >> group_by(f.f1, _drop=False)
     ng = n_groups(res1)
     assert ng == 3
 
-    res1 = df >> group_by(f.f2, _drop=FALSE)
+    res1 = df >> group_by(f.f2, _drop=False)
     ng = n_groups(res1)
     assert ng == 4
 
-    res2 = res >> summarise(x=sum(f.x), _groups="drop_last")
-    ng = n_groups(res2)
-    assert ng == 1
-    assert group_by_drop_default(res2)
+    # res2 = res >> summarise(x=sum(f.x), _groups="drop_last")
+    # ng = n_groups(res2)
+    # assert ng == 1
+    # assert group_by_drop_default(res2)
 
 
 def test_joins_maintains__drop():
     df1 = group_by(
         tibble(f1=factor(c("a", "b"), levels=c("a", "b", "c")), x=[42, 43]),
         f.f1,
-        _drop=TRUE,
+        _drop=True,
     )
 
     df2 = group_by(
         tibble(f1=factor(c("a"), levels=c("a", "b", "c")), y=1),
         f.f1,
-        _drop=TRUE,
+        _drop=True,
     )
 
     res = left_join(df1, df2, by="f1")
@@ -300,7 +310,7 @@ def test_joins_maintains__drop():
     df2 = group_by(
         tibble(f1=factor(c("a", "c"), levels=c("a", "b", "c")), y=[1, 2]),
         f.f1,
-        _drop=TRUE,
+        _drop=True,
     )
     res = full_join(df1, df2, by="f1")
     assert n_groups(res) == 3
@@ -312,7 +322,7 @@ def test_add_passes_drop():
         f2=factor("g", levels=c("e", "f", "g")),
         x=48,
     )
-    res = group_by(group_by(d, f.f1, _drop=TRUE), f.f2, _add=TRUE)
+    res = group_by(group_by(d, f.f1, _drop=True), f.f2, _add=True)
     ng = n_groups(res)
     assert ng == 1
     assert group_by_drop_default(res)

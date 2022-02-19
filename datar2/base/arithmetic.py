@@ -24,14 +24,14 @@ from ..core.contexts import Context
 #     logger,
 # )
 
-from .arithmetic_internal import (
-    sum_internal,
-    prod_internal,
-    mean_internal,
-    median_internal,
-    min_internal,
-    max_internal,
-    var_internal,
+from ._arithmetic import (
+    _sum,
+    _prod,
+    _mean,
+    _median,
+    _min,
+    _max,
+    _var,
 )
 
 # cor?, range, summary, iqr
@@ -52,7 +52,7 @@ def sum(x: Any, na_rm: bool = True):
     Returns:
         The sum of the input
     """
-    return sum_internal(x, na_rm)
+    return _sum(x, na_rm)
 
 
 # @register_func(None, Context.EVAL)
@@ -70,24 +70,24 @@ def sum(x: Any, na_rm: bool = True):
 #     Returns:
 #         The prod of the input
 #     """
-#     return prod_internal(x, na_rm)
+#     return _prod(x, na_rm)
 
 
-# @register_func(None, Context.EVAL)
-# def mean(x: Any, na_rm: bool = True):
-#     """Mean of the input.
+@register_func(None, Context.EVAL)
+def mean(x: Any, na_rm: bool = True):
+    """Mean of the input.
 
-#     Args:
-#         x: The input
-#         na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
-#             True.
-#             And also unlike the function in `R`. It defaults to `True` rather
-#             than `False`
+    Args:
+        x: The input
+        na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
+            True.
+            And also unlike the function in `R`. It defaults to `True` rather
+            than `False`
 
-#     Returns:
-#         The mean of the input
-#     """
-#     return mean_internal(x, na_rm)
+    Returns:
+        The mean of the input
+    """
+    return _mean(x, na_rm)
 
 
 # @register_func(None, Context.EVAL)
@@ -104,7 +104,7 @@ def sum(x: Any, na_rm: bool = True):
 #     Returns:
 #         The median of the input
 #     """
-#     return median_internal(x, na_rm)
+#     return _median(x, na_rm)
 
 
 @register_func(None, context=Context.EVAL)
@@ -122,7 +122,7 @@ def min(*x, na_rm: bool = True) -> Any:
     Returns:
         The min of the input
     """
-    return min_internal(x, na_rm)
+    return _min(x, na_rm)
 
 
 @register_func(None, context=Context.EVAL)
@@ -140,7 +140,7 @@ def max(*x, na_rm: bool = True) -> Any:
     Returns:
         The max of the input
     """
-    return max_internal(x, na_rm)
+    return _max(x, na_rm)
 
 
 # @register_func(None, context=Context.EVAL)
@@ -158,7 +158,7 @@ def max(*x, na_rm: bool = True) -> Any:
 #     Returns:
 #         The variance of the input
 #     """
-#     return var_internal(x, na_rm, ddof)
+#     return _var(x, na_rm, ddof)
 
 
 # @register_func(None, context=Context.EVAL)

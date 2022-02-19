@@ -8,8 +8,11 @@ from .group_data import (
     group_vars,
     n_groups,
 )
-from .group_by import rowwise, group_by, group_by_drop_default
+from .group_by import rowwise, group_by, group_by_drop_default, ungroup
 from .mutate import mutate, transmute
+from .relocate import relocate
+from .summarise import summarise, summarize
+from .select import select
 from .tidyselect import (
     where,
     everything,
@@ -22,4 +25,3 @@ from .tidyselect import (
     any_of,
     num_range,
 )
-from .select import select

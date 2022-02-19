@@ -6,13 +6,12 @@ from typing import Any, Iterable, Mapping, Sequence, Tuple, Union
 
 from pandas import DataFrame, Index
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.tibble import Tibble
+from ..core.tibble import Tibble, TibbleGroupby
 from ..core.utils import vars_select, logger, regcall
 from ..core.collections import Inverted
-from ..base import setdiff, union
+from ..base import setdiff, union, intersect
 from .group_data import group_vars
 
 
@@ -43,7 +42,7 @@ def select(
         The dataframe with select columns
     """
     all_columns = _data.columns
-    gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
+    gvars = regcall(group_vars, _data)
     selected_idx, new_names = _eval_select(
         all_columns,
         *args,
@@ -51,8 +50,16 @@ def select(
         _group_vars=gvars,
     )
     out = _data.copy()
+    # nested dfs?
     if new_names:
-        out.columns = new_names
+        out.rename(columns=new_names, inplace=True)
+        if (
+            isinstance(out, TibbleGroupby)
+            and len(regcall(intersect, gvars, new_names)) > 0
+        ):
+            out._datar_meta["group_vars"] = [
+                new_names.get(gvar, gvar) for gvar in gvars
+            ]
 
     return out.iloc[:, selected_idx]
 
@@ -90,6 +97,14 @@ def _eval_select(
         _all_columns,
         *kwargs.values(),
     )
-    new_names = _all_columns.values.copy()
-    new_names[rename_idx] = list(kwargs)
+    # check uniqueness
+    for ridx in rename_idx:
+        dupidx = _all_columns.get_indexer_for([_all_columns[ridx]])
+        if dupidx.size > 1:
+            raise ValueError(
+                "Names must be unique. Name "
+                f'"{_all_columns[ridx]}" found at locations {list(dupidx)}.'
+            )
+
+    new_names = dict(zip(_all_columns[rename_idx], kwargs))
     return selected_idx, new_names

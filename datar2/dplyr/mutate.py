@@ -10,8 +10,9 @@ from pandas import DataFrame
 from pipda import register_verb, evaluate_expr, ReferenceAttr, ReferenceItem
 
 from ..core.contexts import Context, ContextEvalRefCounts
-from ..core.utils import add_to_tibble, arg_match, name_of, regcall
-from ..core.tibble import Tibble, TibbleGroupby, TibbleRowwise
+from ..core.utils import arg_match, name_of, regcall
+from ..core.broadcast import add_to_tibble
+from ..core.tibble import TibbleRowwise
 from ..base import setdiff, union, intersect, c
 from ..tibble import as_tibble
 from .group_data import group_vars
@@ -159,14 +160,13 @@ def mutate(
         not isinstance(data, TibbleRowwise)
         and len(intersect(gvars, mutated_cols)) > 0
     ):
-        return data.group_by(
+        grouped = data._datar_meta["grouped"]
+        return grouped.obj.copy().group_by(
             gvars,
-            drop=data._datar_meta["grouped"].observed,
-            sort=data._datar_meta["grouped"].sort,
-            dropna=data._datar_meta["grouped"].dropna,
+            drop=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
         )
-    # elif isinstance(data, TibbleGroupby):
-    #     data._datar_meta["grouped"].obj = Tibble(data)
 
     return data
 

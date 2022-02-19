@@ -6,8 +6,8 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import regcall
-from ..core.tibble import Tibble
-from ..base import setdiff, union
+from ..core.tibble import Tibble, TibbleGroupby
+from ..base import setdiff, union, intersect
 from ..tibble import as_tibble
 from .group_data import group_vars
 from .select import _eval_select
@@ -53,8 +53,7 @@ def relocate(
         **kwargs,
         _group_vars=gvars,
     )
-    if new_names:
-        _data.columns = new_names
+
     to_move = list(to_move)
     if _before is not None and _after is not None:
         raise ValueError("Must supply only one of `_before` and `_after`.")
@@ -94,5 +93,12 @@ def relocate(
     # out = out.copy()
     if new_names:
         out.rename(columns=new_names, inplace=True)
+        if (
+            isinstance(out, TibbleGroupby)
+            and len(regcall(intersect, gvars, new_names)) > 0
+        ):
+            out._datar_meta["group_vars"] = [
+                new_names.get(gvar, gvar) for gvar in gvars
+            ]
 
     return out

@@ -1,14 +1,28 @@
 """Operators for datar"""
-from typing import Any, Sequence, Union
-from functools import partial
 import operator
+from typing import Any, Callable, Sequence
+from functools import partial
 
 from pandas.core.series import Series
-from pandas.core.groupby import SeriesGroupBy
+from pandas.core.groupby import SeriesGroupBy, DataFrameGroupBy
 from pipda import register_operator, Operator
 
-from .utils import broadcast
+from ..core.broadcast import broadcast2
 from .collections import Collection, Inverted, Negated, Intersect
+
+
+def _binop(op, left, right, fill_false=False):
+    left, right, grouper, is_rowwise = broadcast2(left, right)
+    if fill_false:
+        left = Series(left).fillna(False)
+        right = Series(right).fillna(False)
+
+    out = op(left, right)
+    if grouper:
+        out = out.groupby(grouper)
+        if is_rowwise:
+            out.is_rowwise = True
+    return out
 
 
 @register_operator
@@ -18,28 +32,28 @@ class DatarOperator(Operator):
     def _arithmetize1(self, operand: Any, op: str) -> Any:
         """Operator for single operand"""
         op_func = getattr(operator, op)
-        if isinstance(operand, SeriesGroupBy):
-            return op_func(operand.obj).groupby(operand.grouper)
+        if isinstance(operand, (DataFrameGroupBy, SeriesGroupBy)):
+            out = op_func(operand.obj).groupby(operand.grouper)
+            if getattr(operand, "is_rowwise", False):
+                out.is_rowwise = True
+            return out
+
         return op_func(operand)
 
     def _arithmetize2(self, left: Any, right: Any, op: str) -> Any:
         """Operator for paired operands"""
         op_func = getattr(operator, op)
-        left, right, grouper = broadcast(left, right)
-        out = op_func(left, right)
-        if grouper is not None:
-            return out.groupby(grouper)
-        return out
+        return _binop(op_func, left, right)
 
     def _op_invert(self, operand: Any) -> Any:
         """Interpretation for ~x"""
-        if isinstance(operand, (slice, str, list, tuple)):
+        if isinstance(operand, (slice, Sequence)):
             return Inverted(operand)
         return self._arithmetize1(operand, "invert")
 
     def _op_neg(self, operand: Any) -> Any:
         """Interpretation for -x"""
-        if isinstance(operand, (slice, list)):
+        if isinstance(operand, (slice, Sequence)):
             return Negated(operand)
         return self._arithmetize1(operand, "neg")
 
@@ -59,12 +73,7 @@ class DatarOperator(Operator):
             # induce an intersect with Collection
             return Intersect(left, right)
 
-        left, right, grouper = broadcast(left, right)
-        left = Series(left).fillna(False)
-        right = Series(right).fillna(False)
-        if grouper:
-            return (left & right).groupby(grouper)
-        return left & right
+        return _binop(operator.and_, left, right, fill_false=True)
 
     def _op_or_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
@@ -82,37 +91,29 @@ class DatarOperator(Operator):
             # or union?
             return Collection(left, right)
 
-        left, right, grouper = broadcast(left, right)
-        left = Series(left).fillna(False)
-        right = Series(right).fillna(False)
-        if grouper:
-            return (left | right).groupby(grouper)
-        return left | right
+        return _binop(operator.or_, left, right, fill_false=True)
 
-    def _op_eq(
-        self, left: Any, right: Any
-    ) -> Union[bool, Sequence[bool], SeriesGroupBy]:
-        """Do left == right"""
-        left, right, grouper = broadcast(left, right)
-        out = left == right
-        if grouper:
-            return out.groupby(grouper)
-        return out
+    # def _op_eq(
+    #     self, left: Any, right: Any
+    # ) -> Union[bool, Sequence[bool], SeriesGroupBy]:
+    #     """Do left == right"""
+    #     left, right = broadcast2(left, right)
+    #     return left == right
 
-    def _op_ne(
-        self, left: Any, right: Any
-    ) -> Union[bool, Sequence[bool], SeriesGroupBy]:
-        """Interpret for left != right"""
-        left, right, grouper = broadcast(left, right)
-        out = left != right
-        if grouper:
-            return out.groupby(grouper)
-        return out
+    # def _op_ne(
+    #     self, left: Any, right: Any
+    # ) -> Union[bool, Sequence[bool], SeriesGroupBy]:
+    #     """Interpret for left != right"""
+    #     left, right = broadcast2(left, right)
+    #     return left != right
 
-    def __getattr__(self, name: str) -> Any:
-        """Other operators"""
-        if name.startswith("_op_"):
-            attr = partial(self._arithmetize2, op=name[4:])
-            attr.__qualname__ = name
-            return attr
-        return super().__getattr__(name)
+    def _find_op_func(self, opname: str) -> Callable:
+        """Find the function for the operator"""
+        if opname[0] == "r":
+            return None
+
+        full_op_name = f"_op_{opname}"
+        if full_op_name in dir(self):
+            return getattr(self, full_op_name)
+
+        return partial(self._arithmetize2, op=opname)

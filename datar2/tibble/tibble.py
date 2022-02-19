@@ -3,10 +3,10 @@ from typing import Any, Callable, Mapping, Union
 
 from pipda import register_func, ReferenceAttr, ReferenceItem
 from pandas._typing import Dtype
-from pandas.core.frame import DataFrame
-from pandas.core.groupby import DataFrameGroupBy
+from pandas.core.indexes.range import RangeIndex
+from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 
-from ..core.tibble import Tibble, TibbleGroupby
+from ..core.tibble import Tibble, TibbleGroupby, TibbleRowwise
 from ..core.contexts import Context
 
 
@@ -151,7 +151,7 @@ def tibble_row(
 
 
 @singledispatch
-def as_tibble(df: DataFrame) -> Tibble:
+def as_tibble(df: Any) -> Tibble:
     """Convert a pandas DataFrame object to Tibble object"""
     return Tibble(df)
 
@@ -159,10 +159,31 @@ def as_tibble(df: DataFrame) -> Tibble:
 @as_tibble.register
 def _(df: DataFrameGroupBy) -> TibbleGroupby:
     """Convert a pandas DataFrame object to TibbleGroupBy object"""
-    return TibbleGroupby(df.obj, meta={"grouped": df})
+    klass = TibbleRowwise if is_rowwise(df) else TibbleGroupby
+    return klass(
+        df.obj,
+        meta={
+            "grouped": df,
+            "group_vars": [
+                name for name in df.grouper.names if name is not None
+            ]
+        }
+    )
 
 
 @as_tibble.register
 def _(df: Tibble) -> Tibble:
     """Convert a pandas DataFrame object to TibbleGroupBy object"""
     return df
+
+
+def is_rowwise(
+    x: Union[SeriesGroupBy, DataFrameGroupBy, TibbleGroupby]
+) -> bool:
+    if isinstance(x, TibbleGroupby):
+        return is_rowwise(x._datar_meta["grouped"])
+
+    return (
+        x.grouper.result_index.size == len(x)
+        and isinstance(x.grouper.result_index, RangeIndex)
+    )

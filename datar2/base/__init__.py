@@ -1,4 +1,4 @@
-from .arithmetic import sum, max, min
+from .arithmetic import sum, max, min, mean
 from .constants import pi, letters, LETTERS, month_abb, month_name
 from .na import NA
 from .seq import c, rep, seq, seq_along, seq_len
@@ -13,4 +13,5 @@ from .verbs import (
     unique,
     nrow,
     ncol,
+    dim,
 )
