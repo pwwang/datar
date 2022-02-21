@@ -109,7 +109,7 @@ def summarise(
                     "%s (override with `_groups` argument)",
                     gvars[:-1],
                 )
-            out = DatarGroupBy.from_grouped(
+            out = DatarGroupBy.from_groupby(
                 out.groupby(
                     gvars[:-1],
                     observed=_data.attrs["_grouped"].observed,
@@ -125,7 +125,7 @@ def summarise(
                 gvars,
             )
         grouped = _data.attrs["_grouped"]
-        out = DatarGroupBy.from_grouped(
+        out = DatarGroupBy.from_groupby(
             out.groupby(
                 gvars,
                 observed=grouped.observed,
@@ -134,7 +134,7 @@ def summarise(
         )
 
     elif _groups == "rowwise":
-        out = DatarRowwise.from_grouped(
+        out = DatarRowwise.from_groupby(
             out.groupby(
                 list(range(_data.shape[0])),
                 observed=group_by_drop_default(_data),

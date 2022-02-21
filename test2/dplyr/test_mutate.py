@@ -5,7 +5,7 @@ import pytest
 from datar import f
 from datar.datasets import iris, mtcars
 from pandas.core.frame import DataFrame
-from datar2.core.tibble import TibbleRowwise, TibbleGroupby
+from datar2.core.tibble import TibbleRowwise, TibbleGrouped
 from datar2.testing import assert_tibble_equal
 from datar2.tibble import tibble
 from datar2.base import letters, nrow, ncol, c, rep, max, sum
@@ -31,7 +31,7 @@ def test_empty_mutate_returns_input():
 
     out = mutate(gf)
     assert_tibble_equal(out, gf)
-    assert isinstance(gf, TibbleGroupby)
+    assert isinstance(gf, TibbleGrouped)
     assert group_vars(out) == ["x"]
 
 
@@ -76,7 +76,7 @@ def test_removes_vars_with_None():
 
     out = gf >> mutate(y=None)
     assert out.columns.tolist() == ["x"]
-    assert isinstance(out, TibbleGroupby)
+    assert isinstance(out, TibbleGrouped)
     assert group_vars(out) == ["x"]
     assert group_rows(out) == [[0], [1], [2]]
 
@@ -122,7 +122,7 @@ def test_handles_data_frame_columns():
     res = mutate(df, new_col=tibble(x=[1, 2, 3]))
     assert_tibble_equal(res['new_col'], tibble(x=[1, 2, 3]))
 
-    res = mutate(group_by(df, f.a), new_col=tibble(x=df.a))
+    res = mutate(group_by(df, f.a), new_col=tibble(x=f.a))
     assert_tibble_equal(res['new_col'], tibble(x=[1, 2, 3]))
 
     rf = rowwise(df, f.a)
@@ -164,7 +164,7 @@ def test_preserves_grouping():
 def test_works_on_0row_grouped_data_frame():
     dat = tibble(a=[], b=[])
     res = dat >> group_by(f.b, _drop=False) >> mutate(a2=f.a * 2)
-    assert isinstance(res, TibbleGroupby)
+    assert isinstance(res, TibbleGrouped)
     assert_iterable_equal(res.a2, [])
 
 

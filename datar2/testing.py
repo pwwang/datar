@@ -1,7 +1,7 @@
 from pandas.core.frame import DataFrame
 from pandas.testing import assert_frame_equal, assert_index_equal
 
-from .core.tibble import TibbleGroupby
+from .core.tibble import TibbleGrouped
 
 
 def assert_tibble_equal(df1, df2):
@@ -13,8 +13,8 @@ def assert_tibble_equal(df1, df2):
         f"{type(df2).__name__}"
     )
     assert_frame_equal(df1, df2)
-    if isinstance(df1, TibbleGroupby):
+    if isinstance(df1, TibbleGrouped):
         assert_index_equal(
-            df1._datar_meta["grouped"].grouper.result_index,
-            df2._datar_meta["grouped"].grouper.result_index
+            df1._datar["grouped"].grouper.result_index,
+            df2._datar["grouped"].grouper.result_index
         )

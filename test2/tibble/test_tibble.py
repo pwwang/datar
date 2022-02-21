@@ -104,11 +104,11 @@ def test_hierachical_names():
 
 def test_meta_attrs_preserved():
     foo = tibble(x=1)
-    foo._datar_meta["y"] = 99
+    foo._datar["y"] = 99
     foo.attrs["a"] = 1
     bar = foo[["x"]]
     assert bar.attrs["a"] == 1
-    assert bar._datar_meta["y"] == 99
+    assert bar._datar["y"] == 99
 
 
 def test_f_pronoun():

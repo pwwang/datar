@@ -134,7 +134,7 @@ def mutate(
     # rowwise data frame doesn't need it
     if not isinstance(data, DatarRowwise) and intersect(gvars, mutated_cols):
         grouped = data.attrs["_grouped"]
-        return DatarGroupBy.from_grouped(
+        return DatarGroupBy.from_groupby(
             grouped.obj.copy().groupby(
                 gvars,
                 observed=grouped.observed,

@@ -6,7 +6,7 @@ from pandas._typing import Dtype
 from pandas.core.indexes.range import RangeIndex
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 
-from ..core.tibble import Tibble, TibbleGroupby, TibbleRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
 
 
@@ -157,9 +157,9 @@ def as_tibble(df: Any) -> Tibble:
 
 
 @as_tibble.register
-def _(df: DataFrameGroupBy) -> TibbleGroupby:
-    """Convert a pandas DataFrame object to TibbleGroupBy object"""
-    klass = TibbleRowwise if is_rowwise(df) else TibbleGroupby
+def _(df: DataFrameGroupBy) -> TibbleGrouped:
+    """Convert a pandas DataFrame object to TibbleGrouped object"""
+    klass = TibbleRowwise if is_rowwise(df) else TibbleGrouped
     return klass(
         df.obj,
         meta={
@@ -173,15 +173,15 @@ def _(df: DataFrameGroupBy) -> TibbleGroupby:
 
 @as_tibble.register
 def _(df: Tibble) -> Tibble:
-    """Convert a pandas DataFrame object to TibbleGroupBy object"""
+    """Convert a pandas DataFrame object to TibbleGrouped object"""
     return df
 
 
 def is_rowwise(
-    x: Union[SeriesGroupBy, DataFrameGroupBy, TibbleGroupby]
+    x: Union[SeriesGroupBy, DataFrameGroupBy, TibbleGrouped]
 ) -> bool:
-    if isinstance(x, TibbleGroupby):
-        return is_rowwise(x._datar_meta["grouped"])
+    if isinstance(x, TibbleGrouped):
+        return is_rowwise(x._datar["grouped"])
 
     return (
         x.grouper.result_index.size == len(x)

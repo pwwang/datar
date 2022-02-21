@@ -2,10 +2,11 @@
 
 from typing import List, Sequence, Union
 from pandas import DataFrame
+from pandas.core.groupby import GroupBy
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
-from ..core.tibble import Tibble, TibbleGroupby, TibbleRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.utils import regcall
 
 
@@ -26,9 +27,9 @@ def group_data(_data: DataFrame) -> Tibble:
     return Tibble({"_rows": regcall(group_rows, _data)})
 
 
-@group_data.register((TibbleGroupby, TibbleRowwise))
-def _(_data: Union[TibbleGroupby, TibbleRowwise]) -> Tibble:
-    gpdata = regcall(group_keys, _data).copy()
+@group_data.register((TibbleGrouped, GroupBy))
+def _(_data: Union[TibbleGrouped, GroupBy]) -> Tibble:
+    gpdata = regcall(group_keys, _data)
     gpdata["_rows"] = regcall(group_rows, _data)
     return gpdata
 
@@ -50,10 +51,16 @@ def group_keys(_data: DataFrame) -> Tibble:
     return Tibble(index=[0])
 
 
-@group_keys.register(TibbleGroupby)
-def _(_data: TibbleGroupby) -> Tibble:
-    grouper = _data._datar_meta["grouped"].grouper
-    return Tibble(grouper.group_keys_seq, columns=grouper.names)
+@group_keys.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> Tibble:
+    grouper = _data._datar["grouped"].grouper
+    return Tibble(grouper.result_index.to_frame(index=False), copy=False)
+
+
+@group_keys.register(GroupBy)
+def _(_data: GroupBy) -> Tibble:
+    grouper = _data.grouper
+    return Tibble(grouper.result_index.to_frame(index=False), copy=False)
 
 
 @group_keys.register(TibbleRowwise)
@@ -68,10 +75,16 @@ def group_rows(_data: DataFrame) -> List[List[int]]:
     return [rows]
 
 
-@group_rows.register(TibbleGroupby)
-def _(_data: TibbleGroupby) -> List[List[int]]:
+@group_rows.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> List[List[int]]:
     """Get row indices for each group"""
-    grouper = _data._datar_meta["grouped"].grouper
+    return regcall(group_rows, _data._datar["grouped"])
+
+
+@group_rows.register(GroupBy)
+def _(_data: GroupBy) -> List[List[int]]:
+    """Get row indices for each group"""
+    grouper = _data.grouper
     return [
         list(grouper.groups[group_key])
         for group_key in grouper.group_keys_seq
@@ -87,8 +100,8 @@ def group_indices(_data: DataFrame) -> List[int]:
     return [0] * _data.shape[0]
 
 
-@group_indices.register(TibbleGroupby)
-def _(_data: TibbleGroupby) -> List[int]:
+@group_indices.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> List[int]:
     ret = {}
     for row in group_data(
         _data, __calling_env=CallingEnvs.REGULAR
@@ -115,8 +128,8 @@ def group_size(_data: DataFrame) -> Sequence[int]:
     return [_data.shape[0]]
 
 
-@group_size.register(TibbleGroupby)
-def _(_data: TibbleGroupby) -> Sequence[int]:
+@group_size.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> Sequence[int]:
     return list(map(len, regcall(group_rows, _data)))
 
 
@@ -126,9 +139,9 @@ def n_groups(_data: DataFrame) -> int:
     return 1
 
 
-@n_groups.register(TibbleGroupby)
-def _(_data: TibbleGroupby) -> int:
-    return _data._datar_meta["grouped"].grouper
+@n_groups.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> int:
+    return _data._datar["grouped"].grouper
 
 
 @n_groups.register(TibbleRowwise)

@@ -16,13 +16,20 @@ from .names import repair_names
 
 
 class Tibble(DataFrame):
-    """Tibble class"""
+    """Tibble class - A pandas.DataFrame subclass
 
-    _metadata = ["_datar_meta"]
+    A metadata is added: `_datar`, used to save some information, including
+    grouped and grouping vars
+
+    Args:
+        meta: The metadata
+    """
+
+    _metadata = ["_datar"]
 
     def __init__(self, data=None, *args, meta=None, **kwargs):
         super().__init__(data, *args, **kwargs)
-        self._datar_meta = meta or {}
+        self._datar = meta or {}
 
     @property
     def _constructor(self):
@@ -36,6 +43,17 @@ class Tibble(DataFrame):
         _name_repair: Union[str, Callable] = "check_unique",
         _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
     ) -> "Tibble":
+        """Construct a tibble with name-value pairs
+
+        Instead of do `**kwargs`, this allows duplicated names
+
+        Args:
+            names: The names of the data to be construct a tibble
+            data: The data to construct a tibble, must have the same length
+                with the names
+            _name_repair: How to repair names
+            _dtypes: The dtypes for post conversion
+        """
         from .broadcast import add_to_tibble
         from ..dplyr import ungroup
 
@@ -48,7 +66,7 @@ class Tibble(DataFrame):
         out = None
         for name, value in zip(names, data):
             value = evaluate_expr(value, out, Context.EVAL)
-            value = regcall(ungroup, value)
+            # value = regcall(ungroup, value)
             if isinstance(value, Collection):
                 value.expand()
             out = add_to_tibble(
@@ -92,6 +110,14 @@ class Tibble(DataFrame):
         **kwargs,
     ) -> "Tibble":
         """Construct tibble by given data, more like the tibble constructor in R
+
+        Args:
+            *args: and
+            **kwargs: The data used to construct the tibble
+            _name_repair: How to repair names
+            _rows: When `*args` and `**kwargs` are not given, construct an
+                empty tibble with `_rows` rows.
+            _dtypes: The dtypes for post conversion
         """
         if not args and not kwargs:
             return cls() if not _rows else cls(index=range(_rows))
@@ -141,7 +167,7 @@ class Tibble(DataFrame):
         drop=None,
         sort=False,
         dropna=False,
-    ) -> "TibbleGroupby":
+    ) -> "TibbleGrouped":
         """Group a tibble by variants"""
         if drop is None:
             drop = False
@@ -149,42 +175,47 @@ class Tibble(DataFrame):
         cols = [cols] if is_scalar(cols) else list(cols)
         grouped = self.groupby(cols, observed=drop, sort=sort, dropna=dropna)
 
-        return TibbleGroupby.from_grouped(grouped)
+        return TibbleGrouped.from_groupby(grouped)
 
     def rowwise(self, cols) -> "TibbleRowwise":
+        """Get a rowwise tibble"""
         grouped = self.groupby(Index(range(self.shape[0])), sort=False)
         return TibbleRowwise(
             self,
-            meta={"group_vars": cols, "grouped": grouped},
+            meta={"group_vars": list(cols), "grouped": grouped},
         )
 
     @property
     def group_vars(self) -> Sequence[str]:
+        """Get the grouping variables."""
         return []
 
 
-class TibbleGroupby(Tibble):
-    """"""
+class TibbleGrouped(Tibble):
+    """Grouped tibble.
+
+    The `DataFrameGroupBy` object is hold at `df._datar["grouped"]`
+    """
 
     def __init__(self, data=None, *args, meta=None, **kwargs):
         super().__init__(data, *args, meta=meta, **kwargs)
         # meta could be copied by operations since it's _metadata
-        if "grouped" in self._datar_meta:
+        if "grouped" in self._datar:
             # make a shallow copy of the df to obj
             # so that the changes can reflect to obj
-            self._datar_meta["grouped"].obj = Tibble(self, copy=False)
+            self._datar["grouped"].obj = Tibble(self, copy=False)
 
     @property
     def _constructor(self):
-        return TibbleGroupby
+        return TibbleGrouped
 
     @classmethod
-    def from_grouped(
+    def from_groupby(
         cls,
         grouped: Union[SeriesGroupBy, DataFrameGroupBy],
         name: str = None,
         deep: bool = True,
-    ) -> "TibbleGroupby":
+    ) -> "TibbleGrouped":
         """"""
         if isinstance(grouped, SeriesGroupBy):
             frame = (
@@ -204,13 +235,13 @@ class TibbleGroupby(Tibble):
     def __getitem__(self, key):
         result = super().__getitem__(key)
         if isinstance(result, Series):
-            return self._datar_meta["grouped"][key]
+            return self._datar["grouped"][key]
 
-        return result
+        return result  # pragma: no cover
 
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
-        grouped = self._datar_meta["grouped"]
+        grouped = self._datar["grouped"]
         value = broadcast_to(value, self.index, grouped.grouper)
 
         if isinstance(key, str) and isinstance(value, DataFrame):
@@ -220,9 +251,9 @@ class TibbleGroupby(Tibble):
         else:
             DataFrame.__setitem__(self, key, value)
 
-    def copy(self, deep: bool = True) -> "TibbleGroupby":
-        grouped = self._datar_meta["grouped"]
-        return self.__class__.from_grouped(
+    def copy(self, deep: bool = True) -> "TibbleGrouped":
+        grouped = self._datar["grouped"]
+        return self.__class__.from_groupby(
             grouped.obj.groupby(
                 grouped.grouper,
                 observed=grouped.observed,
@@ -232,15 +263,30 @@ class TibbleGroupby(Tibble):
             deep=deep,
         )
 
-    def reindex(self, *args, **kwargs) -> "TibbleGroupby":
+    def reindex(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble(super().reindex(*args, **kwargs), copy=False)
-        grouped = self._datar_meta["grouped"]
+        grouped = self._datar["grouped"]
         return result.group_by(
-            grouped.grouper.names,
+            self.group_vars,
             drop=grouped.observed,
             sort=grouped.sort,
             dropna=grouped.dropna,
         )
+
+    def take(self, *args, **kwargs) -> "TibbleGrouped":
+        result = Tibble(super().take(*args, **kwargs), copy=False)
+        grouped = self._datar["grouped"]
+        return result.group_by(
+            self.group_vars,
+            drop=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
+        )
+
+    def convert_dtypes(self, *args, **kwargs) -> DataFrame:
+        out = super().convert_dtypes(*args, **kwargs)
+        out._datar["grouped"].obj = Tibble(out, copy=False)
+        return out
 
     def group_by(
         self,
@@ -249,30 +295,36 @@ class TibbleGroupby(Tibble):
         drop=None,
         sort=False,
         dropna=False,
-    ) -> "TibbleGroupby":
+    ) -> "TibbleGrouped":
         """Group a tibble by variants"""
-        if add and "grouped" in self._datar_meta:
+        if add and "grouped" in self._datar:
             from ..base import union
 
-            cols = regcall(union, self.group_vars, cols)
+            cols = list(regcall(union, self.group_vars, cols))
 
-        grouped = self._datar_meta["grouped"].obj.groupby(
+        grouped = Tibble(self, copy=False).groupby(
             cols, observed=drop, sort=sort, dropna=dropna
         )
 
-        return TibbleGroupby.from_grouped(grouped)
+        return TibbleGrouped.from_groupby(grouped)
 
     @property
     def group_vars(self) -> Sequence[str]:
         # When column names changed, we save the new group vars
-        return self._datar_meta.get(
+        return self._datar.get(
             "group_vars",
-            self._datar_meta["grouped"].grouper.names
+            self._datar["grouped"].grouper.names
         )
 
 
-class TibbleRowwise(TibbleGroupby):
-    """"""
+class TibbleRowwise(TibbleGrouped):
+    """Rowwise tibble
+
+    Examples:
+        >>> df = Tibble({"a": [1, 2, 3]}).rowwise([])
+        >>> df.a  # SeriesGroupBy
+        >>> df.a.is_rowwise  # True
+    """
 
     @property
     def _constructor(self):
@@ -280,7 +332,8 @@ class TibbleRowwise(TibbleGroupby):
 
     @property
     def group_vars(self) -> Sequence[str]:
-        return self._datar_meta["group_vars"]
+        """Get the grouping variables"""
+        return self._datar["group_vars"]
 
     def __getitem__(self, key):
         result = super().__getitem__(key)
@@ -289,6 +342,17 @@ class TibbleRowwise(TibbleGroupby):
 
         return result
 
-    def reindex(self, *args, **kwargs) -> "TibbleGroupby":
+    def copy(self, deep: bool = True) -> "TibbleRowwise":
+        out = super().copy(deep=deep)
+        out._datar["group_vars"] = self._datar["group_vars"]
+        return out
+
+    def reindex(self, *args, **kwargs) -> "TibbleRowwise":
+        """Reindex the tibble, returns a TibbleRowwise object."""
         result = Tibble(Tibble.reindex(self, *args, **kwargs), copy=False)
+        return result.rowwise(self.group_vars)
+
+    def take(self, *args, **kwargs) -> "TibbleRowwise":
+        """Take from tibble by indices, returns a TibbleRowwise object"""
+        result = Tibble.take(self, *args, **kwargs)
         return result.rowwise(self.group_vars)

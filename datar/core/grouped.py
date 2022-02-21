@@ -9,7 +9,7 @@ from .types import StringOrIter
 class DatarGroupBy(DataFrame):
     """A DataFrameGroupBy wrapper with
 
-    1. classmethod `from_grouped()` to make a clone from another
+    1. classmethod `from_groupby()` to make a clone from another
     `DataFrameGroupBy` object
     2. attributes `_html_footer` and `_str_footer` for `pdtypes` to show
     additional information
@@ -23,7 +23,7 @@ class DatarGroupBy(DataFrame):
         return DatarGroupBy
 
     @classmethod
-    def from_grouped(
+    def from_groupby(
         cls,
         grouped: Union[DataFrameGroupBy, "DatarGroupBy"],
         group_vars: StringOrIter = None,
@@ -63,7 +63,7 @@ class DatarGroupBy(DataFrame):
 
         if not deep:
             # attrs also copyied
-            return self.__class__.from_grouped(self)
+            return self.__class__.from_groupby(self)
 
         out = self.attrs["_grouped"].obj.copy()
         out = out.groupby(
@@ -71,7 +71,7 @@ class DatarGroupBy(DataFrame):
             observed=self.attrs["_grouped"].observed,
             sort=self.attrs["_grouped"].sort,
         )
-        return self.__class__.from_grouped(out, self.attrs["_group_vars"][:])
+        return self.__class__.from_groupby(out, self.attrs["_group_vars"][:])
 
 
 class DatarRowwise(DatarGroupBy):
@@ -82,7 +82,7 @@ class DatarRowwise(DatarGroupBy):
         return DatarRowwise
 
     @classmethod
-    def from_grouped(
+    def from_groupby(
         cls,
         grouped: Union[DataFrameGroupBy, "DatarRowwise"],
         group_vars: StringOrIter = None,
@@ -101,6 +101,6 @@ class DatarRowwise(DatarGroupBy):
                 f"(n={out.shape[0]})]"
             )
         else:
-            out = super().from_grouped(grouped, group_vars)
+            out = super().from_groupby(grouped, group_vars)
 
         return out

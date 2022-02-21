@@ -59,7 +59,7 @@ def group_by(
         _drop = group_by_drop_default(_data)
     new_cols = _data.attrs["_mutated_cols"]
     out = _data.groupby(new_cols, observed=_drop, sort=sort_, dropna=dropna_)
-    return DatarGroupBy.from_grouped(out)
+    return DatarGroupBy.from_groupby(out)
 
 
 @group_by.register(DatarGroupBy, context=Context.PENDING)
@@ -94,7 +94,7 @@ def _(
         new_cols,
     )
     out = _data.groupby(gvars, observed=_drop, sort=sort_)
-    return DatarGroupBy.from_grouped(out)
+    return DatarGroupBy.from_groupby(out)
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -122,7 +122,7 @@ def rowwise(
     idxes = vars_select(_data.columns, *cols, base0=base0_)
     group_vars = _data.columns[idxes].tolist()
     out = _data.groupby(list(range(_data.shape[0])), sort=False)
-    return DatarRowwise.from_grouped(out, group_vars)
+    return DatarRowwise.from_groupby(out, group_vars)
 
 
 @rowwise.register(DatarGroupBy, context=Context.SELECT)

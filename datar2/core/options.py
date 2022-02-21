@@ -16,6 +16,8 @@ OPTIONS = Diot(
     dplyr_summarise_inform=True,
     # whether warn about importing functions that override builtin ones.
     warn_builtin_names=True,
+    #
+    enable_pdtypes=False,
     # add_option=True,
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform,
@@ -23,7 +25,10 @@ OPTIONS = Diot(
 
 OPTION_CALLBACKS = Diot(
     # allow 'a.b' to access 'a_b'
-    diot_transform=_key_transform
+    diot_transform=_key_transform,
+    enable_pdtypes=lambda x: (
+        __import__("pdtypes") if x else __import__("pdtypes").unpatch()
+    )
 )
 
 

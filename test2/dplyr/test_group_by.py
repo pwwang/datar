@@ -6,7 +6,7 @@ import pytest
 import numpy
 from datar import f
 from datar.datasets import mtcars, iris
-from datar2.core.tibble import TibbleGroupby, TibbleRowwise
+from datar2.core.tibble import TibbleGrouped, TibbleRowwise
 from datar2.dplyr import (
     group_by,
     group_vars,
@@ -125,7 +125,7 @@ def test_one_group_for_NA():
     # assert n_distinct(x) == 11
     # res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
     # # assert nrow(res) == 11
-    # # See Known Issues of core.grouped.TibbleGroupby
+    # # See Known Issues of core.grouped.TibbleGrouped
     # assert nrow(res) == 10
 
 
@@ -329,7 +329,7 @@ def test_add_passes_drop():
 
 
 # NA in groupvars to get group data is not supported
-# See: TibbleGroupby's Known Issues
+# See: TibbleGrouped's Known Issues
 #
 # def test_na_last():
 
@@ -445,7 +445,7 @@ def test_rowwise_preserved_by_major_verbs():
 
     # Except for summarise
     out = summarise(rf, z=mean([f.x, f.y]))
-    assert isinstance(out, TibbleGroupby)
+    assert isinstance(out, TibbleGrouped)
     assert group_vars(out) == ["x"]
 
 

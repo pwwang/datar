@@ -2,7 +2,6 @@
 
 from itertools import chain
 from typing import Any, Tuple
-from black import out
 
 from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr
@@ -17,7 +16,7 @@ from ..core.utils import (
     name_of,
     regcall,
 )
-from ..core.tibble import Tibble, TibbleGroupby, TibbleRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 
 from ..base import setdiff
 from .group_by import ungroup
@@ -101,11 +100,11 @@ def summarise(
                     "%s (override with `_groups` argument)",
                     gvars[:-1],
                 )
-            out = TibbleGroupby.from_grouped(
+            out = TibbleGrouped.from_groupby(
                 out.groupby(
                     list(gvars[:-1]),
-                    observed=_data._datar_meta["grouped"].observed,
-                    sort=_data._datar_meta["grouped"].sort,
+                    observed=_data._datar["grouped"].observed,
+                    sort=_data._datar["grouped"].sort,
                 )
             )
 
@@ -116,7 +115,7 @@ def summarise(
                 "%s (override with `_groups` argument)",
                 gvars,
             )
-        grouped = _data._datar_meta["grouped"]
+        grouped = _data._datar["grouped"]
         out = out.group_by(
             gvars,
             sort=grouped.sort,
@@ -148,13 +147,12 @@ def _summarise_build(
     **kwargs: Any,
 ) -> Tuple[Tibble, bool]:
     """Build summarise result"""
-
     if isinstance(_data, TibbleRowwise):
-        outframe = _data.loc[:, _data.group_vars].copy()
+        outframe = _data.loc[:, _data.group_vars]
     else:
         outframe = regcall(group_keys, _data)
-        if isinstance(_data, TibbleGroupby):
-            grouped = _data._datar_meta["grouped"]
+        if isinstance(_data, TibbleGrouped):
+            grouped = _data._datar["grouped"]
             outframe = outframe.group_by(
                 grouped.grouper.names,
                 drop=grouped.observed,

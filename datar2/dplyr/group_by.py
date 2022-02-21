@@ -9,7 +9,7 @@ from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 from pipda import register_verb
 
 from ..core.exceptions import NameNonUniqueError
-from ..core.tibble import Tibble, TibbleGroupby, TibbleRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
 from ..core.utils import (
     regcall,
@@ -30,7 +30,7 @@ def group_by(
     _sort: bool = False,
     _dropna: bool = False,
     **kwargs: Any,
-) -> TibbleGroupby:
+) -> TibbleGrouped:
     """Takes an existing tbl and converts it into a grouped tbl where
     operations are performed "by group"
 
@@ -60,25 +60,25 @@ def group_by(
 
     if _drop is None:
         _drop = group_by_drop_default(_data)
-    new_cols = _data._datar_meta["mutated_cols"]
+    new_cols = _data._datar["mutated_cols"]
     return _data.group_by(new_cols, drop=_drop, sort=_sort, dropna=_dropna)
 
 
-@group_by.register(TibbleGroupby, context=Context.PENDING)
+@group_by.register(TibbleGrouped, context=Context.PENDING)
 def _(
-    _data: TibbleGroupby,
+    _data: TibbleGrouped,
     *args: Any,
     _add: bool = False,
     _drop: bool = None,
     _sort: bool = False,
     _dropna: bool = False,
     **kwargs: Any,
-) -> TibbleGroupby:
+) -> TibbleGrouped:
     """Group a grouped data frame"""
     from .mutate import mutate
 
     _data = regcall(mutate, _data, *args, **kwargs)
-    new_cols = _data._datar_meta["mutated_cols"]
+    new_cols = _data._datar["mutated_cols"]
     gvars = regcall(
         union,
         regcall(group_vars, _data),
@@ -124,9 +124,9 @@ def rowwise(
     return as_tibble(_data).rowwise(gvars)
 
 
-@rowwise.register(TibbleGroupby, context=Context.SELECT)
+@rowwise.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    _data: TibbleGroupby,
+    _data: TibbleGrouped,
     *cols: Union[str, int],
 ) -> TibbleRowwise:
     # grouped dataframe's columns are unique already
@@ -169,12 +169,12 @@ def ungroup(
     return x
 
 
-@ungroup.register(TibbleGroupby, context=Context.SELECT)
+@ungroup.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    x: TibbleGroupby,
+    x: TibbleGrouped,
     *cols: Union[str, int],
-) -> Union[Tibble, TibbleGroupby]:
-    obj = x._datar_meta["grouped"].obj
+) -> Union[Tibble, TibbleGrouped]:
+    obj = x._datar["grouped"].obj
     if not cols:
         return Tibble(obj)
 
@@ -211,7 +211,7 @@ def _(
 
 def group_by_drop_default(_tbl: DataFrame) -> bool:
     """Get the groupby _drop attribute of dataframe"""
-    grouped = getattr(_tbl, "_datar_meta", {}).get("_grouped", None)
+    grouped = getattr(_tbl, "_datar", {}).get("_grouped", None)
     if not grouped:
         return True
     return grouped.observed

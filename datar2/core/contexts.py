@@ -8,6 +8,7 @@ from pipda.context import (
     ContextPending,
     ContextSelect,
 )
+from pandas import DataFrame
 
 
 class ContextEval(ContextEvalPipda):
@@ -33,16 +34,14 @@ class ContextEval(ContextEvalPipda):
 
             return Collection(ref)
 
-        from .tibble import Tibble
-        if isinstance(parent, Tibble):
+        if isinstance(parent, DataFrame):
             return parent[ref]
 
         return super().getitem(parent, ref, level)
 
     def getattr(self, parent, ref, level):
         """Evaluate f.a"""
-        from .tibble import Tibble
-        if isinstance(parent, Tibble):
+        if isinstance(parent, DataFrame):
             return parent[ref]
 
         return super().getattr(parent, ref, level)

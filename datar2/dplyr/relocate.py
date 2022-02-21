@@ -6,7 +6,7 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import regcall
-from ..core.tibble import Tibble, TibbleGroupby
+from ..core.tibble import Tibble, TibbleGrouped
 from ..base import setdiff, union, intersect
 from ..tibble import as_tibble
 from .group_data import group_vars
@@ -94,10 +94,10 @@ def relocate(
     if new_names:
         out.rename(columns=new_names, inplace=True)
         if (
-            isinstance(out, TibbleGroupby)
+            isinstance(out, TibbleGrouped)
             and len(regcall(intersect, gvars, new_names)) > 0
         ):
-            out._datar_meta["group_vars"] = [
+            out._datar["group_vars"] = [
                 new_names.get(gvar, gvar) for gvar in gvars
             ]
 

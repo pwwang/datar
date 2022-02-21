@@ -8,7 +8,7 @@ from pandas import DataFrame, Index
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.tibble import Tibble, TibbleGroupby
+from ..core.tibble import Tibble, TibbleGrouped
 from ..core.utils import vars_select, logger, regcall
 from ..core.collections import Inverted
 from ..base import setdiff, union, intersect
@@ -54,10 +54,10 @@ def select(
     if new_names:
         out.rename(columns=new_names, inplace=True)
         if (
-            isinstance(out, TibbleGroupby)
+            isinstance(out, TibbleGrouped)
             and len(regcall(intersect, gvars, new_names)) > 0
         ):
-            out._datar_meta["group_vars"] = [
+            out._datar["group_vars"] = [
                 new_names.get(gvar, gvar) for gvar in gvars
             ]
 

@@ -123,6 +123,7 @@ def mutate(
     mutated_cols = regcall(setdiff, mutated_cols, tmp_cols)
     # new cols always at last
     # data.columns.difference() does not keep order
+
     data = data.loc[:, regcall(setdiff, data.columns, tmp_cols)]
 
     if _before is not None or _after is not None:
@@ -153,14 +154,14 @@ def mutate(
 
     data = data[keep]
     # used for group_by
-    data._datar_meta["mutated_cols"] = mutated_cols
+    data._datar["mutated_cols"] = mutated_cols
     # redo grouping if grouping variables are mutated
     # but we don't need to do it for rowwise tibble
     if (
         not isinstance(data, TibbleRowwise)
         and len(intersect(gvars, mutated_cols)) > 0
     ):
-        grouped = data._datar_meta["grouped"]
+        grouped = data._datar["grouped"]
         return grouped.obj.copy().group_by(
             gvars,
             drop=grouped.observed,
