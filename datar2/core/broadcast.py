@@ -33,7 +33,7 @@ from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
 from pandas.api.types import is_scalar
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
-from .utils import regcall
+from .utils import regcall, name_of
 
 if TYPE_CHECKING:
     from pandas import Index, Grouper
@@ -42,20 +42,25 @@ BroadcastingBaseType = Union[DataFrame, Series, SeriesGroupBy]
 GroupedType = Union[GroupBy, TibbleGrouped]
 
 
-def _regroup(x: GroupBy, new_indices: np.ndarray) -> GroupBy:
+def _regroup(x: GroupBy, repeats: Union[int, np.ndarray]) -> GroupBy:
     """Regroup grouped object if some groups get broadcasted"""
-    from ..dplyr import group_data
+    from ..dplyr import group_keys
 
-    gdata = regcall(group_data, x)
+    gdata = regcall(group_keys, x)
     # Get the data with the new_indices with original grouping variables
-    gdata = gdata.take(new_indices)
+    g_indices = x.grouper.group_info[0].repeat(repeats)
+    gdata = gdata.take(g_indices)
     grouped = gdata.groupby(x.grouper.names)
-    return x.obj.take(new_indices).groupby(grouped.grouper)
+    o_indices = np.arange(x.obj.shape[0]).repeat(repeats)
+    return x.obj.take(o_indices).groupby(grouped.grouper)
 
 
 def _agg_result_compatible(index: "Index", grouper: "Grouper") -> bool:
     """Check index of an aggregated result is compatible with a grouper"""
-    if not index.unique().equals(grouper.result_index):
+    if index.names != grouper.names:
+        return False
+
+    if not index.symmetric_difference(grouper.result_index).empty:
         return False
 
     # also check the size
@@ -69,7 +74,12 @@ def _grouper_compatible(grouper1: "Grouper", grouper2: "Grouper") -> bool:
     if grouper1 is grouper2:
         return True
 
-    if not grouper1.result_index.equals(grouper2.result_index):
+    if grouper1.names != grouper2.names:
+        return False
+
+    if not grouper1.result_index.symmetric_difference(
+        grouper2.result_index
+    ).empty:
         return False
 
     # also check the size
@@ -80,8 +90,10 @@ def _grouper_compatible(grouper1: "Grouper", grouper2: "Grouper") -> bool:
 
 @singledispatch
 def _broadcast_base(
-    value, base: BroadcastingBaseType
-) -> Tuple[Any, BroadcastingBaseType]:
+    value,
+    base: BroadcastingBaseType,
+    name: str = None,
+) -> BroadcastingBaseType:
     """Broadcast the base dataframe when value has more elements
 
     Args:
@@ -93,73 +105,76 @@ def _broadcast_base(
     """
     # plain arrays, scalars
     if is_scalar(value) or len(value) == 1:
-        return value, base
+        return base
+
+    name = name or name_of(value)
 
     if isinstance(base, GroupBy):
-        # already broadcasted
-        if not base.obj.index.is_unique:
-            return value, base
-
-        # Broadcast each group into size len(value)
         sizes = base.grouper.size()
         usizes = sizes.unique()
+
+        # Broadcast each group into size len(value)
         # usizes should be only 1 number, or [1, len(value)]
         if usizes.size == 0:
-            raise ValueError(f"Value must be size [0 1], not {len(value)}.")
+            raise ValueError(f"`{name}` must be size [0 1], not {len(value)}.")
 
         if usizes.size == 1:
             if usizes[0] == 1:
-                indices = base.grouper.group_info[0].repeat(len(value))
-                return value, _regroup(base, indices)
+                return _regroup(base, len(value))
 
             if usizes[0] != len(value):
                 raise ValueError(
-                    "Cannot recycle value with size "
+                    f"Cannot recycle `{name}` with size "
                     f"{len(value)} to {usizes[0]}."
                 )
-            # value = np.tile(value, base.grouper.ngroups)
-            return value, base
+            return base
 
         if usizes.size == 2:
             if set(usizes) != set([1, len(value)]):
                 size_tip = usizes[usizes != len(value)][0]
                 raise ValueError(
-                    "Cannot recycle value with size "
+                    f"Cannot recycle `{name}` with size "
                     f"{len(value)} to {size_tip}."
                 )
 
+            if not base.obj.index.is_unique:
+                # already broadcasted
+                return base
+
             # broadcast size=1 groups and regroup
-            sizes[sizes == 1] = len(value)
-            indices = np.arange(base.grouper.ngroups).repeat(sizes)
-            return value, _regroup(base, indices)
+            repeats = np.ones(base.obj.shape[0], dtype=int)
+            idx_to_broadcast = np.concatenate(
+                [base.grouper.indices[i] for i in sizes[sizes == 1].index]
+            )
+            repeats[idx_to_broadcast] = len(value)
+            return _regroup(base, repeats)
 
         size_tip = usizes[usizes != len(value)][0]
         raise ValueError(
-            f"Cannot recycle value with size {len(value)} to {size_tip}."
+            f"Cannot recycle `{name}` with size {len(value)} to {size_tip}."
         )
 
     if isinstance(base, TibbleGrouped):
-        if not base.index.is_unique:
-            return value, base
-
-        value, base = _broadcast_base(value, base._datar["grouped"])
-        base = TibbleGrouped.from_groupby(base, deep=False)
-        return value, base
+        grouped_old = base._datar["grouped"]
+        grouped_new = _broadcast_base(value, grouped_old, name)
+        if grouped_new is not grouped_old:
+            base = TibbleGrouped.from_groupby(grouped_new, deep=False)
+        return base
 
     # DataFrame/Series
     if not base.index.is_unique:
-        return value, base
+        return base
 
     # The length should be [1, len(value)]
     if base.shape[0] == len(value):
-        return value, base
+        return base
 
     if base.shape[0] == 1:
         base = base.take(base.index.repeat(len(value)))
-        return value, base
+        return base
 
     raise ValueError(
-        f"Value must be size [1 {base.shape[0]}], not {len(value)}."
+        f"`{name}` must be size [1 {base.shape[0]}], not {len(value)}."
     )
 
 
@@ -167,78 +182,94 @@ def _broadcast_base(
 def _(
     value: GroupBy,
     base: BroadcastingBaseType,
+    name: str = None,
 ) -> Tuple[Any, BroadcastingBaseType]:
     """Broadcast grouped object when value is a grouped object"""
+    name = name or name_of(value)
+
     if isinstance(base, GroupBy):
-        # quick check if base has already broadcasted
-        if not base.obj.index.is_unique:
-            return value, base
 
         if not _grouper_compatible(value.grouper, base.grouper):
-            raise ValueError("Incompatible groupers.")
+            raise ValueError(f"`{name}` has an incompatible grouper.")
+
+        if (value.grouper.size() == 1).all():
+            # Don't modify base when values are 1-size groups
+            # Leave it to broadcast_to() to broadcast to values
+            # No need to broadcast the base
+            return base
+
+        # check if base has already broadcasted
+        if not base.obj.index.is_unique:
+            return base
 
         # Broadcast size-1 groups in base
         base_sizes = base.grouper.size()
+        base_sizes1 = base_sizes == 1
         val_sizes = value.grouper.size()
-        base_sizes[base_sizes == 1] = val_sizes[base_sizes == 1]
-        indices = np.arange(base.grouper.ngroups).repeat(base_sizes)
-        return value, _regroup(base, indices)
+        repeats = np.ones(base.obj.shape[0], dtype=int)
+        idx_to_broadcast = np.concatenate(
+            [base.grouper.indices[i] for i in base_sizes[base_sizes1].index]
+        )
+        repeats[idx_to_broadcast] = val_sizes[base_sizes1]
+        return _regroup(base, repeats)
 
     if isinstance(base, TibbleGrouped):
-        if not base.index.is_unique:
-            return value, base
-
-        value, base = _broadcast_base(value, base._datar["grouped"])
-        base = TibbleGrouped.from_groupby(base, deep=False)
-        return value, base
+        grouped_old = base._datar["grouped"]
+        grouped_new = _broadcast_base(value, grouped_old, name)
+        if grouped_new is not grouped_old:
+            base = TibbleGrouped.from_groupby(grouped_new, deep=False)
+        return base
 
     # base is ungrouped
     # DataFrame/Series
 
     # df >> group_by(f.a) >> mutate(new_col=tibble(x=1, y=f.a))
     #                                              ^^^^^^^^^^
-    val_usizes = value.grouper.size().unique()
+    val_sizes = value.grouper.size()
 
-    if (base.shape[0] == 1 and val_usizes.size == 2 and 1 in val_usizes) or (
-        base.shape[0] > 1
-        and val_usizes.size == 1
-        and val_usizes[0] == base.shape[0]
+    if (
+        base.shape[0] == 1
+        or (val_sizes == base.shape[0]).all()
     ):
         if base.shape[0] == 1:
             repeats = value.obj.shape[0]
         else:
-            repeats = value.ngroups
+            repeats = val_sizes
 
-        base = base.reindex(repeats).groupby(
+        base_is_df = isinstance(base, DataFrame)
+        base = base.reindex(base.index.repeat(repeats)).groupby(
             value.grouper,
             observed=value.observed,
             sort=value.sort,
             dropna=value.dropna,
         )
-        if isinstance(value, DataFrame):
+        if base_is_df:
             base = TibbleGrouped.from_groupby(base)
-        return value, base
+        return base
 
     # Otherwise
-    raise ValueError("Can't recycle a grouped object to ungrouped.")
+    raise ValueError(f"Can't recycle a grouped object `{name}` to ungrouped.")
 
 
 @_broadcast_base.register(TibbleGrouped)
 def _(
     value: TibbleGrouped,
     base: BroadcastingBaseType,
-) -> Tuple[Any, BroadcastingBaseType]:
+    name: str = None,
+) -> BroadcastingBaseType:
     """Broadcast base based on a TibbleGrouped object
 
     For example, `df >> group_by(f.a) >> mutate(new_col=tibble(x=f.a))`
     """
-    return _broadcast_base(value, base._datar["grouped"])
+    return _broadcast_base(value._datar["grouped"], base, name)
 
 
 @_broadcast_base.register(DataFrame)
 @_broadcast_base.register(Series)
 def _(
-    value: Union[DataFrame, Series], base: BroadcastingBaseType
+    value: Union[DataFrame, Series],
+    base: BroadcastingBaseType,
+    name: str = None,
 ) -> Tuple[Any, BroadcastingBaseType]:
     """Broadcast a DataFrame/Series object to a grouped object
 
@@ -249,33 +280,43 @@ def _(
     for a group. Then we need to broadcast `f.x` to match the result.
     """
     if isinstance(base, GroupBy):
-        if not base.obj.index.is_unique:
-            return value, base
-
+        # Now the index of value works more like grouping data
         if not _agg_result_compatible(value.index, base.grouper):
-            raise ValueError("Incompatible aggregated result.")
+            name = name or name_of(value)
+            raise ValueError(f"`{name}` is an incompatible aggregated result.")
+
+        val_sizes = value.index.value_counts(sort=False)
+        if (val_sizes == 1).all():
+            # Don't modify base when values are 1-size groups
+            # Leave it to broadcast_to() to broadcast to values
+            # No need to broadcast the base
+            return base
+
+        if not base.obj.index.is_unique:
+            return base
 
         # Broadcast size-1 groups in base
         base_sizes = base.grouper.size()
-        # Now the index of value works more like grouping data
-        val_sizes = value.index.value_counts(sort=False)
-        base_sizes[base_sizes == 1] = val_sizes[base_sizes == 1]
-        indices = np.arange(base.grouper.ngroups).repeat(base_sizes)
-        return value, _regroup(base, indices)
+        base_sizes1 = base_sizes == 1
+        repeats = np.ones(base.obj.shape[0], dtype=int)
+        idx_to_broadcast = np.concatenate(
+            [base.grouper.indices[i] for i in base_sizes[base_sizes1].index]
+        )
+        repeats[idx_to_broadcast] = val_sizes[base_sizes1]
+        return _regroup(base, repeats)
 
     if isinstance(base, TibbleGrouped):
-        if not base.index.is_unique:
-            return value, base
-
-        value, base = _broadcast_base(value, base._datar["grouped"])
-        base = TibbleGrouped.from_groupby(base, deep=False)
-        return value, base
+        grouped_old = base._datar["grouped"]
+        grouped_new = _broadcast_base(value, grouped_old, name)
+        if grouped_new is not grouped_old:
+            base = TibbleGrouped.from_groupby(grouped_new, deep=False)
+        return base
 
     # base: DataFrame/Series
     if not base.index.is_unique:
-        return value, base
+        return base
 
-    return value, base.reindex(value.index)
+    return base.reindex(value.index)
 
 
 @singledispatch
@@ -536,7 +577,7 @@ def add_to_tibble(
         return init_tibble_from(value, name)
 
     if broadcast_tbl:
-        value, tbl = _broadcast_base(value, tbl)
+        tbl = _broadcast_base(value, tbl, name)
 
     if name is None and isinstance(value, DataFrame):
         for col in value.columns:

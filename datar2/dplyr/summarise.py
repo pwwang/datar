@@ -180,6 +180,7 @@ def _summarise_build(
             # if it is broadcasted, then it should not be all ones.
             # since all ones don't need to broadcast
             all_ones = False
+
         outframe = newframe
 
     gvars = regcall(group_vars, _data)

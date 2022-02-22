@@ -86,7 +86,7 @@ def _(_data: GroupBy) -> List[List[int]]:
     """Get row indices for each group"""
     grouper = _data.grouper
     return [
-        list(grouper.groups[group_key])
+        list(grouper.indices[group_key])
         for group_key in grouper.group_keys_seq
     ]
 
