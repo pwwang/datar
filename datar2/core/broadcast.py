@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING, Any, Tuple, Union
 
 import numpy as np
 from pandas import DataFrame, Series
+from pandas.core.generic import NDFrame
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
 from pandas.api.types import is_scalar
 
@@ -38,7 +39,7 @@ from .utils import regcall, name_of
 if TYPE_CHECKING:
     from pandas import Index, Grouper
 
-BroadcastingBaseType = Union[DataFrame, Series, SeriesGroupBy]
+BroadcastingBaseType = Union[NDFrame, SeriesGroupBy]
 GroupedType = Union[GroupBy, TibbleGrouped]
 
 
@@ -120,6 +121,11 @@ def _broadcast_base(
 
         if usizes.size == 1:
             if usizes[0] == 1:
+                if getattr(base, "is_rowwise", False):
+                    raise ValueError(
+                        f"`{name}` must be size 1, not {len(value)}."
+                    )
+
                 return _regroup(base, len(value))
 
             if usizes[0] != len(value):
@@ -154,6 +160,10 @@ def _broadcast_base(
             f"Cannot recycle `{name}` with size {len(value)} to {size_tip}."
         )
 
+    if isinstance(base, TibbleRowwise):
+        # len(value) > 1
+        raise ValueError(f"`{name}` must be size 1, not {len(value)}.")
+
     if isinstance(base, TibbleGrouped):
         grouped_old = base._datar["grouped"]
         grouped_new = _broadcast_base(value, grouped_old, name)
@@ -161,7 +171,7 @@ def _broadcast_base(
             base = TibbleGrouped.from_groupby(grouped_new, deep=False)
         return base
 
-    # DataFrame/Series
+    # s/Series
     if not base.index.is_unique:
         return base
 
@@ -192,6 +202,9 @@ def _(
         if not _grouper_compatible(value.grouper, base.grouper):
             raise ValueError(f"`{name}` has an incompatible grouper.")
 
+        if getattr(base, "is_rowwise", False):
+            return base
+
         if (value.grouper.size() == 1).all():
             # Don't modify base when values are 1-size groups
             # Leave it to broadcast_to() to broadcast to values
@@ -212,6 +225,15 @@ def _(
         )
         repeats[idx_to_broadcast] = val_sizes[base_sizes1]
         return _regroup(base, repeats)
+
+    if isinstance(base, TibbleRowwise):
+        if not _grouper_compatible(
+            value.grouper,
+            base._datar["grouped"].grouper
+        ):
+            raise ValueError(f"`{name}` has an incompatible grouper.")
+        # Don't broadcast rowwise
+        return base
 
     if isinstance(base, TibbleGrouped):
         grouped_old = base._datar["grouped"]
@@ -264,10 +286,9 @@ def _(
     return _broadcast_base(value._datar["grouped"], base, name)
 
 
-@_broadcast_base.register(DataFrame)
-@_broadcast_base.register(Series)
+@_broadcast_base.register(NDFrame)
 def _(
-    value: Union[DataFrame, Series],
+    value: NDFrame,
     base: BroadcastingBaseType,
     name: str = None,
 ) -> Tuple[Any, BroadcastingBaseType]:
@@ -284,6 +305,9 @@ def _(
         if not _agg_result_compatible(value.index, base.grouper):
             name = name or name_of(value)
             raise ValueError(f"`{name}` is an incompatible aggregated result.")
+
+        if getattr(base, "is_rowwise", False):
+            return base
 
         val_sizes = value.index.value_counts(sort=False)
         if (val_sizes == 1).all():
@@ -304,6 +328,12 @@ def _(
         )
         repeats[idx_to_broadcast] = val_sizes[base_sizes1]
         return _regroup(base, repeats)
+
+    if isinstance(base, TibbleRowwise):
+        if value.shape[0] != 1:
+            raise ValueError(f"`{name}` must be size 1, not {value.shape[0]}.")
+        # Don't broadcast rowwise
+        return base
 
     if isinstance(base, TibbleGrouped):
         grouped_old = base._datar["grouped"]
@@ -375,24 +405,28 @@ def broadcast_to(
 
     gsizes = grouper.size()
     if gsizes.size == 0:
-        return Series(value, index=index)
+        return Series(value, index=index, dtype=object)
 
     # broadcast value to each group
     # length of each group is checked in _broadcast_base
-    return Series(np.tile(value, grouper.ngroups), index=index)
+    # A better way to distribute the value to each group?
+    idx = np.concatenate([
+        grouper.groups[gdata]
+        for gdata in grouper.group_keys_seq
+    ])
+    return Series(np.tile(value, grouper.ngroups), index=idx).reindex(index)
 
 
-@broadcast_to.register(DataFrame)
-@broadcast_to.register(Series)
+@broadcast_to.register(NDFrame)
 def _(
-    value: Union[DataFrame, Series],
+    value: NDFrame,
     index: "Index",
     grouper: "Grouper" = None,
 ) -> Union[Tibble, Series]:
     """Broadcast series"""
     if not grouper:
         if isinstance(value, Series):
-            return Series(value, index=index, name=value.name)
+            return Series(value, name=value.name, index=index)
 
         return Tibble(value, index=index)
 
@@ -405,28 +439,29 @@ def _(
             value,
             index=grouper.result_index.take(grouper.group_info[0]),
             name=value.name,
+            copy=False,
         )
     else:  # DataFrame
         out = Tibble(
             value,
             index=grouper.result_index.take(grouper.group_info[0]),
+            copy=False,
         )
 
     out.index = index
     return out
 
 
-@broadcast_to.register(SeriesGroupBy)
-@broadcast_to.register(DataFrameGroupBy)
+@broadcast_to.register(GroupBy)
 def _(
-    value: Union[SeriesGroupBy, DataFrameGroupBy],
+    value: GroupBy,
     index: "Index",
     grouper: "Grouper" = None,
 ) -> Union[Series, Tibble]:
     """Broadcast pandas grouped object"""
     if not grouper:
         raise ValueError(
-            "Cann't broadcast grouped object to a non-grouped object."
+            "Can't broadcast grouped object to a non-grouped object."
         )
 
     # Compatibility has been checked in _broadcast_base
@@ -451,81 +486,83 @@ def _(
 
 
 @singledispatch
+def _get_index_grouper(value) -> Tuple["Index", "Grouper"]:
+    return None, None
+
+
+@_get_index_grouper.register(TibbleGrouped)
+def _(value):
+    return value.index, value._datar["grouped"].grouper
+
+
+@_get_index_grouper.register(NDFrame)
+def _(value):
+    return value.index, None
+
+
+@_get_index_grouper.register(GroupBy)
+def _(value):
+    return value.obj.index, value.grouper
+
+
+@singledispatch
+def _type_priority(value) -> int:
+    return -1
+
+
+@_type_priority.register(GroupBy)
+def _(value):
+    return 10
+
+
+@_type_priority.register(NDFrame)
+def _(value):
+    return 5
+
+
+@_type_priority.register(TibbleGrouped)
+def _(value):
+    return 10
+
+
+@singledispatch
+def _ungroup(value):
+    return value
+
+
+@_ungroup.register(GroupBy)
+def _(value):
+    return value.obj
+
+
+@_ungroup.register(TibbleGrouped)
+def _(value):
+    return value._datar["grouped"].obj
+
+
+@singledispatch
 def broadcast2(left, right) -> Tuple[Any, Any, "Grouper", bool]:
     """Broadcast 2 values for operators"""
-    # scalar or arrays
-    if isinstance(
-        right,
-        (
-            DataFrameGroupBy,
-            SeriesGroupBy,
-            DataFrame,
-            Series,
-        ),
-    ):
-        right, left, grouper, is_rowwise = broadcast2(right, left)
-        return left, right, grouper, is_rowwise
-
-    return left, right, None, False
-
-
-@broadcast2.register(TibbleGrouped)
-def _(left: TibbleGrouped, right: Any) -> Tuple[Any, Any, "Grouper", bool]:
-    is_rowwise = isinstance(left, TibbleRowwise)
-    grouper = left._datar["grouped"].grouper
-    if isinstance(right, TibbleGrouped):
-        is_rowwise = is_rowwise and isinstance(right, TibbleRowwise)
-    elif isinstance(right, SeriesGroupBy):
-        is_rowwise = is_rowwise and getattr(right, "is_rowwise", False)
-
-    right = broadcast_to(right, left.index, grouper)
-    return left, right, grouper, is_rowwise
-
-
-@broadcast2.register(DataFrameGroupBy)
-@broadcast2.register(SeriesGroupBy)
-def _(
-    left: Union[DataFrameGroupBy, SeriesGroupBy],
-    right: Any,
-) -> Tuple[Any, Any, "Grouper", bool]:
-    is_rowwise = getattr(left, "is_rowwise", False)
-    grouper = left.grouper
-    if isinstance(right, TibbleGrouped):
-        is_rowwise = is_rowwise and isinstance(right, TibbleRowwise)
-    elif isinstance(right, SeriesGroupBy):
-        is_rowwise = is_rowwise and getattr(right, "is_rowwise", False)
-
-    right = broadcast_to(right, left.obj.index, grouper)
-    return left.obj, right, grouper, is_rowwise
-
-
-@broadcast2.register(DataFrame)
-@broadcast2.register(Series)
-def _(
-    left: Union[DataFrame, Series],
-    right: Any,
-) -> Tuple[Any, Any, "Grouper", bool]:
-    if isinstance(
-        right,
-        (
-            DataFrameGroupBy,
-            SeriesGroupBy,
-            TibbleGrouped,
-        ),
-    ):
-        right, left, grouper, is_rowwise = broadcast2(right, left)
-        return left, right, grouper, is_rowwise
-
-    if isinstance(right, (DataFrame, Series)):
-        if right.size < left.size:
-            right = broadcast_to(right, left.index)
-        else:
-            left = broadcast_to(left, right.index)
-
+    left_pri = _type_priority(left)
+    right_pri = _type_priority(right)
+    if left_pri > right_pri:
+        left = _broadcast_base(right, left)
+        index, grouper = _get_index_grouper(left)
+        is_rowwise = (
+            isinstance(left, TibbleRowwise)
+            or getattr(left, "is_rowwise", False)
+        )
+        right = broadcast_to(right, index, grouper)
     else:
-        right = broadcast_to(right, left.index)
+        right = _broadcast_base(left, right)
+        index, grouper = _get_index_grouper(right)
+        is_rowwise = (
+            isinstance(right, TibbleRowwise)
+            or getattr(right, "is_rowwise", False)
+        )
+        left = broadcast_to(left, index, grouper)
 
-    return left, right, None, False
+    return _ungroup(left), _ungroup(right), grouper, is_rowwise
 
 
 @singledispatch

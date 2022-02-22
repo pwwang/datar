@@ -55,7 +55,6 @@ class Tibble(DataFrame):
             _dtypes: The dtypes for post conversion
         """
         from .broadcast import add_to_tibble
-        from ..dplyr import ungroup
 
         if len(names) != len(data):
             raise ValueError(
@@ -177,12 +176,19 @@ class Tibble(DataFrame):
 
         return TibbleGrouped.from_groupby(grouped)
 
-    def rowwise(self, cols) -> "TibbleRowwise":
+    def rowwise(self, cols: Sequence[str] = None) -> "TibbleRowwise":
         """Get a rowwise tibble"""
+        cols = (
+            []
+            if cols is None
+            else [cols]
+            if isinstance(cols, str)
+            else list(cols)
+        )
         grouped = self.groupby(Index(range(self.shape[0])), sort=False)
         return TibbleRowwise(
             self,
-            meta={"group_vars": list(cols), "grouped": grouped},
+            meta={"group_vars": cols, "grouped": grouped},
         )
 
     @property

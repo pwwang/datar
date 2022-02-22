@@ -1,5 +1,6 @@
 import pytest
 from pandas import Index, Series
+from pandas.testing import assert_frame_equal
 from datar import f
 from datar2.testing import assert_tibble_equal
 from datar2.tibble import tibble
@@ -61,8 +62,14 @@ def test_broadcast_base_array_groupby():
     out = _broadcast_base([1, 2], df)
     assert out.a.obj.values.tolist() == [1, 2, 2, 1]
 
+    df = tibble(a=[1, 2, 1]).rowwise("a")
+    with pytest.raises(ValueError, match=r"must be size 1"):
+        _broadcast_base([1, 2], df)
+    with pytest.raises(ValueError, match=r"must be size 1"):
+        _broadcast_base([1, 2], df.a)
 
-def test_broadcast_base_array_seriesordf():
+
+def test_broadcast_base_array_ndframe():
     df = tibble(a=[1, 2, 3, 4])
     df.index = [0, 1, 1, 1]
 
@@ -117,8 +124,17 @@ def test_broadcast_base_groupby_groupby():
     base = _broadcast_base(value, df)
     assert base.a.obj.values.tolist() == [1, 1, 2, 2]
 
+    # rowwise
+    df = tibble(a=[1, 2, 2]).rowwise()
+    base = _broadcast_base(df.a, df.a)
+    assert base.obj is df.a.obj
 
-def test_broadcast_base_groupby_seriesordf():
+    value = tibble(a=[1, 2, 3]).groupby('a')
+    with pytest.raises(ValueError):
+        _broadcast_base(value, df)
+
+
+def test_broadcast_base_groupby_ndframe():
     df = tibble(a=[1, 2, 2, 3, 3, 3])
     with pytest.raises(ValueError, match="Can't recycle"):
         _broadcast_base(df.groupby("a"), df)
@@ -139,7 +155,7 @@ def test_broadcast_base_groupby_seriesordf():
     assert base.a.obj.tolist() == [3, 3, 4, 4]
 
 
-def test_broadcast_base_seriesordf_groupby():
+def test_broadcast_base_ndframe_groupby():
     df = tibble(a=1).groupby("a")
     value = Series(1, name="b")
     with pytest.raises(
@@ -186,7 +202,7 @@ def test_broadcast_base_seriesordf_groupby():
     assert base.a.obj.tolist() == [1, 2, 2]
 
 
-def test_broadcast_base_seriesordf_seriesordf():
+def test_broadcast_base_ndframe_ndframe():
     df = tibble(a=[1, 2, 3])
     df.index = [0, 1, 1]
     value = tibble(a=[1, 2, 3])
@@ -198,3 +214,110 @@ def test_broadcast_base_seriesordf_seriesordf():
     value.index = [1, 2, 3]
     base = _broadcast_base(value, df)
     assert_iterable_equal(base.a, [2, 3, None])
+
+
+# broadcast_to
+def test_broadcast_to_scalar():
+    value = broadcast_to(1, Index([1, 2]))
+    assert value == 1
+
+
+def test_broadcast_to_arrays_ndframe():
+    with pytest.raises(ValueError, match=r"Length of values \(0\)"):
+        broadcast_to([], Index([1, 2]))
+
+    with pytest.raises(ValueError, match=r"Length of values \(3\)"):
+        broadcast_to([1, 2, 3], Index([1, 2]))
+
+    value = broadcast_to([1, 2], Index([1, 2]))
+    assert value.index.tolist() == [1, 2]
+
+
+def test_broadcast_to_arrays_groupby():
+    df = tibble(x=[]).groupby('x')
+    value = broadcast_to([], df.obj.index, df.grouper)
+    assert value.size == 0
+
+    df = tibble(x=[2, 1, 2, 1])
+    df.index = [4, 5, 6, 7]
+    df = df.groupby('x', sort=False)
+    value = broadcast_to(["a", "b"], df.obj.index, df.grouper)
+    assert value.tolist() == ["a", "a", "b", "b"]
+
+
+def test_broadcast_to_ndframe_ndframe():
+    df = tibble(x=[1, 2, 3])
+    value = Series([1, 2, 3], index=[1, 2, 3])
+    out = broadcast_to(value, df.index)
+    assert_iterable_equal(out, [None, 1, 2])
+
+    out = broadcast_to(value.to_frame(name="x"), df.index)
+    assert_iterable_equal(out.x, [None, 1, 2])
+
+
+def test_broadcast_to_ndframe_groupby():
+    df = tibble(x=[1, 2, 2, 1, 1, 2]).groupby('x')
+    value = Series([8, 10], index=[1, 2])
+    out = broadcast_to(value, df.obj.index, df.grouper)
+    assert out.tolist() == [8, 10, 10, 8, 8, 10]
+
+    out = broadcast_to(value.to_frame(name="x"), df.obj.index, df.grouper)
+    assert out.x.tolist() == [8, 10, 10, 8, 8, 10]
+
+
+def test_broadcast_to_groupby_ndframe():
+    df = tibble(x=[1, 2, 2, 1, 1, 2]).groupby('x')
+    with pytest.raises(ValueError, match=r"Can't broadcast grouped"):
+        broadcast_to(df, df.obj.index)
+
+    out = broadcast_to(df.x, df.obj.index, df.grouper)
+    assert_iterable_equal(out, df.x.obj)
+
+    out = broadcast_to(df, df.obj.index, df.grouper)
+    assert_tibble_equal(out, df.obj)
+
+    df = tibble(x=[1, 2, 2, 1, 1, 2]).group_by('x')
+    out = broadcast_to(df, df.index, df._datar["grouped"].grouper)
+    assert_frame_equal(df, out)
+
+
+def test_broadcast2():
+    # types: scalar/arrays, DattaFrame/Series, GroupBy, TibbleGrouped
+    # scalar/arrays <-> other
+    left, right, grouper, is_rowwise = broadcast2(
+        1,
+        Series(1),
+    )
+    assert left == 1
+    assert_iterable_equal(right, [1])
+    assert grouper is None
+    assert not is_rowwise
+
+    # not happening in practice, since 1 + 1 will be calculated directory
+    left, right, grouper, is_rowwise = broadcast2(
+        1,
+        2,
+    )
+    assert left == 1
+    assert right == 2
+    assert grouper is None
+    assert not is_rowwise
+
+    left, right, grouper, is_rowwise = broadcast2(
+        Series([1, 2, 3, 4]).groupby([1, 2, 1, 2]),
+        [7, 8],
+    )
+    assert_iterable_equal(left, [1, 2, 3, 4])
+    assert_iterable_equal(right, [7, 7, 8, 8])
+    assert_iterable_equal(grouper.group_info[0], [0, 1, 0, 1])
+    assert not is_rowwise
+
+    left, right, grouper, is_rowwise = broadcast2(
+        tibble(x=[1, 2, 3, 4]).rowwise(),
+        7,
+    )
+
+    assert_iterable_equal(left.x, [1, 2, 3, 4])
+    assert right == 7
+    assert_iterable_equal(grouper.group_info[0], [0, 1, 2, 3])
+    assert is_rowwise
