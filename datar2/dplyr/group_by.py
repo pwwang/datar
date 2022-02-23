@@ -5,7 +5,7 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/group-by.r
 from typing import Any, Union
 
 from pandas.core.frame import DataFrame
-from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby import GroupBy
 from pipda import register_verb
 
 from ..core.exceptions import NameNonUniqueError
@@ -57,6 +57,7 @@ def group_by(
     from .mutate import mutate
 
     _data = regcall(mutate, _data, *args, **kwargs)
+    _data.reset_index(drop=True, inplace=True)
 
     if _drop is None:
         _drop = group_by_drop_default(_data)
@@ -136,7 +137,8 @@ def _(
             "Either first `ungroup()` or call `rowwise()` without arguments."
         )
 
-    return regcall(rowwise, _data, *cols)
+    cols = _data.group_vars
+    return regcall(rowwise, _data._datar["grouped"].obj, *cols)
 
 
 @rowwise.register(TibbleRowwise, context=Context.SELECT)
@@ -199,9 +201,9 @@ def _(
     return Tibble(x)
 
 
-@ungroup.register((DataFrameGroupBy, SeriesGroupBy), context=Context.SELECT)
+@ungroup.register(GroupBy, context=Context.SELECT)
 def _(
-    x: Union[DataFrameGroupBy, SeriesGroupBy],
+    x: GroupBy,
     *cols: Union[str, int],
 ) -> DataFrame:
     if cols:
@@ -211,7 +213,7 @@ def _(
 
 def group_by_drop_default(_tbl: DataFrame) -> bool:
     """Get the groupby _drop attribute of dataframe"""
-    grouped = getattr(_tbl, "_datar", {}).get("_grouped", None)
+    grouped = getattr(_tbl, "_datar", {}).get("grouped", None)
     if not grouped:
         return True
     return grouped.observed

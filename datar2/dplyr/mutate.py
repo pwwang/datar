@@ -153,8 +153,6 @@ def mutate(
         )
 
     data = data[keep]
-    # used for group_by
-    data._datar["mutated_cols"] = mutated_cols
     # redo grouping if grouping variables are mutated
     # but we don't need to do it for rowwise tibble
     if (
@@ -162,13 +160,15 @@ def mutate(
         and len(intersect(gvars, mutated_cols)) > 0
     ):
         grouped = data._datar["grouped"]
-        return grouped.obj.copy().group_by(
+        data = grouped.obj.copy().group_by(
             gvars,
             drop=grouped.observed,
             sort=grouped.sort,
             dropna=grouped.dropna,
         )
 
+    # used for group_by
+    data._datar["mutated_cols"] = mutated_cols
     return data
 
 

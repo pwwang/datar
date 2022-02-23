@@ -25,7 +25,7 @@ right operand `[1, 2]`
 
 import time
 from functools import singledispatch
-from typing import TYPE_CHECKING, Any, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Tuple, Union
 
 import numpy as np
 from pandas import DataFrame, Series
@@ -43,8 +43,22 @@ BroadcastingBaseType = Union[NDFrame, SeriesGroupBy]
 GroupedType = Union[GroupBy, TibbleGrouped]
 
 
-def _regroup(x: GroupBy, indices: Sequence[int]) -> GroupBy:
+def _regroup(x: GroupBy, new_sizes: Union[int, np.ndarray]) -> GroupBy:
     """Regroup grouped object if some groups get broadcasted"""
+    base_sizes = x.grouper.size()
+    base_sizes1 = base_sizes == 1
+    repeats = np.ones(x.obj.shape[0], dtype=int)
+    if base_sizes1.any():
+        # better way?
+        idx_to_broadcast = np.concatenate(
+            [x.grouper.indices[i] for i in base_sizes[base_sizes1].index]
+        )
+        if isinstance(new_sizes, int):
+            repeats[idx_to_broadcast] = new_sizes
+        else:
+            repeats[idx_to_broadcast] = new_sizes[base_sizes1]
+
+    indices = np.arange(x.obj.shape[0]).repeat(repeats)
     gdata = x.grouper.groupings[0].obj
     gdata = gdata.take(indices)
     grouped = gdata.groupby(x.grouper.names)
@@ -99,8 +113,12 @@ def _broadcast_base(
     Returns:
         A tuple of the transformed value and base
     """
-    # plain arrays, scalars
-    if is_scalar(value) or len(value) == 1:
+    # plain arrays, scalars, np.array(True)
+    if (
+        is_scalar(value)
+        or (isinstance(value, np.ndarray) and value.size == 1)
+        or len(value) == 1
+    ):
         return base
 
     name = name or name_of(value) or str(value)
@@ -121,10 +139,7 @@ def _broadcast_base(
                         f"`{name}` must be size 1, not {len(value)}."
                     )
 
-                return _regroup(
-                    base,
-                    np.arange(base.obj.shape[0]).repeat(len(value))
-                )
+                return _regroup(base, len(value))
 
             if usizes[0] != len(value):
                 raise ValueError(
@@ -146,12 +161,7 @@ def _broadcast_base(
                 return base
 
             # broadcast size=1 groups and regroup
-            repeats = np.ones(base.obj.shape[0], dtype=int)
-            idx_to_broadcast = np.concatenate(
-                [base.grouper.indices[i] for i in sizes[sizes == 1].index]
-            )
-            repeats[idx_to_broadcast] = len(value)
-            return _regroup(base, np.arange(base.obj.shape[0]).repeat(repeats))
+            return _regroup(base, len(value))
 
         size_tip = usizes[usizes != len(value)][0]
         raise ValueError(
@@ -214,15 +224,7 @@ def _(
             return base
 
         # Broadcast size-1 groups in base
-        base_sizes = base.grouper.size()
-        base_sizes1 = base_sizes == 1
-        val_sizes = value.grouper.size()
-        repeats = np.ones(base.obj.shape[0], dtype=int)
-        idx_to_broadcast = np.concatenate(
-            [base.grouper.indices[i] for i in base_sizes[base_sizes1].index]
-        )
-        repeats[idx_to_broadcast] = val_sizes[base_sizes1]
-        return _regroup(base, np.arange(base.obj.shape[0]).repeat(repeats))
+        return _regroup(base, value.grouper.size())
 
     if isinstance(base, TibbleRowwise):
         if not _grouper_compatible(
@@ -318,14 +320,7 @@ def _(
             return base
 
         # Broadcast size-1 groups in base
-        base_sizes = base.grouper.size()
-        base_sizes1 = base_sizes == 1
-        repeats = np.ones(base.obj.shape[0], dtype=int)
-        idx_to_broadcast = np.concatenate(
-            [base.grouper.indices[i] for i in base_sizes[base_sizes1].index]
-        )
-        repeats[idx_to_broadcast] = val_sizes[base_sizes1]
-        return _regroup(base, np.arange(base.obj.shape[0]).repeat(repeats))
+        return _regroup(base, val_sizes)
 
     if isinstance(base, TibbleRowwise):
         if value.shape[0] != 1:
@@ -391,7 +386,11 @@ def broadcast_to(
     Returns:
         The series with the given index
     """
-    if is_scalar(value) or len(value) == 1:
+    if (
+        is_scalar(value)
+        or (isinstance(value, np.ndarray) and value.size == 1)
+        or len(value) == 1
+    ):
         return value
 
     if not grouper:
@@ -566,7 +565,7 @@ def broadcast2(left, right) -> Tuple[Any, Any, "Grouper", bool]:
 @singledispatch
 def init_tibble_from(value, name: str) -> Tibble:
     """Initialize a tibble from a value"""
-    if is_scalar(value):
+    if is_scalar(value) or (isinstance(value, np.ndarray) and value.size == 1):
         return Tibble({name: [value]})
 
     return Tibble({name: value})
