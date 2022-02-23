@@ -2,6 +2,7 @@ import pytest
 from pandas import Index, Series
 from pandas.testing import assert_frame_equal
 from datar import f
+from datar2.core.tibble import TibbleGrouped, TibbleRowwise
 from datar2.testing import assert_tibble_equal
 from datar2.tibble import tibble
 from datar2.core.broadcast import (
@@ -129,6 +130,9 @@ def test_broadcast_base_groupby_groupby():
     base = _broadcast_base(df.a, df.a)
     assert base.obj is df.a.obj
 
+    base = _broadcast_base(df.a, df)
+    assert base is df
+
     value = tibble(a=[1, 2, 3]).groupby('a')
     with pytest.raises(ValueError):
         _broadcast_base(value, df)
@@ -200,6 +204,19 @@ def test_broadcast_base_ndframe_groupby():
     df = tibble(a=[1, 2]).group_by("a")
     base = _broadcast_base(value, df)
     assert base.a.obj.tolist() == [1, 2, 2]
+
+    # Rowwise
+    df = tibble(a=[1, 2]).rowwise()
+    value = tibble(a=1)
+    base = _broadcast_base(value, df)
+    assert base is df
+
+    base = _broadcast_base(value, df.a)
+    assert base.obj is df.a.obj
+
+    value = tibble(a=[1, 2])
+    with pytest.raises(ValueError):
+        _broadcast_base(value, df)
 
 
 def test_broadcast_base_ndframe_ndframe():
@@ -321,3 +338,69 @@ def test_broadcast2():
     assert right == 7
     assert_iterable_equal(grouper.group_info[0], [0, 1, 2, 3])
     assert is_rowwise
+
+
+# init_tibble_from
+def test_init_tibble_from_scalarorarrays():
+    x = init_tibble_from(1, "a")
+    assert_tibble_equal(x, tibble(a=1))
+
+    x = init_tibble_from([1, 2], "a")
+    assert_tibble_equal(x, tibble(a=[1, 2]))
+
+
+def test_init_tibble_from_series():
+    x = Series(1)
+    df = init_tibble_from(x, "x")
+    assert_tibble_equal(df, tibble(x=1))
+
+
+def test_init_tibble_from_sgb():
+    x = tibble(a=[1, 2, 3]).groupby('a').a
+    df = init_tibble_from(x, "a")
+    assert isinstance(df, TibbleGrouped)
+    assert_iterable_equal(df.a.obj, x.obj)
+
+    # rowwise
+    x = tibble(a=[1, 2, 3]).rowwise().a
+    df = init_tibble_from(x, "a")
+    assert isinstance(df, TibbleRowwise)
+    assert_iterable_equal(df.a.obj, x.obj)
+
+
+def test_init_tibble_from_df():
+    x = tibble(a=[1, 2, 3])
+    df = init_tibble_from(x, None)
+    assert_frame_equal(x, df)
+
+    # TibbleGrouped
+    x = tibble(a=[1, 2, 3]).group_by('a')
+    df = init_tibble_from(x, "df")
+    assert isinstance(df, TibbleGrouped)
+    assert_iterable_equal(df.columns, ['df$a'])
+
+
+# add_to_tibble
+def test_add_to_tibble():
+    df = tibble(a=[1, 2])
+    tbl = add_to_tibble(df, None, None)
+    assert tbl is df
+
+    tbl = add_to_tibble(None, None, df)
+    assert_frame_equal(tbl, df)
+
+    df = df.group_by("a")
+    tbl = add_to_tibble(df, "b", [3, 4], broadcast_tbl=True)
+    assert isinstance(tbl, TibbleGrouped)
+    assert tbl.b.obj.tolist() == [3, 4, 3, 4]
+
+    value = tibble(b=[3, 4])
+    df = tibble(a=[1, 2])
+    tbl = add_to_tibble(df, None, value)
+    assert_frame_equal(tbl, tibble(a=[1, 2], b=[3, 4]))
+
+    # allow dup names
+    df = tibble(a=[1, 2])
+    value = tibble(a=[3, 4])
+    tbl = add_to_tibble(df, None, value, allow_dup_names=True)
+    assert_iterable_equal(tbl.columns, ["a", "a"])

@@ -9,6 +9,9 @@ from datar2.core.tibble import Tibble, TibbleRowwise, TibbleGrouped
 from datar2.testing import assert_tibble_equal
 
 
+from ..conftest import assert_iterable_equal
+
+
 def test_tibble():
     df = Tibble({"a": [1]}, meta={"x": 2})
     assert df._datar["x"] == 2
@@ -86,8 +89,8 @@ def test_tibble_group_by():
     df3["c"] = 1
     assert df3._datar["grouped"].c.obj.tolist() == [1, 1, 1]
 
-    df3["d"] = Tibble.from_args(d=1)
-    assert df3._datar["grouped"].obj["d$d"].tolist() == [1, 1, 1]
+    df3["d"] = Tibble.from_args(d=df2.b)
+    assert df3._datar["grouped"].obj["d$d"].tolist() == [4, 5, 6]
 
     # copy
     df4 = df3.copy()
@@ -100,13 +103,16 @@ def test_tibble_group_by():
     df5 = df.reindex(["a", "a", "b"])
     assert df5.b.obj.tolist() == [4, 4, 5]
 
-    # take
-    df6 = df.take([0, 0, 1])
-    assert df6.b.obj.tolist() == [4, 4, 5]
+    # # take
+    # df6 = df.take([0, 0, 1])
+    # assert df6.b.obj.tolist() == [4, 4, 5]
 
     # group_by
     df7 = df.group_by("b", add=True)
     assert df7.group_vars == ["a", "b"]
+
+    df8 = df7.convert_dtypes()
+    assert_iterable_equal(df7.values.flatten(), df8.values.flatten())
 
 
 def test_tibble_rowwise():
@@ -122,6 +128,9 @@ def test_tibble_rowwise():
     assert isinstance(df2, TibbleRowwise)
     assert df2._datar["grouped"].grouper.size().tolist() == [1] * 6
 
-    # take
-    df3 = df2.take([0, 2, 4])
-    assert_tibble_equal(df3, df)
+    # # take
+    # df3 = df2.take([0, 2, 4])
+    # assert_tibble_equal(df3, df)
+
+    df3 = df2.copy()
+    assert_tibble_equal(df2, df3)

@@ -279,18 +279,18 @@ class TibbleGrouped(Tibble):
             dropna=grouped.dropna,
         )
 
-    def take(self, *args, **kwargs) -> "TibbleGrouped":
-        result = Tibble(super().take(*args, **kwargs), copy=False)
-        grouped = self._datar["grouped"]
-        return result.group_by(
-            self.group_vars,
-            drop=grouped.observed,
-            sort=grouped.sort,
-            dropna=grouped.dropna,
-        )
+    # def take(self, *args, **kwargs) -> "TibbleGrouped":
+    #     result = Tibble(super().take(*args, **kwargs), copy=False)
+    #     grouped = self._datar["grouped"]
+    #     return result.group_by(
+    #         self.group_vars,
+    #         drop=grouped.observed,
+    #         sort=grouped.sort,
+    #         dropna=grouped.dropna,
+    #     )
 
     def convert_dtypes(self, *args, **kwargs) -> DataFrame:
-        out = super().convert_dtypes(*args, **kwargs)
+        out = DataFrame.convert_dtypes(self, *args, **kwargs)
         out._datar["grouped"].obj = Tibble(out, copy=False)
         return out
 
@@ -358,7 +358,7 @@ class TibbleRowwise(TibbleGrouped):
         result = Tibble(Tibble.reindex(self, *args, **kwargs), copy=False)
         return result.rowwise(self.group_vars)
 
-    def take(self, *args, **kwargs) -> "TibbleRowwise":
-        """Take from tibble by indices, returns a TibbleRowwise object"""
-        result = Tibble.take(self, *args, **kwargs)
-        return result.rowwise(self.group_vars)
+    # def take(self, *args, **kwargs) -> "TibbleRowwise":
+    #     """Take from tibble by indices, returns a TibbleRowwise object"""
+    #     result = Tibble.take(self, *args, **kwargs)
+    #     return result.rowwise(self.group_vars)

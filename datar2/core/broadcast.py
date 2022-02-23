@@ -25,7 +25,7 @@ right operand `[1, 2]`
 
 import time
 from functools import singledispatch
-from typing import TYPE_CHECKING, Any, Tuple, Union
+from typing import TYPE_CHECKING, Any, Sequence, Tuple, Union
 
 import numpy as np
 from pandas import DataFrame, Series
@@ -34,7 +34,7 @@ from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
 from pandas.api.types import is_scalar
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
-from .utils import regcall, name_of
+from .utils import name_of
 
 if TYPE_CHECKING:
     from pandas import Index, Grouper
@@ -43,17 +43,12 @@ BroadcastingBaseType = Union[NDFrame, SeriesGroupBy]
 GroupedType = Union[GroupBy, TibbleGrouped]
 
 
-def _regroup(x: GroupBy, repeats: Union[int, np.ndarray]) -> GroupBy:
+def _regroup(x: GroupBy, indices: Sequence[int]) -> GroupBy:
     """Regroup grouped object if some groups get broadcasted"""
-    from ..dplyr import group_keys
-
-    gdata = regcall(group_keys, x)
-    # Get the data with the new_indices with original grouping variables
-    g_indices = x.grouper.group_info[0].repeat(repeats)
-    gdata = gdata.take(g_indices)
+    gdata = x.grouper.groupings[0].obj
+    gdata = gdata.take(indices)
     grouped = gdata.groupby(x.grouper.names)
-    o_indices = np.arange(x.obj.shape[0]).repeat(repeats)
-    return x.obj.take(o_indices).groupby(grouped.grouper)
+    return x.obj.take(indices).groupby(grouped.grouper)
 
 
 def _agg_result_compatible(index: "Index", grouper: "Grouper") -> bool:
@@ -108,7 +103,7 @@ def _broadcast_base(
     if is_scalar(value) or len(value) == 1:
         return base
 
-    name = name or name_of(value)
+    name = name or name_of(value) or str(value)
 
     if isinstance(base, GroupBy):
         sizes = base.grouper.size()
@@ -126,7 +121,10 @@ def _broadcast_base(
                         f"`{name}` must be size 1, not {len(value)}."
                     )
 
-                return _regroup(base, len(value))
+                return _regroup(
+                    base,
+                    np.arange(base.obj.shape[0]).repeat(len(value))
+                )
 
             if usizes[0] != len(value):
                 raise ValueError(
@@ -153,7 +151,7 @@ def _broadcast_base(
                 [base.grouper.indices[i] for i in sizes[sizes == 1].index]
             )
             repeats[idx_to_broadcast] = len(value)
-            return _regroup(base, repeats)
+            return _regroup(base, np.arange(base.obj.shape[0]).repeat(repeats))
 
         size_tip = usizes[usizes != len(value)][0]
         raise ValueError(
@@ -195,7 +193,7 @@ def _(
     name: str = None,
 ) -> Tuple[Any, BroadcastingBaseType]:
     """Broadcast grouped object when value is a grouped object"""
-    name = name or name_of(value)
+    name = name or name_of(value) or str(value)
 
     if isinstance(base, GroupBy):
 
@@ -224,7 +222,7 @@ def _(
             [base.grouper.indices[i] for i in base_sizes[base_sizes1].index]
         )
         repeats[idx_to_broadcast] = val_sizes[base_sizes1]
-        return _regroup(base, repeats)
+        return _regroup(base, np.arange(base.obj.shape[0]).repeat(repeats))
 
     if isinstance(base, TibbleRowwise):
         if not _grouper_compatible(
@@ -301,13 +299,13 @@ def _(
     for a group. Then we need to broadcast `f.x` to match the result.
     """
     if isinstance(base, GroupBy):
-        # Now the index of value works more like grouping data
-        if not _agg_result_compatible(value.index, base.grouper):
-            name = name or name_of(value)
-            raise ValueError(f"`{name}` is an incompatible aggregated result.")
-
         if getattr(base, "is_rowwise", False):
             return base
+
+        # Now the index of value works more like grouping data
+        if not _agg_result_compatible(value.index, base.grouper):
+            name = name or name_of(value) or str(value)
+            raise ValueError(f"`{name}` is an incompatible aggregated result.")
 
         val_sizes = value.index.value_counts(sort=False)
         if (val_sizes == 1).all():
@@ -327,7 +325,7 @@ def _(
             [base.grouper.indices[i] for i in base_sizes[base_sizes1].index]
         )
         repeats[idx_to_broadcast] = val_sizes[base_sizes1]
-        return _regroup(base, repeats)
+        return _regroup(base, np.arange(base.obj.shape[0]).repeat(repeats))
 
     if isinstance(base, TibbleRowwise):
         if value.shape[0] != 1:
