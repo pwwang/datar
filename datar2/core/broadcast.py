@@ -420,7 +420,12 @@ def _(
     index: "Index",
     grouper: "Grouper" = None,
 ) -> Union[Tibble, Series]:
-    """Broadcast series"""
+    """Broadcast series/dataframe"""
+    if value.index is index:
+        # if it is the same index
+        # e.g. transform results
+        return value
+
     if not grouper:
         if isinstance(value, Series):
             return Series(value, name=value.name, index=index)

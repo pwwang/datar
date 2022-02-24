@@ -34,6 +34,7 @@ def filter(
     """
     if _preserve:
         logger.warning("`filter()` doesn't support `_preserve` argument yet.")
+
     if _data.shape[0] == 0 or not conditions:
         return _data.copy()
 
@@ -57,8 +58,6 @@ def filter(
         condition = getattr(condition, "values", condition)
         out = _data[condition]
 
-    if isinstance(_data, TibbleGrouped):
-        out.reset_index(drop=True, inplace=True)
     return out
 
 

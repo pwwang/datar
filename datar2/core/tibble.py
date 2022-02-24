@@ -257,6 +257,16 @@ class TibbleGrouped(Tibble):
         else:
             DataFrame.__setitem__(self, key, value)
 
+    def _apply_group_to(self, other: Tibble) -> "TibbleGrouped":
+        """Apply my grouping settings to another data frame"""
+        grouped = self._datar["grouped"]
+        return other.group_by(
+            self.group_vars,
+            drop=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
+        )
+
     def copy(self, deep: bool = True) -> "TibbleGrouped":
         grouped = self._datar["grouped"]
         return self.__class__.from_groupby(
@@ -270,24 +280,20 @@ class TibbleGrouped(Tibble):
         )
 
     def reindex(self, *args, **kwargs) -> "TibbleGrouped":
-        result = Tibble(super().reindex(*args, **kwargs), copy=False)
-        grouped = self._datar["grouped"]
-        return result.group_by(
-            self.group_vars,
-            drop=grouped.observed,
-            sort=grouped.sort,
-            dropna=grouped.dropna,
-        )
+        result = Tibble.reindex(self, *args, **kwargs)
+        result.reset_index(drop=True)
+        return self._apply_group_to(result)
 
-    # def take(self, *args, **kwargs) -> "TibbleGrouped":
-    #     result = Tibble(super().take(*args, **kwargs), copy=False)
-    #     grouped = self._datar["grouped"]
-    #     return result.group_by(
-    #         self.group_vars,
-    #         drop=grouped.observed,
-    #         sort=grouped.sort,
-    #         dropna=grouped.dropna,
-    #     )
+
+    def take(self, *args, **kwargs) -> "TibbleGrouped":
+        result = Tibble.take(self, *args, **kwargs)
+        result.reset_index(drop=True)
+        return self._apply_group_to(result)
+
+    def sample(self, *args, **kwargs) -> "TibbleGrouped":
+        result = Tibble.sample(self, *args, **kwargs)
+        result.reset_index(drop=True)
+        return self._apply_group_to(result)
 
     def convert_dtypes(self, *args, **kwargs) -> DataFrame:
         out = DataFrame.convert_dtypes(self, *args, **kwargs)
@@ -353,12 +359,6 @@ class TibbleRowwise(TibbleGrouped):
         out._datar["group_vars"] = self._datar["group_vars"]
         return out
 
-    def reindex(self, *args, **kwargs) -> "TibbleRowwise":
-        """Reindex the tibble, returns a TibbleRowwise object."""
-        result = Tibble(Tibble.reindex(self, *args, **kwargs), copy=False)
-        return result.rowwise(self.group_vars)
-
-    # def take(self, *args, **kwargs) -> "TibbleRowwise":
-    #     """Take from tibble by indices, returns a TibbleRowwise object"""
-    #     result = Tibble.take(self, *args, **kwargs)
-    #     return result.rowwise(self.group_vars)
+    def _apply_group_to(self, other: Tibble) -> "TibbleRowwise":
+        """Apply my grouping settings to another data frame"""
+        return other.rowwise(self.group_vars)
