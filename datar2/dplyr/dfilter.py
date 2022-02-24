@@ -75,6 +75,7 @@ def _(
         _preserve=_preserve,
     )
 
+    out.reset_index(drop=True, inplace=True)
     grouped = _data._datar["grouped"]
     return out.group_by(
         _data.group_vars,
@@ -98,4 +99,5 @@ def _(
         _preserve=_preserve,
     )
 
+    out.reset_index(drop=True, inplace=True)
     return out.rowwise(_data.group_vars)

@@ -281,21 +281,21 @@ class TibbleGrouped(Tibble):
 
     def reindex(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.reindex(self, *args, **kwargs)
-        result.reset_index(drop=True)
+        result.reset_index(drop=True, inplace=True)
         return self._apply_group_to(result)
-
 
     def take(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.take(self, *args, **kwargs)
-        result.reset_index(drop=True)
+        result.reset_index(drop=True, inplace=True)
         return self._apply_group_to(result)
 
     def sample(self, *args, **kwargs) -> "TibbleGrouped":
-        result = Tibble.sample(self, *args, **kwargs)
-        result.reset_index(drop=True)
+        grouped = self._datar["grouped"]
+        result = grouped.sample(*args, **kwargs)
+        result.reset_index(drop=True, inplace=True)
         return self._apply_group_to(result)
 
-    def convert_dtypes(self, *args, **kwargs) -> DataFrame:
+    def convert_dtypes(self, *args, **kwargs) -> "TibbleGrouped":
         out = DataFrame.convert_dtypes(self, *args, **kwargs)
         out._datar["grouped"].obj = Tibble(out, copy=False)
         return out

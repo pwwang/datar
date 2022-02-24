@@ -91,7 +91,7 @@ def c(*elems: Any) -> np.ndarray:
     Returns:
         A collection of elements
     """
-    return np.array(Collection(*elems))
+    return Collection(*elems)
 
 
 @register_func(None, context=Context.EVAL)

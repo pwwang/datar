@@ -1,3 +1,4 @@
+from .arrange import arrange
 from .context import (
     n,
     cur_column,
@@ -7,6 +8,7 @@ from .context import (
     cur_group_id,
     cur_group_rows,
 )
+from .desc import desc
 from .dfilter import filter
 from .dslice import (
     slice,
