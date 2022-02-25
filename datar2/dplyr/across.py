@@ -8,13 +8,11 @@ from typing import (
     Sequence,
     Callable,
     Iterable,
-    List,
     Mapping,
     Tuple,
     Union,
 )
 
-import numpy
 from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
 from pipda import register_func, evaluate_expr
@@ -23,13 +21,9 @@ from pipda.utils import functype
 from pipda.context import ContextBase
 
 from ..core.broadcast import add_to_tibble
+from ..core.tibble import Tibble, TibbleRowwise
 from ..core.utils import (
-    df_setitem,
-    length_of,
-    recycle_df,
-    to_df,
     vars_select,
-    get_option,
     regcall,
 )
 from ..core.middlewares import CurColumn
@@ -54,14 +48,15 @@ class Across:
         cols = regcall(everything, data) if cols is None else cols
         if is_scalar(cols):
             cols = [cols]
+
         cols = data.columns[vars_select(data.columns, cols)]
 
-        fns_list = []  # type: List[str, Union[int, Callable]]
+        fns_list = []
         if callable(fns):
             fns_list.append({"fn": fns})
         elif isinstance(fns, (list, tuple)):
             fns_list.extend(
-                {"fn": fn, "_fn": i + int(not base0), "_fn1": i + 1, "_fn0": i}
+                {"fn": fn, "_fn": i, "_fn1": i + 1, "_fn0": i}
                 for i, fn in enumerate(fns)
             )
         elif isinstance(fns, dict):
@@ -128,9 +123,9 @@ class Across:
                     if isinstance(value, Function):  # pragma: no cover
                         value = value._pipda_eval(self.data, context)
 
-                ret = add_to_tibble(ret, name, value)
+                ret = add_to_tibble(ret, name, value, broadcast_tbl=True)
 
-        return ret
+        return Tibble() if ret is None else ret
 
 
 class IfCross(Across, ABC):
@@ -180,6 +175,7 @@ def across(
     *args: Any,
     _names: str = None,
     _fn_context: Union[Context, ContextBase] = Context.EVAL,
+    _context: ContextBase = None,
     **kwargs: Any,
 ) -> DataFrame:
     """Apply the same transformation to multiple columns
@@ -211,6 +207,8 @@ def across(
     Returns:
         A dataframe with one column for each column and each function.
     """
+    _data = _context.meta.get("input_data", _data)
+
     if not args:
         args = (None, None)
     elif len(args) == 1:
@@ -230,8 +228,9 @@ def across(
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
-    _data: DataFrame,
+    _data: TibbleRowwise,
     _cols: Sequence[str] = None,
+    _context: ContextBase = None,
 ) -> Series:
     """Apply the same transformation to multiple columns rowwisely
 
@@ -242,13 +241,13 @@ def c_across(
     Returns:
         A series
     """
+    _data = _context.meta.get("input_data", _data)
+
     if not _cols:
         _cols = regcall(everything, _data)
 
     _cols = vars_select(_data.columns, _cols)
-
-    series = [_data.iloc[:, col] for col in _cols]
-    return numpy.concatenate(series)
+    return _data.iloc[:, _cols]
 
 
 @register_func(
@@ -274,6 +273,7 @@ def if_any(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
+    _data = _context.meta.get("input_data", _data)
 
     return IfAny(
         _data,
@@ -310,6 +310,7 @@ def if_all(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
+    _data = _context.meta.get("input_data", _data)
 
     return IfAll(
         _data,

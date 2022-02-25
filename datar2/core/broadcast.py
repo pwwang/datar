@@ -31,7 +31,7 @@ import numpy as np
 from pandas import DataFrame, Series
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
-from pandas.api.types import is_scalar
+from pandas.api.types import is_list_like
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
 from .utils import name_of
@@ -114,11 +114,7 @@ def _broadcast_base(
         A tuple of the transformed value and base
     """
     # plain arrays, scalars, np.array(True)
-    if (
-        is_scalar(value)
-        or (isinstance(value, np.ndarray) and value.size == 1)
-        or len(value) == 1
-    ):
+    if not is_list_like(value) or len(value) == 1:
         return base
 
     name = name or name_of(value) or str(value)
@@ -179,7 +175,7 @@ def _broadcast_base(
             base = TibbleGrouped.from_groupby(grouped_new, deep=False)
         return base
 
-    # s/Series
+    # DF/Series
     if not base.index.is_unique:
         return base
 
@@ -189,6 +185,7 @@ def _broadcast_base(
 
     if base.shape[0] == 1:
         base = base.take(base.index.repeat(len(value)))
+        base.index = range(len(value))
         return base
 
     raise ValueError(
@@ -339,7 +336,16 @@ def _(
     if not base.index.is_unique:
         return base
 
-    return base.reindex(value.index)
+    if (
+        base.index.size == 1
+        and base.index[0] == 0
+        and not base.index.equals(value.index)
+    ):
+        base = base.reindex([0] * value.index.size)
+        base.index = value.index
+        return base
+
+    return base
 
 
 @singledispatch
@@ -386,12 +392,11 @@ def broadcast_to(
     Returns:
         The series with the given index
     """
-    if (
-        is_scalar(value)
-        or (isinstance(value, np.ndarray) and value.size == 1)
-        or len(value) == 1
-    ):
+    if not is_list_like(value):
         return value
+
+    if len(value) == 1 and not is_list_like(value[0]):
+        return value[0]
 
     if not grouper:
         if len(value) == 0:
@@ -427,6 +432,11 @@ def _(
         return value
 
     if not grouper:
+        # recycle row-1 series/frame
+        if value.index.size == 1 and value.index[0] == 0:
+            value = value.reindex([0] * index.size)
+            value.index = index
+
         if isinstance(value, Series):
             return Series(value, name=value.name, index=index)
 
@@ -570,7 +580,7 @@ def broadcast2(left, right) -> Tuple[Any, Any, "Grouper", bool]:
 @singledispatch
 def init_tibble_from(value, name: str) -> Tibble:
     """Initialize a tibble from a value"""
-    if is_scalar(value) or (isinstance(value, np.ndarray) and value.size == 1):
+    if not is_list_like(value):
         return Tibble({name: [value]})
 
     return Tibble({name: value})
@@ -579,7 +589,7 @@ def init_tibble_from(value, name: str) -> Tibble:
 @init_tibble_from.register(Series)
 def _(value: Series, name: str) -> Tibble:
     name = name or value.name
-    return Tibble({name: value})
+    return Tibble(value.to_frame(name=name), copy=False)
 
 
 @init_tibble_from.register(SeriesGroupBy)
@@ -594,9 +604,10 @@ def _(value: SeriesGroupBy, name: str) -> Tibble:
 @init_tibble_from.register(DataFrameGroupBy)
 def _(value: Union[DataFrame, DataFrameGroupBy], name: str) -> Tibble:
     from ..tibble import as_tibble
-
     result = as_tibble(value)
     if name:
+        if result is value:
+            result = value.copy()
         result.columns = [f"{name}${col}" for col in result.columns]
     return result
 

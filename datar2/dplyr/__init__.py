@@ -1,3 +1,4 @@
+from .across import across, c_across, if_all, if_any
 from .arrange import arrange
 from .context import (
     n,

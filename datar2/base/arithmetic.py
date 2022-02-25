@@ -1,12 +1,11 @@
 """Arithmetic or math functions"""
 
-from typing import Any, Iterable, Union
+from typing import Any, Iterable, Sequence
 
 import numpy
-from pandas import DataFrame, Series
-from pandas.core.groupby import SeriesGroupBy
+from pandas.core.generic import NDFrame
+from pandas.core.groupby import GroupBy
 from pipda import register_func, register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 # from ..core.types import (
@@ -32,6 +31,8 @@ from ._arithmetic import (
     _min,
     _max,
     _var,
+    _pmin,
+    _pmax,
 )
 
 # cor?, range, summary, iqr
@@ -52,25 +53,25 @@ def sum(x: Any, na_rm: bool = True):
     Returns:
         The sum of the input
     """
-    return _sum(x, na_rm)
+    return _sum(x, na_rm=na_rm)
 
 
-# @register_func(None, Context.EVAL)
-# def prod(x: Any, na_rm: bool = True):
-#     """Product of the input.
+@register_func(None, Context.EVAL)
+def prod(x: Any, na_rm: bool = True):
+    """Product of the input.
 
-#     Args:
-#         x: The input
-#         na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
-#             True, and you might want to use `f.x.prod(min_count=...)` to control
-#             NA produces
-#             And also unlike the function in `R`. It defaults to `True` rather
-#             than `False`
+    Args:
+        x: The input
+        na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
+            True, and you might want to use `f.x.prod(min_count=...)` to control
+            NA produces
+            And also unlike the function in `R`. It defaults to `True` rather
+            than `False`
 
-#     Returns:
-#         The prod of the input
-#     """
-#     return _prod(x, na_rm)
+    Returns:
+        The prod of the input
+    """
+    return _prod(x, na_rm=na_rm)
 
 
 @register_func(None, Context.EVAL)
@@ -87,24 +88,24 @@ def mean(x: Any, na_rm: bool = True):
     Returns:
         The mean of the input
     """
-    return _mean(x, na_rm)
+    return _mean(x, na_rm=na_rm)
 
 
-# @register_func(None, Context.EVAL)
-# def median(x: Any, na_rm: bool = True):
-#     """Median of the input.
+@register_func(None, Context.EVAL)
+def median(x: Any, na_rm: bool = True):
+    """Median of the input.
 
-#     Args:
-#         x: The input
-#         na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
-#             True.
-#             And also unlike the function in `R`. It defaults to `True` rather
-#             than `False`
+    Args:
+        x: The input
+        na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
+            True.
+            And also unlike the function in `R`. It defaults to `True` rather
+            than `False`
 
-#     Returns:
-#         The median of the input
-#     """
-#     return _median(x, na_rm)
+    Returns:
+        The median of the input
+    """
+    return _median(x, na_rm=na_rm)
 
 
 @register_func(None, context=Context.EVAL)
@@ -122,7 +123,7 @@ def min(*x, na_rm: bool = True) -> Any:
     Returns:
         The min of the input
     """
-    return _min(x, na_rm)
+    return _min(*x, na_rm=na_rm)
 
 
 @register_func(None, context=Context.EVAL)
@@ -140,87 +141,63 @@ def max(*x, na_rm: bool = True) -> Any:
     Returns:
         The max of the input
     """
-    return _max(x, na_rm)
+    return _max(*x, na_rm=na_rm)
 
 
-# @register_func(None, context=Context.EVAL)
-# def var(x: Any, na_rm: bool = True, ddof: int = 1):
-#     """Variance of the input.
+@register_func(None, context=Context.EVAL)
+def var(x: Any, na_rm: bool = True, ddof: int = 1):
+    """Variance of the input.
 
-#     Args:
-#         x: The input
-#         na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
-#             True
-#             And also unlike the function in `R`. It defaults to `True` rather
-#             than `False`
-#         ddof: Delta Degrees of Freedom
+    Args:
+        x: The input
+        na_rm: Exclude the NAs. If `x` is SeriesGroupBy object, this is always
+            True
+            And also unlike the function in `R`. It defaults to `True` rather
+            than `False`
+        ddof: Delta Degrees of Freedom
 
-#     Returns:
-#         The variance of the input
-#     """
-#     return _var(x, na_rm, ddof)
-
-
-# @register_func(None, context=Context.EVAL)
-# def pmin(*x: Any, na_rm: bool = False) -> Iterable[float]:
-#     """Get the min value rowwisely
-
-#     Args:
-#         *x: The iterables. Elements will be recycled to the max length
-#         na_rm: Whether ignore the NAs
-
-#     Returns:
-#         The rowwise min of `*x`
-#     """
-#     x = [getattr(elem, "obj", elem) for elem in x]
-#     maxlen = max(map(length_of, x))
-#     sers = [elem for elem in x if isinstance(elem, Series)]
-#     if len(sers) > 0:
-#         df = DataFrame(index=sers[0].index)
-#     else:
-#         df = DataFrame(index=range(maxlen))
-
-#     for i, elem in enumerate(x):
-#         if isinstance(elem, Series) and not elem.index.equals(df.index):
-#             raise ValueError("In pmin(...), incompatible Series objects")
-#         df[i] = broadcast(elem, [None] * maxlen)[0]
-
-#     return df.min(axis=1)
+    Returns:
+        The variance of the input
+    """
+    return _var(x, na_rm, ddof)
 
 
-# @register_func(None, context=Context.EVAL)
-# def pmax(*x: Iterable, na_rm: bool = True) -> Iterable[float]:
-#     """Get the max value rowwisely
-#     Args:
-#         *x: The iterables. Elements will be recycled to the max length
-#         na_rm: Whether ignore the NAs
+@register_func(None, context=Context.EVAL)
+def pmin(*x: Any, na_rm: bool = False) -> Iterable[float]:
+    """Get the min value rowwisely
 
-#     Returns:
-#         The rowwise max of `*x`
-#     """
-#     x = [getattr(elem, "obj", elem) for elem in x]
-#     maxlen = max(map(length_of, x))
-#     sers = [elem for elem in x if isinstance(elem, Series)]
-#     if len(sers) > 0:
-#         df = DataFrame(index=sers[0].index)
-#     else:
-#         df = DataFrame(index=range(maxlen))
+    Args:
+        *x: The iterables. Elements will be recycled to the max length
+        na_rm: Whether ignore the NAs
 
-#     for i, elem in enumerate(x):
-#         if isinstance(elem, Series) and not elem.index.equals(df.index):
-#             raise ValueError("In pmax(...), incompatible Series objects")
-#         df[i] = broadcast(elem, [None] * maxlen)[0]
-
-#     return df.max(axis=1)
+    Returns:
+        The rowwise min of `*x`
+    """
+    return _pmin(*x, na_rm=na_rm)
 
 
-# @register_func(None, context=Context.EVAL)
-# def round(x: NumericOrIter, ndigits: int = 0) -> NumericOrIter:
-#     """Rounding a number"""
-#     if isinstance(x, SeriesGroupBy):
-#         return x.transform(numpy.round, ndigits).groupby(x.grouper)
-#     # recycle ndigits?
-#     return numpy.round(x, ndigits)
+@register_func(None, context=Context.EVAL)
+def pmax(*x: Iterable, na_rm: bool = True) -> Iterable[float]:
+    """Get the max value rowwisely
+    Args:
+        *x: The iterables. Elements will be recycled to the max length
+        na_rm: Whether ignore the NAs
+
+    Returns:
+        The rowwise max of `*x`
+    """
+    return _pmax(*x, na_rm=na_rm)
+
+
+@register_func(None, context=Context.EVAL)
+def round(x, ndigits: int = 0) -> Sequence:
+    """Rounding a number"""
+    if isinstance(x, GroupBy):
+        return x.obj.round(ndigits)
+    elif isinstance(x, NDFrame):
+        return x.round(ndigits)
+    # recycle ndigits?
+    return numpy.round(x, ndigits)
 
 
 # sqrt = register_numpy_func_x(

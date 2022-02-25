@@ -69,7 +69,7 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(left, Sequence):
+        if isinstance(left, Sequence) or isinstance(right, Sequence):
             # induce an intersect with Collection
             return Intersect(left, right)
 
@@ -87,7 +87,7 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(left, Sequence):
+        if isinstance(left, Sequence) or isinstance(right, Sequence):
             # or union?
             return Collection(left, right)
 

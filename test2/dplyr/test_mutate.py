@@ -322,8 +322,8 @@ def test_errors():
     with pytest.raises(KeyError, match="y"):
         tbl >> group_by(f.x) >> mutate(y=None, a=sum(f.y))
 
-    with pytest.raises(TypeError):
-        tibble(x=1) >> mutate(y=len)
+    # functions can be values
+    tibble(x=1) >> mutate(y=len)
 
     # incompatible size
     with pytest.raises(ValueError, match=r"\(5\).+\(4\)"):

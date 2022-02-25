@@ -2,13 +2,11 @@ from functools import singledispatch
 from typing import Any, Iterable
 
 import numpy as np
-from pandas.api.types import is_scalar
 from pandas.core.series import Series
 from pandas.core.groupby import SeriesGroupBy
 
 from ..core.collections import Collection
-from ..core.tibble import TibbleRowwise
-# from ..core.utils import all_groupby, logger, concat_groupby
+from ..core.tibble import Tibble, TibbleRowwise
 from ..core.utils import logger
 
 
@@ -20,6 +18,25 @@ def _warn_na_rm(funcname: str, na_rm: bool, extra_info: str = "") -> None:
             funcname,
             extra_info,
         )
+
+
+def _all_elems(x) -> str:
+    all_rowwise = True
+    all_grouped = True
+    for elem in x:
+        if not getattr(elem, "is_rowwise", False):
+            all_rowwise = False
+
+        if not isinstance(elem, SeriesGroupBy):
+            all_grouped = False
+
+    if all_rowwise:
+        return "rowwise"
+
+    if all_grouped:
+        return "grouped"
+
+    return "other"
 
 
 @singledispatch
@@ -42,13 +59,8 @@ def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
 
 @_sum.register
 def _(x: TibbleRowwise, na_rm: bool = True) -> Series:
-    """Do sum on SeriesGroupBy object"""
-    _warn_na_rm(
-        "sum",
-        na_rm,
-        "Use f.x.sum(min_count=...) to control NA produces."
-    )
-    return x.sum(axis=1)
+    """Do sum on TibbleRowwise object"""
+    return x.sum(axis=1, skipna=na_rm)
 
 
 @singledispatch
@@ -85,8 +97,7 @@ def _(x: SeriesGroupBy, na_rm: bool = True) -> Series:
 
 @_mean.register
 def _(x: TibbleRowwise, na_rm: bool = True) -> Series:
-    _warn_na_rm("mean", na_rm)
-    return x.mean(axis=1)
+    return x.mean(axis=1, skipna=na_rm)
 
 
 @singledispatch
@@ -118,26 +129,21 @@ def _(x: SeriesGroupBy, na_rm: bool = True, ddof: int = 1) -> Series:
 
 
 # min/max
-def _min_grouped(*x: SeriesGroupBy, na_rm: bool = True) -> Series:
-    """Get the min values of grouped serieses"""
+def _min(*x: Any, na_rm: bool = True):
+    """Min of groups of values"""
+    xtype = _all_elems(x)
+    if xtype == "rowwise":
+        return Tibble.from_args(*x).min(axis=1, skipna=na_rm)
+
     _warn_na_rm(
         "min",
         na_rm,
         "Use f.x.min(min_count=...) to control NA produces.",
     )
 
-    if len(x) == 1:
-        return x[0] if is_scalar(x[0]) else x[0].min()
+    if xtype == "grouped":
+        return Tibble.from_args(*x)._datar["grouped"].min()
 
-    return concat_groupby(*x).min()
-
-
-def _min(*x: Any, na_rm: bool = True):
-    """Min of groups of values"""
-    if all(is_scalar(elem) or isinstance(elem, SeriesGroupBy) for elem in x):
-        return _min_grouped(*x)
-
-    x = [elem.obj if isinstance(elem, SeriesGroupBy) else elem for elem in x]
     func = np.nanmin if na_rm else np.min
     if len(x) > 0:
         x = Collection(*x)  # flatten
@@ -147,26 +153,21 @@ def _min(*x: Any, na_rm: bool = True):
     return func(x)
 
 
-def _max_grouped(*x: SeriesGroupBy, na_rm: bool = True) -> Series:
-    """Get the max values of grouped serieses"""
+def _max(*x: Any, na_rm: bool = True):
+    """Max of groups of values"""
+    xtype = _all_elems(x)
+    if xtype == "rowwise":
+        return Tibble.from_args(*x).max(axis=1, skipna=na_rm)
+
     _warn_na_rm(
         "max",
         na_rm,
-        "Use f.x.max(min_count=...) to control NA produces.",
+        "Use f.x.max(max=...) to control NA produces.",
     )
 
-    if len(x) == 1:
-        return x[0].max()
+    if xtype == "grouped":
+        return Tibble.from_args(*x)._datar["grouped"].max()
 
-    return concat_groupby(*x).max()
-
-
-def _max(*x: Any, na_rm: bool = True):
-    """Max of groups of values"""
-    if all(is_scalar(elem) or isinstance(elem, SeriesGroupBy) for elem in x):
-        return _max_grouped(*x)
-
-    x = [elem.obj if isinstance(elem, SeriesGroupBy) else elem for elem in x]
     func = np.nanmax if na_rm else np.max
     if len(x) > 0:
         x = Collection(*x)  # flatten
@@ -179,7 +180,9 @@ def _max(*x: Any, na_rm: bool = True):
 # pmin/pmax
 def _pmin(*x: Any, na_rm: bool = True) -> Iterable:
     """Do pmin internally"""
-    if all_groupby(*x):
-        return _pmin_grouped(*x, na_rm)
+    return Tibble.from_args(*x).min(axis=1, skipna=na_rm)
 
-    df = tibble(*x)
+
+def _pmax(*x: Any, na_rm: bool = True) -> Iterable:
+    """Do pmax internally"""
+    return Tibble.from_args(*x).max(axis=1, skipna=na_rm)

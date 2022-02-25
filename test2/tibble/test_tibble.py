@@ -137,7 +137,7 @@ def test_mutate_semantics():
 
     x = Series([1], name="x")
     df = tibble(x, f.x * 2)
-    assert_tibble_equal(df, tibble(x=1, **{"f.x * 2": 2}))
+    assert_tibble_equal(df, tibble(x=1, **{"x * 2": 2}))
 
 
 # TODO: units preseved when recycled

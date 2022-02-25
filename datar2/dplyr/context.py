@@ -62,10 +62,10 @@ def cur_group_id(_data: DataFrame, _context: ContextBase = None) -> int:
 
 
 @cur_group_id.register(TibbleGrouped)
-def _(_data: TibbleGrouped, _context: ContextBase = None) -> np.ndarray:
+def _(_data: TibbleGrouped, _context: ContextBase = None) -> Series:
     _data = _context.meta.get("input_data", _data)
-    grouper = _data.attrs["_grouped"].grouper
-    return np.arange(grouper.ngroups)
+    grouper = _data._datar["grouped"].grouper
+    return Series(np.arange(grouper.ngroups), index=grouper.result_index)
 
 
 @register_func(DataFrame, verb_arg_only=True)

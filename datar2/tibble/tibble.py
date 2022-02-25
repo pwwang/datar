@@ -21,6 +21,7 @@ def tibble(
     _name_repair: Union[str, Callable] = "check_unique",
     _rows: int = None,
     _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
+    _drop_index: bool = False,
     **kwargs,
 ) -> Tibble:
     """Constructs a data frame
@@ -38,17 +39,22 @@ def tibble(
         _rows: Number of rows of a 0-col dataframe when args and kwargs are
             not provided. When args or kwargs are provided, this is ignored.
         _dtypes: The dtypes for each columns to convert to.
+        _drop_index: Whether drop the index for the final data frame
 
     Returns:
         A constructed tibble
     """
-    return Tibble.from_args(
+    out = Tibble.from_args(
         *args,
         **kwargs,
         _name_repair=_name_repair,
         _rows=_rows,
         _dtypes=_dtypes,
     )
+    if _drop_index:
+        return out.reset_index(drop=True)
+
+    return out
 
 
 def tribble(
@@ -140,7 +146,7 @@ def tibble_row(
         A constructed dataframe
     """
     if not args and not kwargs:
-        df = Tibble(index=[0])  # still one row
+        df = Tibble(index=range(1))  # still one row
     else:
         df = tibble(*args, **kwargs, _name_repair=_name_repair, _dtypes=_dtypes)
 

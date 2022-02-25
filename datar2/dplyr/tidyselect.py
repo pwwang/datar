@@ -1,7 +1,7 @@
 """Select helpers"""
 import re
 import builtins
-from typing import Callable, Sequence, Union
+from typing import Callable, List, Sequence, Union
 
 import numpy as np
 from pandas.api.types import is_scalar
@@ -17,7 +17,7 @@ from .group_data import group_vars
 
 
 @register_func(DataFrame, context=Context.EVAL)
-def where(_data: DataFrame, fn: Callable) -> Sequence[str]:
+def where(_data: DataFrame, fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
     Args:
@@ -43,11 +43,11 @@ def where(_data: DataFrame, fn: Callable) -> Sequence[str]:
         else all(flag)
         for flag in mask
     ]
-    return columns[mask]
+    return np.array(columns)[mask].tolist()
 
 
 @register_func(DataFrame)
-def everything(_data: DataFrame) -> Sequence[str]:
+def everything(_data: DataFrame) -> List[str]:
     """Matches all columns.
 
     Args:
@@ -56,10 +56,12 @@ def everything(_data: DataFrame) -> Sequence[str]:
     Returns:
         All column names of _data
     """
-    return regcall(
-        setdiff,
-        _data.columns,
-        regcall(group_vars, _data),
+    return list(
+        regcall(
+            setdiff,
+            _data.columns,
+            regcall(group_vars, _data),
+        )
     )
 
 
@@ -91,7 +93,7 @@ def starts_with(
     match: Union[str, Sequence[str]],
     ignore_case: bool = True,
     vars: Sequence[str] = None,
-) -> Sequence[str]:
+) -> List[str]:
     """Select columns starting with a prefix.
 
     Args:
@@ -118,7 +120,7 @@ def ends_with(
     match: Union[str, Sequence[str]],
     ignore_case: bool = True,
     vars: Sequence[str] = None,
-) -> Sequence[str]:
+) -> List[str]:
     """Select columns ending with a suffix.
 
     Args:
@@ -145,7 +147,7 @@ def contains(
     match: str,
     ignore_case: bool = True,
     vars: Sequence[str] = None,
-) -> Sequence[str]:
+) -> List[str]:
     """Select columns containing substrings.
 
     Args:
@@ -172,7 +174,7 @@ def matches(
     match: str,
     ignore_case: bool = True,
     vars: Sequence[str] = None,
-) -> Sequence[str]:
+) -> List[str]:
     """Select columns matching regular expressions.
 
     Args:
@@ -197,7 +199,7 @@ def matches(
 def all_of(
     _data: DataFrame,
     x: Sequence[Union[int, str]],
-) -> Sequence[str]:
+) -> List[str]:
     """For strict selection.
 
     If any of the variables in the character vector is missing,
@@ -225,7 +227,7 @@ def all_of(
     #         f"Columns {nonexists} not exist."
     #     )
 
-    return x.values
+    return x.tolist()
 
 
 @register_func(context=Context.SELECT)
@@ -233,7 +235,7 @@ def any_of(
     _data: DataFrame,
     x: Sequence[Union[int, str]],
     vars: Sequence[str] = None,
-) -> Sequence[str]:
+) -> List[str]:
     """Select but doesn't check for missing variables.
 
     It is especially useful with negative selections,
@@ -255,10 +257,12 @@ def any_of(
     #     except IndexError:
     #         ...
     # do we need intersect?
-    return regcall(
-        intersect,
-        vars,
-        ensure_nparray(vars)[x],
+    return list(
+        regcall(
+            intersect,
+            vars,
+            ensure_nparray(vars)[x],
+        )
     )
 
 
@@ -267,7 +271,7 @@ def num_range(
     prefix: str,
     range: Sequence[int],
     width: int = None,
-) -> Sequence[str]:
+) -> List[str]:
     """Matches a numerical range like x01, x02, x03.
 
     Args:
@@ -286,9 +290,7 @@ def num_range(
         if not width
         else str(elem).zfill(width)
     )
-    return np.array(
-        [f"{prefix}{zfill(elem)}" for elem in builtins.range(range)]
-    )
+    return [f"{prefix}{zfill(elem)}" for elem in builtins.range(range)]
 
 
 def _filter_columns(
@@ -296,7 +298,7 @@ def _filter_columns(
     match: Union[Sequence[str], str],
     ignore_case: bool,
     func: Callable[[str, str], bool],
-) -> Sequence[str]:
+) -> List[str]:
     """Filter the columns with given critera
 
     Args:

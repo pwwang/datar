@@ -1,12 +1,13 @@
 from itertools import chain
 from typing import Callable, Mapping, Union, Sequence
 
+import numpy as np
 from pandas._typing import Dtype
 from pandas.api.types import is_scalar
 from pandas.core.frame import DataFrame
 from pandas.core.indexes.base import Index
 from pandas.core.series import Series
-from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
+from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import evaluate_expr
 
 from .collections import Collection
@@ -68,6 +69,7 @@ class Tibble(DataFrame):
             # value = regcall(ungroup, value)
             if isinstance(value, Collection):
                 value.expand()
+
             out = add_to_tibble(
                 out,
                 name,
@@ -77,7 +79,6 @@ class Tibble(DataFrame):
             )
 
         out = Tibble() if out is None else out
-        out.reset_index(drop=True, inplace=True)
 
         if _dtypes in (None, False):
             return out
@@ -146,15 +147,19 @@ class Tibble(DataFrame):
 
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
-        if isinstance(value, (DataFrameGroupBy, SeriesGroupBy)):
-            value = value.obj
-
         value = broadcast_to(value, self.index)
 
+        if isinstance(value, GroupBy):
+            value = value.obj
+
         if isinstance(key, str) and isinstance(value, DataFrame):
-            for col in value.columns:
-                colname = f"{key}${col}"
-                super().__setitem__(colname, value[col])
+            if value.shape[1] == 0:
+                super().__setitem__(key, np.nan)
+
+            else:
+                for col in value.columns:
+                    colname = f"{key}${col}"
+                    super().__setitem__(colname, value[col])
 
         else:
             super().__setitem__(key, value)
@@ -218,7 +223,7 @@ class TibbleGrouped(Tibble):
     @classmethod
     def from_groupby(
         cls,
-        grouped: Union[SeriesGroupBy, DataFrameGroupBy],
+        grouped: GroupBy,
         name: str = None,
         deep: bool = True,
     ) -> "TibbleGrouped":
@@ -286,6 +291,9 @@ class TibbleGrouped(Tibble):
 
     def take(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.take(self, *args, **kwargs)
+        if kwargs.get("axis", 0) == 1:
+            return result
+
         result.reset_index(drop=True, inplace=True)
         return self._apply_group_to(result)
 
