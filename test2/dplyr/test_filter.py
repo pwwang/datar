@@ -1,6 +1,5 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-filter.r
-import numpy
 from pandas import Series
 import pytest
 from datar import f

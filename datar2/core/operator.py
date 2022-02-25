@@ -57,6 +57,10 @@ class DatarOperator(Operator):
             return Negated(operand)
         return self._arithmetize1(operand, "neg")
 
+    def _op_pos(self, operand: Any) -> Any:
+        """Interpretation for -x"""
+        return self._arithmetize1(operand, "pos")
+
     def _op_and_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
 

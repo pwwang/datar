@@ -141,7 +141,7 @@ def n_groups(_data: DataFrame) -> int:
 
 @n_groups.register(TibbleGrouped)
 def _(_data: TibbleGrouped) -> int:
-    return _data._datar["grouped"].grouper
+    return _data._datar["grouped"].ngroups
 
 
 @n_groups.register(TibbleRowwise)

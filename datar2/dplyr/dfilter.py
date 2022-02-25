@@ -7,12 +7,11 @@ import operator
 
 import numpy as np
 from pandas import DataFrame
-from pandas.core.groupby import GroupBy
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import regcall, logger
-from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
+from ..core.utils import logger
+from ..core.tibble import Tibble, TibbleGrouped
 from ..core.broadcast import broadcast_to
 from ..core.operator import _binop
 

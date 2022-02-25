@@ -214,7 +214,7 @@ def test_broadcast_base_ndframe_groupby():
     base = _broadcast_base(value, df.a)
     assert base.obj is df.a.obj
 
-    value = tibble(a=[1, 2])
+    value = tibble(a=[1, 2, 3])
     with pytest.raises(ValueError):
         _broadcast_base(value, df)
 
@@ -230,7 +230,7 @@ def test_broadcast_base_ndframe_ndframe():
     value = tibble(a=[1, 2, 3])
     value.index = [1, 2, 3]
     base = _broadcast_base(value, df)
-    assert_iterable_equal(base.a, [2, 3, None])
+    assert_iterable_equal(base.a, [1, 2, 3])
 
 
 # broadcast_to

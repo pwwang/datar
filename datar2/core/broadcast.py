@@ -31,7 +31,7 @@ import numpy as np
 from pandas import DataFrame, Series
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
-from pandas.api.types import is_list_like
+from pandas.api.types import is_list_like, is_categorical_dtype
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
 from .utils import name_of
@@ -320,7 +320,7 @@ def _(
         return _regroup(base, val_sizes)
 
     if isinstance(base, TibbleRowwise):
-        if value.shape[0] != 1:
+        if value.shape[0] != 1 and not base.index.equals(value.index):
             raise ValueError(f"`{name}` must be size 1, not {value.shape[0]}.")
         # Don't broadcast rowwise
         return base
@@ -395,7 +395,11 @@ def broadcast_to(
     if not is_list_like(value):
         return value
 
-    if len(value) == 1 and not is_list_like(value[0]):
+    if (
+        len(value) == 1
+        and not is_list_like(value[0])
+        and not is_categorical_dtype(value)
+    ):
         return value[0]
 
     if not grouper:

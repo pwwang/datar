@@ -61,7 +61,11 @@ def group_by(
 
     if _drop is None:
         _drop = group_by_drop_default(_data)
+
     new_cols = _data._datar["mutated_cols"]
+    if len(new_cols) == 0:
+        return _data
+
     return _data.group_by(new_cols, drop=_drop, sort=_sort, dropna=_dropna)
 
 
@@ -78,6 +82,9 @@ def _(
     """Group a grouped data frame"""
     from .mutate import mutate
 
+    if _drop is None:
+        _drop = group_by_drop_default(_data)
+
     _data = regcall(mutate, _data, *args, **kwargs)
     new_cols = _data._datar["mutated_cols"]
     gvars = regcall(
@@ -88,7 +95,7 @@ def _(
 
     return regcall(
         group_by,
-        Tibble(_data),
+        Tibble(_data, copy=False),
         *gvars,
         _drop=_drop,
         _sort=_sort,
