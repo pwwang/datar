@@ -6,7 +6,7 @@ from pandas.testing import assert_frame_equal
 from datar import f
 from datar2.tibble import tibble
 from datar2.base import NA, rep, c
-from datar2.dplyr import arrange, desc, group_by, group_vars, group_rows
+from datar2.dplyr import arrange, desc, group_by, group_vars, group_rows, across
 from datar2.testing import assert_tibble_equal
 from datar2.core.tibble import TibbleGrouped
 from datar2.core.exceptions import NameNonUniqueError
@@ -85,21 +85,21 @@ def test_update_grouping():
     assert group_rows(res) == [[0, 2], [1, 3]]
 
 
-# def test_across():
-#     df = tibble(x=[1, 3, 2, 1], y=[4, 3, 2, 1])
+def test_across():
+    df = tibble(x=[1, 3, 2, 1], y=[4, 3, 2, 1])
 
-#     out = df >> arrange(across())
-#     expect = df >> arrange(f.x, f.y)
-#     assert out.equals(expect)
+    out = df >> arrange(across())
+    expect = df >> arrange(f.x, f.y)
+    assert out.equals(expect)
 
-#     out = df >> arrange(across(None, desc))
-#     expect = df >> arrange(desc(f.x), desc(f.y))
-#     assert out.equals(expect)
+    out = df >> arrange(across(None, desc))
+    expect = df >> arrange(desc(f.x), desc(f.y))
+    assert out.equals(expect)
 
-#     out = df >> arrange(across(f.x))
-#     expect = df >> arrange(f.x)
-#     assert out.equals(expect)
+    out = df >> arrange(across(f.x))
+    expect = df >> arrange(f.x)
+    assert out.equals(expect)
 
-#     out = df >> arrange(across(f.y))
-#     expect = df >> arrange(f.y)
-#     assert out.equals(expect)
+    out = df >> arrange(across(f.y))
+    expect = df >> arrange(f.y)
+    assert out.equals(expect)

@@ -306,7 +306,7 @@ def test_if_any_all_enforce_bool():
 def test_if_any_all_in_mutate():
     d = tibble(x=c(1, 5, 10, 10), y=c(0, 0, 0, 10), z=c(10, 5, 1, 10))
     res = d >> mutate(
-        any=if_any(f[f.x : ], lambda x: x > 8),
+        any=if_any(f[f.x :], lambda x: x > 8),
         all=if_all(f[f.x : f.any], lambda x: x > 8),
     )
     assert_iterable_equal(res["any"], [True, False, True, True])
@@ -346,7 +346,7 @@ def test_c_across():
     df = tibble(x=[1, 2], y=[3, 4])
 
     out = df >> summarise(z=c_across([f.x, f.y]))
-    assert_frame_equal(out['z'], df)
+    assert_frame_equal(out["z"], df)
 
     # what if no columns specified
     gf = df >> rowwise(f.x)
@@ -378,9 +378,7 @@ def test_nb_fail_c_across():
     out = (
         df
         >> rowwise()
-        >> mutate(
-            sum=sum(c_across(f[f.w : ])), sd=sd(c_across(f[f.w :]))
-        )
+        >> mutate(sum=sum(c_across(f[f.w :])), sd=sd(c_across(f[f.w :])))
     )
 
     assert isinstance(out, TibbleRowwise)
