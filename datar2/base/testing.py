@@ -11,9 +11,11 @@
 import builtins
 from typing import Any, Callable, Iterable, Sequence, Type, Union
 
-import numpy
+import numpy as np
 from pandas.api.types import is_scalar
-from pandas.core.dtypes.common import (
+from pandas.core.groupby import GroupBy
+from pandas.core.generic import NDFrame
+from pandas.api.types import (
     is_integer_dtype,
     is_float_dtype,
     is_numeric_dtype,
@@ -50,7 +52,7 @@ def _register_type_testing(
 
 is_numeric = _register_type_testing(
     "is_numeric",
-    scalar_types=(int, float, complex, numpy.number),
+    scalar_types=(int, float, complex, np.number),
     dtype_checker=is_numeric_dtype,
     doc="""Test if a value is numeric
 
@@ -65,7 +67,7 @@ is_numeric = _register_type_testing(
 
 is_integer = _register_type_testing(
     "is_integer",
-    scalar_types=(int, numpy.integer),
+    scalar_types=(int, np.integer),
     dtype_checker=is_integer_dtype,
     doc="""Test if a value is integers
 
@@ -83,7 +85,7 @@ is_int = is_integer
 
 is_double = _register_type_testing(
     "is_double",
-    scalar_types=(float, numpy.float_),
+    scalar_types=(float, np.float_),
     dtype_checker=is_float_dtype,
     doc="""Test if a value is integers
 
@@ -114,7 +116,7 @@ def is_atomic(x: Any) -> bool:
 
 
 @register_func(None, context=Context.EVAL)
-def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrSeq:
+def is_element(x: Any, elems: Iterable[Any]) -> BoolOrSeq:
     """R's `is.element()` or `%in%`.
 
     Alias `is_in()`
@@ -122,8 +124,13 @@ def is_element(elem: Any, elems: Iterable[Any]) -> BoolOrSeq:
     We can't do `a %in% b` in python (`in` behaves differently), so
     use this function instead
     """
-    out = numpy.in1d(elem, elems)
-    if is_scalar(elem):  # necessary?
+    if isinstance(x, GroupBy):
+        return x.transform(np.in1d, ar2=elems)
+    if isinstance(x, NDFrame):
+        return x.isin(elems)
+
+    out = np.in1d(x, elems)
+    if is_scalar(out):
         return bool(out)
     return out
 

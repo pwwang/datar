@@ -13,6 +13,7 @@ from pipda import register_verb
 from ..core.contexts import Context
 from ..core.utils import regcall, logger
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
+from ..core.broadcast import broadcast_to
 from ..core.operator import _binop
 
 
@@ -42,62 +43,18 @@ def filter(
     for cond in conditions:
         condition = _binop(operator.and_, condition, cond)
 
-    if isinstance(condition, GroupBy):
-        condition = condition.obj
+    grouper = None
+    if isinstance(_data, TibbleGrouped):
+        grouper = _data._datar["grouped"].grouper
 
+    condition = broadcast_to(condition, _data.index, grouper)
     if isinstance(condition, np.bool_):
         condition = bool(condition)
 
     if condition is True:
-        out = _data.copy()
-    elif condition is False:
-        out = _data.take([])
-    else:
-        condition = condition.astype(bool)
-        # Decouple Series/DataFrame
-        condition = getattr(condition, "values", condition)
-        out = _data[condition]
+        return _data.copy()
+    if condition is False:
+        return _data.take([])
 
-    return out
-
-
-@filter.register(TibbleGrouped, context=Context.EVAL)
-def _(
-    _data: TibbleGrouped,
-    *conditions: Iterable[bool],
-    _preserve: bool = False,
-) -> TibbleGrouped:
-    """Filter on TibbleGrouped object"""
-    out = regcall(
-        filter,
-        _data._datar["grouped"].obj,
-        *conditions,
-        _preserve=_preserve,
-    )
-
-    out.reset_index(drop=True, inplace=True)
-    grouped = _data._datar["grouped"]
-    return out.group_by(
-        _data.group_vars,
-        drop=grouped.observed,
-        sort=grouped.sort,
-        dropna=grouped.dropna,
-    )
-
-
-@filter.register(TibbleRowwise, context=Context.EVAL)
-def _(
-    _data: TibbleRowwise,
-    *conditions: Iterable[bool],
-    _preserve: bool = False,
-) -> TibbleGrouped:
-    """Filter on TibbleGrouped object"""
-    out = regcall(
-        filter,
-        _data._datar["grouped"].obj,
-        *conditions,
-        _preserve=_preserve,
-    )
-
-    out.reset_index(drop=True, inplace=True)
-    return out.rowwise(_data.group_vars)
+    condition = getattr(condition, "values", condition)
+    return _data[condition]

@@ -1,4 +1,5 @@
 from .arithmetic import sum, max, min, mean, median, round
+from .complex import re
 from .constants import pi, letters, LETTERS, month_abb, month_name
 from .factor import (
     droplevels,
