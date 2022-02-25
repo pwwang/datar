@@ -45,7 +45,7 @@ def colnames(
         with new column names.
         if the input dataframe is grouped, the structure is kept.
     """
-    has_nest = any("$" in col for col in df.columns)
+    has_nest = any("$" in str(col) for col in df.columns)
     if not has_nest or not nested:
         if new is None:
             return df.columns.values

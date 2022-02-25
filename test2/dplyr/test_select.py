@@ -4,11 +4,13 @@ import pytest
 
 from datar import f
 from datar.datasets import mtcars
-from datar2.base import colnames, ncol, nrow, c, NA
+from datar2.base import colnames, ncol, nrow, c, NA, sum, mean, names
+from datar2.stats import rnorm
 from datar2.tibble import tibble
 from datar2.dplyr import (
     group_vars,
     group_by,
+    summarise,
     select,
     starts_with,
     matches,
@@ -97,19 +99,19 @@ def test_can_select_with_duplicate_columns():
 
 
 # Select variables -----------------------------------------------
-# def test_can_be_before_group_by():
-#     df = tibble(
-#         id = c(1, 1, 2, 2, 2, 3, 3, 4, 4, 5),
-#         year = c(2013, 2013, 2012, 2013, 2013, 2013, 2012, 2012, 2013, 2013),
-#         var1 = rnorm(10)
-#     )
-#     dfagg = df >> group_by(
-#         f.id, f.year
-#     ) >> select(
-#         f.id, f.year, f.var1
-#     ) >> summarise(var1 = mean(f.var1))
+def test_can_be_before_group_by():
+    df = tibble(
+        id = c(1, 1, 2, 2, 2, 3, 3, 4, 4, 5),
+        year = c(2013, 2013, 2012, 2013, 2013, 2013, 2012, 2012, 2013, 2013),
+        var1 = rnorm(10)
+    )
+    dfagg = df >> group_by(
+        f.id, f.year
+    ) >> select(
+        f.id, f.year, f.var1
+    ) >> summarise(var1 = mean(f.var1))
 
-#     assert names(dfagg) == ["id", "year", "var1"]
+    assert_iterable_equal(names(dfagg), ["id", "year", "var1"])
 
 
 def test_arguments_to_select_dont_match_vars_select_arguments():
@@ -236,7 +238,7 @@ def test_tidyselect_funs():
     assert out.columns.tolist() == ["x"]
 
     out = num_range("a", 3, width=2)
-    assert out.tolist() == ["a00", "a01", "a02"]
+    assert out == ["a00", "a01", "a02"]
 
     df = tibble(tibble(X=1), X=2, _name_repair="minimal")
     out = df >> select(contains("X"))

@@ -7,14 +7,18 @@ from datar.datasets import mtcars
 from datar2.core.contexts import Context
 from datar2.core.exceptions import NameNonUniqueError
 from datar2.core.tibble import TibbleRowwise
-from datar2.base import c, mean, rep, seq_len, dim, letters
+from datar2.stats import runif
+from datar2.base import c, mean, rep, seq_len, dim, letters, sum
 from datar2.dplyr import (
     summarise,
+    summarize,
     group_by,
     group_vars,
     mutate,
     group_rows,
+    ends_with,
     rowwise,
+    across,
 )
 from datar2.tibble import tibble
 from datar2.testing import assert_tibble_equal
@@ -114,14 +118,14 @@ def test_0col_df_in_results_ignored():
     assert df3.equals(df4)
 
 
-# def test_peels_off_a_single_layer_of_grouping():
-#     df = tibble(
-#         x=rep([1, 2, 3, 4], each=4), y=rep([1, 2], each=8), z=runif(16)
-#     )
-#     gf = df >> group_by(f.x, f.y)
+def test_peels_off_a_single_layer_of_grouping():
+    df = tibble(
+        x=rep([1, 2, 3, 4], each=4), y=rep([1, 2], each=8), z=runif(16)
+    )
+    gf = df >> group_by(f.x, f.y)
 
-#     assert group_vars(summarise(gf)) == ["x"]
-#     assert group_vars(summarise(summarise(gf))) == []
+    assert group_vars(summarise(gf)) == ["x"]
+    assert group_vars(summarise(summarise(gf))) == []
 
 
 def test_correctly_reconstructs_groups():
@@ -297,22 +301,22 @@ def test_errors(caplog):
         df >> summarise(f.x)
 
 
-# def test_summarise_with_multiple_acrosses():
-#     """https://stackoverflow.com/questions/63200530/python-pandas-equivalent-to-dplyr-1-0-0-summarizeacross"""
-#     out = (
-#         mtcars
-#         >> group_by(f.cyl)
-#         >> summarize(across(ends_with("p"), sum), across(ends_with("t"), mean))
-#     )
+def test_summarise_with_multiple_acrosses():
+    """https://stackoverflow.com/questions/63200530/python-pandas-equivalent-to-dplyr-1-0-0-summarizeacross"""
+    out = (
+        mtcars
+        >> group_by(f.cyl)
+        >> summarize(across(ends_with("p"), sum), across(ends_with("t"), mean))
+    )
 
-#     exp = tibble(
-#         cyl=[6, 4, 8],
-#         disp=[1283.2, 1156.5, 4943.4],
-#         hp=[856, 909, 2929],
-#         drat=[3.585714, 4.070909, 3.229286],
-#         wt=[3.117143, 2.285727, 3.999214],
-#     )
-#     assert_tibble_equal(out, exp)
+    exp = tibble(
+        cyl=[6, 4, 8],
+        disp=[1283.2, 1156.5, 4943.4],
+        hp=[856, 909, 2929],
+        drat=[3.585714, 4.070909, 3.229286],
+        wt=[3.117143, 2.285727, 3.999214],
+    )
+    assert_tibble_equal(out, exp)
 
 
 def test_dup_keyword_args():
