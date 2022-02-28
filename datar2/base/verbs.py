@@ -15,6 +15,7 @@ from ..core.utils import (
     regcall,
     ensure_nparray,
 )
+from .seq import unique
 
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -54,7 +55,10 @@ def colnames(
         return df
 
     # x, y, y -> x, y
-    names = Index([col.split("$", 1)[0] for col in df.columns]).unique()
+    names = Index([col.split("$", 1)[0] for col in df.columns])
+    names = regcall(unique, names)
+    if new is None:
+        return names if nested else df.columns.values
     mappings = dict(zip(names, new))
     newnames = []
     for col in df.columns:
@@ -215,6 +219,8 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
 @register_verb(context=Context.EVAL)
 def setdiff(x: Any, y: Any) -> np.ndarray:
     """Diff of two iterables"""
+    x = ensure_nparray(x)
+    y = ensure_nparray(y)
     return np.array([elem for elem in x if elem not in frozenset(y)])
 
 
@@ -224,6 +230,7 @@ def intersect(x: Any, y: Any) -> np.ndarray:
     # order not kept
     # return np.intersect1d(x, y)
     x = pd.unique(ensure_nparray(x))
+    y = ensure_nparray(y)
     return np.array([elem for elem in x if elem in frozenset(y)])
 
 
@@ -248,14 +255,14 @@ def unique(x: Any) -> np.ndarray:
 def setequal(x: Any, y: Any, equal_na: bool = True) -> bool:
     """Check set equality for two iterables (order doesn't matter)"""
     return np.array_equal(
-        ensure_nparray(x),
-        ensure_nparray(y),
+        np.sort(ensure_nparray(x)),
+        np.sort(ensure_nparray(y)),
         equal_nan=equal_na,
     )
 
 
 @register_verb(
-    (Sequence, np.ndarray, Series, Categorical),
+    (Sequence, np.ndarray, list, tuple, Series, Categorical),
     context=Context.EVAL,
 )
 def append(x: Any, values: Any, after: int = -1) -> np.ndarray:
@@ -271,7 +278,9 @@ def append(x: Any, values: Any, after: int = -1) -> np.ndarray:
         ‘values’ appended after the specified element of ‘x’.
     """
     x = ensure_nparray(x)
-    if after < 0:
+    if after is None:
+        after = 0
+    elif after < 0:
         after += len(x) + 1
     else:
         after += 1
@@ -358,7 +367,7 @@ def max_col(
             return np.random.choice(indices)
         return indices[-1]
 
-    return df.apply(which_max_with_ties, axis=1).to_np()
+    return df.apply(which_max_with_ties, axis=1).values
 
 
 @register_verb(DataFrame)

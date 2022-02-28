@@ -23,3 +23,11 @@ def assert_iterable_equal(x, y, na=SENTINEL, approx=False):
     elif approx:
         x = pytest.approx(x, rel=approx)
     assert x == y
+
+
+def is_installed(pkg):
+    try:
+        __import__(pkg)
+        return True
+    except ImportError:
+        return False

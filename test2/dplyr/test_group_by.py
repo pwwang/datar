@@ -4,8 +4,8 @@
 import pytest
 
 import numpy
-from datar import f
-from datar.datasets import mtcars, iris
+from datar2 import f
+from datar2.datasets import mtcars, iris
 from datar2.core.tibble import TibbleGrouped, TibbleRowwise
 from datar2.dplyr import (
     group_by,

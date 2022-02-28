@@ -9,7 +9,7 @@ from pipda import register_func
 
 from ..core.contexts import Context
 from ..core.defaults import NA_REPR
-# from ..core.utils import register_np_func_x
+from ..core.utils import transform_func
 
 NA = np.nan
 NaN = NA
@@ -63,44 +63,44 @@ def any_na(x: Any, recursive: bool = False) -> bool:
     return out
 
 
-# is_infinite = register_np_func_x(
-#     "is_infinite",
-#     "isinf",
-#     doc="""Check if a value or values are infinite numbers
+is_infinite = transform_func(
+    "is_infinite",
+    doc="""Check if a value or values are infinite numbers
 
-#     Args:
-#         x: The value to check
+    Args:
+        x: The value to check
 
-#     Returns:
-#         True if the value is infinite, False otherwise
-#         For iterable values, returns the element-wise results
-#     """
-# )
+    Returns:
+        True if the value is infinite, False otherwise
+        For iterable values, returns the element-wise results
+    """,
+    transform="isinf",
+)
 
-# is_finite = register_np_func_x(
-#     "is_finite",
-#     "isfinite",
-#     doc="""Check if a value or values are finite numbers
+is_finite = transform_func(
+    "is_finite",
+    doc="""Check if a value or values are finite numbers
 
-#     Args:
-#         x: The value to check
+    Args:
+        x: The value to check
 
-#     Returns:
-#         True if the value is finite, False otherwise
-#         For iterable values, returns the element-wise results
-#     """
-# )
+    Returns:
+        True if the value is finite, False otherwise
+        For iterable values, returns the element-wise results
+    """,
+    transform="isfinite",
+)
 
-# is_nan = register_np_func_x(
-#     "is_nan",
-#     "isnan",
-#     doc="""Check if a value or values are NaNs
+is_nan = transform_func(
+    "is_nan",
+    doc="""Check if a value or values are NaNs
 
-#     Args:
-#         x: The value to check
+    Args:
+        x: The value to check
 
-#     Returns:
-#         True if the value is nan, False otherwise
-#         For iterable values, returns the element-wise results
-#     """
-# )
+    Returns:
+        True if the value is nan, False otherwise
+        For iterable values, returns the element-wise results
+    """,
+    transform="isnan",
+)

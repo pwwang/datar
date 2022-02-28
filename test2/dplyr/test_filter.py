@@ -2,8 +2,8 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-filter.r
 from pandas import Series
 import pytest
-from datar import f
-from datar.datasets import iris, mtcars
+from datar2 import f
+from datar2.datasets import iris, mtcars
 from datar2.tibble import tibble
 from datar2.dplyr import (
     group_by,

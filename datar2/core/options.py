@@ -23,12 +23,26 @@ OPTIONS = Diot(
     diot_transform=_key_transform,
 )
 
+
+def enable_pdtypes_callback(enable: bool) -> None:
+    from .utils import logger
+    try:
+        import pdtypes
+    except ImportError:
+        pdtypes = None
+
+    if enable and pdtypes is None:
+        logger.warning(
+            "Package `pdtypes` not installed for `options(enable_pdtypes=True)`"
+        )
+    elif not enable and pdtypes is not None:
+        pdtypes.unpatch()
+
+
 OPTION_CALLBACKS = Diot(
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform,
-    enable_pdtypes=lambda x: (
-        __import__("pdtypes") if x else __import__("pdtypes").unpatch()
-    )
+    enable_pdtypes=enable_pdtypes_callback,
 )
 
 

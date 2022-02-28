@@ -2,8 +2,8 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-select.r
 import pytest
 
-from datar import f
-from datar.datasets import mtcars
+from datar2 import f
+from datar2.datasets import mtcars
 from datar2.base import colnames, ncol, nrow, c, NA, sum, mean, names
 from datar2.stats import rnorm
 from datar2.tibble import tibble

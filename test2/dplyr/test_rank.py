@@ -2,7 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rank.r
 import pytest
 
-from datar import f
+from datar2 import f
 from datar2.tibble import tibble
 from datar2.base import c, NA, nrow, rep
 from datar2.dplyr import (

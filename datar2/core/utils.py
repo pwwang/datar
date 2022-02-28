@@ -2,14 +2,18 @@
 import sys
 import logging
 from functools import singledispatch
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence, Union
 
 import numpy as np
 from pandas import DataFrame, Series
+from pandas._typing import AnyArrayLike, FuncType
 from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy
+from pandas.core.apply import SeriesApply
+from pandas.core.groupby import SeriesGroupBy, GroupBy
+from pipda import register_func
 from pipda.utils import CallingEnvs
 
+from .contexts import Context
 
 # logger
 logger = logging.getLogger("datar")
@@ -44,14 +48,17 @@ def _(value: DataFrame) -> str:
     return None
 
 
-def regcall(func: Callable, *args: Any, **kwargs: Any) -> Any:
+def regcall(func: FuncType, *args: Any, **kwargs: Any) -> Any:
     """Call function with regular calling env"""
     return func(*args, **kwargs, __calling_env=CallingEnvs.REGULAR)
 
 
 def ensure_nparray(x: Any) -> np.ndarray:
     if is_scalar(x):
-        return np.array([x])
+        return np.array(x).ravel()
+
+    if isinstance(x, dict):
+        return np.array(list(x))
 
     if not isinstance(x, np.ndarray):
         return np.array(x)
@@ -112,3 +119,77 @@ def vars_select(
             f"Columns `{selected.unmatched}` do not exist."
         )
     return regcall(unique, selected).astype(int)
+
+
+def transform_func(
+    name: str,
+    doc: str,
+    transform: Union[str, FuncType] = None,
+    vectorized: bool = True,
+    vec_kwargs: Mapping[str, Any] = None
+) -> FuncType:
+    """Register transform functions applied to each element of the input
+
+    Args:
+        name: The name of the function, will be written to `fun.__name__` of
+            the function returned
+        doc: The doc of the function, will be written to `fun.__doc__` of the
+            function returned
+        transform: Function name from `numpy` to be used for transformation.
+            Or function to apply to each element
+        vectorized: Whether the function is vectorized
+    """
+    if transform is None:
+        transform = name
+
+    if isinstance(transform, str):
+        np_func = getattr(np, transform)
+    elif not vectorized:
+        if not vec_kwargs:
+            vec_kwargs = {}
+        np_func = np.vectorize(transform, **vec_kwargs)
+    else:
+        np_func = transform
+
+    @singledispatch
+    def _disp_func(x, *args, **kwargs):
+        """Plain scalar/arrays"""
+        return np_func(x, *args, **kwargs)
+
+    @_disp_func.register(Series)
+    def _(x: Series, *args, **kwargs):
+        # trick x.transform, because
+        # x.transform(np_func, 0, *args, **kwargs)
+        # x.transform(np_func, *args, axis=0, **kwargs)
+        # raise errors
+        x._get_axis_number(0)
+        return SeriesApply(
+            x, func=np_func, convert_dtype=True, args=args, kwargs=kwargs
+        ).transform()
+
+
+    @_disp_func.register(GroupBy)
+    def _(x: GroupBy, *args, **kwargs):
+        out = _disp_func(x.obj, *args, **kwargs).groupby(x.grouper)
+        if getattr(x, "is_rowwise", False):
+            out.is_rowwise = True
+        return out
+
+    @register_func(None, context=Context.EVAL)
+    def _func(x, *args, **kwargs) -> AnyArrayLike:
+        return _disp_func(x, *args, **kwargs)
+
+    _func.__name__ = name
+    _func.__doc__ = doc
+    return _func
+
+
+def transform_func_decor(vectorized: bool = True, **vec_kwargs) -> FuncType:
+    """A decorator verions of transform_func"""
+    return lambda func: transform_func(
+        func.__name__,
+        func.__doc__,
+        func,
+        vectorized=vectorized,
+        vec_kwargs=vec_kwargs,
+    )

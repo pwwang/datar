@@ -13,8 +13,6 @@ from typing import Any, Callable, Iterable, Sequence, Type, Union
 
 import numpy as np
 from pandas.api.types import is_scalar
-from pandas.core.groupby import GroupBy
-from pandas.core.generic import NDFrame
 from pandas.api.types import (
     is_integer_dtype,
     is_float_dtype,
@@ -23,6 +21,7 @@ from pandas.api.types import (
 from pipda import register_func
 
 from ..core.contexts import Context
+from ..core.utils import transform_func_decor
 
 TypeOrSeq = Union[Type, Sequence[Type]]
 BoolOrSeq = Union[bool, Sequence[bool]]
@@ -115,7 +114,7 @@ def is_atomic(x: Any) -> bool:
     return is_scalar(x)
 
 
-@register_func(None, context=Context.EVAL)
+@transform_func_decor()
 def is_element(x: Any, elems: Iterable[Any]) -> BoolOrSeq:
     """R's `is.element()` or `%in%`.
 
@@ -124,11 +123,6 @@ def is_element(x: Any, elems: Iterable[Any]) -> BoolOrSeq:
     We can't do `a %in% b` in python (`in` behaves differently), so
     use this function instead
     """
-    if isinstance(x, GroupBy):
-        return x.transform(np.in1d, ar2=elems)
-    if isinstance(x, NDFrame):
-        return x.isin(elems)
-
     out = np.in1d(x, elems)
     if is_scalar(out):
         return bool(out)

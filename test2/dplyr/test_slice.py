@@ -3,8 +3,8 @@
 from pandas.testing import assert_frame_equal
 from pipda.context import ContextError
 import pytest
-from datar import f
-from datar.datasets import mtcars
+from datar2 import f
+from datar2.datasets import mtcars
 from datar2.tibble import tibble
 from datar2.base import nrow, c, NA, rep, seq, dim, names
 from datar2.dplyr import (
@@ -389,13 +389,13 @@ def test_mixed_rows():
 
 
 def test_slice_sample_n_defaults_to_1():
-    df = tibble(g=rep([1, 2], each=3), x=seq(1, 7))
+    df = tibble(g=rep([1, 2], each=3), x=seq(1, 6))
     out = df >> slice_sample(n=None)
     assert dim(out) == (1, 2)
 
 
 def test_slicex_on_grouped_data():
-    gf = tibble(g=rep([1, 2], each=3), x=seq(1, 7)) >> group_by(f.g)
+    gf = tibble(g=rep([1, 2], each=3), x=seq(1, 6)) >> group_by(f.g)
 
     out = gf >> slice_min(f.x)
     assert out.equals(tibble(g=[1, 2], x=[1, 4]))

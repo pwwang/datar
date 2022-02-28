@@ -2,8 +2,8 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-mutate.r
 from pandas import Series
 import pytest
-from datar import f
-from datar.datasets import iris, mtcars
+from datar2 import f
+from datar2.datasets import iris, mtcars
 from pandas.core.frame import DataFrame
 from datar2.core.tibble import TibbleRowwise, TibbleGrouped
 from datar2.testing import assert_tibble_equal

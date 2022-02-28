@@ -214,7 +214,7 @@ class TibbleGrouped(Tibble):
         if "grouped" in self._datar:
             # make a shallow copy of the df to obj
             # so that the changes can reflect to obj
-            self._datar["grouped"].obj = Tibble(self, copy=False)
+            self.regroup(hard=False)
 
     @property
     def _constructor(self):
@@ -262,15 +262,36 @@ class TibbleGrouped(Tibble):
         else:
             DataFrame.__setitem__(self, key, value)
 
-    def _apply_group_to(self, other: Tibble) -> "TibbleGrouped":
+    def regroup(self, hard=True, inplace=True) -> "TibbleGrouped":
         """Apply my grouping settings to another data frame"""
+        # hard = False, structure and grouping variables not changed
+        if not hard:
+            if inplace:
+                self._datar["grouped"].obj = Tibble(self, copy=False)
+                return self
+
+            out = self.copy()
+            out._datar["grouped"].obj = Tibble(out, copy=False)
+            return out
+
         grouped = self._datar["grouped"]
-        return other.group_by(
+        new = Tibble(self, copy=False).group_by(
             self.group_vars,
             drop=grouped.observed,
             sort=grouped.sort,
             dropna=grouped.dropna,
         )
+        if not inplace:
+            return new
+
+        self._datar = new._datar
+        self._datar["grouped"].obj = Tibble(self, copy=False)
+        return self
+
+    def transform(self, *args, **kwargs):
+        """Transform brings the metadata of original df, we need to update it"""
+        out = super().transform(*args, **kwargs)
+        return out.regroup()
 
     def copy(self, deep: bool = True) -> "TibbleGrouped":
         grouped = self._datar["grouped"]
@@ -287,7 +308,7 @@ class TibbleGrouped(Tibble):
     def reindex(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.reindex(self, *args, **kwargs)
         result.reset_index(drop=True, inplace=True)
-        return self._apply_group_to(result)
+        return result.regroup()
 
     def take(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.take(self, *args, **kwargs)
@@ -295,13 +316,13 @@ class TibbleGrouped(Tibble):
             return result
 
         result.reset_index(drop=True, inplace=True)
-        return self._apply_group_to(result)
+        return result.regroup()
 
     def sample(self, *args, **kwargs) -> "TibbleGrouped":
         grouped = self._datar["grouped"]
         result = grouped.sample(*args, **kwargs)
         result.reset_index(drop=True, inplace=True)
-        return self._apply_group_to(result)
+        return result.regroup()
 
     def convert_dtypes(self, *args, **kwargs) -> "TibbleGrouped":
         out = DataFrame.convert_dtypes(self, *args, **kwargs)
@@ -367,6 +388,20 @@ class TibbleRowwise(TibbleGrouped):
         out._datar["group_vars"] = self._datar["group_vars"]
         return out
 
-    def _apply_group_to(self, other: Tibble) -> "TibbleRowwise":
+    def regroup(self, hard=True, inplace=True) -> "TibbleGrouped":
         """Apply my grouping settings to another data frame"""
-        return other.rowwise(self.group_vars)
+        # hard = False, structure and grouping variables not changed
+        if not hard:
+            return super().regroup(hard=hard, inplace=inplace)
+
+        new = self.groupby(Index(range(self.shape[0])), sort=False)
+        if not inplace:
+            return self.__class__.from_groupby(new)
+
+        self._datar["grouped"] = new
+        self._datar["grouped"].obj = Tibble(self, copy=False)
+        return self
+
+
+class SeriesRowwise(SeriesGroupBy):
+    """Class only used for dispatching"""

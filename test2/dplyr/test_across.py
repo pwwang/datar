@@ -5,7 +5,7 @@ from pipda import register_func
 import pytest
 
 from pandas.testing import assert_frame_equal
-from datar import f
+from datar2 import f
 from datar2.tibble import tibble
 from datar2.base import (
     mean,
@@ -355,7 +355,7 @@ def test_c_across():
 
 
 def test_nb_fail():
-    from datar.datasets import iris
+    from datar2.datasets import iris
 
     out = iris >> mutate(
         across(

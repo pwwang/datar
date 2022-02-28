@@ -2,8 +2,8 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-summarise.r
 
 import pytest
-from datar import f
-from datar.datasets import mtcars
+from datar2 import f
+from datar2.datasets import mtcars
 from datar2.core.contexts import Context
 from datar2.core.exceptions import NameNonUniqueError
 from datar2.core.tibble import TibbleRowwise
