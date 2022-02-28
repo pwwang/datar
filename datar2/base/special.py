@@ -3,7 +3,6 @@
 from pipda import register_func
 
 import numpy as np
-from pandas._typing import AnyArrayLike
 from pandas.api.types import is_scalar
 from ..core.contexts import Context
 from .bessel import _get_special_func_from_scipy
@@ -24,7 +23,7 @@ from .bessel import _get_special_func_from_scipy
 
 
 @register_func(None, context=Context.EVAL)
-def beta(a: AnyArrayLike, b: AnyArrayLike) -> AnyArrayLike:
+def beta(a, b):
     """The beta function
 
     Note that when both `a` and `b` are iterables, the broadcast mechanism is
@@ -44,7 +43,7 @@ def beta(a: AnyArrayLike, b: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def lbeta(a: AnyArrayLike, b: AnyArrayLike) -> AnyArrayLike:
+def lbeta(a, b):
     """The natural logarithm of `beta()`
 
     Args:
@@ -58,7 +57,7 @@ def lbeta(a: AnyArrayLike, b: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def gamma(x: AnyArrayLike) -> AnyArrayLike:
+def gamma(x):
     """The gamma function
 
     Args:
@@ -77,7 +76,7 @@ def gamma(x: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def lgamma(x: AnyArrayLike) -> AnyArrayLike:
+def lgamma(x):
     """The nature logarithm of `gamma()`
 
     Args:
@@ -90,7 +89,7 @@ def lgamma(x: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def digamma(x: AnyArrayLike) -> AnyArrayLike:
+def digamma(x):
     """The digamma function.
 
     Args:
@@ -106,7 +105,7 @@ def digamma(x: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def choose(n: AnyArrayLike, k: AnyArrayLike) -> AnyArrayLike:
+def choose(n, k):
     """The number of combinations of N things taken k at a time.
 
     Note that when both `a` and `b` are iterables, the broadcast mechanism is
@@ -126,7 +125,7 @@ def choose(n: AnyArrayLike, k: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def lchoose(n: AnyArrayLike, k: AnyArrayLike) -> AnyArrayLike:
+def lchoose(n, k):
     """The natural logarithm of `choose()`
 
     Note that when both `a` and `b` are iterables, the broadcast mechanism is
@@ -145,7 +144,7 @@ def lchoose(n: AnyArrayLike, k: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def factorial(x: AnyArrayLike) -> AnyArrayLike:
+def factorial(x):
     """The factorial of a number or array of numbers.
 
     Args:
@@ -166,7 +165,7 @@ def factorial(x: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def lfactorial(x: AnyArrayLike) -> AnyArrayLike:
+def lfactorial(x):
     """The natural logarithm of `factorial()`
 
     Args:
@@ -179,7 +178,7 @@ def lfactorial(x: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def trigamma(x: AnyArrayLike) -> AnyArrayLike:
+def trigamma(x):
     """The second derivatives of the logarithm of the gamma function
 
     Args:
@@ -193,7 +192,7 @@ def trigamma(x: AnyArrayLike) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def psigamma(x: AnyArrayLike, deriv: AnyArrayLike) -> AnyArrayLike:
+def psigamma(x, deriv):
     """The deriv-th derivatives of the logarithm of the gamma function
 
     Args:

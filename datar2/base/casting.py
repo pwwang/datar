@@ -1,10 +1,6 @@
 """Cast values between types"""
-
-from typing import Any
-
 import numpy as np
 import pandas as pd
-from pandas._typing import Dtype, AnyArrayLike
 from pandas.api.types import is_scalar, is_categorical_dtype
 from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
@@ -14,7 +10,7 @@ from ..core.contexts import Context
 from .factor import _ensure_categorical
 
 
-def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
+def _as_type(x, type_, na=None):
     """Convert x or elements of x to certain type"""
     if is_scalar(x):
         if pd.isnull(x) and na is not None:
@@ -46,7 +42,7 @@ def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
 
 
 @register_func(None, context=Context.EVAL)
-def as_double(x: Any) -> AnyArrayLike:
+def as_double(x):
     """Convert an object or elements of an iterable into double/float
 
     Args:
@@ -59,7 +55,7 @@ def as_double(x: Any) -> AnyArrayLike:
 
 
 @register_func(None, context=Context.EVAL)
-def as_float(x: Any, float_dtype: Dtype = np.float_) -> AnyArrayLike:
+def as_float(x, float_dtype=np.float_):
     """Convert an object or elements of an iterable into double/float
 
     Args:
@@ -73,10 +69,10 @@ def as_float(x: Any, float_dtype: Dtype = np.float_) -> AnyArrayLike:
 
 @register_func(None, context=Context.EVAL)
 def as_integer(
-    x: Any,
-    integer_dtype: Dtype = np.int_,
-    _keep_na: bool = True,
-) -> AnyArrayLike:
+    x,
+    integer_dtype=np.int_,
+    _keep_na=True,
+):
     """Convert an object or elements of an iterable into int64
 
     Alias `as_int`
@@ -109,7 +105,7 @@ as_int = as_integer
 
 
 @register_func(None, context=Context.EVAL)
-def as_numeric(x: Any, _keep_na: bool = True) -> AnyArrayLike:
+def as_numeric(x, _keep_na=True):
     """Make elements numeric
 
     Args:

@@ -1,19 +1,18 @@
 """Functions related to complex numbers"""
-from typing import Any, Sequence
-
 import numpy as np
 from pandas.api.types import is_complex_dtype
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.utils import transform_func
+from ..core.factory import func_factory
 
 from .testing import _register_type_testing
 from .casting import _as_type
 
 
-re = transform_func(
-    "re",
+re = func_factory(
+    "transform",
+    name="re",
     doc="""Real part of complex numbers
 
     Args:
@@ -22,11 +21,12 @@ re = transform_func(
     Returns:
         The real part of the complex numbers
     """,
-    transform="real",
+    func=np.real,
 )
 
-im = transform_func(
-    "re",
+im = func_factory(
+    "transform",
+    name="im",
     doc="""Real part of complex numbers
 
     Args:
@@ -35,11 +35,12 @@ im = transform_func(
     Returns:
         The real part of the complex numbers
     """,
-    transform="imag",
+    func=np.imag,
 )
 
-mod = transform_func(
-    "mod",
+mod = func_factory(
+    "transform",
+    name="mod",
     doc="""Modulus of complex numbers
 
     Args:
@@ -48,11 +49,12 @@ mod = transform_func(
     Returns:
         The Modulus of the complex numbers
     """,
-    transform="absolute",
+    func=np.absolute,
 )
 
-arg = transform_func(
-    "arg",
+arg = func_factory(
+    "transform",
+    name="arg",
     doc="""Angles of complex numbers
 
     Args:
@@ -61,11 +63,11 @@ arg = transform_func(
     Returns:
         The Angles of the complex numbers
     """,
-    transform="angle",
+    func=np.angle,
 )
 
-conj = transform_func(
-    "conj",
+conj = func_factory(
+    "transform",
     doc="""conjugate of complex numbers
 
     Args:
@@ -74,11 +76,12 @@ conj = transform_func(
     Returns:
         The conjugate of the complex numbers
     """,
+    func=np.conj,
 )
 
 
 @register_func(None, context=Context.EVAL)
-def as_complex(x: Any, complex_type=np.complex_) -> Sequence:
+def as_complex(x, complex_type=np.complex_):
     """Convert an object or elements of an iterable into complex
 
     Args:

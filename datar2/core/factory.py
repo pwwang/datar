@@ -2,6 +2,7 @@ from functools import singledispatch
 from typing import Sequence
 
 import numpy as np
+from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import SeriesGroupBy, GroupBy
@@ -58,22 +59,22 @@ def _run(
 
     run_fun = getattr(x, kind)
     func = reginfo["func"] or func
-    # if kind != "apply":
-    if axis is None:
-        out = run_fun(func, *args, **kwargs)
+    if kind != "apply":
+        if axis is None:
+            out = run_fun(func, *args, **kwargs)
+        else:
+            out = run_fun(func, axis, *args, **kwargs)
     else:
-        out = run_fun(func, axis, *args, **kwargs)
-    # else:
-    #     if axis is None:
-    #         out = run_fun(func, *args, **kwargs)
-    #     else:
-    #         out = run_fun(
-    #             func,
-    #             axis,
-    #             result_type=result_type,
-    #             args=args,
-    #             **kwargs,
-    #         )
+        if axis is None:
+            out = run_fun(func, *args, **kwargs)
+        else:
+            out = run_fun(
+                func,
+                axis,
+                result_type=result_type,
+                args=args,
+                **kwargs,
+            )
 
     if reginfo["post"]:
         return reginfo["post"](out, x, *args, **kwargs)
@@ -84,7 +85,11 @@ def _run(
     return out
 
 
-def _transform_dispatched(func, is_vectorized, **vec_kwargs):
+def _transform_dispatched(func=None, is_vectorized=True, **vec_kwargs):
+    if func is None:
+        return lambda fun: _transform_dispatched(
+            func=fun, is_vectorized=is_vectorized, **vec_kwargs
+        )
 
     if not is_vectorized:
         vec_func = np.vectorize(func, **vec_kwargs)
@@ -148,108 +153,107 @@ def _transform_dispatched(func, is_vectorized, **vec_kwargs):
     return _dispatched
 
 
-# def _apply_dispatched(func, result_type):
+def _apply_dispatched(func=None, result_type=None):
+    if func is None:
+        return lambda fun: _apply_dispatched(func=fun, result_type=result_type)
 
-#     DEFAULT_META = {
-#         "pre": None, "post": None, "replace": False, "func": None
-#     }
+    DEFAULT_META = {
+        "pre": None, "post": None, "replace": False, "func": None
+    }
 
-#     @singledispatch
-#     def _dispatched(x, *args, **kwargs):
-#         # list, tuple, np.ndarray, etc
-#         return func(x, *args, **kwargs)
+    @singledispatch
+    def _dispatched(x, *args, **kwargs):
+        # list, tuple, np.ndarray, etc
+        return func(x, *args, **kwargs)
 
-#     @_dispatched.register(Series)
-#     def _(x: Series, *args, **kwargs):
-#         reginfo = _dispatched.proxy.dispatch(x.__class__)
-#         return _run(
-#             "apply",
-#             x,
-#             args,
-#             kwargs,
-#             func=func,
-#             reginfo=reginfo,
-#         )
+    @_dispatched.register(Series)
+    def _(x: Series, *args, **kwargs):
+        # treat the series as a whole instead of element one by one
+        reginfo = _dispatched.proxy.dispatch(x.__class__)
+        return _run(
+            "apply",
+            x.to_frame(),
+            args,
+            kwargs,
+            func=func,
+            reginfo=reginfo,
+            axis=0,
+            result_type=result_type,
+        ).iloc[:, 0]
 
-#     @_dispatched.register(DataFrame)
-#     def _(x: DataFrame, *args, **kwargs):
-#         reginfo = _dispatched.proxy.dispatch(x.__class__)
-#         return _run(
-#             "apply",
-#             x,
-#             args,
-#             kwargs,
-#             func=func,
-#             reginfo=reginfo,
-#             axis=0,
-#             result_type=result_type,
-#         )
+    @_dispatched.register(DataFrame)
+    def _(x: DataFrame, *args, **kwargs):
+        reginfo = _dispatched.proxy.dispatch(x.__class__)
+        return _run(
+            "apply",
+            x,
+            args,
+            kwargs,
+            func=func,
+            reginfo=reginfo,
+            axis=0,
+            result_type=result_type,
+        )
 
-#     @_dispatched.register(GroupBy)
-#     def _(x: GroupBy, *args, **kwargs):
-#         reginfo = _dispatched.proxy.dispatch(x.__class__)
-#         return _run(
-#             "apply",
-#             x,
-#             args,
-#             kwargs,
-#             func=func,
-#             reginfo=reginfo,
-#         )
+    @_dispatched.register(GroupBy)
+    def _(x: GroupBy, *args, **kwargs):
+        reginfo = _dispatched.proxy.dispatch(x.__class__)
+        return _run(
+            "apply",
+            x,
+            args,
+            kwargs,
+            func=func,
+            reginfo=reginfo,
+        )
 
-#     @_dispatched.register(SeriesRowwise)
-#     def _(x: SeriesRowwise, *args, **kwargs):
-#         """Aggregation on SeriesRowwise object does nothing"""
-#         reginfo = _dispatched.proxy.dispatch(SeriesRowwise)
-#         reginfo_sgb = _dispatched.proxy.dispatch(SeriesGroupBy)
-#         if reginfo is reginfo_sgb or reginfo is DEFAULT_META:
-#             # not specifically registered for SeriesRowwise
-#             raise ValueError(
-#                 f"`{_dispatched.proxy.__name__}` is not registered for "
-#                 "rowwise variable."
-#             )
+    @_dispatched.register(SeriesRowwise)
+    def _(x: SeriesRowwise, *args, **kwargs):
+        """Aggregation on SeriesRowwise object does nothing"""
+        reginfo = _dispatched.proxy.dispatch(SeriesRowwise)
+        reginfo_sgb = _dispatched.proxy.dispatch(SeriesGroupBy)
+        if reginfo is reginfo_sgb or reginfo is DEFAULT_META:
+            # not specifically registered for SeriesRowwise
+            raise ValueError(
+                f"`{_dispatched.proxy.__name__}` is not registered for "
+                "rowwise variable."
+            )
 
-#         return _run(
-#             "apply",
-#             x,
-#             args,
-#             kwargs,
-#             func=func,
-#             reginfo=reginfo,
-#         )
+        return _run(
+            "apply",
+            x,
+            args,
+            kwargs,
+            func=func,
+            reginfo=reginfo,
+        )
 
-#     @_dispatched.register(TibbleGrouped)
-#     def _(x: TibbleGrouped, *args, **kwargs):
-#         reginfo = _dispatched.proxy.dispatch(x.__class__)
-#         return _run(
-#             "apply",
-#             x._datar["grouped"],
-#             args,
-#             kwargs,
-#             func=func,
-#             reginfo=reginfo,
-#             axis=0,
-#         )
+    @_dispatched.register(TibbleGrouped)
+    def _(x: TibbleGrouped, *args, **kwargs):
+        return _dispatched(x._datar["grouped"], *args, **kwargs)
 
-#     @_dispatched.register(TibbleRowwise)
-#     def _(x: TibbleRowwise, *args, **kwargs):
-#         reginfo = _dispatched.proxy.dispatch(x.__class__)
-#         return _run(
-#             "apply",
-#             x,
-#             args,
-#             kwargs,
-#             func=func,
-#             reginfo=reginfo,
-#             axis=1,
-#             result_type=result_type,
-#         )
+    @_dispatched.register(TibbleRowwise)
+    def _(x: TibbleRowwise, *args, **kwargs):
+        reginfo = _dispatched.proxy.dispatch(x.__class__)
+        return _run(
+            "apply",
+            x,
+            args,
+            kwargs,
+            func=func,
+            reginfo=reginfo,
+            axis=1,
+            result_type=result_type,
+        )
 
-#     _dispatched.proxy = singledispatch(DEFAULT_META)
-#     return _dispatched
+    _dispatched.proxy = singledispatch(DEFAULT_META)
+    return _dispatched
 
 
-def _agg_dispatched(func):
+def _agg_dispatched(func=None):
+    if func is None:
+        # allow _app_dispatched() as decorator
+        return lambda fun: _agg_dispatched(func=fun)
 
     DEFAULT_META = {
         "pre": None, "post": None, "replace": False, "func": None
@@ -385,8 +389,8 @@ def func_factory(
         a function registered by
         `pipda.register_func(None, context=Context.EVAL)`
     """
-    # kind = arg_match(kind, "kind", ["transform", "apply", "agg", "aggregate"])
-    kind = arg_match(kind, "kind", ["transform", "agg", "aggregate"])
+    kind = arg_match(kind, "kind", ["transform", "apply", "agg", "aggregate"])
+    # kind = arg_match(kind, "kind", ["transform", "agg", "aggregate"])
 
     if func is None:
         # work as a decorator
@@ -396,13 +400,14 @@ def func_factory(
             name=name,
             doc=doc,
             func=fun,
+            **vec_kwargs,
         )
 
     dispatched = (
         _transform_dispatched(func, is_vectorized, **vec_kwargs)
         if kind == "transform"
-        # else _apply_dispatched(func, result_type)
-        # if kind == "apply"
+        else _apply_dispatched(func, result_type)
+        if kind == "apply"
         else _agg_dispatched(func)
     )
 
@@ -416,5 +421,6 @@ def func_factory(
     pipda_func.__name__ = dispatched.proxy.__name__ = name or func.__name__
     pipda_func.__doc__ = doc or func.__doc__
     pipda_func.register = _register_factory(dispatched.proxy)
+    pipda_func.__raw__ = func
 
     return pipda_func

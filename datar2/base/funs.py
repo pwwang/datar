@@ -4,11 +4,9 @@ If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
 registered by `register_verb` and should be placed in `./verbs.py`
 """
 import itertools
-from typing import Any, Callable, Sequence, List, Union
 
 import numpy as np
 import pandas
-from pandas import Categorical, DataFrame
 from pandas.api.types import is_scalar
 from pipda import register_func
 
@@ -21,14 +19,14 @@ from ..core.names import repair_names
 
 @register_func(None, context=Context.EVAL)
 def cut(
-    x: Sequence,
-    breaks: Any,
-    labels: Sequence[Any] = None,
-    include_lowest: bool = False,
-    right: bool = True,
-    precision: int = 2,
-    ordered_result: bool = False,
-) -> Categorical:
+    x,
+    breaks,
+    labels=None,
+    include_lowest=False,
+    right=True,
+    precision=2,
+    ordered_result=False,
+):
     """Divides the range of x into intervals and codes the values in x
     according to which interval they fall. The leftmost interval corresponds
     to level one, the next leftmost to level two and so on.
@@ -69,7 +67,7 @@ def cut(
 
 
 @register_func(None, context=Context.EVAL)
-def identity(x: Any) -> Any:
+def identity(x):
     """Return whatever passed in
 
     Expression objects are evaluated using parent context
@@ -78,7 +76,7 @@ def identity(x: Any) -> Any:
 
 
 @register_func(None, context=Context.EVAL)
-def expandgrid(*args: Sequence, **kwargs: Sequence) -> Tibble:
+def expandgrid(*args, **kwargs):
     """Expand all combinations into a dataframe. R's `expand.grid()`"""
     iters = {}
     for arg in args:
@@ -93,7 +91,7 @@ def expandgrid(*args: Sequence, **kwargs: Sequence) -> Tibble:
 
 
 @register_func(None, context=Context.EVAL)
-def outer(x, y, fun: Union[str, Callable] = "*") -> Tibble:
+def outer(x, y, fun="*"):
     """Compute the outer product of two vectors.
 
     Args:
@@ -114,7 +112,7 @@ def outer(x, y, fun: Union[str, Callable] = "*") -> Tibble:
 
 
 @register_func(None, context=Context.EVAL)
-def make_names(names: Any, unique: bool = False) -> List[str]:
+def make_names(names, unique=False):
     """Make names available as columns and can be accessed by `df.<name>`
 
     The names will be transformed using `python-slugify` with
@@ -147,7 +145,7 @@ def make_names(names: Any, unique: bool = False) -> List[str]:
 
 
 @register_func(None, context=Context.EVAL)
-def make_unique(names: Any) -> Sequence[str]:
+def make_unique(names):
     """Make the names unique.
 
     It's a shortcut for `make_names(names, unique=True)`
@@ -165,10 +163,10 @@ def make_unique(names: Any) -> Sequence[str]:
 
 @register_func(None, context=Context.EVAL)
 def rank(
-    x: Sequence,
-    na_last: bool = True,
-    ties_method: str = "average",
-) -> Sequence:
+    x,
+    na_last=True,
+    ties_method="average",
+):
     """Returns the sample ranks of the values in a vector.
 
     Args:
@@ -192,14 +190,16 @@ def rank(
     )
 
     from ..dplyr.rank import _rank
+
     return _rank(x, na_last, method=ties_method)
+
 
 # ---------------------------------
 # Plain functions
 # ---------------------------------
 
 
-def data_context(data: DataFrame) -> Any:
+def data_context(data):
     """Evaluate verbs, functions in the
     possibly modifying (a copy of) the original data.
 

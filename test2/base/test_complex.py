@@ -1,7 +1,14 @@
 import pytest
 
-from datar.base.complex import *
-from ..conftest import assert_iterable_equal
+from datar2.base.complex import (
+    re,
+    im,
+    mod,
+    arg,
+    conj,
+    is_complex,
+    as_complex,
+)
 
 
 def test_complex():

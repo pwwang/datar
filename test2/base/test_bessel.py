@@ -1,6 +1,11 @@
 import pytest
-from datar.base.bessel import *
-from datar.base import NA, Inf
+from datar2.base.bessel import (
+    bessel_i,
+    bessel_j,
+    bessel_k,
+    bessel_y,
+)
+from datar2.base import NA, Inf
 from ..conftest import assert_iterable_equal, is_installed
 
 pytestmark = pytest.mark.skipif(

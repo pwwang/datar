@@ -3,9 +3,6 @@
 The huge difference:
 R's factors support NAs in levels but Categorical cannot have NAs in categories.
 """
-
-from typing import Any, Sequence
-
 import numpy as np
 from pandas import Categorical, Series
 from pandas.api.types import is_categorical_dtype, is_scalar
@@ -21,7 +18,7 @@ def _ensure_categorical(x):
 
 
 @register_func(None, context=Context.EVAL)
-def droplevels(x: Categorical) -> Categorical:
+def droplevels(x):
     """drop unused levels from a factor
 
     Args:
@@ -34,7 +31,7 @@ def droplevels(x: Categorical) -> Categorical:
 
 
 @register_func(None, context=Context.EVAL)
-def levels(x: Any) -> np.ndarray:
+def levels(x):
     """Get levels from a factor
 
     Args:
@@ -51,7 +48,7 @@ def levels(x: Any) -> np.ndarray:
 
 
 @register_func(None, context=Context.EVAL)
-def nlevels(x: Any) -> int:
+def nlevels(x) -> int:
     """Get the number of levels of a factor
 
     Args:
@@ -65,7 +62,7 @@ def nlevels(x: Any) -> int:
 
 
 @register_func(None, context=Context.EVAL)
-def is_ordered(x: Any) -> bool:
+def is_ordered(x) -> bool:
     """Check if a factor is ordered"""
     if not is_categorical_dtype(x):
         return False
@@ -73,12 +70,7 @@ def is_ordered(x: Any) -> bool:
     return _ensure_categorical(x).ordered
 
 
-def factor(
-    x: Sequence = None,
-    levels: Sequence = None,
-    exclude: Any = np.nan,
-    ordered: bool = False,
-) -> Categorical:
+def factor(x=None, levels=None, exclude=np.nan, ordered=False):
     """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
     are also used for factors).
 
@@ -116,10 +108,7 @@ def factor(
     return ret.remove_categories(exclude)
 
 
-def ordered(
-    x: Sequence = None,
-    levels: Sequence = None,
-) -> Categorical:
+def ordered(x=None, levels=None):
     """Create an ordered factor
 
     Args:
@@ -132,7 +121,7 @@ def ordered(
 
 
 @register_func(None, context=Context.EVAL)
-def as_factor(x: Sequence) -> Categorical:
+def as_factor(x):
     """Convert an iterable into a pandas.Categorical object
 
     Args:
@@ -148,7 +137,7 @@ as_categorical = as_factor
 
 
 @register_func(None, context=Context.EVAL)
-def is_categorical(x: Any) -> bool:
+def is_categorical(x):
     """Check if x is categorical data
 
     Alias `is_factor`

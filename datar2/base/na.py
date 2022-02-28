@@ -1,7 +1,4 @@
 """NA related constants or functions"""
-
-from typing import Any, Iterable
-
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_scalar
@@ -9,7 +6,7 @@ from pipda import register_func
 
 from ..core.contexts import Context
 from ..core.defaults import NA_REPR
-from ..core.utils import transform_func
+from ..core.factory import func_factory
 
 NA = np.nan
 NaN = NA
@@ -23,9 +20,10 @@ NA_real_ = np.nan
 NA_compex_ = complex(NA_real_, NA_real_)
 
 
-@register_func(None, context=Context.EVAL)
-def is_na(x: Any) -> Iterable[bool]:
-    """Test if a value is nullable or elements in the value is nullable
+is_na = func_factory(
+    "transform",
+    name="is_na",
+    doc="""Test if a value is nullable or elements in the value is nullable
 
     Args:
         x: The value to test
@@ -33,12 +31,13 @@ def is_na(x: Any) -> Iterable[bool]:
     Returns:
         If `x` is scalar, returns a scalar bool. Otherwise, return an array
         of bools.
-    """
-    return pd.isnull(x)
+    """,
+    func=pd.isnull,
+)
 
 
 @register_func(None, context=Context.EVAL)
-def any_na(x: Any, recursive: bool = False) -> bool:
+def any_na(x, recursive=False):
     """Check if any element in the value is nullable
 
     Args:
@@ -63,8 +62,9 @@ def any_na(x: Any, recursive: bool = False) -> bool:
     return out
 
 
-is_infinite = transform_func(
-    "is_infinite",
+is_infinite = func_factory(
+    "transform",
+    name="is_infinite",
     doc="""Check if a value or values are infinite numbers
 
     Args:
@@ -74,11 +74,12 @@ is_infinite = transform_func(
         True if the value is infinite, False otherwise
         For iterable values, returns the element-wise results
     """,
-    transform="isinf",
+    func=np.isinf,
 )
 
-is_finite = transform_func(
-    "is_finite",
+is_finite = func_factory(
+    "transform",
+    name="is_finite",
     doc="""Check if a value or values are finite numbers
 
     Args:
@@ -88,11 +89,12 @@ is_finite = transform_func(
         True if the value is finite, False otherwise
         For iterable values, returns the element-wise results
     """,
-    transform="isfinite",
+    func=np.isfinite,
 )
 
-is_nan = transform_func(
-    "is_nan",
+is_nan = func_factory(
+    "transform",
+    name="is_nan",
     doc="""Check if a value or values are NaNs
 
     Args:
@@ -102,5 +104,5 @@ is_nan = transform_func(
         True if the value is nan, False otherwise
         For iterable values, returns the element-wise results
     """,
-    transform="isnan",
+    func=np.isnan,
 )

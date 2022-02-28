@@ -1,8 +1,5 @@
 """Logical/Boolean functions"""
-from typing import Any
-
 import numpy as np
-from pandas._typing import AnyArrayLike
 from pandas.api.types import is_scalar, is_bool_dtype
 from pipda import register_func
 
@@ -16,7 +13,7 @@ FALSE = False
 
 
 @register_func(None, context=Context.EVAL)
-def as_logical(x: Any) -> AnyArrayLike:
+def as_logical(x):
     """Convert an object or elements of an iterable into bool
 
     Args:
@@ -51,7 +48,7 @@ is_bool = is_logical
 
 
 @register_func(None, context=Context.EVAL)
-def is_true(x: Any) -> bool:
+def is_true(x):
     """Check if a value is a scalar True, like `isTRUE()` in `R`.
 
     If the value is non-scalar, will return False
@@ -70,7 +67,7 @@ def is_true(x: Any) -> bool:
 
 
 @register_func(None, context=Context.EVAL)
-def is_false(x: Any) -> bool:
+def is_false(x):
     """Check if a value is a scalar False, like `isFALSE()` in `R`.
 
     If the value is non-scalar, will return False

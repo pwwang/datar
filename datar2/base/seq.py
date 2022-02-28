@@ -1,22 +1,20 @@
-from functools import singledispatch
-from typing import Any, Sequence, Iterable, Union
-
 import numpy as np
 import pandas as pd
-from pandas import Series
 from pandas.api.types import is_scalar, is_integer
-from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pandas.core.generic import NDFrame
-from pandas._typing import AnyArrayLike
+from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import register_func
 
-from ..core.utils import ensure_nparray, logger, regcall
+from ..core.utils import ensure_nparray, logger
+from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
 
+from ..tibble import tibble
+
 
 @register_func(None, context=Context.EVAL)
-def seq_along(along_with: Union[AnyArrayLike, Sequence]) -> np.ndarray:
+def seq_along(along_with):
     """Generate sequences along an iterable
 
     Args:
@@ -29,10 +27,10 @@ def seq_along(along_with: Union[AnyArrayLike, Sequence]) -> np.ndarray:
 
 
 @register_func(None, context=Context.EVAL)
-def seq_len(length_out: Union[int, AnyArrayLike, Sequence]) -> np.ndarray:
+def seq_len(length_out):
     """Generate sequences with the length"""
     if isinstance(length_out, SeriesGroupBy):
-        return length_out.apply(seq_len).explode().astype(int)
+        return length_out.apply(seq_len.__origfunc__).explode().astype(int)
 
     if is_scalar(length_out):
         return np.arange(int(length_out)) + 1
@@ -42,17 +40,17 @@ def seq_len(length_out: Union[int, AnyArrayLike, Sequence]) -> np.ndarray:
             "In seq_len(...) : first element used of 'length_out' argument"
         )
     length_out = int(list(length_out)[0])
-    return np.arange(length_out)
+    return np.arange(length_out) + 1
 
 
 @register_func(None, context=Context.EVAL)
 def seq(
-    from_: int = None,
-    to: int = None,
-    by: int = None,
-    length_out: Union[int, AnyArrayLike, Sequence[int]] = None,
-    along_with: int = None,
-) -> AnyArrayLike:
+    from_=None,
+    to=None,
+    by=None,
+    length_out=None,
+    along_with=None,
+):
     """Generate a sequence
 
     https://rdrr.io/r/base/seq.html
@@ -81,13 +79,11 @@ def seq(
     else:
         length_out = (to - from_ + 1.1 * by) // by
 
-    return np.array(
-        [from_ + n * by for n in range(int(length_out))]
-    )
+    return np.array([from_ + n * by for n in range(int(length_out))])
 
 
 @register_func(None, context=Context.UNSET)
-def c(*elems: Any) -> np.ndarray:
+def c(*elems):
     """Mimic R's concatenation. Named one is not supported yet
     All elements passed in will be flattened.
 
@@ -102,11 +98,11 @@ def c(*elems: Any) -> np.ndarray:
 
 @register_func(None, context=Context.EVAL)
 def rep(
-    x: Any,
-    times: Union[int, Sequence[int], AnyArrayLike] = 1,
-    length: int = None,
-    each: int = 1,
-) -> np.ndarray:
+    x,
+    times=1,
+    length=None,
+    each=1,
+):
     """replicates the values in x
 
     Args:
@@ -143,48 +139,43 @@ def rep(
     return x[:length]
 
 
-@singledispatch
-def _length(x):
+@func_factory("agg")
+def length(x):
+    """Get length of elements"""
     if is_scalar(x):
         return 1
 
     return len(x)
 
 
-@_length.register(np.ndarray)
-@_length.register(NDFrame)
-def _(x):
-    return x.size
+length.register(GroupBy, "count")
 
 
-@_length.register(GroupBy)
-def _(x):
-    return x.count()
-
-
-@register_func(None, context=Context.EVAL)
-def length(x):
-    return _length(x)
-
-
-@register_func(None, context=Context.EVAL)
+@func_factory("transform")
 def lengths(x):
-
+    """Get Lengths of elementss of a vector"""
+    # optimize according to dtype?
     if is_scalar(x):
         return np.array([1], dtype=int)
 
-    if isinstance(x, SeriesGroupBy):
-        x = x.obj
-
-    if isinstance(x, Series):
-        return x.transform(_length)
-
-    return np.array([_length(elem) for elem in x], dtype=int)
+    return np.array([length.__raw__(elem) for elem in x], dtype=int)
 
 
-@singledispatch
-def _order(x, decreasing: bool = False, na_last: bool = None):
+@func_factory("apply")
+def order(x, decreasing=False, na_last=None):
+    """Sorting or Ordering Vectors
 
+    Args:
+        x: A vector to be sorted
+        decreasing: Should the vector sort be increasing or decreasing?
+        na_last: for controlling the treatment of `NA`s.  If `True`, missing
+            values in the data are put last; if `FALSE`, they are put
+            first. If None, they are removed.
+            For Series and SeriesGroupBy objects, it defaults to True
+
+    Returns:
+        The sorted array
+    """
     x = ensure_nparray(x)
     if pd.isnull(na_last):
         x = x[~pd.isnull(x)]
@@ -199,68 +190,41 @@ def _order(x, decreasing: bool = False, na_last: bool = None):
     return out[::-1] if decreasing else out
 
 
-@_order.register(Series)
-def _(x, decreasing: bool = False, na_last: bool = None):
-    if pd.isnull(na_last):
-        na_last = True
-
-    if not na_last or decreasing:
-        na = -np.inf
-    else:
-        na = np.inf
-
-    out = x.fillna(na).argsort()
-    if decreasing:
-        out = out[::-1]
-
-    out.index = x.index
-    return out
+order.register(
+    SeriesGroupBy,
+    func=None,
+    post=(
+        lambda out, x, decreasing=False, na_last=None:
+        out.explode().astype(int)
+    ),
+)
 
 
-@_order.register(SeriesGroupBy)
-def _(x, decreasing: bool = False, na_last: bool = None):
-    return x.apply(_order, decreasing=decreasing, na_last=na_last).droplevel(
-        -1
-    )
-
-
-@register_func(None, context=Context.EVAL)
-def order(
-    x: Iterable,
-    decreasing: bool = False,
-    na_last: bool = None,
-) -> np.ndarray:
-    """Sorting or Ordering Vectors
-
-    Args:
-        x: A vector to be sorted
-        decreasing: Should the vector sort be increasing or decreasing?
-        na_last: for controlling the treatment of `NA`s.  If `True`, missing
-            values in the data are put last; if `FALSE`, they are put
-            first. If None, they are removed.
-            For Series and SeriesGroupBy objects, it defaults to True
-
-    Returns:
-        The sorted array
-    """
-    return _order(x, decreasing=decreasing, na_last=na_last)
-
-
-@register_func(None, context=Context.EVAL)
-def rev(x: Iterable) -> Iterable:
+@func_factory("apply")
+def rev(x):
     """Get reversed vector"""
-    if isinstance(x, SeriesGroupBy):
-        _rev = lambda elems: regcall(rev, elems)
-        return x.apply(_rev).droplevel(-1)
-
     if is_scalar(x):
         return x
 
     return x[::-1]
 
 
+rev.register(
+    NDFrame,
+    func=None,
+    post=lambda out, x: setattr(out, "index", x.index) or out
+)
+
+
+rev.register(
+    GroupBy,
+    func=None,
+    post=lambda out, x: out.droplevel(-1)
+)
+
+
 @register_func(None, context=Context.EVAL)
-def unique(x: Iterable[Any]) -> AnyArrayLike:
+def unique(x):
     """Get unique elements"""
     if is_scalar(x):
         return x
@@ -271,13 +235,13 @@ def unique(x: Iterable[Any]) -> AnyArrayLike:
     return pd.unique(x)  # keeps order
 
 
-@register_func(None, context=Context.EVAL)
+@func_factory("apply")
 def sample(
-    x: Union[int, Iterable],
-    size: int = None,
-    replace: bool = False,
-    prob: Iterable = None,
-) -> Iterable[Any]:
+    x,
+    size=None,
+    replace=False,
+    prob=None,
+):
     """Takes a sample of the specified size from the elements of x using
     either with or without replacement.
 
@@ -296,20 +260,6 @@ def sample(
         A vector of length size with elements drawn from either x or from the
         integers 1:x.
     """
-    if isinstance(x, SeriesGroupBy):
-        return (
-            x.apply(
-                lambda elems: np.random.choice(
-                    elems,
-                    size,
-                    replace=replace,
-                    p=prob,
-                )
-            )
-            .explode()
-            .astype(x.obj.dtype)
-        )
-
     if isinstance(x, str):
         x = list(x)
     if size is None:
@@ -317,12 +267,12 @@ def sample(
     return np.random.choice(x, int(size), replace=replace, p=prob)
 
 
-@register_func(None, context=Context.EVAL)
+@func_factory("apply")
 def sort(
-    x: Iterable[Any],
-    decreasing: bool = False,
-    na_last: bool = None,
-) -> AnyArrayLike:
+    x,
+    decreasing=False,
+    na_last=None,
+):
     """Sorting or Ordering Vectors
 
     Args:
@@ -338,48 +288,16 @@ def sort(
     if is_scalar(x):
         return x
 
-    idx = _order(x, decreasing=decreasing, na_last=na_last)
-    if isinstance(x, SeriesGroupBy):
-        out = x.obj[idx.values]
-    elif isinstance(x, Series):
-        out = x[idx.values]
-    else:
-        x = ensure_nparray(x)
-        if pd.isnull(na_last):
-            x = x[~pd.isnull(x)]
+    idx = order.__raw__(x, decreasing=decreasing, na_last=na_last)
+    x = ensure_nparray(x)
+    if pd.isnull(na_last):
+        x = x[~pd.isnull(x)]
 
-        out = x[idx]
-
-    return out
+    return x[idx]
 
 
-@singledispatch
-def _match(x, table: Iterable, nomatch: Any = -1):
-    sorter = np.argsort(table)
-    searched = np.searchsorted(table, x, sorter=sorter).ravel()
-    out = sorter.take(searched, mode="clip")
-    out[~np.isin(x, table)] = nomatch
-    return out
-
-
-@_match.register(Series)
-def _(x: Series, table: Iterable, nomatch: Any = -1):
-    out = _match(x.values, table, nomatch)
-    return Series(out, index=x.index, name=x.name)
-
-
-@_match.register(SeriesGroupBy)
-def _(x: SeriesGroupBy, table: Iterable, nomatch: Any = -1):
-    return x.apply(_match, table=table, nomatch=nomatch).explode().astype(int)
-
-
-@register_func(None, context=Context.EVAL)
-def match(
-    x: Any,
-    table: Iterable,
-    nomatch: Any = -1,
-    # incomparables ...,
-) -> Iterable[int]:
+@func_factory("apply")
+def match(x, table, nomatch=-1):
     """match returns a vector of the positions of (first) matches of
     its first argument in its second.
 
@@ -392,4 +310,28 @@ def match(
             Instead of NA in R, this function takes -1 for non-matched elements
             to keep the type as int.
     """
-    return _match(x, table, nomatch)
+    x = ensure_nparray(x)
+    table = ensure_nparray(table)
+    sorter = np.argsort(table)
+    searched = np.searchsorted(table, x, sorter=sorter).ravel()
+    out = sorter.take(searched, mode="clip")
+    out[~np.isin(x, table)] = nomatch
+    return out
+
+
+@match.register(SeriesGroupBy, replace=True)
+def _(x, table, nomatch=-1):
+    if not isinstance(table, SeriesGroupBy):
+        return (
+            x.apply(match.__raw__, table=table, nomatch=nomatch)
+            .explode()
+            .astype(int)
+        )
+
+    df = tibble(x=x, table=table)  # TibbleGrouped
+    return (
+        df._datar["grouped"]
+        .apply(lambda g: match.__raw__(g["x"], g["table"], nomatch=nomatch))
+        .explode()
+        .astype(int)
+    )

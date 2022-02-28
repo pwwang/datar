@@ -1,7 +1,6 @@
 """Arithmetic or math functions"""
 
 import math
-from unicodedata import numeric
 
 import numpy as np
 import pandas as pd
@@ -14,7 +13,6 @@ from ..core.factory import func_factory
 from ..core.tibble import Tibble, TibbleGrouped
 from ..core.utils import (
     ensure_nparray,
-    regcall,
     logger,
 )
 from ..core.contexts import Context

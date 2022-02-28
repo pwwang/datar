@@ -1,7 +1,4 @@
 """Constants and functions about NULL (none)"""
-
-from typing import Any
-
 from pipda import register_func
 
 from ..core.contexts import Context
@@ -11,7 +8,7 @@ NULL = None
 
 
 @register_func(None, context=Context.EVAL)
-def as_null(*args: Any, **kwargs: Any) -> None:
+def as_null(*args, **kwargs):
     """Ignores arguments and returns NULL (None). R's `as.null()`
 
     Args:
@@ -25,7 +22,7 @@ def as_null(*args: Any, **kwargs: Any) -> None:
 
 
 @register_func(None, context=Context.EVAL)
-def is_null(x: Any) -> bool:
+def is_null(x):
     """Check if x is exactly NULL (None), same as R's `is.null()`
 
     Args:

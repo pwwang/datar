@@ -6,7 +6,7 @@ from pandas import Series
 from pandas.core.groupby import SeriesGroupBy
 
 from ..core.tibble import TibbleRowwise
-from ..base._arithmetic import _warn_na_rm
+from ..base.arithmetic import _warn_na_rm
 
 
 @singledispatch

@@ -1,33 +1,27 @@
 """String functions in R"""
-from functools import singledispatch
 import re
-from typing import Any, Iterable, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pandas import Series
-from pandas._typing import Dtype, AnyArrayLike
 from pandas.api.types import is_string_dtype, is_scalar
-from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
-from datar2.core.tibble import TibbleRowwise
-
+from ..core.defaults import NA_REPR
+from ..core.tibble import TibbleRowwise
 from ..core.contexts import Context
+from ..core.factory import func_factory, _transform_dispatched
 from ..core.utils import (
     arg_match,
     ensure_nparray,
     logger,
-    transform_func_decor,
     regcall,
 )
-from ..tibble import tibble
 from .casting import _as_type
 from .testing import _register_type_testing
 from .seq import lengths
 
 
-def _recycle_value(value: Any, size: int, name: str = None) -> np.ndarray:
+def _recycle_value(value, size, name=None):
     """Recycle a value based on a dataframe
     Args:
         value: The value to be recycled
@@ -54,10 +48,10 @@ def _recycle_value(value: Any, size: int, name: str = None) -> np.ndarray:
 
 @register_func(None, context=Context.EVAL)
 def as_character(
-    x: Any,
-    str_dtype: Dtype = str,
-    _na: Any = np.nan,
-) -> AnyArrayLike:
+    x,
+    str_dtype=str,
+    _na=np.nan,
+):
     """Convert an object or elements of an iterable into string
 
     Aliases `as_str` and `as_string`
@@ -99,17 +93,34 @@ is_str = is_string = is_character
 
 
 # Grep family -----------------------------------
+@_transform_dispatched
+def _grep(
+    x, pattern, ignore_case=False, value=False, fixed=False, invert=False
+):
+    matched = grepl.__origfunc__(
+        pattern,
+        x,
+        ignore_case=ignore_case,
+        fixed=fixed,
+        invert=invert,
+    )
+    print(matched)
+    x = ensure_nparray(x)
+    if value:
+        return x[matched]
+
+    return np.flatnonzero(matched)
 
 
 @register_func(None, context=Context.EVAL)
 def grep(
-    pattern: AnyArrayLike,
-    x: AnyArrayLike,
-    ignore_case: bool = False,
-    value: bool = False,
-    fixed: bool = False,
-    invert: bool = False,
-) -> Iterable[Union[int, str]]:
+    pattern,
+    x,
+    ignore_case=False,
+    value=False,
+    fixed=False,
+    invert=False,
+):
     """R's grep, get the element in x matching the pattern
 
     Args:
@@ -124,37 +135,36 @@ def grep(
         The matched (or unmatched (`invert=True`)) indices
         (or values (`value=True`)).
     """
-    if is_scalar(x) or (
-        not isinstance(x, Series) and not isinstance(x, SeriesGroupBy)
-    ):
-        x = ensure_nparray(x)
-
-    matched = grepl(
-        pattern=pattern,
-        x=x,
+    return _grep(
+        x,
+        pattern,
         ignore_case=ignore_case,
+        value=value,
         fixed=fixed,
         invert=invert,
     )
 
-    if value:
-        if isinstance(x, Series):
-            return x[matched.values]
-        if isinstance(x, SeriesGroupBy):
-            return x.obj[matched.obj.values].groupby(x.grouper)
-        return x[matched]
 
-    return np.flatnonzero(matched)
+@_transform_dispatched
+def _grepl(x, pattern, ignore_case, fixed, invert):
+    pattern = _warn_more_pat_or_rep(pattern, "grep")
+    return _match(
+        x,
+        pattern,
+        ignore_case=ignore_case,
+        invert=invert,
+        fixed=fixed,
+    )
 
 
 @register_func(None, context=Context.EVAL)
 def grepl(
-    pattern: AnyArrayLike,
-    x: Iterable,
-    ignore_case: bool = False,
-    fixed: bool = False,
-    invert: bool = False,
-) -> Iterable[Union[int, str]]:
+    pattern,
+    x,
+    ignore_case=False,
+    fixed=False,
+    invert=False,
+):
     """R's grepl, check whether elements in x matching the pattern
 
     Args:
@@ -167,45 +177,34 @@ def grepl(
     Returns:
         A bool array indicating whether the elements in x match the pattern
     """
-    pattern = _warn_more_pat_or_rep(pattern, "grep")
-    if isinstance(x, Series):
-        return x.transform(
-            _match,
-            pattern=pattern,
-            ignore_case=ignore_case,
-            fixed=fixed,
-            invert=invert,
-        )
-
-    if isinstance(x, SeriesGroupBy):
-        out = x.obj.transform(
-            _match,
-            pattern=pattern,
-            ignore_case=ignore_case,
-            fixed=fixed,
-            invert=invert,
-        ).groupby(x.grouper)
-        if getattr(x, "is_rowwise", False):
-            out.is_rowwise = True
-        return out
-
-    return _match(
-        pattern,
+    return _grepl(
         x,
+        pattern,
         ignore_case=ignore_case,
+        fixed=fixed,
         invert=invert,
+    )
+
+
+@_transform_dispatched
+def _sub(x, pattern, replacement, ignore_case, fixed):
+    return _sub_(
+        pattern=pattern,
+        replacement=replacement,
+        x=x,
+        ignore_case=ignore_case,
         fixed=fixed,
     )
 
 
 @register_func(None, context=Context.EVAL)
 def sub(
-    pattern: AnyArrayLike,
-    replacement: AnyArrayLike,
-    x: str,
-    ignore_case: bool = False,
-    fixed: bool = False,
-) -> Iterable[str]:
+    pattern,
+    replacement,
+    x,
+    ignore_case=False,
+    fixed=False,
+):
     """R's sub, replace a pattern with replacement for elements in x,
     each only once
 
@@ -219,76 +218,18 @@ def sub(
     Returns:
         An array of strings with matched parts replaced.
     """
-    if isinstance(x, Series):
-        return x.transform(
-            _sub,
-            pattern=pattern,
-            replacement=replacement,
-            ignore_case=ignore_case,
-            fixed=fixed,
-        )
-
-    if isinstance(x, SeriesGroupBy):
-        out = x.obj.transform(
-            _sub,
-            pattern=pattern,
-            replacement=replacement,
-            ignore_case=ignore_case,
-            fixed=fixed,
-        ).groupby(x.grouper)
-        if getattr(x, "is_rowwise", False):
-            out.is_rowwise = True
-        return out
-
     return _sub(
-        pattern=pattern,
-        replacement=replacement,
-        x=x,
+        x,
+        pattern,
+        replacement,
         ignore_case=ignore_case,
         fixed=fixed,
     )
 
 
-@register_func(None, context=Context.EVAL)
-def gsub(
-    pattern: str,
-    replacement: str,
-    x: Iterable,
-    ignore_case: bool = False,
-    fixed: bool = False,
-) -> Iterable[str]:
-    """R's gsub, replace a pattern with replacement for elements in x,
-    each for all matched parts
-
-    See Also:
-        [sub()](datar.base.string.sub)
-    """
-    if isinstance(x, Series):
-        return x.transform(
-            _sub,
-            pattern=pattern,
-            replacement=replacement,
-            ignore_case=ignore_case,
-            fixed=fixed,
-            count=0,
-            fun="gsub",
-        )
-
-    if isinstance(x, SeriesGroupBy):
-        out = x.obj.transform(
-            _sub,
-            pattern=pattern,
-            replacement=replacement,
-            ignore_case=ignore_case,
-            fixed=fixed,
-            count=0,
-            fun="gsub",
-        ).groupby(x.grouper)
-        if getattr(x, "is_rowwise", False):
-            out.is_rowwise = True
-        return out
-
-    return _sub(
+@_transform_dispatched
+def _gsub(x, pattern, replacement, ignore_case, fixed):
+    return _sub_(
         pattern=pattern,
         replacement=replacement,
         x=x,
@@ -299,12 +240,33 @@ def gsub(
     )
 
 
+@register_func(None, context=Context.EVAL)
+def gsub(
+    pattern,
+    replacement,
+    x,
+    ignore_case=False,
+    fixed=False,
+):
+    """R's gsub, replace a pattern with replacement for elements in x,
+    each for all matched parts
+
+    See Also:
+        [sub()](datar.base.string.sub)
+    """
+    return _gsub(
+        x,
+        pattern,
+        replacement,
+        ignore_case=ignore_case,
+        fixed=fixed,
+    )
+
+
 # Grep family helpers --------------------------------
 
 
-def _warn_more_pat_or_rep(
-    pattern: AnyArrayLike, fun: str, arg: str = "pattern"
-) -> str:
+def _warn_more_pat_or_rep(pattern, fun, arg="pattern"):
     """Warn when there are more than one pattern or replacement provided"""
     if is_scalar(pattern):
         return pattern
@@ -320,9 +282,7 @@ def _warn_more_pat_or_rep(
     return pattern[0]
 
 
-def _match(
-    pattern: str, text: str, ignore_case: bool, invert: bool, fixed: bool
-) -> bool:
+def _match(text, pattern, ignore_case, invert, fixed):
     """Do the regex match"""
     if pd.isnull(text):
         return False
@@ -341,15 +301,15 @@ def _match(
 _match = np.vectorize(_match, excluded={"pattern"})
 
 
-def _sub(
-    pattern: str,
-    replacement: str,
-    x: str,
-    ignore_case: bool = False,
-    fixed: bool = False,
-    count: int = 1,
-    fun: str = "sub",
-) -> Iterable[str]:
+def _sub_(
+    pattern,
+    replacement,
+    x,
+    ignore_case=False,
+    fixed=False,
+    count=1,
+    fun="sub",
+):
     """Replace a pattern with replacement for elements in x,
     with argument count available
     """
@@ -364,17 +324,17 @@ def _sub(
     return pattern.sub(repl=replacement, count=count, string=x)
 
 
-_sub = np.vectorize(_sub, excluded={"pattern", "replacement"})
+_sub_ = np.vectorize(_sub_, excluded={"pattern", "replacement"})
 
 
-@transform_func_decor(vectorized=False)
+@func_factory("transform", is_vectorized=False, otypes=[object])
 def nchar(
-    x: str,
-    type: str = "chars",
-    allow_na: bool = True,  # i.e.: '\ud861'
-    keep_na: bool = None,
-    _na_len: int = 2,
-) -> Iterable[int]:
+    x,
+    type="chars",
+    allow_na=True,  # i.e.: '\ud861'
+    keep_na=None,
+    _na_len=2,
+):
     """Get the size of the elements in x"""
     x, keep_na = _prepare_nchar(x, type, keep_na)
     out = _nchar_scalar(
@@ -385,18 +345,18 @@ def nchar(
     return out
 
 
-@transform_func_decor(vectorized=False)
-def nzchar(x, na_as: bool = False) -> bool:
+@func_factory("transform", is_vectorized=False, otypes=[object])
+def nzchar(x, keep_na=None):
     """Find out if elements of a character vector are non-empty strings.
 
     Args:
         x: Strings to test
-        na_as: What to return when for NA's
+        keep_na: What to return when for NA's
 
     Returns:
         A bool array to tell whether elements in x are non-empty strings
     """
-    x = as_character(x, _na="a" if na_as else "")
+    x = as_character(x, _na=np.nan if keep_na else NA_REPR)
     if pd.isnull(x):
         return np.nan
 
@@ -406,9 +366,7 @@ def nzchar(x, na_as: bool = False) -> bool:
 # nchar helpers --------------------------------
 
 
-def _prepare_nchar(
-    x: str, type: str, keep_na: bool
-) -> Tuple[Iterable[str], bool]:
+def _prepare_nchar(x, type, keep_na):
     """Prepare arguments for n(z)char"""
     arg_match(type, "type", ["chars", "bytes", "width"])
     if keep_na is None:
@@ -417,9 +375,7 @@ def _prepare_nchar(
     return as_character(x), keep_na
 
 
-def _nchar_scalar(
-    x: str, retn: str, allow_na: bool, keep_na: bool, na_len: int
-) -> int:
+def _nchar_scalar(x, retn, allow_na, keep_na, na_len):
     """Get the size of a scalar string"""
     if pd.isnull(x):
         return np.nan if keep_na else na_len
@@ -444,9 +400,7 @@ def _nchar_scalar(
 
 
 @register_func(None, context=Context.EVAL)
-def paste(
-    *args: AnyArrayLike, sep: str = " ", collapse: str = None
-) -> AnyArrayLike:
+def paste(*args, sep=" ", collapse=None):
     """Concatenate vectors after converting to character.
 
     Args:
@@ -478,14 +432,16 @@ def paste(
     return np.array(out, dtype=object)
 
 
-paste0 = lambda *args, collapse=None: paste(*args, sep="", collapse=collapse)
+paste0 = lambda *args, collapse=None: paste.__origfunc__(
+    *args, sep="", collapse=collapse
+)
 
 
 # sprintf ----------------------------------------------------------------
 
 
-@register_func(None, context=Context.EVAL)
-def sprintf(fmt: AnyArrayLike, *args: AnyArrayLike) -> AnyArrayLike:
+@func_factory("transform", is_vectorized=False)
+def sprintf(fmt, *args):
     """C-style String Formatting
 
     Args:
@@ -496,22 +452,18 @@ def sprintf(fmt: AnyArrayLike, *args: AnyArrayLike) -> AnyArrayLike:
         A scalar string if all fmt, *args are scalar strings, otherwise
         an array of formatted strings
     """
-    if is_scalar(fmt) and all(is_scalar(arg) for arg in args):
-        return fmt % args
-
-    df = tibble(fmt, *args)
-    return df.apply(lambda row: row[0] % row[1:], axis=1).values
+    return fmt % args
 
 
 # substr, substring ----------------------------------
 
 
-@transform_func_decor(vectorized=False, otypes=[object])
+@func_factory("transform", is_vectorized=False, otypes=[object])
 def substr(
-    x: str,
-    start: int,
-    stop: int,
-) -> str:
+    x,
+    start,
+    stop,
+):
     """Extract substrings in strings.
 
     Args:
@@ -528,12 +480,12 @@ def substr(
     return str(x)[start:stop]
 
 
-@transform_func_decor(vectorized=False, otypes=[object])
+@func_factory("transform", is_vectorized=False, otypes=[object])
 def substring(
-    x: str,
-    first: int,
-    last: int = 1000000,
-) -> AnyArrayLike:
+    x,
+    first,
+    last=1000000,
+):
     """Extract substrings in strings.
 
     Args:
@@ -553,8 +505,13 @@ def substring(
 # strsplit --------------------------------
 
 
-@transform_func_decor(vectorized=False, otypes=[object])
-def strsplit(x: str, split: str, fixed: bool = False) -> AnyArrayLike:
+@func_factory(
+    "transform",
+    is_vectorized=False,
+    otypes=[object],
+    excluded={"split", "fixed"},
+)
+def strsplit(x, split, fixed=False):
     """Split strings by separator
 
     Args:
@@ -573,8 +530,8 @@ def strsplit(x: str, split: str, fixed: bool = False) -> AnyArrayLike:
 
 
 # startsWith, endsWith
-@transform_func_decor(vectorized=False)
-def startswith(x: str, prefix: str) -> str:
+@func_factory("transform", is_vectorized=False)
+def startswith(x, prefix):
     """Determines if entries of x start with prefix
 
     Args:
@@ -587,8 +544,8 @@ def startswith(x: str, prefix: str) -> str:
     return str(x).startswith(prefix)
 
 
-@transform_func_decor(vectorized=False)
-def endswith(x, suffix) -> str:
+@func_factory("transform", is_vectorized=False)
+def endswith(x, suffix):
     """Determines if entries of x end with suffix
 
     Args:
@@ -601,8 +558,8 @@ def endswith(x, suffix) -> str:
     return str(x).endswith(suffix)
 
 
-@transform_func_decor(vectorized=False)
-def strtoi(x: str, base: int = 0):
+@func_factory("transform", is_vectorized=False)
+def strtoi(x, base=0):
     """Convert strings to integers according to the given base
 
     Args:
@@ -616,39 +573,17 @@ def strtoi(x: str, base: int = 0):
     return int(x, base=base)
 
 
-def _chartr_vec(x: str, old: str, new: str):
+@_transform_dispatched(
+    is_vectorized=False, otypes=[object], excluded={"old", "new"}
+)
+def _chartr(x, old, new):
     for oldc, newc in zip(old, new):
         x = x.replace(oldc, newc)
     return x
 
 
-_chartr_vec = np.vectorize(
-    _chartr_vec, otypes=[object], excluded={"old", "new"}
-)
-
-
-@singledispatch
-def _chartr(x, old, new):
-    new = new[: len(old)]
-    return _chartr_vec(x, old, new)
-
-
-@_chartr.register(Series)
-def _(x, old, new):
-    return Series(_chartr(x.values, old, new), index=x.index, name=x.name)
-
-
-@_chartr.register(SeriesGroupBy)
-def _(x, old, new):
-    out = _chartr(x.obj, old, new).groupby(x.grouper)
-    if getattr(x, "is_rowwise", False):
-        out.is_rowwise = True
-
-    return out
-
-
 @register_func(None, context=Context.EVAL)
-def chartr(old, new, x) -> str:
+def chartr(old, new, x):
     """Replace strings char by char
 
     Args:
@@ -668,8 +603,8 @@ def chartr(old, new, x) -> str:
     return _chartr(x, old, new)
 
 
-@transform_func_decor(vectorized=False)
-def tolower(x: AnyArrayLike) -> AnyArrayLike:
+@func_factory("transform", is_vectorized=False)
+def tolower(x):
     """Convert strings to lower case
 
     Args:
@@ -681,7 +616,7 @@ def tolower(x: AnyArrayLike) -> AnyArrayLike:
     return str(x).lower()
 
 
-@transform_func_decor(vectorized=False)
+@func_factory("transform", is_vectorized=False)
 def toupper(x):
     """Convert strings to upper case
 
@@ -694,8 +629,12 @@ def toupper(x):
     return str(x).upper()
 
 
-@transform_func_decor(vectorized=False)
-def trimws(x, which: str = "both", whitespace: str = r"[ \t\r\n]"):
+@func_factory(
+    "transform",
+    is_vectorized=False,
+    excluded={"which", "whitespace"},
+)
+def trimws(x, which="both", whitespace=r"[ \t\r\n]"):
     """Remove leading and/or trailing whitespace from character strings.
 
     Args:

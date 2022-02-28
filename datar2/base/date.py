@@ -1,39 +1,37 @@
 """Date time functions"""
-
 import datetime
 import functools
-from typing import Any, List, Union
 
 import numpy as np
 import pandas as pd
-from pandas import Series
+# from pandas import Series
 from pandas.api.types import is_scalar, is_integer
 
-from ..core.utils import transform_func, transform_func_decor
+from ..core.factory import func_factory
 
 
 @functools.singledispatch
 def _as_date_dummy(
-    x: Any,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     """Convert a dummy object to date"""
     raise ValueError(f"Unable to convert to date with type: {type(x)!r}")
 
 
 @_as_date_dummy.register(datetime.date)
 def _(
-    x: datetime.date,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     if is_scalar(tz) and is_integer(tz):
         tz = datetime.timedelta(hours=int(tz))
 
@@ -42,12 +40,12 @@ def _(
 
 @_as_date_dummy.register(datetime.datetime)
 def _(
-    x: datetime.datetime,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
 ):
     if is_scalar(tz) and is_integer(tz):
         tz = datetime.timedelta(hours=int(tz))
@@ -58,12 +56,12 @@ def _(
 @_as_date_dummy.register(str)
 def _(
     x: str,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     if is_scalar(tz) and is_integer(tz):
         tz = datetime.timedelta(hours=int(tz))
 
@@ -92,35 +90,35 @@ def _(
     )
 
 
-@_as_date_dummy.register(Series)
-def _(
-    x: Series,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
-    return _as_date_dummy(
-        x.values[0],
-        format=format,
-        try_formats=try_formats,
-        optional=optional,
-        tz=tz,
-        origin=origin,
-    )
+# @_as_date_dummy.register(Series)
+# def _(
+#     x,
+#     format=None,
+#     try_formats=None,
+#     optional=False,
+#     tz=0,
+#     origin=None,
+# ):
+#     return _as_date_dummy(
+#         x.values[0],
+#         format=format,
+#         try_formats=try_formats,
+#         optional=optional,
+#         tz=tz,
+#         origin=origin,
+#     )
 
 
 @_as_date_dummy.register(int)
 @_as_date_dummy.register(np.integer)
 def _(
-    x: int,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     if isinstance(tz, (int, np.integer)):
         tz = datetime.timedelta(hours=int(tz))
 
@@ -134,15 +132,15 @@ def _(
     return dt
 
 
-@transform_func_decor(vectorized=False)
+@func_factory("transform", is_vectorized=False)
 def as_date(
     x,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> Series:
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     """Convert an object to a datetime.date object
 
     See: https://rdrr.io/r/base/as.Date.html
@@ -180,8 +178,9 @@ def as_date(
     )
 
 
-as_pd_date = transform_func(
-    "as_pd_date",
+as_pd_date = func_factory(
+    "transform",
+    name="as_pd_date",
     doc="""Alias of pandas.to_datetime(), but registered as a function
     so that it can be used in verbs.
 
@@ -195,5 +194,5 @@ as_pd_date = transform_func(
     Returns:
         Converted datetime
     """,
-    transform=pd.to_datetime,
+    func=pd.to_datetime,
 )
