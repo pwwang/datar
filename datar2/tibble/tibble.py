@@ -3,6 +3,7 @@ from typing import Any, Callable, Mapping, Union
 
 from pipda import register_func, ReferenceAttr, ReferenceItem
 from pandas._typing import Dtype
+from pandas.api.types import is_scalar
 from pandas.core.indexes.range import RangeIndex
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
 
@@ -22,6 +23,7 @@ def tibble(
     _rows: int = None,
     _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
     _drop_index: bool = False,
+    _index=None,
     **kwargs,
 ) -> Tibble:
     """Constructs a data frame
@@ -40,6 +42,7 @@ def tibble(
             not provided. When args or kwargs are provided, this is ignored.
         _dtypes: The dtypes for each columns to convert to.
         _drop_index: Whether drop the index for the final data frame
+        _index: The new index of the output frame
 
     Returns:
         A constructed tibble
@@ -53,6 +56,9 @@ def tibble(
     )
     if _drop_index:
         return out.reset_index(drop=True)
+
+    if _index is not None:
+        out.index = [_index] if is_scalar(_index) else _index
 
     return out
 

@@ -47,7 +47,7 @@ def test_input_recycled():
     assert_tibble_equal(df1, df2)
 
     df1 = gf >> summarise(x=seq_len(f.a), y=1)
-    df2 = tibble(a=c(1, 2, 2), x=c(0, 0, 1), y=1) >> group_by(f.a)
+    df2 = tibble(a=c(1, 2, 2), x=c(1, 1, 2), y=1) >> group_by(f.a)
     # assert df1.equals(df2)
     assert_tibble_equal(df1, df2)
 

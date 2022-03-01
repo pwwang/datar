@@ -29,6 +29,7 @@ class Tibble(DataFrame):
     _metadata = ["_datar"]
 
     def __init__(self, data=None, *args, meta=None, **kwargs):
+        """Construct a tibble"""
         super().__init__(data, *args, **kwargs)
         self._datar = meta or {}
 
@@ -404,4 +405,8 @@ class TibbleRowwise(TibbleGrouped):
 
 
 class SeriesRowwise(SeriesGroupBy):
+    """Class only used for dispatching"""
+
+
+class SeriesCategorical(Series):
     """Class only used for dispatching"""

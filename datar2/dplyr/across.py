@@ -3,25 +3,14 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/across.R
 """
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Sequence,
-    Callable,
-    Iterable,
-    Mapping,
-    Tuple,
-    Union,
-)
 
-from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
 from pipda import register_func, evaluate_expr
 from pipda.function import Function
 from pipda.utils import functype
-from pipda.context import ContextBase
 
 from ..core.broadcast import add_to_tibble
-from ..core.tibble import Tibble, TibbleRowwise
+from ..core.tibble import Tibble
 from ..core.utils import (
     vars_select,
     regcall,
@@ -30,21 +19,19 @@ from ..core.middlewares import CurColumn
 from ..core.contexts import Context
 from .tidyselect import everything
 
-AcrossFunType = Union[Callable, Sequence[Callable], Mapping[str, Callable]]
-
 
 class Across:
     """Across object"""
 
     def __init__(
         self,
-        data: DataFrame,
-        cols: Sequence[str] = None,
-        fns: AcrossFunType = None,
-        names: str = None,
-        args: Tuple[Any] = None,
-        kwargs: Mapping[str, Any] = None,
-    ) -> None:
+        data,
+        cols=None,
+        fns=None,
+        names=None,
+        args=None,
+        kwargs=None,
+    ):
         cols = regcall(everything, data) if cols is None else cols
         if is_scalar(cols):
             cols = [cols]
@@ -76,10 +63,7 @@ class Across:
         self.args = args or ()
         self.kwargs = kwargs or {}
 
-    def evaluate(
-        self,
-        context: Union[Context, ContextBase] = None,
-    ) -> DataFrame:
+    def evaluate(self, context=None):
         """Evaluate object with context"""
         if isinstance(context, Context):
             context = context.value
@@ -88,6 +72,7 @@ class Across:
             self.fns = [{"fn": lambda x: x}]
 
         ret = None
+        # Instead of df.apply(), we can recycle groupby values and more
         for column in self.cols:
             for fn_info in self.fns:
                 render_data = fn_info.copy()
@@ -133,13 +118,13 @@ class IfCross(Across, ABC):
 
     @staticmethod
     @abstractmethod
-    def aggregate(values: Series) -> bool:
+    def aggregate(values):
         """How to aggregation by rows"""
 
     def evaluate(
         self,
-        context: Union[Context, ContextBase] = None,
-    ) -> DataFrame:
+        context=None,
+    ):
         """Evaluate the object with context"""
         # Fill NA first and then do and/or
         # Since NA | True -> False for pandas
@@ -155,7 +140,7 @@ class IfAny(IfCross):
     """For calls from dplyr's if_any"""
 
     @staticmethod
-    def aggregate(values: Series) -> bool:
+    def aggregate(values):
         """How to aggregation by rows"""
         return values.fillna(False).astype(bool).any()
 
@@ -164,20 +149,20 @@ class IfAll(IfCross):
     """For calls from dplyr's if_all"""
 
     @staticmethod
-    def aggregate(values: Series) -> bool:
+    def aggregate(values):
         """How to aggregation by rows"""
         return values.fillna(False).astype(bool).all()
 
 
 @register_func(context=Context.PENDING, verb_arg_only=True)
 def across(
-    _data: DataFrame,
-    *args: Any,
-    _names: str = None,
-    _fn_context: Union[Context, ContextBase] = Context.EVAL,
-    _context: ContextBase = None,
-    **kwargs: Any,
-) -> DataFrame:
+    _data,
+    *args,
+    _names=None,
+    _fn_context=Context.EVAL,
+    _context=None,
+    **kwargs,
+):
     """Apply the same transformation to multiple columns
 
     The original API:
@@ -228,10 +213,10 @@ def across(
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
-    _data: TibbleRowwise,
-    _cols: Sequence[str] = None,
-    _context: ContextBase = None,
-) -> Series:
+    _data,
+    _cols=None,
+    _context=None,
+):
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
@@ -256,12 +241,12 @@ def c_across(
     verb_arg_only=True,
 )
 def if_any(
-    _data: DataFrame,
-    *args: Any,
-    _names: str = None,
-    _context: ContextBase = None,
-    **kwargs: Any,
-) -> Iterable[bool]:
+    _data,
+    *args,
+    _names=None,
+    _context=None,
+    **kwargs,
+):
     """Apply the same predicate function to a selection of columns and combine
     the results True if any element is True.
 
@@ -291,14 +276,14 @@ def if_any(
     verb_arg_only=True,
 )
 def if_all(
-    _data: DataFrame,
+    _data,
     # _cols: Iterable[str] = None,
     # _fns: Union[Mapping[str, Callable]] = None,
-    *args: Any,
-    _names: str = None,
-    _context: ContextBase = None,
-    **kwargs: Any,
-) -> Iterable[bool]:
+    *args,
+    _names=None,
+    _context=None,
+    **kwargs,
+):
     """Apply the same predicate function to a selection of columns and combine
     the results True if all elements are True.
 

@@ -2,25 +2,19 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/arrange.R
 """
-from typing import Any
 from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import regcall
-from ..core.tibble import Tibble, TibbleGrouped
+from ..core.tibble import TibbleGrouped
 from ..core.exceptions import NameNonUniqueError
 from ..base import union
 from .mutate import mutate
 
 
 @register_verb(DataFrame, context=Context.PENDING)
-def arrange(
-    _data: DataFrame,
-    *args: Any,
-    _by_group: bool = False,
-    **kwargs: Any,
-) -> Tibble:
+def arrange(_data, *args, _by_group=False, **kwargs):
     """orders the rows of a data frame by the values of selected columns.
 
     The original API:

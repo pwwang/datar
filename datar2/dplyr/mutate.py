@@ -4,7 +4,6 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 """
 
 from contextlib import suppress
-from typing import Any, Union
 
 from pandas import DataFrame
 from pipda import register_verb, evaluate_expr, ReferenceAttr, ReferenceItem
@@ -12,7 +11,7 @@ from pipda import register_verb, evaluate_expr, ReferenceAttr, ReferenceItem
 from ..core.contexts import Context, ContextEvalRefCounts
 from ..core.utils import arg_match, name_of, regcall
 from ..core.broadcast import add_to_tibble
-from ..core.tibble import TibbleRowwise
+from ..core.tibble import TibbleRowwise, Tibble
 from ..base import setdiff, union, intersect, c
 from ..tibble import as_tibble
 from .group_data import group_vars
@@ -25,13 +24,13 @@ from .relocate import relocate
     extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
 )
 def mutate(
-    _data: DataFrame,
-    *args: Any,
-    _keep: str = "all",
-    _before: Union[int, str] = None,
-    _after: Union[int, str] = None,
-    **kwargs: Any,
-) -> DataFrame:
+    _data,
+    *args,
+    _keep="all",
+    _before=None,
+    _after=None,
+    **kwargs,
+):
     """Adds new variables and preserves existing ones
 
     The original API:
@@ -91,6 +90,7 @@ def mutate(
             mutated_cols.append(val._pipda_ref)
             continue
 
+        print(repr(val))
         bkup_name = str(val)
         val = evaluate_expr(val, data, context)
 
@@ -168,7 +168,7 @@ def mutate(
         and len(intersect(gvars, mutated_cols)) > 0
     ):
         grouped = data._datar["grouped"]
-        data = grouped.obj.copy().group_by(
+        data = Tibble(data).group_by(
             gvars,
             drop=grouped.observed,
             sort=grouped.sort,
@@ -182,12 +182,12 @@ def mutate(
 
 @register_verb(DataFrame, context=Context.PENDING)
 def transmute(
-    _data: DataFrame,
-    *args: Any,
-    _before: Union[int, str] = None,
-    _after: Union[int, str] = None,
-    **kwargs: Any,
-) -> DataFrame:
+    _data,
+    *args,
+    _before=None,
+    _after=None,
+    **kwargs,
+):
     """Mutate with _keep='none'
 
     See Also:

@@ -8,7 +8,7 @@ from pandas.core.frame import DataFrame
 from datar2.core.tibble import TibbleRowwise, TibbleGrouped
 from datar2.testing import assert_tibble_equal
 from datar2.tibble import tibble
-from datar2.base import letters, nrow, ncol, c, rep, max, sum
+from datar2.base import letters, nrow, ncol, c, max, sum
 from datar2.dplyr import (
     group_by,
     mutate,
@@ -436,7 +436,8 @@ def test_dup_keyword_args():
 
 
 # def test_complex_expression_as_value():
-#     # https://stackoverflow.com/questions/30714810/pandas-group-by-and-aggregate-column-1-with-condition-from-column-2
+#     # https://stackoverflow.com/questions/30714810/
+#     # pandas-group-by-and-aggregate-column-1-with-condition-from-column-2
 #     dat = (
 #         tibble(
 #             user=rep(c("1", 2, 3, 4), each=5),
@@ -448,3 +449,9 @@ def test_dup_keyword_args():
 #         login=sample(f[1 : f.cancel_date[0]], size=n(), replace=True)
 #     )
 #     assert nrow(out) == 20
+
+
+def test_mutate_none():
+    df = tibble(x=1, y=2)
+    out = df >> mutate(None)
+    assert_tibble_equal(df, out)

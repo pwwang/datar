@@ -1,10 +1,12 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-group-by.r
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rowwise.r
 
+from pandas import Series
 import pytest
 
 import numpy
 from datar2 import f
+from datar2.core.exceptions import NameNonUniqueError
 from datar2.datasets import mtcars, iris
 from datar2.core.tibble import TibbleGrouped, TibbleRowwise
 from datar2.dplyr import (
@@ -17,6 +19,7 @@ from datar2.dplyr import (
     across,
     filter,
     any_of,
+    rename,
     select,
     group_size,
     group_by_drop_default,
@@ -27,6 +30,12 @@ from datar2.dplyr import (
     starts_with,
     n,
     slice,
+    inner_join,
+    anti_join,
+    left_join,
+    semi_join,
+    full_join,
+    rename_with,
 )
 from datar2.tibble import tibble
 from datar2.base import rep, c, NA, mean, dim, sum, names, nrow, factor
@@ -49,24 +58,24 @@ def test_add(df):
     assert gvars == ["x", "y"]
 
 
-# def test_join_preserve_grouping(df):
-#     g = df >> group_by(f.x)
+def test_join_preserve_grouping(df):
+    g = df >> group_by(f.x)
 
-#     tbl = g >> inner_join(g, by=["x", "y"])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ["x"]
+    tbl = g >> inner_join(g, by=["x", "y"])
+    gvars = tbl >> group_vars()
+    assert gvars == ["x"]
 
-#     tbl = g >> left_join(g, by=["x", "y"])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ["x"]
+    tbl = g >> left_join(g, by=["x", "y"])
+    gvars = tbl >> group_vars()
+    assert gvars == ["x"]
 
-#     tbl = g >> semi_join(g, by=["x", "y"])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ["x"]
+    tbl = g >> semi_join(g, by=["x", "y"])
+    gvars = tbl >> group_vars()
+    assert gvars == ["x"]
 
-#     tbl = g >> anti_join(g, by=["x", "y"])
-#     gvars = tbl >> group_vars()
-#     assert gvars == ["x"]
+    tbl = g >> anti_join(g, by=["x", "y"])
+    gvars = tbl >> group_vars()
+    assert gvars == ["x"]
 
 
 # def test_tibble_lose_grouping(df):
@@ -175,7 +184,7 @@ def test_zero_row_dfs():
 
 def test_does_not_affect_input_data():
     df = tibble(x=1)
-    dfg = df >> group_by(f.x)
+    _ = df >> group_by(f.x)
     assert df.x.tolist() == [1]
 
 
@@ -280,7 +289,8 @@ def test_summarise_maintains_drop():
     assert ng == 1
     assert group_by_drop_default(res)
 
-    # DataFrame.groupby(..., observed=False) doesn't support multiple categoricals
+    # DataFrame.groupby(..., observed=False) doesn't support
+    # multiple categoricals
     # res1 = df >> group_by(f.f1, f.f2, _drop=False)
     # ng = n_groups(res1)
     # assert ng == 12
@@ -303,29 +313,29 @@ def test_summarise_maintains_drop():
     assert group_by_drop_default(res2)
 
 
-# def test_joins_maintains__drop():
-#     df1 = group_by(
-#         tibble(f1=factor(c("a", "b"), levels=c("a", "b", "c")), x=[42, 43]),
-#         f.f1,
-#         _drop=True,
-#     )
+def test_joins_maintains__drop():
+    df1 = group_by(
+        tibble(f1=factor(c("a", "b"), levels=c("a", "b", "c")), x=[42, 43]),
+        f.f1,
+        _drop=True,
+    )
 
-#     df2 = group_by(
-#         tibble(f1=factor(c("a"), levels=c("a", "b", "c")), y=1),
-#         f.f1,
-#         _drop=True,
-#     )
+    df2 = group_by(
+        tibble(f1=factor(c("a"), levels=c("a", "b", "c")), y=1),
+        f.f1,
+        _drop=True,
+    )
 
-#     res = left_join(df1, df2, by="f1")
-#     assert n_groups(res) == 2
+    res = left_join(df1, df2, by="f1")
+    assert n_groups(res) == 2
 
-#     df2 = group_by(
-#         tibble(f1=factor(c("a", "c"), levels=c("a", "b", "c")), y=[1, 2]),
-#         f.f1,
-#         _drop=True,
-#     )
-#     res = full_join(df1, df2, by="f1")
-#     assert n_groups(res) == 3
+    df2 = group_by(
+        tibble(f1=factor(c("a", "c"), levels=c("a", "b", "c")), y=[1, 2]),
+        f.f1,
+        _drop=True,
+    )
+    res = full_join(df1, df2, by="f1")
+    assert n_groups(res) == 3
 
 
 def test_add_passes_drop():
@@ -345,9 +355,11 @@ def test_add_passes_drop():
 #
 def test_na_last():
 
-    res = tibble(x = c("apple", NA, "banana"), y = range(1,4)) >> \
-        group_by(f.x) >> \
-        group_data()
+    res = (
+        tibble(x=c("apple", NA, "banana"), y=range(1, 4))
+        >> group_by(f.x)
+        >> group_data()
+    )
 
     x = res.x.fillna("")
     assert x.tolist() == ["apple", "banana", ""]
@@ -427,6 +439,11 @@ def test_errors():
 
 # rowwise --------------------------------------------
 
+def test_rowwise_name_nonunique():
+    df = tibble(tibble(x=1), x=2, _name_repair="minimal")
+    with pytest.raises(NameNonUniqueError):
+        df >> rowwise()
+
 
 def test_rowwise_preserved_by_major_verbs():
     rf = rowwise(tibble(x=range(1, 6), y=range(5, 0, -1)), f.x)
@@ -443,9 +460,9 @@ def test_rowwise_preserved_by_major_verbs():
     assert isinstance(out, TibbleRowwise)
     assert group_vars(out) == ["x"]
 
-    # out = rename(rf, X=f.x)
-    # assert isinstance(out, TibbleRowwise)
-    # assert group_vars(out) == ["X"]
+    out = rename(rf, X=f.x)
+    assert isinstance(out, TibbleRowwise)
+    assert group_vars(out) == ["X"]
 
     out = select(rf, "x")
     assert isinstance(out, TibbleRowwise)
@@ -472,9 +489,9 @@ def test_rowwise_preserved_by_subsetting():
     assert isinstance(out, TibbleRowwise)
     assert group_vars(out) == ["x"]
 
-    # out = set_names(rf, [name.upper() for name in names(rf)])
-    # assert isinstance(out, TibbleRowwise)
-    # assert group_vars(out) == ["X"]
+    out = rename_with(rf, str.upper)
+    assert isinstance(out, TibbleRowwise)
+    assert group_vars(out) == ["X"]
 
 
 def test_rowwise_captures_group_vars():
@@ -497,6 +514,13 @@ def test_can_re_rowwise():
 
 
 def test_compound_ungroup():
+    assert ungroup(1) == 1
+    g = Series([1, 2, 3]).groupby([1, 1, 2])
+    assert ungroup(g) is g.obj
+
+    with pytest.raises(ValueError):
+        ungroup(g, "abc")
+
     df = tibble(x=1, y=2) >> group_by(f.x, f.y)
     out = ungroup(df)
     assert group_vars(out) == []

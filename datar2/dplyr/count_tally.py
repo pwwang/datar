@@ -2,38 +2,34 @@
 
 See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
-from typing import Any, Iterable, Union
-
 from pandas import DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs
-from pipda.expression import Expression
 
 from ..core.contexts import Context
-from ..core.types import NumericOrIter, NumericType
-from ..core.utils import copy_attrs, logger
+from ..core.utils import logger, regcall
 from ..core.defaults import f
-from ..core.grouped import DataFrameGroupBy
 from ..base import options_context, sum_
 from .context import n
-from .group_by import group_by_drop_default, group_by
-from .group_data import group_data, group_vars
+from .group_by import group_by_drop_default, group_by, ungroup
+from .group_data import group_vars
 from .mutate import mutate
 from .summarise import summarise
 from .arrange import arrange
 from .desc import desc
+from .join import _reconstruct_tibble
 
 
 @register_verb(DataFrame, context=Context.PENDING)
 def count(
-    x: DataFrame,
-    *args: Any,
-    wt: NumericOrIter = None,
-    sort: bool = False,
-    name: str = None,
-    _drop: bool = None,
-    **kwargs: Any,
-) -> DataFrame:
+    x,
+    *args,
+    wt=None,
+    sort=False,
+    name=None,
+    _drop=None,
+    **kwargs,
+):
     """Count observations by group
 
     See https://dplyr.tidyverse.org/reference/count.html
@@ -55,99 +51,96 @@ def count(
         _drop = group_by_drop_default(x)
 
     if args or kwargs:
-        out = group_by(
+        out = regcall(
+            group_by,
             x,
             *args,
             **kwargs,
             _add=True,
             _drop=_drop,
-            __calling_env=CallingEnvs.REGULAR,
         )
     else:
         out = x
 
-    out = tally(
+    out = regcall(
+        tally,
         out,
         wt=wt,
         sort=sort,
         name=name,
-        __calling_env=CallingEnvs.REGULAR,
     )
-    if isinstance(x, DataFrameGroupBy):
-        out = DataFrameGroupBy(
-            out,
-            _group_vars=group_vars(x, __calling_env=CallingEnvs.REGULAR),
-            _group_drop=_drop,
-            _group_data=group_data(x, __calling_env=CallingEnvs.REGULAR),
-        )
-    return out
+
+    return _reconstruct_tibble(x, out)
 
 
 @register_verb(DataFrame, context=Context.PENDING)
 def tally(
-    x: DataFrame,
-    wt: NumericOrIter = None,
-    sort: bool = False,
-    name: str = None,
-) -> DataFrame:
+    x,
+    wt=None,
+    sort=False,
+    name=None,
+):
     """A ower-level function for count that assumes you've done the grouping
 
     See count()
     """
     tallyn = _tally_n(wt)
 
-    name = _check_name(name, group_vars(x, __calling_env=CallingEnvs.REGULAR))
+    name = _check_name(name, regcall(group_vars, x))
     # thread-safety?
     with options_context(dplyr_summarise_inform=False):
-
-        out = summarise(
+        out = regcall(
+            summarise,
             x,
-            {name: n() if tallyn is None else tallyn},
-            __calling_env=CallingEnvs.REGULAR,
+            **{
+                name: n(__calling_env=CallingEnvs.PIPING)
+                if tallyn is None
+                else tallyn
+            },
         )
 
-    # keep attributes
-    copy_attrs(out, x)
-
     if sort:
-        return arrange(out, desc(f[name]), __calling_env=CallingEnvs.REGULAR)
+        out = regcall(
+            arrange,
+            regcall(ungroup, out),
+            desc(f[name], __calling_env=CallingEnvs.PIPING)
+        )
+        out.reset_index(drop=True, inplace=True)
+        return _reconstruct_tibble(x, out)
+
     return out
 
 
 @register_verb(DataFrame, context=Context.PENDING)
 def add_count(
-    x: DataFrame,
-    *args: Any,
-    wt: str = None,
-    sort: bool = False,
-    name: str = "n",
-    **kwargs: Any,
-) -> DataFrame:
+    x,
+    *args,
+    wt=None,
+    sort=False,
+    name="n",
+    **kwargs,
+):
     """Equivalents to count() but use mutate() instead of summarise()
 
     See count().
     """
     if args or kwargs:
-        out = group_by(
+        out = regcall(
+            group_by,
             x,
             *args,
             **kwargs,
             _add=True,
-            __calling_env=CallingEnvs.REGULAR,
         )
     else:
         out = x
 
-    out = add_tally(
-        out, wt=wt, sort=sort, name=name, __calling_env=CallingEnvs.REGULAR
-    )
+    out = regcall(add_tally, out, wt=wt, sort=sort, name=name)
     return out
 
 
 @register_verb(DataFrame, context=Context.PENDING)
-def add_tally(
-    x: DataFrame, wt: str = None, sort: bool = False, name: str = "n"
-) -> DataFrame:
+def add_tally(x, wt=None, sort=False, name="n"):
     """Equivalents to tally() but use mutate() instead of summarise()
 
     See count().
@@ -155,23 +148,30 @@ def add_tally(
     tallyn = _tally_n(wt)
     name = _check_name(name, x.columns)
 
-    out = mutate(
+    out = regcall(
+        mutate,
         x,
-        {name: n() if tallyn is None else tallyn},
-        __calling_env=CallingEnvs.REGULAR,
+        **{
+            name: n(__calling_env=CallingEnvs.PIPING)
+            if tallyn is None
+            else tallyn
+        },
     )
 
     if sort:
-        return arrange(
-            out,
-            desc(f[name]),
-            __calling_env=CallingEnvs.REGULAR,
+        sort_ed = regcall(
+            arrange,
+            regcall(ungroup, out),
+            desc(f[name], __calling_env=CallingEnvs.PIPING)
         )
+        sort_ed.reset_index(drop=True, inplace=True)
+        return _reconstruct_tibble(x, sort_ed)
+
     return out
 
 
 # Helpers -----------------------------------------------------------------
-def _tally_n(wt: Union[NumericOrIter, Expression]) -> Iterable[NumericType]:
+def _tally_n(wt):
     """Compuate the weights for counting"""
     if wt is None:
         return None  # will be n() later on
@@ -182,7 +182,7 @@ def _tally_n(wt: Union[NumericOrIter, Expression]) -> Iterable[NumericType]:
     return sum_(wt, na_rm=True, __calling_env=CallingEnvs.PIPING)
 
 
-def _check_name(name: str, invars: Iterable[str]) -> str:
+def _check_name(name, invars):
     """Check if count is valid"""
     if name is None:
         name = _n_name(invars)
@@ -198,7 +198,7 @@ def _check_name(name: str, invars: Iterable[str]) -> str:
     return name
 
 
-def _n_name(invars: Iterable[str]) -> str:
+def _n_name(invars):
     """Make sure that name does not exist in invars"""
     name = "n"
     while name in invars:

@@ -3,14 +3,14 @@ from typing import Sequence
 
 import numpy as np
 from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
+from pandas.api.types import is_scalar, is_categorical_dtype
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import SeriesGroupBy, GroupBy
 
 from pipda import register_func
 
 from .contexts import Context
-from .tibble import TibbleGrouped, SeriesRowwise, TibbleRowwise
+from .tibble import SeriesCategorical, TibbleGrouped, SeriesRowwise, TibbleRowwise
 from .utils import arg_match
 
 NO_DEFAULT = object()
@@ -105,7 +105,11 @@ def _transform_dispatched(func=None, is_vectorized=True, **vec_kwargs):
 
     @_dispatched.register(NDFrame)
     def _(x: NDFrame, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
+        if is_categorical_dtype(x):
+            reginfo = _dispatched.proxy.dispatch(SeriesCategorical)
+        else:
+            reginfo = _dispatched.proxy.dispatch(x.__class__)
+
         return _run(
             "transform",
             x,

@@ -28,7 +28,7 @@ from functools import singledispatch
 from typing import TYPE_CHECKING, Any, Tuple, Union
 
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, CategoricalIndex
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
 from pandas.api.types import is_list_like, is_categorical_dtype
@@ -74,9 +74,13 @@ def _agg_result_compatible(index: "Index", grouper: "Grouper") -> bool:
         return False
 
     # also check the size
+    if isinstance(index, CategoricalIndex):
+        index = index.remove_unused_categories()
+
     size1 = index.value_counts(sort=False)
     size2 = grouper.size()
-    return ((size1 == 1) | (size2 == 1) | (size1 == size2)).all()
+
+    return ((size1 == 1) | (size2 == 1) | (size1.values == size2.values)).all()
 
 
 def _grouper_compatible(grouper1: "Grouper", grouper2: "Grouper") -> bool:
@@ -225,8 +229,7 @@ def _(
 
     if isinstance(base, TibbleRowwise):
         if not _grouper_compatible(
-            value.grouper,
-            base._datar["grouped"].grouper
+            value.grouper, base._datar["grouped"].grouper
         ):
             raise ValueError(f"`{name}` has an incompatible grouper.")
         # Don't broadcast rowwise
@@ -246,10 +249,7 @@ def _(
     #                                              ^^^^^^^^^^
     val_sizes = value.grouper.size()
 
-    if (
-        base.shape[0] == 1
-        or (val_sizes == base.shape[0]).all()
-    ):
+    if base.shape[0] == 1 or (val_sizes == base.shape[0]).all():
         if base.shape[0] == 1:
             repeats = value.obj.shape[0]
         else:
@@ -306,7 +306,13 @@ def _(
             name = name or name_of(value) or str(value)
             raise ValueError(f"`{name}` is an incompatible aggregated result.")
 
-        val_sizes = value.index.value_counts(sort=False)
+        if isinstance(value.index, CategoricalIndex):
+            val_sizes = value.index.remove_unused_categories().value_counts(
+                sort=False
+            )
+        else:
+            val_sizes = value.index.value_counts(sort=False)
+
         if (val_sizes == 1).all():
             # Don't modify base when values are 1-size groups
             # Leave it to broadcast_to() to broadcast to values
@@ -416,10 +422,9 @@ def broadcast_to(
     # broadcast value to each group
     # length of each group is checked in _broadcast_base
     # A better way to distribute the value to each group?
-    idx = np.concatenate([
-        grouper.groups[gdata]
-        for gdata in grouper.group_keys_seq
-    ])
+    idx = np.concatenate(
+        [grouper.groups[gdata] for gdata in grouper.group_keys_seq]
+    )
     return Series(np.tile(value, grouper.ngroups), index=idx).reindex(index)
 
 
@@ -564,17 +569,15 @@ def broadcast2(left, right) -> Tuple[Any, Any, "Grouper", bool]:
     if left_pri > right_pri:
         left = _broadcast_base(right, left)
         index, grouper = _get_index_grouper(left)
-        is_rowwise = (
-            isinstance(left, TibbleRowwise)
-            or getattr(left, "is_rowwise", False)
+        is_rowwise = isinstance(left, TibbleRowwise) or getattr(
+            left, "is_rowwise", False
         )
         right = broadcast_to(right, index, grouper)
     else:
         right = _broadcast_base(left, right)
         index, grouper = _get_index_grouper(right)
-        is_rowwise = (
-            isinstance(right, TibbleRowwise)
-            or getattr(right, "is_rowwise", False)
+        is_rowwise = isinstance(right, TibbleRowwise) or getattr(
+            right, "is_rowwise", False
         )
         left = broadcast_to(left, index, grouper)
 
@@ -608,6 +611,7 @@ def _(value: SeriesGroupBy, name: str) -> Tibble:
 @init_tibble_from.register(DataFrameGroupBy)
 def _(value: Union[DataFrame, DataFrameGroupBy], name: str) -> Tibble:
     from ..tibble import as_tibble
+
     result = as_tibble(value)
     if name:
         if result is value:

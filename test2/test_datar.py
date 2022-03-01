@@ -1,5 +1,5 @@
 from datar2 import f
-from datar2.datar import *
+from datar2.datar import get, flatten, itemgetter
 from datar2.dplyr import mutate
 from datar2.tibble import tibble
 from pandas.testing import assert_frame_equal
@@ -16,7 +16,10 @@ def test_get():
     df = tibble(x=2)
     df.index = ["a"]
 
-    out = df >> get(1, 1)
+    out = df >> get()
+    assert_frame_equal(out, df)
+
+    out = df >> get(0, 0)
     assert out == 2
 
     out = df >> get("a", "x")

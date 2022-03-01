@@ -20,6 +20,8 @@ from datar2.dplyr import (
     if_all,
     if_any,
     row_number,
+    across,
+    everything,
 )
 from datar2.base import c, rep, nrow, NA, min, re, is_element, letters
 from pandas.testing import assert_frame_equal
@@ -184,9 +186,10 @@ def test_grouped_filter_handles_indices():
     assert all(group_keys(res) == group_keys(res2))
 
 
-def test_filter_false_handles_indices():
+def test_filter_false_handles_indices(caplog):
 
-    # out = mtcars >> group_by(f.cyl) >> filter(False, _preserve=True)
+    out = mtcars >> group_by(f.cyl) >> filter(False, _preserve=True)
+    assert "support" in caplog.text
     # out = group_rows(out)
     # assert out == [[], [], []]
 
@@ -324,7 +327,7 @@ def test_errors():
         mtcars >> filter(True, x=1)
 
     # across() in filter() does not warn yet
-    # tibble(x=1, y=2) >> filter(across(everything(), lambda x: x>0))
+    tibble(x=1, y=2) >> filter(across(everything(), lambda x: x > 0))
 
 
 def test_preserves_grouping():

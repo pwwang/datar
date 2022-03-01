@@ -5,7 +5,7 @@ from pandas.core.generic import NDFrame
 from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import register_func
 
-from ..core.utils import ensure_nparray, logger
+from ..core.utils import ensure_nparray, logger, regcall
 from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
@@ -58,13 +58,13 @@ def seq(
     Note that this API is consistent with r-base's seq. 1-based and inclusive.
     """
     if along_with is not None:
-        return seq_along(along_with)
+        return regcall(seq_along, along_with)
 
     if not is_scalar(from_):
-        return seq_along(from_)
+        return regcall(seq_along, from_)
 
     if length_out is not None and from_ is None and to is None:
-        return seq_len(length_out)
+        return regcall(seq_len, length_out)
 
     if from_ is None:
         from_ = 1

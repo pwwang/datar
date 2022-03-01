@@ -6,7 +6,7 @@ from pandas.api.types import is_scalar, is_categorical_dtype
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.utils import ensure_nparray
+from ..core.utils import ensure_nparray, regcall
 from ..core.defaults import NA_REPR
 
 from .factor import _ensure_categorical
@@ -127,15 +127,15 @@ def tabulate(bin, nbins=None):
     from .casting import as_integer
     from .verbs import t
 
-    bin = as_integer.__origfunc__(bin)
+    bin = regcall(as_integer, bin)
     nbins = max(
         1,
         bin if is_scalar(bin) else 0 if len(bin) == 0 else max(bin),
         0 if nbins is None else nbins,
     )
-    tabled = table.__origfunc__(bin)
+    tabled = regcall(table, bin)
     tabled = (
-        t.__origfunc__(tabled)
+        regcall(t, tabled)
         .reindex(range(1, nbins + 1), fill_value=0)
         .iloc[:, 0]
         .values

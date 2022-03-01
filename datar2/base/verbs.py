@@ -391,9 +391,11 @@ def proportions(x, margin=None):
 
     if margin == 1:
         index = x.index
-        out = t.__origfunc__(
-            proportions.__origfunc__(
-                rename_with.__origfunc__(t.__origfunc__(x), str),
+        out = regcall(
+            t,
+            regcall(
+                proportions,
+                regcall(rename_with, regcall(t, x), str),
                 2,
             )
         )
@@ -422,3 +424,44 @@ def _(x, margin=None):
     """proportions for vectors"""
     x = ensure_nparray(x)
     return x / np.sum(x)
+
+
+# actually from R::utils
+@register_verb((DataFrame, Series, list, tuple, np.ndarray))
+def head(_data, n=6):
+    """Get the first n rows of the dataframe or a vector
+
+    This function will ignore the grouping structure.
+
+    Args:
+        n: The number of rows/elements to return
+
+    Returns:
+        The dataframe with first n rows or a vector with first n elements
+    """
+    if isinstance(_data, DataFrame):
+        return _data.head(n)
+    return _data[:n]
+
+
+@register_verb((DataFrame, Series, list, tuple, np.ndarray))
+def tail(_data, n=6):
+    """Get the last n rows of the dataframe or a vector
+
+    This function will ignore the grouping structure.
+
+    Args:
+        n: The number of rows/elements to return
+
+    Returns:
+        The dataframe with last n rows or a vector with last n elements
+        Note that the index is dropped.
+    """
+    if isinstance(_data, DataFrame):
+        return _data.tail(n).reset_index(drop=True)
+
+    out = _data[-n:]
+    try:
+        return out.reset_index(drop=True)
+    except AttributeError:
+        return out

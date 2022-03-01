@@ -182,6 +182,8 @@ from .verbs import (
     union,
     max_col,
     complete_cases,
+    head,
+    tail,
 )
 from .which import which, which_max, which_min
 

@@ -58,7 +58,7 @@ def get(
             if not isinstance(rows[0], int):
                 rows = _data.index.get_indexer_for(rows)
 
-        _data = regcall(_data, slice_, rows)
+        _data = regcall(slice_, _data, rows)
     return _data
 
 
@@ -75,9 +75,3 @@ def flatten(_data: DataFrame, bycol: bool = False) -> List[Any]:
     if bycol:
         return _data.T.values.flatten().tolist()
     return _data.values.flatten().tolist()
-
-
-@register_verb(DataFrame)
-def drop_index(_data: DataFrame) -> DataFrame:
-    """Drop the index of a dataframe, works as a verb"""
-    return _data.reset_index(drop=True)

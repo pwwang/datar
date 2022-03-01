@@ -39,7 +39,7 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
         for col in columns
     ]
     mask = [
-        flag if isinstance(flag, bool)
+        flag if isinstance(flag, (bool, np.bool_))
         else all(flag)
         for flag in mask
     ]

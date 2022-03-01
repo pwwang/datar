@@ -2,28 +2,22 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/pull.R
 """
-
-from typing import Mapping, Union
-
 from pandas import DataFrame, Series
-from pandas.core.groupby import DataFrameGroupBy
+from pandas.api.types import is_scalar
 from pipda import register_verb
 
+from ..core.tibble import Tibble, TibbleGrouped
 from ..core.contexts import Context
-from ..core.utils import arg_match, df_getitem, position_at, regcall
-from ..core.types import StringOrIter, ArrayLikeType, is_scalar
+from ..core.utils import arg_match, regcall
+from ..tibble import as_tibble
 
 
 @register_verb(
-    DataFrame, context=Context.SELECT, extra_contexts={"name": Context.EVAL}
+    DataFrame,
+    context=Context.SELECT,
+    extra_contexts={"name": Context.EVAL},
 )
-def pull(
-    _data: DataFrame,
-    var: Union[int, str] = -1,
-    name: StringOrIter = None,
-    to: str = None,
-    base0_: bool = None,
-) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
+def pull(_data, var=-1, name=None, to=None):
 
     """Pull a series or a dataframe from a dataframe
 
@@ -52,8 +46,6 @@ def pull(
             - If not provided: `series` when pulled data has only one columns.
                 `dict` if `name` provided and has the same length as the pulled
                 single column. Otherwise `frame`.
-        base0_: Whether `var` is 0-based if given by index
-            If not provided, `datar.base.get_option('index.base.0')` is used.
 
     Returns:
         The data according to `to`
@@ -65,14 +57,14 @@ def pull(
         to, "to", ["list", "array", "frame", "series", "dict", None]
     )
     if name is not None and is_scalar(name):
-        name = [name]  # type: ignore
+        name = [name]
 
+    _data = as_tibble(_data)
     if isinstance(var, int):
-        var = position_at(var, _data.shape[1], base0=base0_)
         var = _data.columns[var]
         var = var.split("$", 1)[0]
 
-    pulled = df_getitem(_data, var)
+    pulled = _data[var]
     pulled = getattr(pulled, "obj", pulled)
     # if var in _data.columns and isinstance(pulled, DataFrame):
     #     pulled = pulled.iloc[:, 0]
@@ -125,22 +117,15 @@ def pull(
 
 
 @pull.register(
-    DataFrameGroupBy,
+    TibbleGrouped,
     context=Context.PENDING,
 )
-def _(
-    _data: DataFrameGroupBy,
-    var: Union[int, str] = -1,
-    name: StringOrIter = None,
-    to: str = None,
-    base0_: bool = None,
-) -> Union[DataFrame, ArrayLikeType, Mapping[str, ArrayLikeType]]:
+def _(_data, var=-1, name=None, to=None):
     """Pull a column from a grouped data frame"""
     return regcall(
         pull,
-        _data.obj,
+        Tibble(_data, copy=False),
         var=var,
         name=name,
         to=to,
-        base0_=base0_,
     )

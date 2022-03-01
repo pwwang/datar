@@ -20,6 +20,8 @@ from datar2.base.verbs import (
     duplicated,
     complete_cases,
     t,
+    head,
+    tail,
 )
 from datar2.base import c, NA
 from datar2.tibble import tibble
@@ -167,3 +169,24 @@ def test_proportions():
         tibble(a=[1.0 / 3, 2.0 / 3], b=[3.0 / 7, 4.0 / 7])
     )
     proportions(df, 3).equals(tibble(a=[1, 1], b=[1, 1]))
+
+
+def test_head_tail():
+    df = tibble(x=range(20))
+    z = df >> head()
+    assert z.shape[0] == 6
+    z = df >> head(3)
+    assert z.shape[0] == 3
+    z = list(range(10)) >> head()
+    assert len(z) == 6
+    with pytest.raises(NotImplementedError):
+        head(3)
+
+    z = df >> tail()
+    assert z.shape[0] == 6
+    z = df >> tail(3)
+    assert z.shape[0] == 3
+    z = list(range(10)) >> tail()
+    assert len(z) == 6
+    with pytest.raises(NotImplementedError):
+        tail(3)

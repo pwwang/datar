@@ -1,41 +1,15 @@
 """Provides desc"""
-from functools import singledispatch
-from typing import Sequence
-
 import numpy as np
-from pandas import Series, Categorical
-from pandas.core.groupby import SeriesGroupBy
-from pipda import register_func
+from pandas import Series
+from pandas.api.types import is_scalar
 
-from ..core.contexts import Context
+from datar2.core.tibble import SeriesCategorical
 
-
-@singledispatch
-def _desc(x) -> np.ndarray:
-    return _desc(Series(x)).values
+from ..core.factory import func_factory
 
 
-@_desc.register(Series)
-def _(x: Series) -> Series:
-    try:
-        return -x
-    except TypeError:
-        cat = Categorical(x)
-        code = cat.codes.astype(float)
-        code[code == -1.0] = np.nan
-        return Series(-code, name=x.name, index=x.index)
-
-
-@_desc.register(SeriesGroupBy)
-def _(x: SeriesGroupBy) -> Series:
-    try:
-        return -x.obj
-    except TypeError:
-        return x.apply(_desc)
-
-
-@register_func(None, context=Context.EVAL)
-def desc(x: Sequence) -> Sequence:
+@func_factory("transform")
+def desc(x):
     """Transform a vector into a format that will be sorted in descending order
 
     This is useful within arrange().
@@ -49,4 +23,18 @@ def desc(x: Sequence) -> Sequence:
     Returns:
         The descending order of x
     """
-    return _desc(x)
+    if is_scalar(x):
+        return x
+
+    return x[::-1]
+
+
+desc.register(Series, lambda x: -x)
+
+
+@desc.register(SeriesCategorical)
+def _(x):
+    cat = x.values
+    code = cat.codes.astype(float)
+    code[code == -1.0] = np.nan
+    return Series(-code, name=x.name, index=x.index)

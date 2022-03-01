@@ -2,7 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-n_distinct.R
 import numpy
 from datar.all import *
-from datar.datasets import iris
+from datar2.datasets import iris
 
 df_var = tibble(
     l = c(True, False, False),

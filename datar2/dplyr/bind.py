@@ -2,30 +2,40 @@
 
 See https://github.com/tidyverse/dplyr/blob/master/R/bind.r
 """
-from typing import Callable, Union
 
-import pandas
+import pandas as pd
 from pandas import DataFrame, Categorical
-from pandas.api.types import union_categoricals
+from pandas.api.types import union_categoricals, is_categorical_dtype, is_scalar
 from pipda import register_verb
 
-from ..core.types import NoneType, is_null, is_categorical
 from ..core.contexts import Context
-from ..core.utils import get_option, logger, reconstruct_tibble
+from ..core.utils import logger
 from ..core.names import repair_names
-from ..core.grouped import DataFrameGroupBy
+from ..core.tibble import Tibble, TibbleGrouped
 from ..tibble import tibble
 
+from .join import _reconstruct_tibble
 
-@register_verb((DataFrame, list, dict, NoneType), context=Context.EVAL)
+
+def _construct_tibble(data):
+    if not isinstance(data, dict):
+        return Tibble(data, copy=False)
+
+    data = data.copy()
+    for key, val in data.items():
+        data[key] = [val] if is_scalar(val) else val
+
+    return Tibble(data, copy=False)
+
+
+@register_verb((DataFrame, list, dict, type(None)), context=Context.EVAL)
 def bind_rows(
-    _data: Union[DataFrame, list, dict],
-    *datas: Union[DataFrame, dict],
-    _id: str = None,
-    base0_: bool = None,
-    _copy: bool = True,
-    **kwargs: Union[DataFrame, dict],
-) -> DataFrame:
+    _data,
+    *datas,
+    _id=None,
+    _copy=True,
+    **kwargs,
+):
 
     """Bind rows of give dataframes
 
@@ -36,9 +46,6 @@ def bind_rows(
             Could be a dict or a list, keys/indexes will be used for _id col
         *datas: Other dataframes to combine
         _id: The name of the id columns
-        base0_: Whether `_id` starts from 0 or not, if no keys are provided.
-            If `base0_` is not provided, will use
-            `datar.base.get_option('index.base.0')`
         _copy: If `False`, do not copy data unnecessarily.
             Original API does not support this. This argument will be
             passed by to `pandas.concat()` as `copy` argument.
@@ -47,40 +54,31 @@ def bind_rows(
     Returns:
         The combined dataframe
     """
-    base = int(not get_option("index.base.0", base0_))
 
     if _id is not None and not isinstance(_id, str):
         raise ValueError("`_id` must be a scalar string.")
-
-    def data_to_df(data):
-        """Make a copy of dataframe or convert dict to a dataframe"""
-        if isinstance(data, DataFrame):
-            return data.copy()
-
-        out = tibble(**data)  # avoid varname error
-        return out
 
     key_data = {}
     if isinstance(_data, list):
         for i, dat in enumerate(_data):
             if dat is not None:
-                key_data[i + base] = data_to_df(dat)
+                key_data[i] = _construct_tibble(dat)
     elif _data is not None:
-        key_data[base] = data_to_df(_data)
+        key_data[0] = _construct_tibble(_data)
 
     for i, dat in enumerate(datas):
         if isinstance(dat, list):
             for df in dat:
-                key_data[len(key_data) + base] = data_to_df(df)
+                key_data[len(key_data)] = _construct_tibble(df)
         elif dat is not None:
-            key_data[len(key_data) + base] = data_to_df(dat)
+            key_data[len(key_data)] = _construct_tibble(dat)
 
     for key, val in kwargs.items():
         if val is not None:
-            key_data[key] = data_to_df(val)
+            key_data[key] = _construct_tibble(val)
 
     if not key_data:
-        return DataFrame()
+        return Tibble()
 
     # handle categorical data
     for col in list(key_data.values())[0].columns:
@@ -90,7 +88,8 @@ def bind_rows(
             if col in dat and not dat[col].isna().all()
         ]
         all_categorical = [
-            is_categorical(ser) or all(is_null(ser)) for ser in all_series
+            is_categorical_dtype(ser) or pd.isnull(ser).all()
+            for ser in all_series
         ]
         if all(all_categorical):
             union_cat = union_categoricals(all_series)
@@ -100,14 +99,15 @@ def bind_rows(
                 data[col] = Categorical(
                     data[col],
                     categories=union_cat.categories,
-                    ordered=is_categorical(data[col]) and data[col].cat.ordered,
+                    ordered=is_categorical_dtype(data[col])
+                    and data[col].cat.ordered,
                 )
         elif any(all_categorical):
             logger.warning("Factor information lost during rows binding.")
 
     if _id is not None:
         return (
-            pandas.concat(
+            pd.concat(
                 key_data.values(),
                 keys=key_data.keys(),
                 names=[_id, None],
@@ -117,29 +117,28 @@ def bind_rows(
             .reset_index(drop=True)
         )
 
-    return pandas.concat(key_data.values(), copy=_copy).reset_index(drop=True)
+    return pd.concat(key_data.values(), copy=_copy).reset_index(drop=True)
 
 
-@bind_rows.register(DataFrameGroupBy, context=Context.PENDING)
+@bind_rows.register(TibbleGrouped, context=Context.PENDING)
 def _(
-    _data: DataFrameGroupBy,
-    *datas: Union[DataFrame, dict],
-    _id: str = None,
-    **kwargs: Union[DataFrame, dict],
-) -> DataFrameGroupBy:
+    _data,
+    *datas,
+    _id=None,
+    **kwargs,
+):
 
     data = bind_rows.dispatch(DataFrame)(_data, *datas, _id=_id, **kwargs)
-    return reconstruct_tibble(_data, data)
+    return _reconstruct_tibble(_data, data)
 
 
-@register_verb((DataFrame, dict, NoneType), context=Context.EVAL)
+@register_verb((DataFrame, dict, type(None)), context=Context.EVAL)
 def bind_cols(
-    _data: Union[DataFrame, dict],
-    *datas: Union[DataFrame, dict],
-    _name_repair: Union[str, Callable] = "unique",
-    base0_: bool = None,
-    _copy: bool = True,
-) -> DataFrame:
+    _data,
+    *datas,
+    _name_repair="unique",
+    _copy=True,
+):
     """Bind columns of give dataframes
 
     Note that unlike `dplyr`, mismatched dimensions are allowed and
@@ -156,8 +155,6 @@ def bind_cols(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        base0_: Whether the numeric suffix starts from 0 or not.
-            If not specified, will use `datar.base.get_option('index.base.0')`.
         _copy: If `False`, do not copy data unnecessarily.
             Original API does not support this. This argument will be
             passed by to `pandas.concat()` as `copy` argument.
@@ -167,18 +164,20 @@ def bind_cols(
     """
     if isinstance(_data, dict):
         _data = tibble(**_data)
+
     more_data = []
     for data in datas:
         if isinstance(data, dict):
             more_data.append(tibble(**data))
         else:
             more_data.append(data)
+
     if _data is not None:
         more_data.insert(0, _data)
+
     if not more_data:
-        return DataFrame()
-    ret = pandas.concat(more_data, axis=1, copy=_copy)
-    ret.columns = repair_names(
-        ret.columns.tolist(), repair=_name_repair, base0_=base0_
-    )
+        return Tibble()
+
+    ret = pd.concat(more_data, axis=1, copy=_copy)
+    ret.columns = repair_names(ret.columns.tolist(), repair=_name_repair)
     return ret
