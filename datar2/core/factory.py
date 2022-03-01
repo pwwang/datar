@@ -17,10 +17,17 @@ NO_DEFAULT = object()
 
 
 def _register_factory(proxy):
-    def _register(types, func=NO_DEFAULT, pre=None, post=None, replace=False):
+    def _register(
+        types,
+        func=NO_DEFAULT,
+        pre=None,
+        post=None,
+        replace=False,
+        stof=True
+    ):
         if func is NO_DEFAULT:
             return lambda fun=None: _register(
-                types, func=fun, pre=pre, post=post, replace=replace
+                types, func=fun, pre=pre, post=post, replace=replace, stof=stof
             )
 
         if replace and (pre or post):
@@ -34,7 +41,13 @@ def _register_factory(proxy):
 
         for type_ in types:
             proxy.register(type_)(
-                {"pre": pre, "post": post, "replace": replace, "func": func}
+                {
+                    "pre": pre,
+                    "post": post,
+                    "replace": replace,
+                    "func": func,
+                    "stof": stof,
+                }
             )
 
     return _register
@@ -157,12 +170,12 @@ def _transform_dispatched(func=None, is_vectorized=True, **vec_kwargs):
     return _dispatched
 
 
-def _apply_dispatched(func=None, result_type=None):
+def _apply_dispatched(func=None, result_type=None, stof=True):
     if func is None:
         return lambda fun: _apply_dispatched(func=fun, result_type=result_type)
 
     DEFAULT_META = {
-        "pre": None, "post": None, "replace": False, "func": None
+        "pre": None, "post": None, "replace": False, "func": None, "stof": stof
     }
 
     @singledispatch
@@ -174,16 +187,31 @@ def _apply_dispatched(func=None, result_type=None):
     def _(x: Series, *args, **kwargs):
         # treat the series as a whole instead of element one by one
         reginfo = _dispatched.proxy.dispatch(x.__class__)
+        if reginfo["stof"] is not None:
+            stof = reginfo["stof"]
+
+        if stof:
+            return _run(
+                "apply",
+                x.to_frame(),
+                args,
+                kwargs,
+                func=func,
+                reginfo=reginfo,
+                axis=0,
+                result_type=result_type,
+            ).iloc[:, 0]
+
         return _run(
             "apply",
-            x.to_frame(),
+            x,
             args,
             kwargs,
             func=func,
             reginfo=reginfo,
             axis=0,
             result_type=result_type,
-        ).iloc[:, 0]
+        )
 
     @_dispatched.register(DataFrame)
     def _(x: DataFrame, *args, **kwargs):
@@ -254,13 +282,12 @@ def _apply_dispatched(func=None, result_type=None):
     return _dispatched
 
 
-def _agg_dispatched(func=None):
+def _agg_dispatched(func=None, stof=True):
     if func is None:
-        # allow _app_dispatched() as decorator
         return lambda fun: _agg_dispatched(func=fun)
 
     DEFAULT_META = {
-        "pre": None, "post": None, "replace": False, "func": None
+        "pre": None, "post": None, "replace": False, "func": None, "stof": stof
     }
 
     @singledispatch
@@ -268,8 +295,8 @@ def _agg_dispatched(func=None):
         # list, tuple, np.ndarray, etc
         return func(x, *args, **kwargs)
 
-    @_dispatched.register(NDFrame)
-    def _(x: NDFrame, *args, **kwargs):
+    @_dispatched.register(DataFrame)
+    def _(x: DataFrame, *args, **kwargs):
         reginfo = _dispatched.proxy.dispatch(x.__class__)
         return _run(
             "agg",
@@ -280,6 +307,23 @@ def _agg_dispatched(func=None):
             reginfo=reginfo,
             axis=0,
         )
+
+    @_dispatched.register(Series)
+    def _(x: Series, *args, **kwargs):
+        reginfo = _dispatched.proxy.dispatch(x.__class__)
+        if reginfo["stof"] is not None:
+            stof = reginfo["stof"]
+
+        out = _run(
+            "agg",
+            x.to_frame() if stof else x,
+            args,
+            kwargs,
+            func=func,
+            reginfo=reginfo,
+            axis=0,
+        )
+        return out[0] if stof else out
 
     @_dispatched.register(GroupBy)
     def _(x: GroupBy, *args, **kwargs):
@@ -348,6 +392,7 @@ def func_factory(
     doc=None,
     func=None,
     result_type=None,
+    stof=True,
     **vec_kwargs,
 ):
     """Factory for functions without data as first argument.
@@ -385,8 +430,18 @@ def func_factory(
             If not provided, will be `func.__doc__`
         func: The function to work on scalars, sequences and np.ndarrays
             If not provided, this function will return a decorator
-        # result_type: The result type for apply.
-        #     See more defaults on pandas DataFrame.apply's doc
+        result_type: The result type for apply.
+            See more defaults on pandas DataFrame.apply's doc
+        stof: Whether convert the series to frame and then do
+            apply or agg/aggregate
+            >>> s = Series([1, 2, 3])
+            >>> s.agg(np.sum)  # 6
+            >>> # however, when we wrap it:
+            >>> out = s.agg(lambda x: np.sum(x))
+            >>> # out == s
+            >>> # but we expect 6
+            >>> # to do it:
+            >>> s.to_frame().agg(lambda x: np.sum(x))[0]
 
     Returns:
         If func is not provided, a decorator to decorate a function. Otherwise
@@ -410,9 +465,9 @@ def func_factory(
     dispatched = (
         _transform_dispatched(func, is_vectorized, **vec_kwargs)
         if kind == "transform"
-        else _apply_dispatched(func, result_type)
+        else _apply_dispatched(func, result_type, stof)
         if kind == "apply"
-        else _agg_dispatched(func)
+        else _agg_dispatched(func, stof)
     )
 
     @register_func(None, context=Context.EVAL)

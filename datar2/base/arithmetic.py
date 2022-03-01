@@ -38,7 +38,7 @@ def _warn_na_rm(funcname, na_rm, extra_info=""):
 
 
 # cor?, range, summary, iqr
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def sum(x, na_rm=True):
     """Sum of the input.
 
@@ -67,7 +67,7 @@ sum.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def prod(x, na_rm=True):
     """Product of the input.
 
@@ -96,7 +96,7 @@ prod.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def mean(x, na_rm=True):
     """Mean of the input.
 
@@ -125,7 +125,7 @@ mean.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def median(x, na_rm=True):
     """Median of the input.
 
@@ -154,7 +154,7 @@ median.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def min(x, na_rm=True):
     """Min of the input.
 
@@ -183,7 +183,7 @@ min.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def max(x, na_rm=True):
     """Max of the input.
 
@@ -212,7 +212,7 @@ max.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", stof=False)
 def var(x, na_rm=True, ddof=1):
     """Variance of the input.
 
@@ -284,7 +284,9 @@ def round(x, ndigits=0):
 
 
 round.register(
-    (NDFrame, GroupBy), "round", pre=lambda x, ndigits=0: (x, (ndigits,), {})
+    (NDFrame, GroupBy),
+    "round",
+    pre=lambda x, ndigits=0: (x, (ndigits,), {})
 )
 
 

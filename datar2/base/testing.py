@@ -11,7 +11,7 @@
 import builtins
 
 import numpy as np
-from pandas import Series, DataFrame
+from pandas import Series
 from pandas.api.types import (
     is_scalar as is_scalar_pd,
     is_integer_dtype,
@@ -20,6 +20,7 @@ from pandas.api.types import (
 )
 # from pandas.core.generic import NDFrame
 from pandas.core.groupby import GroupBy, SeriesGroupBy
+from pandas.core.generic import NDFrame
 from pipda import register_func
 
 from ..core.contexts import Context
@@ -45,14 +46,7 @@ def _register_type_testing(
 
         return builtins.all(isinstance(elem, scalar_types) for elem in x)
 
-    _testing.register((DataFrame, GroupBy), dtype_checker)
-    _testing.register(
-        Series,
-        dtype_checker,
-        pre=lambda x: (x.to_frame(), (), {}),
-        post=lambda out, x: out[0],
-    )
-
+    _testing.register((NDFrame, GroupBy), dtype_checker)
     return _testing
 
 
