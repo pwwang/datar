@@ -1,11 +1,13 @@
 """Checking an iterable against itself or another one"""
 
-from ..core.utils import transform_func
+import numpy as np
+from ..core.factory import func_factory
 
 
-which = transform_func(
-    "which",
-    transform="flatnonzero",
+which = func_factory(
+    "transform",
+    name="which",
+    func=np.flatnonzero,
     doc="""Convert a bool iterable to indexes
 
     Args:
@@ -17,9 +19,10 @@ which = transform_func(
     """,
 )
 
-which_min = transform_func(
-    "which_min",
-    transform="argmin",
+which_min = func_factory(
+    "agg",
+    name="which_min",
+    func=np.argmin,
     doc="""R's `which.min()`
 
     Get the index of the element with the maximum value
@@ -32,9 +35,10 @@ which_min = transform_func(
     """,
 )
 
-which_max = transform_func(
-    "which_max",
-    transform="argmax",
+which_max = func_factory(
+    "agg",
+    name="which_max",
+    func=np.argmax,
     doc="""R's `which.max()`
 
     Get the index of the element with the minimum value

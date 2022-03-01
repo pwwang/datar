@@ -1,14 +1,9 @@
 """Port `table` function from r-base"""
-
-from typing import Any, Iterable, Mapping, Tuple, Union, List
-
 import numpy as np
 import pandas as pd
-from pandas import Categorical, DataFrame, Series
-from pandas._typing import AnyArrayLike
+from pandas import DataFrame, Series
 from pandas.api.types import is_scalar, is_categorical_dtype
 from pipda import register_func
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import ensure_nparray
@@ -17,7 +12,7 @@ from ..core.defaults import NA_REPR
 from .factor import _ensure_categorical
 
 
-def _fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
+def _fillna_safe(data, rep=NA_REPR):
     """Safely replace NA in data, as we can't just fillna for
     a Categorical data directly.
 
@@ -55,16 +50,16 @@ def _fillna_safe(data: Iterable, rep: Any = NA_REPR) -> Iterable:
 
 @register_func(None, context=Context.EVAL)
 def table(
-    input: Union[AnyArrayLike, Categorical, DataFrame],
-    *more_inputs: Any,
-    exclude: Any = np.nan,
+    input,
+    *more_inputs,
+    exclude=np.nan,
     # use_na: str = "no", # TODO
-    dnn: Union[str, List[str]] = None,
+    dnn=None,
     # not supported, varname.argname not working with wrappers having
     # different signatures.
     # TODO: varname.argname2() now supports it
     # deparse_level: int = 1
-) -> DataFrame:
+):
 
     """uses the cross-classifying factors to build a contingency table of
     the counts at each combination of factor levels.
@@ -101,7 +96,7 @@ def table(
         obj1 = _iterable_excludes(obj1, exclude=exclude)
         obj2 = _iterable_excludes(obj2, exclude=exclude)
 
-    kwargs = {"dropna": False}  # type: Mapping[str, Any]
+    kwargs = {"dropna": False}
     if dn1:
         kwargs["rownames"] = [dn1]
     if dn2:
@@ -117,10 +112,7 @@ def table(
 
 
 @register_func(None, context=Context.EVAL)
-def tabulate(
-    bin: Union[AnyArrayLike, Categorical],
-    nbins: int = None,
-) -> np.ndarray:
+def tabulate(bin, nbins=None):
     """Takes the integer-valued vector `bin` and counts the
     number of times each integer occurs in it.
 
@@ -132,13 +124,18 @@ def tabulate(
         An integer valued ‘integer’ vector (without names).
         There is a bin for each of the values ‘1, ..., nbins’
     """
-    from . import as_integer, t
+    from .casting import as_integer
+    from .verbs import t
 
-    bin = as_integer(bin, base0_=False, __calling_env=CallingEnvs.REGULAR)
-    nbins = max(1, max(bin) if len(bin) > 0 else 0, nbins)
-    tabled = table(bin, __calling_env=CallingEnvs.REGULAR)
+    bin = as_integer.__origfunc__(bin)
+    nbins = max(
+        1,
+        bin if is_scalar(bin) else 0 if len(bin) == 0 else max(bin),
+        0 if nbins is None else nbins,
+    )
+    tabled = table.__origfunc__(bin)
     tabled = (
-        t(tabled, __calling_env=CallingEnvs.REGULAR)
+        t.__origfunc__(tabled)
         .reindex(range(1, nbins + 1), fill_value=0)
         .iloc[:, 0]
         .values
@@ -147,9 +144,7 @@ def tabulate(
     return tabled
 
 
-def _check_table_inputs(
-    input: Any, more_inputs: Any
-) -> Tuple[Iterable, Iterable]:
+def _check_table_inputs(input, more_inputs):
     """Check and clean up `table` inputs"""
     too_many_input_vars_msg = "At most 2 iterables supported for `table`."
     obj1 = obj2 = None
@@ -196,7 +191,7 @@ def _check_table_inputs(
     return obj1, obj2
 
 
-def _iterable_excludes(data: Iterable, exclude: Iterable) -> Iterable:
+def _iterable_excludes(data, exclude):
     """Exclude values for categorical data"""
     if is_categorical_dtype(data) and pd.isnull(exclude):
         return data

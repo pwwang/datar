@@ -1,9 +1,28 @@
 import pytest
 
 from pandas.api.types import is_scalar
-from datar2.base import NA, Inf
-from datar2.base.trig_hb import *
+from datar2.base import NA
+from datar2.base.trig_hb import (
+    acos,
+    acosh,
+    asin,
+    asinh,
+    atan,
+    atan2,
+    atanh,
+    sin,
+    sinh,
+    sinpi,
+    tan,
+    tanh,
+    tanpi,
+    cos,
+    cosh,
+    cospi,
+)
+from datar2.tibble import tibble
 from ..conftest import assert_iterable_equal
+
 
 @pytest.mark.parametrize('fun,x,exp', [
     (cos, 1, 0.5403023),
@@ -29,5 +48,16 @@ def test_func_with_1arg(fun, x, exp):
         out, exp = [out], [exp]
     assert_iterable_equal(out, exp, approx=True)
 
+
 def test_atan2():
-    assert pytest.approx(atan2(3,3)) == 0.7853982
+    assert pytest.approx(atan2(3, 3)) == 0.7853982
+
+    df = tibble(a=[1, 1], b=[3, 4])
+    rf = df.rowwise()
+    out = atan2(rf.a, rf.b)
+    assert_iterable_equal(out.obj, [0.321751, 0.244979], approx=1e-4)
+    assert out.is_rowwise
+
+    out = atan2(df.a, df.b)
+    assert_iterable_equal(out, [0.321751, 0.244979], approx=1e-4)
+    assert_iterable_equal(out.index, [0, 1])

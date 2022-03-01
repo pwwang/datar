@@ -97,14 +97,15 @@ def _eval_select(
         _all_columns,
         *kwargs.values(),
     )
+
     # check uniqueness
-    for ridx in rename_idx:
-        dupidx = _all_columns.get_indexer_for([_all_columns[ridx]])
-        if dupidx.size > 1:
-            raise ValueError(
-                "Names must be unique. Name "
-                f'"{_all_columns[ridx]}" found at locations {list(dupidx)}.'
-            )
+    # for ridx in rename_idx:
+    #     dupidx = _all_columns.get_indexer_for([_all_columns[ridx]])
+    #     if dupidx.size > 1:
+    #         raise ValueError(
+    #             "Names must be unique. Name "
+    #             f'"{_all_columns[ridx]}" found at locations {list(dupidx)}.'
+    #         )
 
     new_names = dict(zip(_all_columns[rename_idx], kwargs))
     return selected_idx, new_names

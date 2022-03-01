@@ -1,20 +1,18 @@
 """Trigonometric and Hyperbolic Functions"""
 import numpy as np
-from pandas._typing import AnyArrayLike, FuncType
+from pandas import Series
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
+from ..core.tibble import TibbleRowwise
 from ..core.contexts import Context
-from ..core.utils import transform_func
+from ..core.factory import func_factory
 from ..tibble import tibble
 
 from .constants import pi
 
 
-def _register_trig_hb_func(
-    name: str,
-    doc: str,
-    np_name: str = None,
-) -> FuncType:
+def _register_trig_hb_func(name, doc, np_name=None):
     """Register trigonometric and hyperbolic function"""
     np_name = np_name or name
     np_fun = getattr(np, np_name)
@@ -23,7 +21,7 @@ def _register_trig_hb_func(
     else:
         func = np_fun
 
-    return transform_func(name, doc, func)
+    return func_factory("transform", name=name, doc=doc, func=func)
 
 
 sin = _register_trig_hb_func(
@@ -217,7 +215,7 @@ atanh = _register_trig_hb_func(
 
 
 @register_func(None, context=Context.EVAL)
-def atan2(y: AnyArrayLike, x: AnyArrayLike) -> AnyArrayLike:
+def atan2(y, x):
     """Calculates the angle between the x-axis and the vector (0,0) -> (x,y)
 
     Args:
@@ -228,4 +226,13 @@ def atan2(y: AnyArrayLike, x: AnyArrayLike) -> AnyArrayLike:
         The angle between x-axis and vector (0,0) -> (x,y)
     """
     df = tibble(y=y, x=x)
-    return df.apply(lambda row: np.arctan2(*row), axis=1).values
+    out = df.apply(lambda row: np.arctan2(*row), axis=1)
+    if isinstance(df, TibbleRowwise):
+        out = out.groupby(getattr(x, "grouper", getattr(y, "grouper", None)))
+        out.is_rowwise = True
+        return out
+
+    if isinstance(y, (Series, SeriesGroupBy)):
+        return out
+
+    return out.values

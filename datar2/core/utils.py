@@ -167,7 +167,6 @@ def transform_func(
             x, func=np_func, convert_dtype=True, args=args, kwargs=kwargs
         ).transform()
 
-
     @_disp_func.register(GroupBy)
     def _(x: GroupBy, *args, **kwargs):
         out = _disp_func(x.obj, *args, **kwargs).groupby(x.grouper)

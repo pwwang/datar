@@ -40,6 +40,7 @@ from .rank import (
     cume_dist,
 )
 from .relocate import relocate
+from .rename import rename, rename_with
 from .summarise import summarise, summarize
 from .select import select
 from .tidyselect import (

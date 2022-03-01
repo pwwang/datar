@@ -87,7 +87,7 @@ from .seq import (
     seq_along,
     seq_len,
     sort,
-    unique,
+    # unique,
     match,
 )
 from .special import (
@@ -133,6 +133,7 @@ from .string import (
 from .table import table, tabulate
 from .testing import (
     is_atomic,
+    is_scalar,
     is_double,
     is_element,
     is_float,
@@ -176,6 +177,7 @@ from .verbs import (
     rownames,
     setdiff,
     setequal,
+    unique,
     t,
     union,
     max_col,

@@ -223,16 +223,16 @@ rev.register(
 )
 
 
-@register_func(None, context=Context.EVAL)
-def unique(x):
-    """Get unique elements"""
-    if is_scalar(x):
-        return x
+# @register_func(None, context=Context.EVAL)
+# def unique(x):
+#     """Get unique elements"""
+#     if is_scalar(x):
+#         return x
 
-    if isinstance(x, SeriesGroupBy):
-        return x.unique().explode().astype(x.obj.dtype)
+#     if isinstance(x, SeriesGroupBy):
+#         return x.unique().explode().astype(x.obj.dtype)
 
-    return pd.unique(x)  # keeps order
+#     return pd.unique(x)  # keeps order
 
 
 @func_factory("apply")

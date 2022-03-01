@@ -12,6 +12,7 @@ def no_astnode_warn():
         message=r'Failed to fetch the node.+',
     )
 
+
 SENTINEL = 85258525.85258525
 
 

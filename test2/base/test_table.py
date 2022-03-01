@@ -1,7 +1,22 @@
 import pytest
 
+import numpy as np
 from datar2 import stats
-from datar2.base import *
+from datar2.base import (
+    table,
+    tabulate,
+    data_context,
+    cut,
+    letters,
+    sample,
+    NA,
+    Inf,
+    factor,
+    as_factor,
+    rep,
+    c,
+)
+from datar2.core.defaults import NA_REPR
 from datar2 import f
 from datar2.datasets import (
     warpbreaks,
@@ -93,6 +108,13 @@ def test_table():
     assert "<NA>" in tab.columns
     assert "<NA>" in tab.index
 
+    with pytest.raises(ValueError):
+        table([NA_REPR, np.nan], exclude=None)
+
+    tab = table(factor([1, np.nan]), exclude=1)
+    assert tab.shape == (1, 1)
+    assert_iterable_equal(tab[NA_REPR], [1])
+
 
 def test_table_error():
     from datar2.datasets import iris, warpbreaks
@@ -111,3 +133,8 @@ def test_table_error():
         table(iris.iloc[:, [1]], iris, iris)
     with pytest.raises(ValueError):
         table(iris.iloc[:, [1]], iris.iloc[:, []])
+
+
+def test_tabulate():
+    out = tabulate(3)
+    assert_iterable_equal(out, [0, 0, 1])

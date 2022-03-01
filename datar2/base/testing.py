@@ -9,43 +9,50 @@
 # is_integer, is_list, is_logical, is_numeric
 # is_unsorted, (is_qr in base.qr)
 import builtins
-from typing import Any, Callable, Iterable, Sequence, Type, Union
 
 import numpy as np
-from pandas.api.types import is_scalar
+from pandas import Series, DataFrame
 from pandas.api.types import (
+    is_scalar as is_scalar_pd,
     is_integer_dtype,
     is_float_dtype,
     is_numeric_dtype,
 )
+# from pandas.core.generic import NDFrame
+from pandas.core.groupby import GroupBy, SeriesGroupBy
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.utils import transform_func_decor
-
-TypeOrSeq = Union[Type, Sequence[Type]]
-BoolOrSeq = Union[bool, Sequence[bool]]
+from ..core.factory import func_factory
+from ..tibble import tibble
 
 
 def _register_type_testing(
-    name: str,
-    scalar_types: TypeOrSeq,
-    dtype_checker: Callable[[Iterable], bool],
-    doc: str = "",
-) -> Callable:
+    name,
+    scalar_types,
+    dtype_checker,
+    doc="",
+):
     """Register type testing function"""
 
-    @register_func(None, context=Context.EVAL)
-    def _testing(x: Any) -> bool:
-        """Type testing"""
-        if is_scalar(x):
+    @func_factory("agg", name=name, doc=doc)
+    def _testing(x):
+        if is_scalar_pd(x):
             return isinstance(x, scalar_types)
+
         if hasattr(x, "dtype"):
             return dtype_checker(x)
-        return all(isinstance(elem, scalar_types) for elem in x)
 
-    _testing.__name__ = name
-    _testing.__doc__ = doc
+        return builtins.all(isinstance(elem, scalar_types) for elem in x)
+
+    _testing.register((DataFrame, GroupBy), dtype_checker)
+    _testing.register(
+        Series,
+        dtype_checker,
+        pre=lambda x: (x.to_frame(), (), {}),
+        post=lambda out, x: out[0],
+    )
+
     return _testing
 
 
@@ -102,7 +109,7 @@ is_float = is_double
 
 
 @register_func(None, context=Context.EVAL)
-def is_atomic(x: Any) -> bool:
+def is_atomic(x):
     """Check if x is an atomic or scalar value
 
     Args:
@@ -111,11 +118,14 @@ def is_atomic(x: Any) -> bool:
     Returns:
         True if x is atomic otherwise False
     """
-    return is_scalar(x)
+    return is_scalar_pd(x)
 
 
-@transform_func_decor()
-def is_element(x: Any, elems: Iterable[Any]) -> BoolOrSeq:
+is_scalar = is_atomic
+
+
+@register_func(None, context=Context.EVAL)
+def is_element(x, elems):
     """R's `is.element()` or `%in%`.
 
     Alias `is_in()`
@@ -123,19 +133,34 @@ def is_element(x: Any, elems: Iterable[Any]) -> BoolOrSeq:
     We can't do `a %in% b` in python (`in` behaves differently), so
     use this function instead
     """
-    out = np.in1d(x, elems)
-    if is_scalar(out):
-        return bool(out)
-    return out
+    if isinstance(x, SeriesGroupBy) and isinstance(elems, SeriesGroupBy):
+        df = tibble(x=x, y=elems)
+        return df._datar["grouped"].apply(
+            lambda g: np.isin(g.x, g.y)
+        ).explode().astype(bool)
+
+    if isinstance(x, SeriesGroupBy):
+        out = x.transform(np.isin, test_elements=elems).groupby(x.grouper)
+        if getattr(x, "is_rowwise", False):
+            out.is_rowwise = True
+        return out
+
+    if isinstance(elems, SeriesGroupBy):
+        return elems.apply(lambda e: np.isin(x, e)).explode().astype(bool)
+
+    if isinstance(x, Series):
+        return x.isin(elems)
+
+    return np.isin(x, elems)
 
 
 is_in = is_element
 
 
-all = register_func(None, context=Context.EVAL)(
-    # can't set attributes to builtins.all, so wrap it.
-    lambda arg: builtins.all(arg)
+all = func_factory(
+    "agg", func=builtins.all, doc="Check if all elements are true."
 )
-any = register_func(None, context=Context.EVAL)(
-    lambda arg: builtins.any(arg)
+
+any = func_factory(
+    "agg", func=builtins.any, doc="Check if any elements is true."
 )

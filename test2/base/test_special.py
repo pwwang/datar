@@ -1,6 +1,19 @@
 import pytest
 
-from datar2.base.special import *
+from pandas.api.types import is_scalar
+from datar2.base.special import (
+    beta,
+    choose,
+    digamma,
+    factorial,
+    gamma,
+    lbeta,
+    lchoose,
+    lfactorial,
+    lgamma,
+    psigamma,
+    trigamma,
+)
 from datar2.base import Inf, NA
 from ..conftest import assert_iterable_equal, is_installed
 

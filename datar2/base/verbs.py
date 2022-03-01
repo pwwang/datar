@@ -1,9 +1,6 @@
 """Function from R-base that can be used as verbs"""
-from typing import Any, Iterable, Sequence, Tuple, Union
-
 import numpy as np
 import pandas as pd
-from pandas._typing import AnyArrayLike
 from pandas.api.types import is_scalar
 from pandas import Categorical, DataFrame, Series, Index
 from pipda import register_verb
@@ -15,15 +12,11 @@ from ..core.utils import (
     regcall,
     ensure_nparray,
 )
-from .seq import unique
+# from .seq import unique
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def colnames(
-    df: DataFrame,
-    new: Sequence[str] = None,
-    nested: bool = True,
-) -> Union[Sequence[str], DataFrame]:
+def colnames(df, new=None, nested=True):
     """Get or set the column names of a dataframe
 
     Args:
@@ -77,9 +70,7 @@ names = colnames
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def rownames(
-    df: DataFrame, new: Sequence[str] = None
-) -> Union[Sequence[Any], DataFrame]:
+def rownames(df, new=None):
     """Get or set the row names of a dataframe
 
     Args:
@@ -100,7 +91,7 @@ def rownames(
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def dim(x: DataFrame, nested: bool = True) -> Tuple[int]:
+def dim(x, nested=True):
     """Retrieve the dimension of a dataframe.
 
     Args:
@@ -114,7 +105,7 @@ def dim(x: DataFrame, nested: bool = True) -> Tuple[int]:
 
 
 @register_verb(DataFrame)
-def nrow(_data: DataFrame) -> int:
+def nrow(_data) -> int:
     """Get the number of rows in a dataframe
 
     Args:
@@ -127,7 +118,7 @@ def nrow(_data: DataFrame) -> int:
 
 
 @register_verb(DataFrame)
-def ncol(_data: DataFrame, nested: bool = True):
+def ncol(_data, nested=True):
     """Get the number of columns in a dataframe
 
     Args:
@@ -144,11 +135,7 @@ def ncol(_data: DataFrame, nested: bool = True):
 
 
 @register_verb(context=Context.EVAL)
-def diag(
-    x: Any = 1,
-    nrow: int = None,
-    ncol: int = None,
-) -> DataFrame:
+def diag(x=1, nrow=None, ncol=None):
     """Extract, construct a diagonal dataframe or replace the diagnal of
     a dataframe.
 
@@ -187,10 +174,10 @@ def diag(
 
 @diag.register(DataFrame)
 def _(
-    x: DataFrame,
-    nrow: Any = None,
-    ncol: int = None,
-) -> Union[DataFrame, np.ndarray]:
+    x,
+    nrow=None,
+    ncol=None,
+):
     """Diag when x is a dataframe"""
     if nrow is not None and ncol is not None:
         raise ValueError("Extra arguments received for diag.")
@@ -203,7 +190,7 @@ def _(
 
 
 @register_verb(DataFrame)
-def t(_data: DataFrame, copy: bool = False) -> DataFrame:
+def t(_data, copy=False):
     """Get the transposed dataframe
 
     Args:
@@ -217,7 +204,7 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
 
 
 @register_verb(context=Context.EVAL)
-def setdiff(x: Any, y: Any) -> np.ndarray:
+def setdiff(x, y):
     """Diff of two iterables"""
     x = ensure_nparray(x)
     y = ensure_nparray(y)
@@ -225,7 +212,7 @@ def setdiff(x: Any, y: Any) -> np.ndarray:
 
 
 @register_verb(context=Context.EVAL)
-def intersect(x: Any, y: Any) -> np.ndarray:
+def intersect(x, y):
     """Intersect of two iterables"""
     # order not kept
     # return np.intersect1d(x, y)
@@ -235,7 +222,7 @@ def intersect(x: Any, y: Any) -> np.ndarray:
 
 
 @register_verb(context=Context.EVAL)
-def union(x: Any, y: Any) -> np.ndarray:
+def union(x, y):
     """Union of two iterables"""
     # order not kept
     # return np.union1d(x, y)
@@ -244,7 +231,7 @@ def union(x: Any, y: Any) -> np.ndarray:
 
 
 @register_verb(context=Context.EVAL)
-def unique(x: Any) -> np.ndarray:
+def unique(x):
     """Union of two iterables"""
     # order not kept
     # return np.unique(x)
@@ -252,7 +239,7 @@ def unique(x: Any) -> np.ndarray:
 
 
 @register_verb(context=Context.EVAL)
-def setequal(x: Any, y: Any, equal_na: bool = True) -> bool:
+def setequal(x, y, equal_na=True):
     """Check set equality for two iterables (order doesn't matter)"""
     return np.array_equal(
         np.sort(ensure_nparray(x)),
@@ -262,10 +249,10 @@ def setequal(x: Any, y: Any, equal_na: bool = True) -> bool:
 
 
 @register_verb(
-    (Sequence, np.ndarray, list, tuple, Series, Categorical),
+    (np.ndarray, list, tuple, Series, Categorical),
     context=Context.EVAL,
 )
-def append(x: Any, values: Any, after: int = -1) -> np.ndarray:
+def append(x, values, after=-1):
     """Add elements to a vector.
 
     Args:
@@ -289,10 +276,10 @@ def append(x: Any, values: Any, after: int = -1) -> np.ndarray:
 
 @register_verb((list, tuple, np.ndarray, Series, Categorical))
 def duplicated(
-    x: Iterable[Any],
-    incomparables: Sequence[Any] = None,
-    from_last: bool = False,
-) -> np.ndarray:
+    x,
+    incomparables=None,
+    from_last=False,
+):
     """Determine Duplicate Elements
 
     Args:
@@ -326,10 +313,10 @@ def duplicated(
 
 @duplicated.register(DataFrame)
 def _(
-    x: DataFrame,
-    incomparables: Iterable[Any] = None,
-    from_last: bool = False,
-) -> np.ndarray:
+    x,
+    incomparables=None,
+    from_last=False,
+):
     """Check if rows in a data frame are duplicated
 
     `incomparables` not working here
@@ -339,9 +326,7 @@ def _(
 
 
 @register_verb(DataFrame)
-def max_col(
-    df: DataFrame, ties_method: str = "random"
-) -> Iterable[int]:
+def max_col(df, ties_method="random"):
     """Find the maximum position for each row of a matrix
 
     Args:
@@ -371,7 +356,7 @@ def max_col(
 
 
 @register_verb(DataFrame)
-def complete_cases(_data: DataFrame) -> np.ndarray:
+def complete_cases(_data):
     """Return a logical vector indicating values of rows are complete.
 
     Args:
@@ -385,9 +370,7 @@ def complete_cases(_data: DataFrame) -> np.ndarray:
 
 
 @register_verb(DataFrame)
-def proportions(
-    x: DataFrame, margin: Union[int, tuple, list] = None
-) -> DataFrame:
+def proportions(x, margin=None):
     """Returns conditional proportions given `margins` (alias: prop_table)
 
     Args:
@@ -403,35 +386,29 @@ def proportions(
     from . import sum_
 
     if margin is None:
-        sumall = x.to_np().sum()
+        sumall = x.values.sum()
         return x.applymap(lambda elem: elem / sumall, na_action="ignore")
 
     if margin == 1:
         index = x.index
-        out = t(
-            proportions(
-                rename_with(
-                    t(x, __calling_env=CallingEnvs.REGULAR),
-                    str,
-                    __calling_env=CallingEnvs.REGULAR,
-                ),
+        out = t.__origfunc__(
+            proportions.__origfunc__(
+                rename_with.__origfunc__(t.__origfunc__(x), str),
                 2,
-                __calling_env=CallingEnvs.REGULAR,
-            ),
-            __calling_env=CallingEnvs.REGULAR,
+            )
         )
         out.index = index
         return out
 
     if margin == 2:
-        return mutate(
+        return regcall(
+            mutate,
             x,
             across(
                 everything(__calling_env=CallingEnvs.PIPING),
-                lambda col: col / sum_(col, __calling_env=CallingEnvs.REGULAR),
+                lambda col: col / sum_.__origfunc__(col),
                 __calling_env=CallingEnvs.PIPING,
             ),
-            __calling_env=CallingEnvs.REGULAR,
         )
 
     return x.applymap(lambda elem: 1, na_action="ignore")
@@ -441,7 +418,7 @@ prop_table = proportions
 
 
 @proportions.register((list, tuple, np.array, Series))
-def _(x, margin: Union[int, tuple, list] = None) -> AnyArrayLike:
+def _(x, margin=None):
     """proportions for vectors"""
     x = ensure_nparray(x)
     return x / np.sum(x)
