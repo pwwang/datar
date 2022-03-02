@@ -1,3 +1,18 @@
+## 0.6.0
+
+### General
+- Reimplement the split-apply-combine rule to solve all performance issues
+  - Previously:
+  - Now:
+- Move `forcats` to `datar-forcats` package
+- Remove all `base0_` options and all indices are now 0-based, except `base.seq()` and its variants
+- Remove messy type annotations for now, will add them back in the future
+
+## 0.5.6
+
+- 🐛 Hotfix for types registered for base.proportions (#77)
+- 👽️ Fix for pandas 1.4
+
 ## 0.5.5
 
 - Fix #71: semi_join returns duplicated rows
