@@ -1,9 +1,9 @@
 import pytest  # noqa
 
-from datar2 import f
-from datar2.base import cumsum, seq
-from datar2.dplyr import order_by, with_order, mutate
-from datar2.tibble import tibble
+from datar import f
+from datar.base import cumsum, seq
+from datar.dplyr import order_by, with_order, mutate
+from datar.tibble import tibble
 
 from ..conftest import assert_iterable_equal
 

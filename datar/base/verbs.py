@@ -1,8 +1,9 @@
 """Function from R-base that can be used as verbs"""
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_scalar
 from pandas import Categorical, DataFrame, Series, Index
+from pandas.api.types import is_scalar
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
@@ -235,7 +236,14 @@ def unique(x):
     """Union of two iterables"""
     # order not kept
     # return np.unique(x)
+    if is_scalar(x):
+        return x
     return pd.unique(x)
+
+
+@unique.register(SeriesGroupBy)
+def _(x):
+    return x.apply(pd.unique).explode().astype(x.obj.dtype)
 
 
 @register_verb(context=Context.EVAL)

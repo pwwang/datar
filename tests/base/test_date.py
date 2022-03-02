@@ -3,7 +3,7 @@ import datetime
 
 import pandas as pd
 from pandas import Timestamp
-from datar2.base.date import (
+from datar.base.date import (
     as_date,
     as_pd_date,
 )

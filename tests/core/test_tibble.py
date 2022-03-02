@@ -4,9 +4,9 @@ from pandas.api.types import is_float_dtype, is_integer_dtype
 from pandas.core.groupby import SeriesGroupBy
 from pandas.testing import assert_frame_equal
 from datar import f
-from datar2.core.exceptions import NameNonUniqueError
-from datar2.core.tibble import Tibble, TibbleRowwise, TibbleGrouped
-from datar2.testing import assert_tibble_equal
+from datar.core.exceptions import NameNonUniqueError
+from datar.core.tibble import Tibble, TibbleRowwise, TibbleGrouped
+from datar.testing import assert_tibble_equal
 
 
 from ..conftest import assert_iterable_equal

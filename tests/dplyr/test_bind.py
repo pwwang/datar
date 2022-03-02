@@ -2,9 +2,9 @@
 import pytest
 
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.datar import get
-from datar2.base import (
+from datar import f
+from datar.datar import get
+from datar.base import (
     NULL,
     sample,
     nrow,
@@ -21,8 +21,8 @@ from datar2.base import (
     head,
     tail,
 )
-from datar2.tibble import tibble
-from datar2.dplyr import (
+from datar.tibble import tibble
+from datar.dplyr import (
     bind_cols,
     bind_rows,
     group_by,

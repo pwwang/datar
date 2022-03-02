@@ -3,13 +3,13 @@
 import pytest
 from pandas import Series
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.tibble import tibble
-from datar2.base import NA, rep, c
-from datar2.dplyr import arrange, desc, group_by, group_vars, group_rows, across
-from datar2.testing import assert_tibble_equal
-from datar2.core.tibble import TibbleGrouped
-from datar2.core.exceptions import NameNonUniqueError
+from datar import f
+from datar.tibble import tibble
+from datar.base import NA, rep, c
+from datar.dplyr import arrange, desc, group_by, group_vars, group_rows, across
+from datar.testing import assert_tibble_equal
+from datar.core.tibble import TibbleGrouped
+from datar.core.exceptions import NameNonUniqueError
 
 from ..conftest import assert_iterable_equal
 

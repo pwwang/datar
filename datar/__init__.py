@@ -2,10 +2,17 @@
 from collections import namedtuple as _namedtuple
 
 from .core import operator as _
-from .core.defaults import f
-from .core.options import options
+from .core import f, options_context, options, add_option, get_option, logger
 
-__all__ = ('f', 'options', 'get_versions')
+__all__ = (
+    "f",
+    "options",
+    "get_versions",
+    "options_context",
+    "add_option",
+    "get_option",
+    "logger",
+)
 
 options(enable_pdtypes=True)
 
@@ -19,14 +26,14 @@ _VersionsTuple = _namedtuple(
         "pipda",
         "executing",
         "varname",
-    ]
+    ],
 )
 
-__all__ = ('f', 'get_versions')
+__all__ = ("f", "get_versions")
 __version__ = "0.5.5"
 
 
-def get_versions(prnt: bool = True) -> _VersionsTuple:  # pragma: no cover
+def get_versions(prnt: bool = True) -> _VersionsTuple:
     """Print or return related versions which help for bug reporting.
 
     Args:

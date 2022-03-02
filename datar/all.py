@@ -13,7 +13,7 @@ from .dplyr import *
 from .dplyr import _warn as _
 from .stats import *
 from .tibble import *
-from .tidyr import *
+# from .tidyr import *
 
 _builtin_names = _base_builtin_names.copy()
 _builtin_names.update(_dplyr_builtin_names)

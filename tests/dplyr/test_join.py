@@ -3,11 +3,11 @@
 import pytest  # noqa
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.core.tibble import TibbleGrouped
-from datar2.tibble import tibble
-from datar2.base import c, nrow, factor, rep
-from datar2.dplyr import (
+from datar import f
+from datar.core.tibble import TibbleGrouped
+from datar.tibble import tibble
+from datar.base import c, nrow, factor, rep, NA
+from datar.dplyr import (
     inner_join,
     left_join,
     right_join,

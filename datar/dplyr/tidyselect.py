@@ -4,7 +4,7 @@ import builtins
 from typing import Callable, List, Sequence, Union
 
 import numpy as np
-from pandas.api.types import is_scalar
+from pandas.api.types import is_scalar, is_bool
 from pandas.core.frame import DataFrame
 from pipda import register_func
 from pipda.utils import functype
@@ -38,11 +38,7 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
         else regcall(fn, _data[col], __envdata=_data)
         for col in columns
     ]
-    mask = [
-        flag if isinstance(flag, (bool, np.bool_))
-        else all(flag)
-        for flag in mask
-    ]
+    mask = [flag if is_bool(flag) else all(flag) for flag in mask]
     return np.array(columns)[mask].tolist()
 
 
@@ -285,11 +281,7 @@ def num_range(
     Returns:
         A list of ranges with prefix.
     """
-    zfill = lambda elem: (
-        elem
-        if not width
-        else str(elem).zfill(width)
-    )
+    zfill = lambda elem: (elem if not width else str(elem).zfill(width))
     return [f"{prefix}{zfill(elem)}" for elem in builtins.range(range)]
 
 

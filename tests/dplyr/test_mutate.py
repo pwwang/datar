@@ -2,14 +2,28 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-mutate.r
 from pandas import Series
 import pytest
-from datar2 import f
-from datar2.datasets import iris, mtcars
+from datar import f
+from datar.datasets import iris, mtcars
 from pandas.core.frame import DataFrame
-from datar2.core.tibble import TibbleRowwise, TibbleGrouped
-from datar2.testing import assert_tibble_equal
-from datar2.tibble import tibble
-from datar2.base import letters, nrow, ncol, c, max, sum
-from datar2.dplyr import (
+from datar.core.tibble import TibbleRowwise, TibbleGrouped
+from datar.testing import assert_tibble_equal
+from datar.tibble import tibble
+from datar.base import (
+    NA,
+    letters,
+    nrow,
+    ncol,
+    c,
+    max,
+    sum,
+    is_numeric,
+    identity,
+    lengths,
+    sample,
+    rep,
+)
+from datar.dplyr import (
+    n,
     group_by,
     mutate,
     transmute,
@@ -18,6 +32,13 @@ from datar2.dplyr import (
     rowwise,
     group_data,
     select,
+    if_else,
+    cur_group_id,
+    ungroup,
+    across,
+    where,
+    cur_data_all,
+    pull,
 )
 from ..conftest import assert_iterable_equal
 
@@ -113,21 +134,21 @@ def test_preserves_names():
     out1 = df >> mutate(b=tibble(**dict(zip(letters[:3], [0, 1, 2]))))
     out2 = df >> mutate(b=tibble(**dict(zip(letters[:3], [[0], [1], [2]]))))
 
-    assert_iterable_equal(out1['b'].columns, list("abc"))
-    assert_iterable_equal(out2['b'].columns, list("abc"))
+    assert_iterable_equal(out1["b"].columns, list("abc"))
+    assert_iterable_equal(out2["b"].columns, list("abc"))
 
 
 def test_handles_data_frame_columns():
     df = tibble(a=c(1, 2, 3), b=c(2, 3, 4), base_col=c(3, 4, 5))
     res = mutate(df, new_col=tibble(x=[1, 2, 3]))
-    assert_tibble_equal(res['new_col'], tibble(x=[1, 2, 3]))
+    assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
 
     res = mutate(group_by(df, f.a), new_col=tibble(x=f.a))
-    assert_tibble_equal(res['new_col'], tibble(x=[1, 2, 3]))
+    assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
 
     rf = rowwise(df, f.a)
     res = mutate(rf, new_col=tibble(x=f.a))
-    assert_tibble_equal(res['new_col'], tibble(x=[1, 2, 3]))
+    assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
 
 
 def test_unnamed_data_frames_are_automatically_unspliced():
@@ -193,21 +214,23 @@ def test_handles_0row_rowwise():
     assert res.shape == (0, 2)
 
 
-# def test_rowwise_mutate_as_expected():
-#     res = (
-#         tibble(x=[1, 2, 3]) >> rowwise() >> mutate(y=if_else(f.x < 2, NA, f.x))
-#     )
-#     assert res.y.fillna(0).tolist() == [0, 2, 3]
+def test_rowwise_mutate_as_expected():
+    res = (
+        tibble(x=[1, 2, 3]) >> rowwise() >> mutate(y=if_else(f.x < 2, NA, f.x))
+    )
+    assert res.y.fillna(0).tolist() == [0, 2, 3]
 
 
 # grouped mutate does not drop grouping attributes
 
-# def test_rowwise_list_data():
-#     test = rowwise(tibble(x=[1,2]))
-#     out = test >> mutate(a=[[3,4]]) >> mutate(b=f.a[0][cur_group_id()])
-#     exp = test >> mutate(a=[[3,4]]) >> ungroup() >> mutate(b=[3,4])
 
-#     assert out.equals(exp)
+def test_rowwise_list_data():
+    test = rowwise(tibble(x=[1, 2]))
+    out = test >> mutate(a=[[3, 4]]) >> mutate(b=f.a[0][cur_group_id()])
+    exp = test >> mutate(a=[[3, 4]]) >> ungroup() >> mutate(b=[3, 4])
+
+    assert out.equals(exp)
+
 
 # .before, .after, .keep ------------------------------------------------------
 def test_keep_unused_keeps_variables_explicitly_mentioned():
@@ -216,10 +239,10 @@ def test_keep_unused_keeps_variables_explicitly_mentioned():
     assert out.columns.tolist() == ["y", "x1"]
 
 
-# def test_keep_used_not_affected_by_across():
-#     df = tibble(x=1, y=2, z=3, a="a", b="b", c="c")
-#     out = df >> mutate(across(where(is_numeric), identity), _keep="unused")
-#     assert out.columns.tolist() == df.columns.tolist()
+def test_keep_used_not_affected_by_across():
+    df = tibble(x=1, y=2, z=3, a="a", b="b", c="c")
+    out = df >> mutate(across(where(is_numeric), identity), _keep="unused")
+    assert out.columns.tolist() == df.columns.tolist()
 
 
 def test_keep_used_keeps_variables_used_in_expressions():
@@ -247,9 +270,9 @@ def test_keep_none_prefers_new_order():
 def test_can_use_before_and_after_to_control_column_position():
     df = tibble(x=1, y=2)
     out = mutate(df, z=1)
-    assert out.columns.tolist() == ['x', 'y', 'z']
+    assert out.columns.tolist() == ["x", "y", "z"]
     out = mutate(df, z=1, _before=1)
-    assert out.columns.tolist() == ['x', 'z', 'y']
+    assert out.columns.tolist() == ["x", "z", "y"]
     out = mutate(df, z=1, _after=0)
     assert out.columns.tolist() == ["x", "z", "y"]
 
@@ -293,24 +316,24 @@ def test_deals_with_0_groups():
     assert group_vars(out) == ["x"]
 
 
-# def test_mutate_None_preserves_correct_all_vars():
-#     df = (
-#         tibble(x=1, y=2) >> mutate(x=None, vars=cur_data_all()) >> pull(f.vars)
-#     )
-#     exp = tibble(y=2)
-#     assert df.equals(exp)
+def test_mutate_None_preserves_correct_all_vars():
+    df = (
+        tibble(x=1, y=2) >> mutate(x=None, vars=cur_data_all()) >> pull(f.vars)
+    )
+    exp = tibble(y=2)
+    assert df.equals(exp)
 
 
 # Cannot vectorize tibble in if_else
-# def test_mutate_casts_data_frame_results_to_common_type():
-#     df = tibble(x = [1,2], g = [1,2]) >> group_by(f.g)
-#     res = df >> mutate(if_else(f.g == 1, tibble(y=1), tibble(y=1, z=2)))
-#     assert res.z.fillna(0.).tolist() == [0., 2.]
+def test_mutate_casts_data_frame_results_to_common_type():
+    df = tibble(x=[1, 2], g=[1, 2]) >> group_by(f.g)
+    res = df >> mutate(if_else(f.g == 1, tibble(y=1), tibble(y=1, z=2)))
+    assert res.z.fillna(0.0).tolist() == [0.0, 2.0]
 
 
-# def test_rowwise_empty_list_columns():
-#     res = tibble(a=[]) >> rowwise() >> mutate(n=lengths(f.a))
-#     assert res.n.obj.tolist() == []
+def test_rowwise_empty_list_columns():
+    res = tibble(a=[]) >> rowwise() >> mutate(n=lengths(f.a))
+    assert res.n.obj.tolist() == []
 
 
 # Error messages ----------------------------------------------------------
@@ -369,7 +392,7 @@ def test_transmute_without_args_returns_grouping_vars():
     assert out.shape == (1, 0)
 
     out = gf >> transmute()
-    assert_tibble_equal(out, tibble(x=1).group_by('x'))
+    assert_tibble_equal(out, tibble(x=1).group_by("x"))
 
 
 # transmute variables -----------------------------------------------
@@ -435,20 +458,20 @@ def test_dup_keyword_args():
     assert_tibble_equal(out, tibble(a=1, _b=2))
 
 
-# def test_complex_expression_as_value():
-#     # https://stackoverflow.com/questions/30714810/
-#     # pandas-group-by-and-aggregate-column-1-with-condition-from-column-2
-#     dat = (
-#         tibble(
-#             user=rep(c("1", 2, 3, 4), each=5),
-#             cancel_date=rep(c(12, 5, 10, 11), each=5),
-#         )
-#         >> group_by(f.user)
-#     )
-#     out = dat >> mutate(
-#         login=sample(f[1 : f.cancel_date[0]], size=n(), replace=True)
-#     )
-#     assert nrow(out) == 20
+def test_complex_expression_as_value():
+    # https://stackoverflow.com/questions/30714810/
+    # pandas-group-by-and-aggregate-column-1-with-condition-from-column-2
+    dat = (
+        tibble(
+            user=rep(c("1", 2, 3, 4), each=5),
+            cancel_date=rep(c(12, 5, 10, 11), each=5),
+        )
+        >> group_by(f.user)
+    )
+    out = dat >> mutate(
+        login=sample(f[1 : f.cancel_date[0]], size=n(), replace=True)
+    )
+    assert nrow(out) == 20
 
 
 def test_mutate_none():

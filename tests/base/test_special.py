@@ -1,7 +1,7 @@
 import pytest
 
 from pandas.api.types import is_scalar
-from datar2.base.special import (
+from datar.base.special import (
     beta,
     choose,
     digamma,
@@ -14,7 +14,7 @@ from datar2.base.special import (
     psigamma,
     trigamma,
 )
-from datar2.base import Inf, NA
+from datar.base import Inf, NA
 from ..conftest import assert_iterable_equal, is_installed
 
 pytestmark = pytest.mark.skipif(

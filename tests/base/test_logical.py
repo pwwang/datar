@@ -1,7 +1,7 @@
 import pytest  # noqa
 
 import numpy as np
-from datar2.base.logical import as_logical, is_logical, is_true, is_false
+from datar.base.logical import as_logical, is_logical, is_true, is_false
 from ..conftest import assert_iterable_equal
 
 

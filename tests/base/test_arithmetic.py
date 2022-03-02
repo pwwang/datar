@@ -4,12 +4,12 @@ import numpy as np
 from pandas import Series
 from pandas.testing import assert_frame_equal
 from pandas.testing import assert_series_equal
-from datar2 import f
-from datar2.base import NA
+from datar import f
+from datar.base import NA
 
-# from datar2.datar import drop_index
-from datar2.tibble import tibble, tribble
-from datar2.base.arithmetic import (
+# from datar.datar import drop_index
+from datar.tibble import tibble, tribble
+from datar.base.arithmetic import (
     sum,
     mean,
     median,
@@ -43,7 +43,7 @@ from datar2.base.arithmetic import (
     sqrt,
     trunc,
 )
-from datar2.base import pi
+from datar.base import pi
 from ..conftest import assert_iterable_equal
 
 

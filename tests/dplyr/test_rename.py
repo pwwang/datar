@@ -1,18 +1,18 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rename.R
 import pytest  # noqa
-from datar2 import f
-from datar2.base import (
+from datar import f
+from datar.base import (
     names,
 )
-from datar2.dplyr import (
+from datar.dplyr import (
     rename,
     rename_with,
     group_vars,
     group_by,
 )
-from datar2.tibble import tibble
-from datar2.datasets import mtcars
+from datar.tibble import tibble
+from datar.datasets import mtcars
 
 from ..conftest import assert_iterable_equal
 

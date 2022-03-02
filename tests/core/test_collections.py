@@ -1,6 +1,6 @@
 import pytest
 
-from datar2.core.collections import Collection, Intersect, Inverted, Slice
+from datar.core.collections import Collection, Intersect, Inverted, Slice
 
 
 def test_collections_flattened():

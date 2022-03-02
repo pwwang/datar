@@ -9,10 +9,10 @@
 import pytest
 
 import pandas as pd
-from datar2.dplyr import (
+from datar.dplyr import (
     between
 )
-from datar2.base import is_na, NA
+from datar.base import is_na, NA
 
 from ..conftest import assert_iterable_equal
 

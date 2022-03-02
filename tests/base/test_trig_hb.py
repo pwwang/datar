@@ -1,8 +1,8 @@
 import pytest
 
 from pandas.api.types import is_scalar
-from datar2.base import NA
-from datar2.base.trig_hb import (
+from datar.base import NA
+from datar.base.trig_hb import (
     acos,
     acosh,
     asin,
@@ -20,7 +20,7 @@ from datar2.base.trig_hb import (
     cosh,
     cospi,
 )
-from datar2.tibble import tibble
+from datar.tibble import tibble
 from ..conftest import assert_iterable_equal
 
 

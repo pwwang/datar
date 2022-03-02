@@ -1,6 +1,6 @@
 import pytest
 
-from datar2.base.which import *
+from datar.base.which import *
 from ..conftest import assert_iterable_equal
 
 def test_which():

@@ -2,10 +2,10 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-relocate.R
 import pytest
 from pandas.api.types import is_string_dtype, is_numeric_dtype
-from datar2 import f
-from datar2.testing import assert_tibble_equal
-from datar2.tibble import tibble
-from datar2.dplyr import relocate, where, last_col
+from datar import f
+from datar.testing import assert_tibble_equal
+from datar.tibble import tibble
+from datar.dplyr import relocate, where, last_col
 
 
 def test_before_after_relocate_individual_cols():

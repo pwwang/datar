@@ -4,9 +4,10 @@ import numpy as np
 from pandas import Series
 from datar import f
 from datar.datasets import iris
-from datar2.tibble import tibble, tribble, tibble_row
-from datar2.base import seq, c, rep, sum, letters, LETTERS
-from datar2.testing import assert_tibble_equal
+from datar.dplyr import mutate
+from datar.tibble import tibble, tribble, tibble_row
+from datar.base import seq, c, rep, sum, letters, LETTERS
+from datar.testing import assert_tibble_equal
 
 from ..conftest import assert_iterable_equal
 
@@ -273,9 +274,9 @@ def test_dup_cols():
 
 
 # tibble as registered function -------------
-# def test_fibble():
-#     df = tibble(x=[1,2]) >> mutate(tibble(y=f.x))
-#     assert df.equals(tibble(x=[1,2], y=[1,2]))
+def test_fibble():
+    df = tibble(x=[1, 2]) >> mutate(tibble(y=f.x))
+    assert df.equals(tibble(x=[1, 2], y=[1, 2]))
 
 
 # tibble_row ---------------------------------------

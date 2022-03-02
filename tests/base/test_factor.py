@@ -2,7 +2,7 @@ from pandas import Series
 import pytest  # noqa
 
 import numpy as np
-from datar2.base.factor import (
+from datar.base.factor import (
     droplevels,
     factor,
     levels,

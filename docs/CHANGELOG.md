@@ -1,12 +1,28 @@
 ## 0.6.0
 
 ### General
+- Adopt `pipda` 0.5.6
 - Reimplement the split-apply-combine rule to solve all performance issues
-  - Previously:
-  - Now:
 - Move `forcats` to `datar-forcats` package
 - Remove all `base0_` options and all indices are now 0-based, except `base.seq()` and its variants
 - Remove messy type annotations for now, will add them back in the future
+- Move implementation of data type display for frames in terminal and notebook to `pdtypes` package
+
+### Details
+- Expose `options`, `options_context`, `add_option` and `get_option` in `datar/__init__.py` and remove them from `datar.base`
+- Move `head` and `tail` from `datar.utils` to `datar.base`
+- Remove redundant `unique` implentation from `datar.base.seq`
+- Add `datar.core.factory.func_factory()` for developers to register function that works with different types of data (`NDFrame`, `GropuBy`, etc)
+- Not ensure NAs after NA for `base.cumxxx()` families any more
+- Remove `set_names` from `datar.stats`, use `names(df, <new names>)` from `datar.base` instead
+- Optimize `intersect`, `union`, `setdiff`, `append` from `datar.base`
+- Remove `drop_index` from `datar.datar`, use `datar.tibble.remove_rownames/remove_index/drop_index` instead
+- Add `assert_tibble_equal()` in `datar.testing` to test whether 2 tibbles are equal
+- `rep()` now works with frames
+- `c_across()` now returns a rowwise df to work with functions that apply to df on `axis=1`
+- `datar.dplyr.order_by()` now only works like it does in `r-dplyr` and only in side a verb
+- Only raise error for duplicated column names when selected by column name instead of index
+- Other fixes and optimizations
 
 ## 0.5.6
 

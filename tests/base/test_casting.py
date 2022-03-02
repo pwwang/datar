@@ -2,15 +2,15 @@ import pytest  # noqa
 
 import numpy as np
 from pandas.api.types import is_float_dtype
-from datar2.base.casting import (
+from datar.base.casting import (
     as_double,
     as_integer,
     as_numeric,
 )
-from datar2.base.factor import (
+from datar.base.factor import (
     factor,
 )
-from datar2.tibble import tibble
+from datar.tibble import tibble
 from ..conftest import assert_iterable_equal
 
 

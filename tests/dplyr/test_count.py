@@ -3,9 +3,9 @@ import pytest
 
 from pandas.testing import assert_frame_equal
 
-from datar2 import f
-from datar2.tibble import tibble
-from datar2.base import (
+from datar import f
+from datar.tibble import tibble
+from datar.base import (
     c,
     letters,
     factor,
@@ -13,7 +13,7 @@ from datar2.base import (
     TRUE,
     NA,
 )
-from datar2.dplyr import (
+from datar.dplyr import (
     count,
     group_by,
     group_vars,

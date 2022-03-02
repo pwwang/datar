@@ -5,9 +5,9 @@ from pandas import DataFrame, Series
 from pandas.testing import assert_frame_equal
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import SeriesGroupBy
-from datar2.core.factory import func_factory
-from datar2.core.tibble import SeriesRowwise, TibbleGrouped, TibbleRowwise
-from datar2.tibble import tibble
+from datar.core.factory import func_factory
+from datar.core.tibble import SeriesRowwise, TibbleGrouped, TibbleRowwise
+from datar.tibble import tibble
 
 from ..conftest import assert_iterable_equal
 

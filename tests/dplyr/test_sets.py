@@ -6,9 +6,10 @@ import numpy
 from pandas.testing import assert_frame_equal
 from datar.all import *
 
+
 def test_set_uses_coercion_rules():
-    df1 = tibble(x=[1,2], y=[1,1])
-    df2 = tibble(x=[1,2], y=[1,2])
+    df1 = tibble(x=[1, 2], y=[1, 1])
+    df2 = tibble(x=[1, 2], y=[1, 2])
 
     assert nrow(union(df1, df2)) == 3
     assert nrow(intersect(df1, df2)) == 1
@@ -34,6 +35,7 @@ def test_set_uses_coercion_rules():
     res = setdiff(df2, df1)
     assert res.equals(tibble(x=letters[10:15]))
 
+
 def test_setdiff_handles_factors_with_na():
     # test_that("setdiff handles factors with NA (#1526)", {
     df1 = tibble(x=factor(c(NA, "a")))
@@ -44,16 +46,18 @@ def test_setdiff_handles_factors_with_na():
     assert levels(res.x) == ["a"]
     assert is_na(res.x[0])
 
+
 def test_intersect_does_not_unnecessarily_coerce():
     # test_that("intersect does not unnecessarily coerce (#1722)", {
     df = tibble(a=1)
     res = intersect(df, df)
     assert numpy.issubdtype(res.a.dtype, numpy.integer)
 
+
 def test_set_operations_reconstruct_grouping_metadata():
     # test_that("set operations reconstruct grouping metadata (#3587)", {
-    df1 = tibble(x=seq(1,4), g=rep([1,2], each=2)) >> group_by(f.g)
-    df2 = tibble(x=seq(3,6), g=rep([2,3], each=2))
+    df1 = tibble(x=seq(1, 4), g=rep([1, 2], each=2)) >> group_by(f.g)
+    df2 = tibble(x=seq(3, 6), g=rep([2, 3], each=2))
 
     out = setdiff(df1, df2)
     exp = filter(df1, f.x < 3)
@@ -64,7 +68,7 @@ def test_set_operations_reconstruct_grouping_metadata():
     assert out.equals(exp)
 
     out = union(df1, df2)
-    exp = tibble(x=seq(1,6), g=rep([1,2,3], each=2)) >> group_by(f.g)
+    exp = tibble(x=seq(1, 6), g=rep([1, 2, 3], each=2)) >> group_by(f.g)
     assert out.equals(exp)
     assert group_vars(out) == group_vars(exp)
 
@@ -75,14 +79,15 @@ def test_set_operations_reconstruct_grouping_metadata():
     assert out == [[0, 1]]
 
     out = union(df1, df2) >> group_rows()
-    assert out == [[0,1], [2,3], [4,5]]
+    assert out == [[0, 1], [2, 3], [4, 5]]
+
 
 def test_set_operations_keep_the_ordering_of_the_data():
     # test_that("set operations keep the ordering of the data (#3839)", {
     rev_df = lambda df: df >> get(rev(seq_len(nrow(df), base0_=True)))
 
-    df1 = tibble(x = seq(1,4), g = rep([1,2], each = 2))
-    df2 = tibble(x = seq(3,6), g = rep([2,3], each = 2))
+    df1 = tibble(x=seq(1, 4), g=rep([1, 2], each=2))
+    df2 = tibble(x=seq(3, 6), g=rep([2, 3], each=2))
 
     out = setdiff(df1, df2)
     exp = filter(df1, f.x < 3)
@@ -101,21 +106,22 @@ def test_set_operations_keep_the_ordering_of_the_data():
     assert out.equals(exp)
 
     out = union(df1, df2)
-    exp = tibble(x=seq(1,6), g=rep([1,2,3], each=2))
+    exp = tibble(x=seq(1, 6), g=rep([1, 2, 3], each=2))
     assert out.equals(exp)
 
     out = union(rev_df(df1), df2)
-    exp = tibble(x=c(seq(4,1), [5,6]), g=rep([2,1,3], each=2))
+    exp = tibble(x=c(seq(4, 1), [5, 6]), g=rep([2, 1, 3], each=2))
     # assert out.equals(exp)
     assert_frame_equal(out, exp)
 
     out = union(df1, rev_df(df2))
-    exp = tibble(x=c(seq(1,4), [6,5]), g=rep([1,2,3], each=2))
+    exp = tibble(x=c(seq(1, 4), [6, 5]), g=rep([1, 2, 3], each=2))
     assert out.equals(exp)
 
+
 def test_set_operations_remove_duplicates():
-    df1 = tibble(x=seq(1,4), g=rep([1,2], each=2)) >> bind_rows(f)
-    df2 = tibble(x=seq(3,6), g=rep([2,3], each=2))
+    df1 = tibble(x=seq(1, 4), g=rep([1, 2], each=2)) >> bind_rows(f)
+    df2 = tibble(x=seq(3, 6), g=rep([2, 3], each=2))
 
     out = setdiff(df1, df2)
     exp = filter(df1, f.x < 3) >> distinct()
@@ -126,24 +132,24 @@ def test_set_operations_remove_duplicates():
     assert out.equals(exp)
 
     out = union(df1, df2)
-    exp = tibble(x=seq(1,6), g=rep([1,2,3], each=2))
+    exp = tibble(x=seq(1, 6), g=rep([1, 2, 3], each=2))
     assert out.equals(exp)
 
     out = union_all(df1, df2)
     exp = tibble(
-        x=c(seq(1,4), seq(1,4), seq(3,6)),
-        g=c(rep([1,2], each=2), rep([1,2], each=2), rep([2,3], each=2))
+        x=c(seq(1, 4), seq(1, 4), seq(3, 6)),
+        g=c(rep([1, 2], each=2), rep([1, 2], each=2), rep([2, 3], each=2)),
     )
     assert out.equals(exp)
 
     out = union_all(df1 >> group_by(f.g), df2)
     assert out.equals(exp)
-    assert group_vars(out) == ['g']
+    assert group_vars(out) == ["g"]
 
 
 def test_set_equality():
-    df1 = tibble(x=seq(1,4), g=rep([1,2], each=2)) >> group_by(f.g)
-    df2 = tibble(x=seq(3,6), g=rep([2,3], each=2))
+    df1 = tibble(x=seq(1, 4), g=rep([1, 2], each=2)) >> group_by(f.g)
+    df2 = tibble(x=seq(3, 6), g=rep([2, 3], each=2))
 
     assert setequal(df1, df1)
     assert setequal(df2, df2)
@@ -153,14 +159,15 @@ def test_set_equality():
 
 # Errors ------------------------------------------------------------------
 
+
 def test_errors():
     alfa = tibble(
-        land = c("Sverige", "Norway", "Danmark", "Island", "GB"),
-        data = rnorm(length(f.land))
+        land=c("Sverige", "Norway", "Danmark", "Island", "GB"),
+        data=rnorm(length(f.land)),
     )
     beta = tibble(
-        land = c("Norge", "Danmark", "Island", "Storbritannien"),
-        data2 = rnorm(length(f.land))
+        land=c("Norge", "Danmark", "Island", "Storbritannien"),
+        data2=rnorm(length(f.land)),
     )
 
     with pytest.raises(ValueError, match="not compatible"):

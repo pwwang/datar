@@ -3,16 +3,16 @@
 import pytest  # noqa
 
 import numpy as np
-from datar2 import f
-from datar2.base import c, factor, letters, NA, identity, sum
-from datar2.dplyr import (
+from datar import f
+from datar.base import c, factor, letters, NA, identity, sum
+from datar.dplyr import (
     n_distinct,
     summarise,
     group_by,
     pull,
 )
-from datar2.tibble import tibble
-from datar2.datasets import iris
+from datar.tibble import tibble
+from datar.datasets import iris
 from ..conftest import assert_iterable_equal
 
 

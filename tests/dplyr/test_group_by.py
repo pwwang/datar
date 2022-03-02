@@ -5,11 +5,12 @@ from pandas import Series
 import pytest
 
 import numpy
-from datar2 import f
-from datar2.core.exceptions import NameNonUniqueError
-from datar2.datasets import mtcars, iris
-from datar2.core.tibble import TibbleGrouped, TibbleRowwise
-from datar2.dplyr import (
+from datar import f
+from datar.core.exceptions import NameNonUniqueError
+from datar.datasets import mtcars, iris
+from datar.core.tibble import TibbleGrouped, TibbleRowwise
+from datar.dplyr import (
+    count,
     group_by,
     group_vars,
     mutate,
@@ -30,6 +31,7 @@ from datar2.dplyr import (
     starts_with,
     n,
     slice,
+    n_distinct,
     inner_join,
     anti_join,
     left_join,
@@ -37,9 +39,22 @@ from datar2.dplyr import (
     full_join,
     rename_with,
 )
-from datar2.tibble import tibble
-from datar2.base import rep, c, NA, mean, dim, sum, names, nrow, factor
-from datar2.stats import runif
+from datar.tibble import tibble
+from datar.base import (
+    rep,
+    c,
+    NA,
+    mean,
+    dim,
+    sum,
+    names,
+    nrow,
+    factor,
+    sample,
+    letters,
+    sqrt,
+)
+from datar.stats import runif
 from ..conftest import assert_iterable_equal
 
 
@@ -100,21 +115,21 @@ def test_mutate_does_not_loose_variables():
     assert by_a_quantile.columns.tolist() == ["a", "b", "x", "quantile"]
 
 
-# def test_orders_by_groups():
-#     df = tibble(a=sample(range(1, 11), 3000, replace=True)) >> group_by(f.a)
-#     out = df >> count()
-#     assert_iterable_equal(out.a, range(1, 11))
+def test_orders_by_groups():
+    df = tibble(a=sample(range(1, 11), 3000, replace=True)) >> group_by(f.a)
+    out = df >> count()
+    assert_iterable_equal(out.a, range(1, 11))
 
-#     df = tibble(a=sample(letters[:10], 3000, replace=True)) >> group_by(f.a)
-#     out = df >> count()
-#     assert_iterable_equal(out.a, letters[:10])
+    df = tibble(a=sample(letters[:10], 3000, replace=True)) >> group_by(f.a)
+    out = df >> count()
+    assert_iterable_equal(out.a, letters[:10])
 
-#     df = tibble(a=sample(sqrt(range(1, 11)), 3000, replace=True)) >> group_by(
-#         f.a
-#     )
-#     out = df >> count()
-#     expect = list(sqrt(range(1, 11)))
-#     assert_iterable_equal(out.a, expect)
+    df = tibble(a=sample(sqrt(range(1, 11)), 3000, replace=True)) >> group_by(
+        f.a
+    )
+    out = df >> count()
+    expect = list(sqrt(range(1, 11)))
+    assert_iterable_equal(out.a, expect)
 
 
 def test_by_tuple_values():
@@ -128,10 +143,10 @@ def test_by_tuple_values():
         )
         >> group_by(f.y)
     )
-    # out = df >> count()
-    # # assert out.y.tolist() == [(1,2), (1,2,3)]
-    # assert out.y.tolist() == [1, 2]
-    # assert out.n.tolist() == [2, 1]
+    out = df >> count()
+    # assert out.y.tolist() == [(1,2), (1,2,3)]
+    assert out.y.tolist() == [1, 2]
+    assert out.n.tolist() == [2, 1]
 
 
 def test_select_add_group_vars():
@@ -143,11 +158,11 @@ def test_one_group_for_NA():
     x = c(NA, NA, NA, range(10, 0, -1), range(10, 0, -1))
     w = numpy.array(c(20, 30, 40, range(1, 11), range(1, 11))) * 10
 
-    # assert n_distinct(x) == 11
-    # res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
-    # # assert nrow(res) == 11
-    # # See Known Issues of core.grouped.TibbleGrouped
-    # assert nrow(res) == 10
+    assert n_distinct(x) == 11
+    res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
+    # assert nrow(res) == 11
+    # See Known Issues of core.grouped.TibbleGrouped
+    assert nrow(res) == 10
 
 
 def test_zero_row_dfs():
@@ -235,14 +250,14 @@ def test_0_vars(df):
     assert_iterable_equal(out._rows[0], range(nrow(iris)))
 
 
-# def test_drop():
-#     res = (
-#         iris
-#         >> filter(f.Species == "setosa")
-#         >> group_by(f.Species, _drop=True)
-#     )
-#     out = res >> count() >> nrow()
-#     assert out == 1
+def test_drop():
+    res = (
+        iris
+        >> filter(f.Species == "setosa")
+        >> group_by(f.Species, _drop=True)
+    )
+    out = res >> count() >> nrow()
+    assert out == 1
 
 
 def test_remember_drop_True():
@@ -440,6 +455,7 @@ def test_errors():
 
 
 # rowwise --------------------------------------------
+
 
 def test_rowwise_name_nonunique():
     df = tibble(tibble(x=1), x=2, _name_repair="minimal")

@@ -2,10 +2,10 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rank.r
 import pytest
 
-from datar2 import f
-from datar2.tibble import tibble
-from datar2.base import c, NA, nrow, rep
-from datar2.dplyr import (
+from datar import f
+from datar.tibble import tibble
+from datar.base import c, NA, nrow, rep
+from datar.dplyr import (
     mutate,
     row_number,
     ntile,
@@ -13,6 +13,10 @@ from datar2.dplyr import (
     dense_rank,
     percent_rank,
     cume_dist,
+    count,
+    pull,
+    lead,
+    lag,
 )
 from ..conftest import assert_iterable_equal
 
@@ -48,12 +52,12 @@ def test_ntile_always_returns_an_integer():
     assert_iterable_equal(out, [NA])
 
 
-# def test_ntile_does_not_overflow():
-#     m = int(1e2)
-#     res = tibble(a=range(1,m+1)) >> mutate(
-#         b=ntile(f.a, n=m)
-#     ) >> count(f.b) >> pull(to='list')
-#     assert sum(res) == 100
+def test_ntile_does_not_overflow():
+    m = int(1e2)
+    res = tibble(a=range(1,m+1)) >> mutate(
+        b=ntile(f.a, n=m)
+    ) >> count(f.b) >> pull(to='list')
+    assert sum(res) == 100
 
 
 def test_row_number_handles_empty_dfs():
@@ -82,23 +86,23 @@ def test_row_number_handles_empty_dfs():
     assert nrow(res) == 0
 
 
-# def test_lead_lag_inside_mutates_handles_expressions_as_value_for_default():
-#     df = tibble(x=[1,2,3])
-#     res = mutate(
-#         df,
-#         leadn=lead(f.x, default=f.x[0]),
-#         lagn=lag(f.x, default=f.x[0])
-#     )
-#     assert_iterable_equal(res.leadn, lead(df.x, default=df.x[0]))
-#     assert_iterable_equal(res.lagn, lag(df.x, default=df.x[0]))
+def test_lead_lag_inside_mutates_handles_expressions_as_value_for_default():
+    df = tibble(x=[1,2,3])
+    res = mutate(
+        df,
+        leadn=lead(f.x, default=f.x[0]),
+        lagn=lag(f.x, default=f.x[0])
+    )
+    assert_iterable_equal(res.leadn, lead(df.x, default=df.x[0]))
+    assert_iterable_equal(res.lagn, lag(df.x, default=df.x[0]))
 
-#     res = mutate(
-#         df,
-#         leadn=lead(f.x, default=[1]),
-#         lagn=lag(f.x, default=[1])
-#     )
-#     assert_iterable_equal(res.leadn, lead(df.x, default=[1]))
-#     assert_iterable_equal(res.lagn, lag(df.x, default=[1]))
+    res = mutate(
+        df,
+        leadn=lead(f.x, default=[1]),
+        lagn=lag(f.x, default=[1])
+    )
+    assert_iterable_equal(res.leadn, lead(df.x, default=[1]))
+    assert_iterable_equal(res.lagn, lag(df.x, default=[1]))
 
 
 def test_ntile_puts_large_groups_first():

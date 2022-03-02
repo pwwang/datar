@@ -1,9 +1,9 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-distinct.R
 import pytest
-from datar2 import f
-from datar2.core.tibble import TibbleRowwise
-from datar2.dplyr import (
+from datar import f
+from datar.core.tibble import TibbleRowwise
+from datar.dplyr import (
     distinct,
     select,
     mutate,
@@ -14,15 +14,15 @@ from datar2.dplyr import (
     rowwise,
     slice_,
 )
-from datar2.base import (
+from datar.base import (
     ncol,
     nrow,
     c,
     unique,
     NA,
 )
-from datar2.tibble import tibble
-from datar2.datasets import iris
+from datar.tibble import tibble
+from datar.datasets import iris
 
 
 def test_single_column():

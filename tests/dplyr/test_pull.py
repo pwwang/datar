@@ -1,11 +1,11 @@
 from pandas import Series
 import pytest
 import numpy as np
-from datar2.core import f
-from datar2.base import dim
-from datar2.tibble import tibble
-from datar2.dplyr import pull
-from datar2.testing import assert_tibble_equal
+from datar.core import f
+from datar.base import dim
+from datar.tibble import tibble
+from datar.dplyr import pull
+from datar.testing import assert_tibble_equal
 
 
 def test_pull_series_with_name():

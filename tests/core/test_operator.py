@@ -1,7 +1,13 @@
-import pytest
+import pytest  # noqa
 
 from pandas.testing import assert_frame_equal
-from datar.all import *
+from datar.all import (
+    f,
+    c,
+    tibble,
+    mutate,
+    select,
+)
 
 def test_neg():
     df = tibble(x=[1, 2])

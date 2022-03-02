@@ -2,12 +2,12 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-select.r
 import pytest
 
-from datar2 import f
-from datar2.datasets import mtcars
-from datar2.base import colnames, ncol, nrow, c, NA, sum, mean, names
-from datar2.stats import rnorm
-from datar2.tibble import tibble
-from datar2.dplyr import (
+from datar import f
+from datar.datasets import mtcars
+from datar.base import colnames, ncol, nrow, c, NA, sum, mean, names
+from datar.stats import rnorm
+from datar.tibble import tibble
+from datar.dplyr import (
     group_vars,
     group_by,
     summarise,

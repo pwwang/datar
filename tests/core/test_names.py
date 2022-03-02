@@ -1,27 +1,32 @@
 # https://github.com/r-lib/vctrs/blob/master/tests/testthat/test-names.R
-from enum import unique
+import pytest
+from typing import Iterable
+
+import numpy as np
 from string import ascii_letters
 
-import pytest
-from datar.core.names import *
+from datar.core.exceptions import NameNonUniqueError
+from datar.core.names import (
+    repair_names,
+)
 
 @pytest.mark.parametrize("names,expect", [
     ([1,2,3], ["1","2","3"]),
-    (["", numpy.nan], ["", ""]),
-    (["", numpy.nan], ["", ""]),
-    (["", "", numpy.nan], ["", "", ""]),
-    (repair_names(["", "", numpy.nan], repair="minimal"), ["", "", ""]),
+    (["", np.nan], ["", ""]),
+    (["", np.nan], ["", ""]),
+    (["", "", np.nan], ["", "", ""]),
+    (repair_names(["", "", np.nan], repair="minimal"), ["", "", ""]),
 ])
 def test_minimal(names, expect):
     assert repair_names(names, repair="minimal") == expect
 
 @pytest.mark.parametrize("names,expect", [
-    ([numpy.nan, numpy.nan], ["__0", "__1"]),
+    ([np.nan, np.nan], ["__0", "__1"]),
     (["x", "x"], ["x__0", "x__1"]),
     (["x", "y"], ["x", "y"]),
     (["", "x", "y", "x"], ["__0", "x__1", "y", "x__3"]),
     ([""], ["__0"]),
-    ([numpy.nan], ["__0"]),
+    ([np.nan], ["__0"]),
     (["__20", "a__33", "b", "", "a__2__34"], ["__0", "a__1", "b", "__3", "a__4"]),
     (["a__1"], ["a"]),
     (["a__2", "a"], ["a__0", "a__1"]),
@@ -62,13 +67,13 @@ def test_unique_algebraic_y():
 
 @pytest.mark.parametrize("names,expect", [
     (list(ascii_letters), list(ascii_letters)),
-    ([numpy.nan, "", "x", "x", "a1:", "_x_y}"],
+    ([np.nan, "", "x", "x", "a1:", "_x_y}"],
      ["__0", "__1", "x__2", "x__3", "a1_", "_x_y_"]),
-    (repair_names([numpy.nan, "", "x", "x", "a1:", "_x_y}"], repair="universal"),
+    (repair_names([np.nan, "", "x", "x", "a1:", "_x_y}"], repair="universal"),
      ["__0", "__1", "x__2", "x__3", "a1_", "_x_y_"]),
     (["a", "b", "a", "c", "b"], ["a__0", "b__1", "a__2", "c", "b__4"]),
     ([""], ["__0"]),
-    ([numpy.nan], ["__0"]),
+    ([np.nan], ["__0"]),
     (["__"], ["__0"]),
     (["_"], ["_"]),
     (["_", "_"], ["___0", "___1"]),
@@ -79,7 +84,7 @@ def test_unique_algebraic_y():
     (["", "_", ""], ["__0", "_", "__2"]),
     (["__6", "__1__2"], ["__0", "__1"]),
     (["if__2"], ["_if"]),
-    (["", "_", numpy.nan, "if__4", "if", "if__8", "for", "if){]1"],
+    (["", "_", np.nan, "if__4", "if", "if__8", "for", "if){]1"],
      ["__0", "_", "__2", "_if__3", "_if__4", "_if__5", "_for", "if___1"]),
     (["a b", "b c"], ["a_b", "b_c"]),
     (["", "_2", "_3", "__4", "___5", "____6", "_____7", "__"],
@@ -97,7 +102,7 @@ def test_universal(names, expect):
 
 def test_check_unique():
     with pytest.raises(NameNonUniqueError):
-        repair_names([numpy.nan], repair="check_unique")
+        repair_names([np.nan], repair="check_unique")
     with pytest.raises(NameNonUniqueError):
         repair_names([""], repair="check_unique")
     with pytest.raises(NameNonUniqueError):

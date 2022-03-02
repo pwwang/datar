@@ -9,11 +9,11 @@ https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-groups-with.R
 import pytest
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.core.tibble import TibbleGrouped
-from datar2.tibble import tibble
-from datar2.stats import sd
-from datar2.base import (
+from datar import f
+from datar.core.tibble import TibbleGrouped
+from datar.tibble import tibble
+from datar.stats import sd
+from datar.base import (
     c,
     rep,
     head,
@@ -25,7 +25,7 @@ from datar2.base import (
     mean,
     identity,
 )
-from datar2.dplyr import (
+from datar.dplyr import (
     bind_rows,
     filter,
     group_by,
@@ -50,7 +50,7 @@ from datar2.dplyr import (
     group_walk,
     tally,
 )
-from datar2.datasets import mtcars, iris
+from datar.datasets import mtcars, iris
 
 
 # group_data --------------------------------------------------------------

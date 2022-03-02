@@ -2,8 +2,8 @@ import pytest  # noqa
 
 from pandas import Interval, DataFrame
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.base.funs import (
+from datar import f
+from datar.base.funs import (
     cut,
     identity,
     outer,
@@ -13,8 +13,8 @@ from datar2.base.funs import (
     expandgrid,
     rank,
 )
-from datar2.base import table, pi, paste0
-from datar2.stats import rnorm
+from datar.base import table, pi, paste0
+from datar.stats import rnorm
 from ..conftest import assert_iterable_equal
 
 

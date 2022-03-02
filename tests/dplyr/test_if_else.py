@@ -7,11 +7,11 @@ import pytest
 import pandas
 import numpy as np
 from pandas import Series
-from datar2 import f
-from datar2.base import NA, c
-from datar2.datar import get
-from datar2.dplyr import if_else, case_when, mutate, pull
-from datar2.datasets import mtcars
+from datar import f
+from datar.base import NA, c
+from datar.datar import get
+from datar.dplyr import if_else, case_when, mutate, pull
+from datar.datasets import mtcars
 from ..conftest import assert_iterable_equal
 
 

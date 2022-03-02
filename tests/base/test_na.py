@@ -1,7 +1,7 @@
 import pytest  # noqa
 
-from datar2.base.na import NA, is_na, any_na
-from datar2.base.null import NULL
+from datar.base.na import NA, is_na, any_na
+from datar.base.null import NULL
 from ..conftest import assert_iterable_equal
 
 

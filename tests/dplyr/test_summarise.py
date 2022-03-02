@@ -2,14 +2,14 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-summarise.r
 
 import pytest
-from datar2 import f
-from datar2.datasets import mtcars
-from datar2.core.contexts import Context
-from datar2.core.exceptions import NameNonUniqueError
-from datar2.core.tibble import TibbleRowwise
-from datar2.stats import runif
-from datar2.base import c, mean, rep, seq_len, dim, letters, sum
-from datar2.dplyr import (
+from datar import f
+from datar.datasets import mtcars
+from datar.core.contexts import Context
+from datar.core.exceptions import NameNonUniqueError
+from datar.core.tibble import TibbleRowwise
+from datar.stats import runif, quantile
+from datar.base import c, mean, rep, seq_len, dim, letters, sum, length
+from datar.dplyr import (
     summarise,
     summarize,
     group_by,
@@ -20,8 +20,8 @@ from datar2.dplyr import (
     rowwise,
     across,
 )
-from datar2.tibble import tibble
-from datar2.testing import assert_tibble_equal
+from datar.tibble import tibble
+from datar.testing import assert_tibble_equal
 from pipda import register_func
 
 from ..conftest import assert_iterable_equal
@@ -146,13 +146,13 @@ def test_modify_grouping_vars():
     assert out.a.obj.tolist() == [2, 3, 2, 3]
 
 
-# def test_allows_names():
-#     res = (
-#         tibble(x=[1, 2, 3], y=letters[:3])
-#         >> group_by(f.y)
-#         >> summarise(a=length(f.x), b=quantile(f.x, 0.5))
-#     )
-#     assert res.b.tolist() == [1.0, 2.0, 3.0]
+def test_allows_names():
+    res = (
+        tibble(x=[1, 2, 3], y=letters[:3])
+        >> group_by(f.y)
+        >> summarise(a=length(f.x), b=quantile(f.x, 0.5))
+    )
+    assert res.b.tolist() == [1.0, 2.0, 3.0]
 
 
 def test_list_output_columns():

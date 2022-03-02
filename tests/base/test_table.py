@@ -1,8 +1,8 @@
 import pytest
 
 import numpy as np
-from datar2 import stats
-from datar2.base import (
+from datar import stats
+from datar.base import (
     table,
     tabulate,
     data_context,
@@ -16,9 +16,9 @@ from datar2.base import (
     rep,
     c,
 )
-from datar2.core.defaults import NA_REPR
-from datar2 import f
-from datar2.datasets import (
+from datar.core.defaults import NA_REPR
+from datar import f
+from datar.datasets import (
     warpbreaks,
     state_division,
     state_region,
@@ -117,7 +117,7 @@ def test_table():
 
 
 def test_table_error():
-    from datar2.datasets import iris, warpbreaks
+    from datar.datasets import iris, warpbreaks
 
     with pytest.raises(ValueError):
         table(iris)

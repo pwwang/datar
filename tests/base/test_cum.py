@@ -1,7 +1,7 @@
 import pytest  # noqa
 
 import numpy as np
-from datar2.base.cum import (
+from datar.base.cum import (
     cummax,
     cummin,
     cumprod,

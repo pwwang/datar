@@ -1,6 +1,6 @@
 import pytest
 
-from datar2.base.complex import (
+from datar.base.complex import (
     re,
     im,
     mod,

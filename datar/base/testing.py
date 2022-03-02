@@ -25,7 +25,6 @@ from pipda import register_func
 
 from ..core.contexts import Context
 from ..core.factory import func_factory
-from ..tibble import tibble
 
 
 def _register_type_testing(
@@ -128,6 +127,8 @@ def is_element(x, elems):
     use this function instead
     """
     if isinstance(x, SeriesGroupBy) and isinstance(elems, SeriesGroupBy):
+        from ..tibble import tibble
+
         df = tibble(x=x, y=elems)
         return df._datar["grouped"].apply(
             lambda g: np.isin(g.x, g.y)

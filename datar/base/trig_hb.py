@@ -7,7 +7,6 @@ from pipda import register_func
 from ..core.tibble import TibbleRowwise
 from ..core.contexts import Context
 from ..core.factory import func_factory
-from ..tibble import tibble
 
 from .constants import pi
 
@@ -225,6 +224,8 @@ def atan2(y, x):
     Returns:
         The angle between x-axis and vector (0,0) -> (x,y)
     """
+    from ..tibble import tibble
+
     df = tibble(y=y, x=x)
     out = df.apply(lambda row: np.arctan2(*row), axis=1)
     if isinstance(df, TibbleRowwise):

@@ -2,10 +2,10 @@ import pytest
 from pandas import Index, Series
 from pandas.testing import assert_frame_equal
 from datar import f
-from datar2.core.tibble import TibbleGrouped, TibbleRowwise
-from datar2.testing import assert_tibble_equal
-from datar2.tibble import tibble
-from datar2.core.broadcast import (
+from datar.core.tibble import TibbleGrouped, TibbleRowwise
+from datar.testing import assert_tibble_equal
+from datar.tibble import tibble
+from datar.core.broadcast import (
     _broadcast_base,
     broadcast2,
     broadcast_to,

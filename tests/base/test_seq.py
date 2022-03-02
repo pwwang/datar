@@ -2,7 +2,7 @@ from pandas import Series
 import pytest
 
 import numpy as np
-from datar2.base.seq import (
+from datar.base.seq import (
     seq_len,
     seq,
     seq_along,
@@ -15,8 +15,8 @@ from datar2.base.seq import (
     match,
     order,
 )
-from datar2.tibble import tibble
-from datar2.base import NA, c
+from datar.tibble import tibble
+from datar.base import NA, c, unique
 from ..conftest import assert_iterable_equal
 
 
@@ -213,19 +213,19 @@ def test_rev():
     assert_iterable_equal(out.index, [1, 1, 2])
 
 
-# def test_unique():
-#     a = [1, 2, 2, 3]
-#     assert_iterable_equal(unique(a), [1, 2, 3])
-#     assert unique(3) == 3
+def test_unique():
+    a = [1, 2, 2, 3]
+    assert_iterable_equal(unique(a), [1, 2, 3])
+    assert unique(3) == 3
 
-#     x = Series([1, 1, 2, 2, 2, 1])
-#     out = unique(x)
-#     assert_iterable_equal(out, [1, 2])
+    x = Series([1, 1, 2, 2, 2, 1])
+    out = unique(x)
+    assert_iterable_equal(out, [1, 2])
 
-#     x = Series([1, 1, 2, 2, 2, 1]).groupby([1, 1, 1, 2, 2, 2])
-#     out = unique(x)
-#     assert_iterable_equal(out, [1, 2, 2, 1])
-#     assert_iterable_equal(out.index, [1, 1, 2, 2])
+    x = Series([1, 1, 2, 2, 2, 1]).groupby([1, 1, 1, 2, 2, 2])
+    out = unique(x)
+    assert_iterable_equal(out, [1, 2, 2, 1])
+    assert_iterable_equal(out.index, [1, 1, 2, 2])
 
 
 def test_length():

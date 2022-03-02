@@ -61,7 +61,7 @@ from .join import (
     right_join,
     semi_join,
 )
-# from .lead_lag import lag, lead
+from .lead_lag import lag, lead
 from .mutate import mutate, transmute
 from .order_by import order_by, with_order
 from .pull import pull

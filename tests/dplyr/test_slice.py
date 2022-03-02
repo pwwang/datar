@@ -2,11 +2,11 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-slice.r
 from pandas.testing import assert_frame_equal
 import pytest
-from datar2 import f
-from datar2.datasets import mtcars
-from datar2.tibble import tibble
-from datar2.base import nrow, c, NA, rep, seq, dim, names
-from datar2.dplyr import (
+from datar import f
+from datar.datasets import mtcars
+from datar.tibble import tibble
+from datar.base import nrow, c, NA, rep, seq, dim, names
+from datar.dplyr import (
     slice,
     slice_sample,
     slice_min,
@@ -25,8 +25,8 @@ from datar2.dplyr import (
     filter,
     n,
 )
-from datar2.core.tibble import TibbleRowwise
-from datar2.dplyr.dslice import _n_from_prop
+from datar.core.tibble import TibbleRowwise
+from datar.dplyr.dslice import _n_from_prop
 
 
 def test_empty_slice_returns_input():

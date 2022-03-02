@@ -1,6 +1,6 @@
 import pytest
 from pandas import DataFrame
-from datar2.base.verbs import (
+from datar.base.verbs import (
     colnames,
     rownames,
     diag,
@@ -23,8 +23,8 @@ from datar2.base.verbs import (
     head,
     tail,
 )
-from datar2.base import c, NA
-from datar2.tibble import tibble
+from datar.base import c, NA
+from datar.tibble import tibble
 
 from ..conftest import assert_iterable_equal
 

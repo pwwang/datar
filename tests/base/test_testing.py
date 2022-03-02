@@ -1,7 +1,7 @@
 import pytest  # noqa
 
 import numpy as np
-from datar2.base.testing import (
+from datar.base.testing import (
     is_atomic,
     # is_double,
     is_element,
@@ -11,7 +11,7 @@ from datar2.base.testing import (
     is_integer,
     is_numeric,
 )
-from datar2.tibble import tibble
+from datar.tibble import tibble
 from ..conftest import assert_iterable_equal
 
 

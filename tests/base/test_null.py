@@ -1,6 +1,6 @@
 import pytest  # noqa
 
-from datar2.base.null import NULL, as_null, is_null
+from datar.base.null import NULL, as_null, is_null
 
 
 def test_null_is_none():

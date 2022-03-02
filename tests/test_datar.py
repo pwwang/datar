@@ -1,7 +1,7 @@
-from datar2 import f
-from datar2.datar import get, flatten, itemgetter
-from datar2.dplyr import mutate
-from datar2.tibble import tibble
+from datar import f
+from datar.datar import get, flatten, itemgetter
+from datar.dplyr import mutate
+from datar.tibble import tibble
 from pandas.testing import assert_frame_equal
 
 

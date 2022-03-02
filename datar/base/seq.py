@@ -11,8 +11,6 @@ from ..core.contexts import Context
 from ..core.collections import Collection
 from ..core.tibble import TibbleGrouped, reconstruct_tibble
 
-from ..tibble import tibble
-
 
 @register_func(None, context=Context.EVAL)
 def seq_along(along_with):
@@ -342,6 +340,8 @@ def _(x, table, nomatch=-1):
             .explode()
             .astype(int)
         )
+
+    from ..tibble import tibble
 
     df = tibble(x=x, table=table)  # TibbleGrouped
     return (

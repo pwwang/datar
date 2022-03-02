@@ -1,7 +1,7 @@
 import pytest  # noqa
 import random
 import numpy
-from datar2.base.random import set_seed
+from datar.base.random import set_seed
 
 
 def test_standard_random_seed():

@@ -3,14 +3,14 @@ import pytest
 
 import numpy as np
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.base import (
+from datar import f
+from datar.base import (
     c,
     # dim,
     ncol,
 )
-from datar2.tibble import tibble
-from datar2.dplyr import (
+from datar.tibble import tibble
+from datar.dplyr import (
     group_by,
     summarise,
     cur_group,

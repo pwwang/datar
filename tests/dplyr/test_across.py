@@ -5,9 +5,9 @@ from pipda import register_func
 import pytest
 
 from pandas.testing import assert_frame_equal
-from datar2 import f
-from datar2.tibble import tibble
-from datar2.base import (
+from datar import f
+from datar.tibble import tibble
+from datar.base import (
     mean,
     sum,
     max,
@@ -24,7 +24,7 @@ from datar2.base import (
     round,
     expandgrid,
 )
-from datar2.dplyr import (
+from datar.dplyr import (
     mutate,
     across,
     group_by,
@@ -39,8 +39,8 @@ from datar2.dplyr import (
     rowwise,
     filter,
 )
-from datar2.stats import runif, sd
-from datar2.core.tibble import TibbleRowwise
+from datar.stats import runif, sd
+from datar.core.tibble import TibbleRowwise
 
 from ..conftest import assert_iterable_equal
 
@@ -355,7 +355,7 @@ def test_c_across():
 
 
 def test_nb_fail():
-    from datar2.datasets import iris
+    from datar.datasets import iris
 
     out = iris >> mutate(
         across(

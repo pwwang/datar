@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from datar2.base.string import (
+from datar.base.string import (
     as_character,
     is_character,
     grep,
@@ -24,8 +24,8 @@ from datar2.base.string import (
     toupper,
     trimws,
 )
-from datar2.base.constants import letters, LETTERS
-from datar2.tibble import tibble
+from datar.base.constants import letters, LETTERS
+from datar.tibble import tibble
 from ..conftest import assert_iterable_equal
 
 
