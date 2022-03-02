@@ -1,5 +1,5 @@
 """APIs for R-tibble"""
-from .tibble import tibble, tibble_row, tribble, zibble
+from .tibble import tibble, tibble_row, tribble
 from .verbs import (
     enframe,
     deframe,

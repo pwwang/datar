@@ -376,7 +376,7 @@ floor = func_factory(
 )
 
 
-@func_factory("transform", is_vectorized=False, excluded={"digits"})
+@func_factory("transform", stof=False, is_vectorized=False, excluded={"digits"})
 def signif(x: float, digits: int = 6) -> float:
     """Rounds the values in its first argument to the specified number of
     significant digits

@@ -1,5 +1,4 @@
 from types import GeneratorType
-from typing import Union, Sequence
 from functools import singledispatch
 
 import numpy as np
@@ -11,16 +10,14 @@ from pandas.core.generic import NDFrame
 
 from ..core.tibble import TibbleGrouped
 
-RankResultType = Union[Series, np.ndarray, Categorical]
-
 
 @singledispatch
 def _rank(
-    data: Sequence,
-    na_last: str,
-    method: str,
-    percent: bool = False,
-) -> RankResultType:
+    data,
+    na_last,
+    method,
+    percent=False,
+):
     """Rank the data"""
     if not isinstance(data, Series):
         data = Series(data)
@@ -39,10 +36,10 @@ def _rank(
 @_rank.register(GroupBy)
 def _(
     data: GroupBy,
-    na_last: str,
-    method: str,
-    percent: bool = False,
-) -> RankResultType:
+    na_last,
+    method,
+    percent=False,
+):
     return data.rank(
         method=method,
         pct=percent,
@@ -53,28 +50,28 @@ def _(
 
 
 @singledispatch
-def _row_number(x) -> RankResultType:
+def _row_number(x):
     return _rank(x, na_last="keep", method="first").values
 
 
 @_row_number.register(GroupBy)
-def _(x: GroupBy) -> RankResultType:
+def _(x):
     return x.cumcount() + 1
 
 
 @_row_number.register(TibbleGrouped)
-def _(x: TibbleGrouped) -> RankResultType:
+def _(x):
     return _row_number(x._datar["grouped"])
 
 
 @_row_number.register(NDFrame)
-def _(x: NDFrame) -> RankResultType:
+def _(x):
     dtype = object if x.shape[0] == 0 else None
     return Series(range(1, x.shape[0] + 1), index=x.index, dtype=dtype)
 
 
 @singledispatch
-def _ntile(x, n: int) -> RankResultType:
+def _ntile(x, n):
     if is_scalar(x):
         x = [x]
 
@@ -82,17 +79,17 @@ def _ntile(x, n: int) -> RankResultType:
 
 
 @_ntile.register(GeneratorType)
-def _(x: GeneratorType, n: int) -> RankResultType:
+def _(x, n):
     return _ntile(np.array(list(x)), n)
 
 
 @_ntile.register(NDFrame)
-def _(x: NDFrame, n: int) -> RankResultType:
+def _(x, n):
     return _ntile(x.values, n)
 
 
 @_ntile.register(np.ndarray)
-def _(x: np.ndarray, n: int) -> RankResultType:
+def _(x, n):
     if x.size == 0:
         return Categorical([])
 
@@ -104,7 +101,7 @@ def _(x: np.ndarray, n: int) -> RankResultType:
 
 
 @_ntile.register(GroupBy)
-def _(x: GroupBy, n: int) -> RankResultType:
+def _(x, n):
     return x.transform(
         lambda grup: pd.cut(
             grup,
@@ -115,7 +112,7 @@ def _(x: GroupBy, n: int) -> RankResultType:
 
 
 @singledispatch
-def _percent_rank(x, na_last: str = "keep") -> RankResultType:
+def _percent_rank(x, na_last="keep"):
     if len(x) == 0:
         dtype = getattr(x, "dtype", None)
         return np.array(x, dtype=dtype)
@@ -124,7 +121,7 @@ def _percent_rank(x, na_last: str = "keep") -> RankResultType:
 
 
 @_percent_rank.register(NDFrame)
-def _(x: NDFrame, na_last: str = "keep") -> RankResultType:
+def _(x, na_last="keep"):
     ranking = _rank(x, na_last, "min", True)
     minrank = ranking.min()
     maxrank = ranking.max()
@@ -135,7 +132,7 @@ def _(x: NDFrame, na_last: str = "keep") -> RankResultType:
 
 
 @_percent_rank.register(GroupBy)
-def _(x: GroupBy, na_last: str = "keep") -> RankResultType:
+def _(x, na_last="keep"):
     ranking = _rank(x, na_last, "min", True).groupby(x.grouper)
     maxs = ranking.transform("max")
     mins = ranking.transform("min")
@@ -145,7 +142,7 @@ def _(x: GroupBy, na_last: str = "keep") -> RankResultType:
 
 
 @singledispatch
-def _cume_dist(x, na_last: str = "keep") -> RankResultType:
+def _cume_dist(x, na_last="keep"):
     if is_scalar(x):
         x = [x]
 
@@ -157,7 +154,7 @@ def _cume_dist(x, na_last: str = "keep") -> RankResultType:
 
 
 @_cume_dist.register(NDFrame)
-def _(x: NDFrame, na_last: str = "keep") -> RankResultType:
+def _(x, na_last="keep"):
     ranking = _rank(x, na_last, "min")
     total = x.shape[0]
     ret = ranking.transform(lambda r: ranking.le(r).sum() / total)
@@ -166,16 +163,21 @@ def _(x: NDFrame, na_last: str = "keep") -> RankResultType:
 
 
 @_cume_dist.register(GroupBy)
-def _(x: GroupBy, na_last: str = "keep") -> RankResultType:
+def _(x, na_last="keep"):
     ranking = _rank(x, na_last, "min").groupby(x.grouper)
     # faster way?
-    return ranking.apply(
-        lambda ranks: (
-            np.array(
-                [
-                    np.nan if pd.isnull(r) else (ranks <= r).sum()
-                    for r in ranks
-                ]
-            ) / ranks.size
+    return (
+        ranking.apply(
+            lambda ranks: (
+                np.array(
+                    [
+                        np.nan if pd.isnull(r) else (ranks <= r).sum()
+                        for r in ranks
+                    ]
+                )
+                / ranks.size
+            )
         )
-    ).explode().astype(float)
+        .explode()
+        .astype(float)
+    )

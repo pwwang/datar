@@ -4,11 +4,12 @@ See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
+from pipda.function import Function
 
 from ..core.contexts import Context
 from ..core.utils import logger, regcall
 from ..core.defaults import f
+from ..core.tibble import reconstruct_tibble
 from ..base import options_context, sum_
 from .context import n
 from .group_by import group_by_drop_default, group_by, ungroup
@@ -17,7 +18,6 @@ from .mutate import mutate
 from .summarise import summarise
 from .arrange import arrange
 from .desc import desc
-from .join import _reconstruct_tibble
 
 
 @register_verb(DataFrame, context=Context.PENDING)
@@ -70,7 +70,7 @@ def count(
         name=name,
     )
 
-    return _reconstruct_tibble(x, out)
+    return reconstruct_tibble(x, out)
 
 
 @register_verb(DataFrame, context=Context.PENDING)
@@ -93,7 +93,8 @@ def tally(
             summarise,
             x,
             **{
-                name: n(__calling_env=CallingEnvs.PIPING)
+                # name: n(__calling_env=CallingEnvs.PIPING)
+                name: Function(n, (), {})
                 if tallyn is None
                 else tallyn
             },
@@ -103,10 +104,11 @@ def tally(
         out = regcall(
             arrange,
             regcall(ungroup, out),
-            desc(f[name], __calling_env=CallingEnvs.PIPING)
+            # desc(f[name], __calling_env=CallingEnvs.PIPING)
+            Function(desc, (f[name], ), {}, dataarg=False)
         )
         out.reset_index(drop=True, inplace=True)
-        return _reconstruct_tibble(x, out)
+        return reconstruct_tibble(x, out)
 
     return out
 
@@ -152,7 +154,8 @@ def add_tally(x, wt=None, sort=False, name="n"):
         mutate,
         x,
         **{
-            name: n(__calling_env=CallingEnvs.PIPING)
+            # name: n(__calling_env=CallingEnvs.PIPING)
+            name: Function(n, (), {})
             if tallyn is None
             else tallyn
         },
@@ -162,10 +165,11 @@ def add_tally(x, wt=None, sort=False, name="n"):
         sort_ed = regcall(
             arrange,
             regcall(ungroup, out),
-            desc(f[name], __calling_env=CallingEnvs.PIPING)
+            # desc(f[name], __calling_env=CallingEnvs.PIPING)
+            Function(desc, (f[name], ), {}, dataarg=False)
         )
         sort_ed.reset_index(drop=True, inplace=True)
-        return _reconstruct_tibble(x, sort_ed)
+        return reconstruct_tibble(x, sort_ed)
 
     return out
 
@@ -178,8 +182,8 @@ def _tally_n(wt):
 
     # If it's Expression, will return a Function object
     # Otherwise, sum of wt
-
-    return sum_(wt, na_rm=True, __calling_env=CallingEnvs.PIPING)
+    return Function(sum_, (wt, ), {"na_rm": True}, dataarg=False)
+    # return sum_(wt, na_rm=True, __calling_env=CallingEnvs.PIPING)
 
 
 def _check_name(name, invars):

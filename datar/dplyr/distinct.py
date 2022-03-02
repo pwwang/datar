@@ -10,10 +10,9 @@ from pipda import register_verb
 from ..core.contexts import Context
 from ..core.factory import func_factory
 from ..core.utils import regcall
-from ..core.tibble import Tibble
+from ..core.tibble import Tibble, reconstruct_tibble
 from ..base import union, setdiff, intersect
 from .mutate import mutate
-from .join import _reconstruct_tibble
 
 
 @register_verb(DataFrame, context=Context.PENDING)
@@ -46,7 +45,6 @@ def distinct(_data, *args, _keep_all=False, **kwargs):
                 _keep="none",
             )
         ).drop_duplicates()
-        print(uniq)
 
     if not _keep_all:
         # keep original order
@@ -61,7 +59,7 @@ def distinct(_data, *args, _keep_all=False, **kwargs):
         out = _data.loc[uniq.index, :].copy()
         out[uniq.columns.tolist()] = uniq
 
-    return _reconstruct_tibble(_data, Tibble(out, copy=False))
+    return reconstruct_tibble(_data, Tibble(out, copy=False))
 
 
 @func_factory("agg")

@@ -1,26 +1,17 @@
 """Some functions ported from R-stats"""
-from typing import Any, Iterable, List
+from typing import Sequence
 
-import numpy
-from pandas import DataFrame, Series
-from pandas.core.groupby import SeriesGroupBy
+import numpy as np
+from pandas._typing import AnyArrayLike
 from pipda import register_func
 
-from ..core.types import (
-    FloatOrIter,
-    NumericOrIter,
-    NumericType,
-    ArrayLikeType,
-    is_scalar,
-)
 from ..core.contexts import Context
-from ..core.utils import Array, logger
-from ..base import NA
-from ..tibble import tibble
+
+from ._funs import _quantile, _sd, _weighted_mean
 
 
 @register_func(None, context=Context.EVAL)
-def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
+def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> np.ndarray:
     """random generation for the normal distribution with mean equal to mean
     and standard deviation equal to sd.
 
@@ -33,51 +24,10 @@ def rnorm(n: int, mean: float = 0.0, sd: float = 1.0) -> List[float]:
     Returns:
         Randomly generated deviates.
     """
-    grouper = None
-    if isinstance(n, SeriesGroupBy):
-        if grouper is None:
-            grouper = n.grouper
-        if grouper is not n.grouper:
-            raise ValueError("Incompatible SeriesGroupBy objects.")
-    if isinstance(mean, SeriesGroupBy):
-        if grouper is None:
-            grouper = mean.grouper
-        if grouper is not n.grouper:
-            raise ValueError("Incompatible SeriesGroupBy objects.")
-    if isinstance(sd, SeriesGroupBy):
-        if grouper is None:
-            grouper = sd.grouper
-        if grouper is not n.grouper:
-            raise ValueError("Incompatible SeriesGroupBy objects.")
-
-    # Any of the arguments is a SeriesGroupBy
-    if grouper:
-
-        def apply_func(subdf: DataFrame):
-            if subdf.shape[0] > 1:
-                logger.warning(
-                    "In rnorm(...), use first value from the arguments."
-                )
-            return rnorm(
-                subdf["n"].values[0],
-                subdf["mean"].values[0],
-                subdf["sd"].values[0],
-            )
-
-        return (
-            tibble(
-                n=getattr(n, "obj", n),
-                mean=getattr(mean, "obj", mean),
-                sd=getattr(sd, "obj", sd),
-            )
-            .groupby(grouper)
-            .apply(apply_func)
-        )
-
-    return numpy.random.normal(loc=mean, scale=sd, size=n)
+    return np.random.normal(loc=mean, scale=sd, size=n)
 
 
-def runif(n: int, min: float = 0.0, max: float = 1.0) -> List[float]:
+def runif(n: int, min: float = 0.0, max: float = 1.0) -> np.ndarray:
     """random generation for the uniform distribution
 
     Args:
@@ -89,10 +39,10 @@ def runif(n: int, min: float = 0.0, max: float = 1.0) -> List[float]:
     Returns:
         Randomly generated deviates.
     """
-    return numpy.random.uniform(low=min, high=max, size=n)
+    return np.random.uniform(low=min, high=max, size=n)
 
 
-def rpois(n: int, lambda_: float) -> List[float]:
+def rpois(n: int, lambda_: float) -> np.ndarray:
     """random generation for the Poisson distribution with parameter lambda_.
 
     Args:
@@ -103,19 +53,19 @@ def rpois(n: int, lambda_: float) -> List[float]:
     Returns:
         Randomly generated deviates.
     """
-    return numpy.random.poisson(lam=lambda_, size=n)
+    return np.random.poisson(lam=lambda_, size=n)
 
 
 @register_func(None, context=Context.EVAL)
 def quantile(
-    series: Iterable[Any],
-    probs: FloatOrIter = (0.0, 0.25, 0.5, 0.75, 1.0),
-    na_rm: bool = False,
-) -> ArrayLikeType:
+    x: Sequence,
+    probs: Sequence[float] = (0.0, 0.25, 0.5, 0.75, 1.0),
+    na_rm: bool = True,
+) -> AnyArrayLike:
     """produces sample quantiles corresponding to the given probabilities.
 
     Args:
-        series: The data to sample
+        x: The data to sample
         probs: numeric vector of probabilities with values in [0,1]
         na_rm: if true, any ‘NA’ and ‘NaN’'s are removed from ‘x’
             before the quantiles are computed.
@@ -123,28 +73,18 @@ def quantile(
     Returns:
         An array of quantile values
     """
-    if isinstance(series, SeriesGroupBy):
-        return series.quantile(q=probs)
-
-    return (
-        numpy.nanquantile(series, probs)
-        if na_rm
-        else numpy.quantile(series, probs)
-    )
+    return _quantile(x, probs, na_rm=na_rm)
 
 
 @register_func(None, context=Context.EVAL)
 def std(
-    x: Iterable[Any],
-    na_rm: bool = False,
+    x: Sequence,
+    na_rm: bool = True,
     # numpy default is 0. Make it 1 to be consistent with R
     ddof: int = 1,
 ) -> float:
     """Get standard deviation of the input"""
-    if isinstance(x, Series):
-        return x.std(skipna=na_rm, ddof=ddof)
-
-    return numpy.nanstd(x, ddof=ddof) if na_rm else numpy.std(x, ddof=ddof)
+    return _sd(x, na_rm=na_rm, ddof=ddof)
 
 
 sd = std
@@ -152,27 +92,9 @@ sd = std
 
 @register_func(None, context=Context.EVAL)
 def weighted_mean(
-    x: NumericOrIter,
-    w: NumericOrIter = None,
-    na_rm: bool = False,
-) -> NumericType:
+    x: Sequence,
+    w: Sequence = None,
+    na_rm: bool = True,
+) -> np.ndarray:
     """Calculate weighted mean"""
-    if is_scalar(x):
-        x = [x]  # type: ignore
-    if w is not None and is_scalar(w):
-        w = [w]  # type: ignore
-    x = Array(x)
-    if w is not None:
-        w = Array(w)
-        if len(x) != len(w):
-            raise ValueError("'x' and 'w' must have the same length")
-
-    if na_rm:
-        notna = ~numpy.isnan(x)
-        x = x[notna]
-        if w is not None:
-            w = w[notna]
-
-    if w is not None and sum(w) == 0:
-        return NA
-    return numpy.average(x, weights=w)
+    return _weighted_mean(x, w, na_rm)

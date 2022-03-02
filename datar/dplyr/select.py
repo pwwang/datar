@@ -80,6 +80,7 @@ def _eval_select(
         *args,
         *kwargs.values(),
     )
+
     missing = regcall(setdiff, _group_vars, _all_columns[selected_idx])
     if len(missing) > 0:
         logger.info("Adding missing grouping variables: %s", missing)
@@ -93,19 +94,6 @@ def _eval_select(
     if not kwargs:
         return selected_idx, None
 
-    rename_idx = vars_select(
-        _all_columns,
-        *kwargs.values(),
-    )
-
-    # check uniqueness
-    # for ridx in rename_idx:
-    #     dupidx = _all_columns.get_indexer_for([_all_columns[ridx]])
-    #     if dupidx.size > 1:
-    #         raise ValueError(
-    #             "Names must be unique. Name "
-    #             f'"{_all_columns[ridx]}" found at locations {list(dupidx)}.'
-    #         )
-
+    rename_idx = vars_select(_all_columns, *kwargs.values())
     new_names = dict(zip(_all_columns[rename_idx], kwargs))
     return selected_idx, new_names

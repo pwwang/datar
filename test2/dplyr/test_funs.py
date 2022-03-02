@@ -6,12 +6,15 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-nth-value.R
 
 # testing functions in datar.dplyr.funs
-
-import pandas
 import pytest
-from datar.all import *
 
-from .conftest import assert_iterable_equal
+import pandas as pd
+from datar2.dplyr import (
+    between
+)
+from datar2.base import is_na, NA
+
+from ..conftest import assert_iterable_equal
 
 def test_between():
     b = between([2,5], 1, 3).tolist()
@@ -167,7 +170,7 @@ def test_near():
 def test_nth_works_with_lists():
     x = [1,2,3]
     assert nth(x, 0, base0_=True) == 1 # 0-based
-    assert pandas.isna(nth(x, 3, base0_=True))
+    assert pd.isna(nth(x, 3, base0_=True))
     assert nth(x, 3, default=1, base0_=True) == 1
     assert first(x) == 1
     assert last(x) == 3
@@ -182,9 +185,9 @@ def test_nth_negative_index():
 
 def test_nth_index_past_ends_returns_default_value():
     x = [1,2,3,4]
-    assert pandas.isna(nth(x, 4, base0_=True))
-    assert pandas.isna(nth(x, -5, base0_=True))
-    assert pandas.isna(nth(x, 10, base0_=True))
+    assert pd.isna(nth(x, 4, base0_=True))
+    assert pd.isna(nth(x, -5, base0_=True))
+    assert pd.isna(nth(x, 10, base0_=True))
 
 def test_nth_errors():
     with pytest.raises(TypeError):
@@ -192,9 +195,9 @@ def test_nth_errors():
 
 def test_first_uses_default_value_for_0len_input():
     # we are not distinguish NAs
-    assert pandas.isna(first([]))
+    assert pd.isna(first([]))
     assert first([], default=1) == 1
-    assert pandas.isna(last([]))
+    assert pd.isna(last([]))
     assert last([], default=1) == 1
 
 # desc -------------------------------------------------------------

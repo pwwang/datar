@@ -6,44 +6,10 @@ from pipda import register_verb
 
 
 from ..core.contexts import Context
-from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
+from ..core.tibble import reconstruct_tibble
 from ..core.utils import regcall
 from ..base import intersect, setdiff
-from .group_by import group_by_drop_default
 from .dfilter import filter as filter_
-
-
-def _reconstruct_tibble(orig, out):
-    """Try to reconstruct the structure of `out` based on `orig`
-
-    The rule is
-    1. if `orig` is a rowwise df, `out` will also be a rowwise df
-        grouping vars are the ones from `orig` if exist, otherwise empty
-    2. if `orig` is a grouped df, `out` will only be a grouped df when
-        any grouping vars of `orig` can be found in out. If none of the
-        grouping vars can be found, just return a plain df
-    3. If `orig` is a plain df, `out` is also a plain df
-
-    For TibbleGrouped object, `_drop` attribute is maintained.
-    """
-    if not isinstance(out, Tibble):
-        out = Tibble(out, copy=False)
-
-    if isinstance(orig, TibbleRowwise):
-        gvars = regcall(intersect, orig.group_vars, out.columns)
-        out = out.rowwise(gvars)
-
-    elif isinstance(orig, TibbleGrouped):
-        gvars = regcall(intersect, orig.group_vars, out.columns)
-        if len(gvars) > 0:
-            out = out.group_by(
-                gvars,
-                drop=group_by_drop_default(orig),
-                sort=orig._datar["grouped"].sort,
-                dropna=orig._datar["grouped"].dropna,
-            )
-
-    return out
 
 
 def _join(
@@ -105,9 +71,9 @@ def _join(
         for col in by:
             # try recovering factor columns
             if is_categorical_dtype(newx[col]) and is_categorical_dtype(y[col]):
-                ret[col] = union_categoricals([newx[col], y[col]])
+                ret[col] = union_categoricals([newx[col], y[col]])[:ret.shape[0]]
 
-    return _reconstruct_tibble(x, ret)
+    return reconstruct_tibble(x, ret)
 
 
 @register_verb(
@@ -274,7 +240,7 @@ def semi_join(
         **on,
     )
     ret = ret.loc[ret["__merge__"] == "both", x.columns]
-    return _reconstruct_tibble(x, ret)
+    return reconstruct_tibble(x, ret)
 
 
 @register_verb(
@@ -303,7 +269,7 @@ def anti_join(
         **_merge_on(by),
     )
     ret = ret.loc[ret._merge != "both", x.columns]
-    return _reconstruct_tibble(x, ret)
+    return reconstruct_tibble(x, ret)
 
 
 @register_verb(
@@ -359,7 +325,7 @@ def nest_join(
         y_matched = y_matched.to_frame(name=y_name)
 
     out = pd.concat([newx, y_matched], axis=1)
-    return _reconstruct_tibble(x, out)
+    return reconstruct_tibble(x, out)
 
 
 def _merge_on(by):

@@ -1,4 +1,1 @@
-"""APIs for stats"""
-
-from .funs import rnorm, rpois, runif, quantile, std, sd, weighted_mean
-from .verbs import set_names
+from .funs import rnorm, runif, rpois, quantile, std, sd, weighted_mean

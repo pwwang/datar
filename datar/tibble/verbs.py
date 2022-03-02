@@ -1,33 +1,22 @@
 """Functions ported from tidyverse-tibble"""
-from typing import Any, Callable, Iterable, List, Mapping, Union
-
 from pandas import DataFrame, Series, RangeIndex
+from pandas.api.types import is_scalar
 from pipda import Context, register_verb
-from pipda.utils import CallingEnvs
 
-from ..core.utils import (
-    copy_attrs,
-    get_option,
-    position_after,
-    position_at,
-    recycle_value,
-    logger,
+from ..core.utils import logger, regcall
+from ..core.broadcast import broadcast_to
+from ..core.tibble import (
+    TibbleGrouped,
+    TibbleRowwise,
+    Tibble,
     reconstruct_tibble,
 )
-from ..core.grouped import DatarGroupBy, DatarRowwise
-from ..core.types import is_scalar, Dtype
-from ..core.exceptions import ColumnNotExistingError
 from ..base import setdiff
 
 from .tibble import tibble
 
 
-def enframe(
-    x: Union[Iterable, Mapping],
-    name: str = "name",
-    value: str = "value",
-    base0_: bool = None,
-) -> DataFrame:
+def enframe(x, name="name", value="value"):
     """Converts mappings or lists to one- or two-column data frames.
 
     Args:
@@ -36,8 +25,6 @@ def enframe(
         value: value Names of the columns that store the names and values.
             If `None`, a one-column dataframe is returned.
             `value` cannot be `None`
-        base0_: Whether the indexes for lists converted to name are 0-based
-            or not.
 
     Returns:
         A data frame with two columns if `name` is not None (default) or
@@ -61,18 +48,17 @@ def enframe(
 
     elif name:
         if not isinstance(x, dict):
-            base0_ = get_option("index.base.0", base0_)
-            names = (i + int(not base0_) for i in range(len(x)))
+            names = range(len(x))
             values = x
         else:
             names = x.keys()
             values = x.values()
         x = (list(item) for item in zip(names, values))
 
-    return DataFrame(x, columns=[name, value] if name else [value])
+    return Tibble(x, columns=[name, value] if name else [value])
 
 
-def deframe(x: DataFrame) -> Union[Iterable, Mapping]:
+def deframe(x):
     """Converts two-column data frames to a dictionary
     using the first column as name and the second column as value.
     If the input has only one column, a list.
@@ -100,13 +86,12 @@ def deframe(x: DataFrame) -> Union[Iterable, Mapping]:
     extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
 )
 def add_row(
-    _data: DataFrame,
-    *args: Any,
-    _before: int = None,
-    _after: int = None,
-    base0_: bool = None,
-    **kwargs: Any,
-) -> DataFrame:
+    _data,
+    *args,
+    _before=None,
+    _after=None,
+    **kwargs,
+):
     """Add one or more rows of data to an existing data frame.
 
     Aliases `add_case`
@@ -124,8 +109,8 @@ def add_row(
         The dataframe with the added rows
 
     """
-    if isinstance(_data, DatarGroupBy) and not isinstance(
-        _data, DatarRowwise
+    if isinstance(_data, TibbleGrouped) and not isinstance(
+        _data, TibbleRowwise
     ):
         raise ValueError("Can't add rows to grouped data frames.")
 
@@ -137,21 +122,16 @@ def add_row(
             for col in _data.columns:
                 df[col] = Series(dtype=_data[col].dtype)
 
-    extra_vars = setdiff(
-        df.columns,
-        _data.columns,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    extra_vars = regcall(setdiff, df.columns, _data.columns)
     if extra_vars:
         raise ValueError(f"New rows can't add columns: {extra_vars}")
 
-    pos = _pos_from_before_after(_before, _after, _data.shape[0], base0_)
+    pos = _pos_from_before_after(_before, _after, _data.shape[0])
     out = _rbind_at(_data, df, pos)
 
-    if isinstance(_data, DatarRowwise):
-        out = reconstruct_tibble(_data, out, keep_rowwise=True)
-    else:
-        copy_attrs(out, _data)
+    if isinstance(_data, TibbleRowwise):
+        out = reconstruct_tibble(_data, out)
+
     return out
 
 
@@ -164,15 +144,14 @@ add_case = add_row
     extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
 )
 def add_column(
-    _data: DataFrame,
-    *args: Any,
-    _before: Union[str, int] = None,
-    _after: Union[str, int] = None,
-    _name_repair: Union[str, Callable] = "check_unique",
-    base0_: bool = None,
-    dtypes_: Union[Dtype, Mapping[str, Dtype]] = None,
-    **kwargs: Any,
-) -> DataFrame:
+    _data,
+    *args,
+    _before=None,
+    _after=None,
+    _name_repair="check_unique",
+    dtypes_=None,
+    **kwargs,
+):
     """Add one or more columns to an existing data frame.
 
     Args:
@@ -191,26 +170,22 @@ def add_column(
     Returns:
         The dataframe with the added columns
     """
-    df = tibble(
-        *args, **kwargs, _name_repair="minimal", dtypes_=dtypes_, frame_=2
-    )
+    df = tibble(*args, **kwargs, _name_repair="minimal", dtypes_=dtypes_)
 
     if df.shape[1] == 0:
         return _data.copy()
 
-    df = recycle_value(df, len(_data), "new columns")
-    pos = _pos_from_before_after_names(
-        _before, _after, _data.columns.tolist(), base0_
-    )
+    df = broadcast_to(df, _data.index, "new columns")
+    pos = _pos_from_before_after_names(_before, _after, _data.columns.tolist())
 
     out = _cbind_at(_data, df, pos, _name_repair)
     if len(_data) == 0:
         out = out.loc[[], :]
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
+    return reconstruct_tibble(_data, out)
 
 
 @register_verb(DataFrame)
-def has_rownames(_data: DataFrame) -> bool:
+def has_rownames(_data):
     """Detect if a data frame has row names
 
     Aliases `has_index`
@@ -222,14 +197,18 @@ def has_rownames(_data: DataFrame) -> bool:
         True if the data frame has index otherwise False.
 
     """
-    return not isinstance(_data.index, RangeIndex)
+    return not (
+        isinstance(_data.index, RangeIndex)
+        and _data.index.start == 0
+        and _data.index.step == 1
+    )
 
 
 has_index = has_rownames
 
 
 @register_verb(DataFrame)
-def remove_rownames(_data: DataFrame) -> DataFrame:
+def remove_rownames(_data):
     """Remove the index/rownames of a data frame
 
     Aliases `remove_index`, `drop_index`, `remove_rownames`
@@ -248,7 +227,7 @@ remove_index = drop_index = remove_rownames
 
 
 @register_verb(DataFrame, context=Context.SELECT)
-def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
+def rownames_to_column(_data, var="rowname"):
     """Add rownames as a column
 
     Aliases `index_to_column`
@@ -266,14 +245,14 @@ def rownames_to_column(_data: DataFrame, var="rowname") -> DataFrame:
 
     from ..dplyr.mutate import mutate
 
-    return remove_rownames(
-        mutate(
+    return regcall(
+        remove_rownames,
+        regcall(
+            mutate,
             _data,
             **{var: _data.index},
             _before=1,
-            __calling_env=CallingEnvs.REGULAR,
         ),
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
@@ -281,9 +260,7 @@ index_to_column = rownames_to_column
 
 
 @register_verb(DataFrame, context=Context.SELECT)
-def rowid_to_column(
-    _data: DataFrame, var="rowid", base0_: bool = False
-) -> DataFrame:
+def rowid_to_column(_data, var="rowid"):
     """Add rownames as a column
 
     Args:
@@ -299,20 +276,19 @@ def rowid_to_column(
 
     from ..dplyr.mutate import mutate
 
-    base = int(not base0_)
-    return remove_rownames(
-        mutate(
+    return regcall(
+        remove_rownames,
+        regcall(
+            mutate,
             _data,
-            **{var: range(base, _data.shape[0] + base)},
+            **{var: range(_data.shape[0])},
             _before=1,
-            __calling_env=CallingEnvs.REGULAR,
         ),
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
 @register_verb(DataFrame, context=Context.SELECT)
-def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
+def column_to_rownames(_data, var="rowname"):
     """Set rownames/index with one column, and remove it
 
     Aliases `column_to_index`
@@ -324,7 +300,7 @@ def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
     Returns:
         The data frame with the column converted to rownames
     """
-    if has_rownames(_data, __calling_env=CallingEnvs.REGULAR):
+    if regcall(has_rownames, _data):
         raise ValueError("`_data` must be a data frame without row names.")
 
     from ..dplyr.mutate import mutate
@@ -332,10 +308,8 @@ def column_to_rownames(_data: DataFrame, var: str = "rowname") -> DataFrame:
     try:
         rownames = [str(name) for name in _data[var]]
     except KeyError:
-        raise ColumnNotExistingError(
-            f"Column `{var}` does not exist."
-        ) from None
-    out = mutate(_data, **{var: None}, __calling_env=CallingEnvs.REGULAR)
+        raise KeyError(f"Column `{var}` does not exist.") from None
+    out = regcall(mutate, _data, **{var: None})
     out.index = rownames
     return out
 
@@ -345,54 +319,41 @@ column_to_index = column_to_rownames
 # Helpers ------------------------------------------------------------------
 
 
-def _pos_from_before_after_names(
-    before: Union[str, int],
-    after: Union[str, int],
-    names: List[str],
-    base0: bool,
-) -> int:
+def _pos_from_before_after_names(before, after, names) -> int:
     """Get the position to insert from before and after"""
     if before is not None:
-        before, base0 = _check_names_before_after(before, names, base0)
+        before = _check_names_before_after(before, names)
     if after is not None:
-        after, base0 = _check_names_before_after(after, names, base0)
-    return _pos_from_before_after(before, after, len(names), base0)
+        after = _check_names_before_after(after, names)
+    return _pos_from_before_after(before, after, len(names))
 
 
-def _check_names_before_after(
-    pos: Union[str, int], names: List[str], base0: bool
-) -> int:
+def _check_names_before_after(pos, names) -> int:
     """Get position by given index or name"""
     if not isinstance(pos, str):
-        return pos, base0
+        return pos
     try:
-        return names.index(pos), True
+        return names.index(pos)
     except ValueError:
-        raise ColumnNotExistingError(
-            f"Column `{pos}` does not exist."
-        ) from None
+        raise KeyError(f"Column `{pos}` does not exist.") from None
 
 
-def _cbind_at(
-    data: DataFrame, df: DataFrame, pos: int, _name_repair: Union[str, Callable]
-) -> DataFrame:
+def _cbind_at(data, df, pos: int, _name_repair):
     """Column bind at certain pos, 0-based"""
     from ..dplyr import bind_cols
 
     part1 = data.iloc[:, :pos]
     part2 = data.iloc[:, pos:]
-    return bind_cols(
+    return regcall(
+        bind_cols,
         part1,
         df,
         part2,
         _name_repair=_name_repair,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
-def _pos_from_before_after(
-    before: int, after: int, length: int, base0: bool
-) -> int:
+def _pos_from_before_after(before, after, length):
     """Get the position to insert from before and after"""
     if before is not None and after is not None:
         raise ValueError("Can't specify both `_before` and `_after`.")
@@ -401,14 +362,14 @@ def _pos_from_before_after(
         return length
 
     if after is not None:
-        return position_after(after, length, base0)
-    return position_at(before, length, base0)
+        return after + 1
+    return before
 
 
-def _rbind_at(data: DataFrame, df: DataFrame, pos: int) -> DataFrame:
+def _rbind_at(data, df, pos):
     """Row bind at certain pos, 0-based"""
     from ..dplyr import bind_rows
 
     part1 = data.iloc[:pos, :]
     part2 = data.iloc[pos:, :]
-    return bind_rows(part1, df, part2, __calling_env=CallingEnvs.REGULAR)
+    return regcall(bind_rows, part1, df, part2)

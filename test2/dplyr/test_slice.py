@@ -1,7 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-slice.r
 from pandas.testing import assert_frame_equal
-from pipda.context import ContextError
 import pytest
 from datar2 import f
 from datar2.datasets import mtcars
@@ -355,9 +354,9 @@ def test_rename_errors_with_invalid_grouped_df():
         _n_from_prop(10, n=-1)
     with pytest.raises(ValueError):
         _n_from_prop(10, prop=-1)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _n_from_prop(10, n=n())
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _n_from_prop(10, prop=n())
 
 

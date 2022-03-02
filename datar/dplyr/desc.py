@@ -3,8 +3,7 @@ import numpy as np
 from pandas import Series
 from pandas.api.types import is_scalar
 
-from datar2.core.tibble import SeriesCategorical
-
+from ..core.tibble import SeriesCategorical
 from ..core.factory import func_factory
 
 

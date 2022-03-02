@@ -167,6 +167,7 @@ def _summarise_build(
             val = evaluate_expr(val, outframe, context)
         except KeyError:
             val = evaluate_expr(val, _data, context)
+
         if val is None:
             continue
 

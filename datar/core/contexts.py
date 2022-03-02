@@ -63,14 +63,14 @@ class ContextEvalRefCounts(ContextEval):
 
     def getitem(self, parent, ref, level):
         """Interpret f[ref]"""
-        if level == 1 and not isinstance(ref, slice):
+        if level == 1 and isinstance(ref, str):
             self.used_refs[ref] += 1
 
         return super().getitem(parent, ref, level)
 
     def getattr(self, parent, ref, level):
         """Evaluate f.a"""
-        if level == 1 and not isinstance(ref, slice):
+        if level == 1 and isinstance(ref, str):
             self.used_refs[ref] += 1
 
         return super().getattr(parent, ref, level)

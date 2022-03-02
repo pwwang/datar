@@ -446,6 +446,13 @@ def _(
             value = value.reindex([0] * index.size)
             value.index = index
 
+        # empty frame get recycled
+        if isinstance(value, DataFrame) and value.index.size == 0:
+            value.index = index
+
+        if not value.index.equals(index):
+            raise ValueError("Value has incompatible index.")
+
         if isinstance(value, Series):
             return Series(value, name=value.name, index=index)
 

@@ -323,7 +323,7 @@ class TibbleGrouped(Tibble):
         grouped = self._datar["grouped"]
         result = grouped.sample(*args, **kwargs)
         result.reset_index(drop=True, inplace=True)
-        return result.regroup()
+        return reconstruct_tibble(self, result)
 
     def convert_dtypes(self, *args, **kwargs) -> "TibbleGrouped":
         out = DataFrame.convert_dtypes(self, *args, **kwargs)
@@ -344,11 +344,13 @@ class TibbleGrouped(Tibble):
 
             cols = list(regcall(union, self.group_vars, cols))
 
-        grouped = Tibble(self, copy=False).groupby(
-            cols, observed=drop, sort=sort, dropna=dropna
+        return Tibble.group_by(
+            Tibble(self, copy=False),
+            cols,
+            drop=drop,
+            sort=sort,
+            dropna=dropna,
         )
-
-        return TibbleGrouped.from_groupby(grouped)
 
     @property
     def group_vars(self) -> Sequence[str]:
@@ -410,3 +412,47 @@ class SeriesRowwise(SeriesGroupBy):
 
 class SeriesCategorical(Series):
     """Class only used for dispatching"""
+
+
+def reconstruct_tibble(orig, out, drop=None):
+    """Try to reconstruct the structure of `out` based on `orig`
+
+    The rule is
+    1. if `orig` is a rowwise df, `out` will also be a rowwise df
+        grouping vars are the ones from `orig` if exist, otherwise empty
+    2. if `orig` is a grouped df, `out` will only be a grouped df when
+        any grouping vars of `orig` can be found in out. If none of the
+        grouping vars can be found, just return a plain df
+    3. If `orig` is a plain df, `out` is also a plain df
+
+    For TibbleGrouped object, `_drop` attribute is maintained.
+
+    Args:
+        orig: The original df
+        out: The target df
+        drop: Drop empty groups, only for grouped df
+            If None, will use orig's drop
+
+    Returns:
+        The reconstructed out
+    """
+    from ..base import intersect
+
+    if not isinstance(out, Tibble):
+        out = Tibble(out, copy=False)
+
+    if isinstance(orig, TibbleRowwise):
+        gvars = regcall(intersect, orig.group_vars, out.columns)
+        out = out.rowwise(gvars)
+
+    elif isinstance(orig, TibbleGrouped):
+        gvars = regcall(intersect, orig.group_vars, out.columns)
+        if len(gvars) > 0:
+            out = out.group_by(
+                gvars,
+                drop=orig._datar["grouped"].observed if drop is None else drop,
+                sort=orig._datar["grouped"].sort,
+                dropna=orig._datar["grouped"].dropna,
+            )
+
+    return out

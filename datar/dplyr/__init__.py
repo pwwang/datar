@@ -20,18 +20,18 @@ from .dfilter import filter as filter_
 from .distinct import distinct, n_distinct
 from .dslice import slice as slice_
 from .dslice import slice_head, slice_max, slice_min, slice_sample, slice_tail
-# from .funs import (
-#     between,
-#     coalesce,
-#     cumall,
-#     cumany,
-#     cummean,
-#     first,
-#     last,
-#     na_if,
-#     near,
-#     nth,
-# )
+from .funs import (
+    between,
+    coalesce,
+    cumall,
+    cumany,
+    cummean,
+    first,
+    last,
+    na_if,
+    near,
+    nth,
+)
 from .group_by import group_by, group_by_drop_default, rowwise, ungroup
 from .group_data import (
     group_cols,
@@ -43,15 +43,15 @@ from .group_data import (
     group_vars,
     n_groups,
 )
-# from .group_iter import (
-#     group_map,
-#     group_modify,
-#     group_split,
-#     group_trim,
-#     group_walk,
-#     with_groups,
-# )
-# from .if_else import case_when, if_else
+from .group_iter import (
+    group_map,
+    group_modify,
+    group_split,
+    group_trim,
+    group_walk,
+    with_groups,
+)
+from .if_else import case_when, if_else
 from .join import (
     anti_join,
     full_join,
@@ -63,7 +63,7 @@ from .join import (
 )
 # from .lead_lag import lag, lead
 from .mutate import mutate, transmute
-# from .order_by import order_by, with_order
+from .order_by import order_by, with_order
 from .pull import pull
 from .rank import (
     cume_dist,
@@ -73,12 +73,12 @@ from .rank import (
     percent_rank,
     row_number,
 )
-# from .recode import recode, recode_categorical, recode_factor
+from .recode import recode, recode_categorical, recode_factor
 from .relocate import relocate
 from .rename import rename, rename_with
-# from .rows import rows_delete, rows_insert, rows_patch, rows_update, rows_upsert
+from .rows import rows_delete, rows_insert, rows_patch, rows_update, rows_upsert
 from .select import select
-# from .sets import intersect, setdiff, setequal, union, union_all
+from .sets import intersect, setdiff, setequal, union, union_all
 from .summarise import summarise, summarize
 from .tidyselect import (
     all_of,

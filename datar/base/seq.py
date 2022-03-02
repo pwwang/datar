@@ -9,6 +9,7 @@ from ..core.utils import ensure_nparray, logger, regcall
 from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
+from ..core.tibble import TibbleGrouped, reconstruct_tibble
 
 from ..tibble import tibble
 
@@ -96,12 +97,12 @@ def c(*elems):
     return Collection(*elems)
 
 
-@register_func(None, context=Context.EVAL)
+@func_factory("apply")
 def rep(
     x,
     times=1,
     length=None,
-    each=1,
+    each=1
 ):
     """replicates the values in x
 
@@ -137,6 +138,20 @@ def rep(
     repeats = length // len(x) + 1
     x = np.tile(x, repeats)
     return x[:length]
+
+
+rep.register(
+    SeriesGroupBy,
+    func=None,
+    post=lambda out, x, *args, **kwargs: out.explode().astype(x.obj.dtype)
+)
+
+
+rep.register(
+    TibbleGrouped,
+    func=None,
+    post=lambda out, x, *args, **kwargs: reconstruct_tibble(x, out)
+)
 
 
 @func_factory("agg")

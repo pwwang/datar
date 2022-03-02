@@ -11,10 +11,8 @@ from pipda import register_verb
 from ..core.contexts import Context
 from ..core.utils import logger
 from ..core.names import repair_names
-from ..core.tibble import Tibble, TibbleGrouped
+from ..core.tibble import Tibble, TibbleGrouped, reconstruct_tibble
 from ..tibble import tibble
-
-from .join import _reconstruct_tibble
 
 
 def _construct_tibble(data):
@@ -129,7 +127,7 @@ def _(
 ):
 
     data = bind_rows.dispatch(DataFrame)(_data, *datas, _id=_id, **kwargs)
-    return _reconstruct_tibble(_data, data)
+    return reconstruct_tibble(_data, data)
 
 
 @register_verb((DataFrame, dict, type(None)), context=Context.EVAL)

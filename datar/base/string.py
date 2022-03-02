@@ -104,7 +104,7 @@ def _grep(
         fixed=fixed,
         invert=invert,
     )
-    print(matched)
+
     x = ensure_nparray(x)
     if value:
         return x[matched]

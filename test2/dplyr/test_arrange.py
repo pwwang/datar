@@ -50,7 +50,7 @@ def test_errors():
     with pytest.raises(KeyError):
         df >> arrange(f.y)
 
-    with pytest.raises(ValueError, match="Length of values"):
+    with pytest.raises(ValueError, match="incompatible index"):
         df >> arrange(rep(f.x, 2))
 
 

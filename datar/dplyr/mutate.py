@@ -90,20 +90,18 @@ def mutate(
             mutated_cols.append(val._pipda_ref)
             continue
 
-        print(repr(val))
         bkup_name = str(val)
         val = evaluate_expr(val, data, context)
-
         if val is None:
             continue
 
         if isinstance(val, DataFrame):
             mutated_cols.extend(val.columns)
-            data = add_to_tibble(data, None, val)
+            data = add_to_tibble(data, None, val, broadcast_tbl=False)
         else:
             key = name_of(val) or bkup_name
             mutated_cols.append(key)
-            data = add_to_tibble(data, key, val)
+            data = add_to_tibble(data, key, val, broadcast_tbl=False)
 
     for key, val in kwargs.items():
         val = evaluate_expr(val, data, context)
@@ -111,7 +109,7 @@ def mutate(
             with suppress(KeyError):
                 data.drop(columns=[key], inplace=True)
         else:
-            data = add_to_tibble(data, key, val)
+            data = add_to_tibble(data, key, val, broadcast_tbl=False)
             if isinstance(val, DataFrame):
                 mutated_cols.extend({f"{key}${col}" for col in val.columns})
             else:
