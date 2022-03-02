@@ -221,6 +221,22 @@ class TibbleGrouped(Tibble):
     def _constructor(self):
         return TibbleGrouped
 
+    @property
+    def _html_footer(self):
+        groups = ', '.join((str(name) for name in self.group_vars))
+        return (
+            f"<p>{self.__class__.__name__}: {groups} "
+            f"(n={self._datar['grouped'].grouper.ngroups})"
+        )
+
+    @property
+    def _str_footer(self):
+        groups = ', '.join((str(name) for name in self.group_vars))
+        return (
+            f"[{self.__class__.__name__}: {groups} "
+            f"(n={self._datar['grouped'].grouper.ngroups})]"
+        )
+
     @classmethod
     def from_groupby(
         cls,
