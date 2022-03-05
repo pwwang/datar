@@ -55,15 +55,13 @@ def fct_cross(
 
     old_levels = (regcall(levels, fct) for fct in fs)
     grid = regcall(expandgrid, *old_levels)
-    new_levels = regcall(paste,
+    new_levels = regcall(
+        paste,
         *(grid[col] for col in grid),
         sep=sep,
     )
 
     if not keep_empty:
-        new_levels = regcall(intersect,
-            new_levels,
-            newf
-        )
+        new_levels = regcall(intersect, new_levels, newf)
 
     return factor(newf, levels=new_levels)

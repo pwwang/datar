@@ -19,7 +19,6 @@ from ..base import (
     match,
     nlevels,
     is_ordered,
-    is_integer,
     unique,
 )
 
@@ -30,9 +29,7 @@ from .utils import check_factor, ForcatsRegType
 
 def lvls_seq(_f):
     """Get the index sequence of a factor levels"""
-    return regcall(seq_along,
-        regcall(levels, _f)
-    )
+    return regcall(seq_along, regcall(levels, _f))
 
 
 def refactor(_f, new_levels: Iterable, ordered: bool = None) -> Categorical:
@@ -70,10 +67,10 @@ def lvls_reorder(
 
     len_idx = len(idx)
     seq_lvls = regcall(lvls_seq, _f)
-    if not regcall(setequal,
-        idx, seq_lvls
-    ) or len_idx != regcall(nlevels, _f):
-        raise ValueError("`idx` must contain one integer for each level of `f`")
+    if not regcall(setequal, idx, seq_lvls) or len_idx != regcall(nlevels, _f):
+        raise ValueError(
+            "`idx` must contain one integer for each level of `f`"
+        )
 
     return refactor(
         _f,
@@ -102,36 +99,21 @@ def lvls_revalue(
     if len(new_levels) != regcall(nlevels, _f):
         raise ValueError(
             "`new_levels` must be the same length as `levels(f)`: expected ",
-            f"{regcall(nlevels, _f)} new levels, "
-            f"got {len(new_levels)}.",
+            f"{regcall(nlevels, _f)} new levels, " f"got {len(new_levels)}.",
         )
 
     u_levels = regcall(unique, new_levels)
     if len(new_levels) > len(u_levels):
         # has duplicates
         index = regcall(match, new_levels, u_levels)
-        out = factor(
-            regcall(as_character,
-                index[
-                    regcall(as_integer,
-                        _f
-                    )
-                ]
-            )
-        )
-        return regcall(recode_factor,
+        out = factor(regcall(as_character, index[regcall(as_integer, _f)]))
+        return regcall(
+            recode_factor,
             out,
-            dict(
-                zip(
-                    regcall(levels, out),
-                    u_levels
-                )
-            ),
+            dict(zip(regcall(levels, out), u_levels)),
         )
 
-    recodings = dict(
-        zip(regcall(levels, _f), new_levels)
-    )
+    recodings = dict(zip(regcall(levels, _f), new_levels))
     return regcall(recode_factor(_f, recodings))
 
 
@@ -155,7 +137,9 @@ def lvls_expand(
 
     missing = regcall(setdiff, levs, new_levels)
     if len(missing) > 0:
-        raise ValueError("Must include all existing levels. Missing: {missing}")
+        raise ValueError(
+            "Must include all existing levels. Missing: {missing}"
+        )
 
     return refactor(_f, new_levels=new_levels)
 

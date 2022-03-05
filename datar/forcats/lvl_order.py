@@ -1,7 +1,9 @@
 """Provides forcats verbs to manipulate factor level orders"""
 from typing import Any, Callable, Iterable, Sequence
 
+import pandas as pd
 from pandas import Categorical, DataFrame, Series
+from pandas.api.types import is_scalar
 from pipda import register_func, register_verb
 from pipda.utils import CallingEnvs, functype
 
@@ -20,24 +22,17 @@ from ..base import (
     sample,
     seq_len,
     setdiff,
-    table
+    table,
 )
 from ..core.contexts import Context
-from ..core.types import (
-    ForcatsRegType,
-    ForcatsType,
-    is_not_null,
-    is_null,
-    is_scalar
-)
-from ..core.utils import get_option, logger
+from ..core.utils import logger, regcall
 from .lvls import lvls_reorder, lvls_seq
-from .utils import check_factor
+from .utils import check_factor, ForcatsRegType
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_relevel(
-    _f: ForcatsType,
+    _f,
     *lvls: Any,
     after: int = 0,
 ) -> Categorical:
@@ -59,49 +54,34 @@ def fct_relevel(
     """
 
     _f = check_factor(_f)
-    old_levels = levels(_f, __calling_env=CallingEnvs.REGULAR)
+    old_levels = regcall(levels, _f)
     if len(lvls) == 1 and callable(lvls[0]):
         first_levels = lvls[0](old_levels)
     else:
         first_levels = lvls
 
-    unknown = setdiff(
-        first_levels,
-        old_levels,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    unknown = regcall(setdiff, first_levels, old_levels)
 
     if len(unknown) > 0:
         logger.warning("[fct_relevel] Unknown levels in `_f`: %s", unknown)
-        first_levels = intersect(
-            first_levels,
-            old_levels,
-            __calling_env=CallingEnvs.REGULAR,
-        )
+        first_levels = regcall(intersect, first_levels, old_levels)
 
-    new_levels = append(
-        setdiff(old_levels, first_levels, __calling_env=CallingEnvs.REGULAR),
+    new_levels = regcall(
+        append,
+        regcall(setdiff, old_levels, first_levels),
         first_levels,
         after=after,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
-    base0_ = get_option("index.base.0", base0_)
-    return lvls_reorder(
+    return regcall(
+        lvls_reorder,
         _f,
-        match(  # base0_ defaults to which.base.0
-            new_levels,
-            old_levels,
-            base0_=base0_,
-            __calling_env=CallingEnvs.REGULAR,
-        ),
-        base0_=base0_,
-        __calling_env=CallingEnvs.REGULAR,
+        regcall(match, new_levels, old_levels),
     )
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_inorder(_f: ForcatsType, ordered: bool = None) -> Categorical:
+def fct_inorder(_f, ordered: bool = None) -> Categorical:
     """Reorder factor levels by first appearance
 
     Args:
@@ -113,23 +93,17 @@ def fct_inorder(_f: ForcatsType, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    dups = duplicated(_f, __calling_env=CallingEnvs.REGULAR)
-    idx = as_integer(_f, __calling_env=CallingEnvs.REGULAR)[~dups]
-    idx = idx[is_not_null(_f[~dups])]
-    return lvls_reorder(
-        _f,
-        idx,
-        ordered=ordered,
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    dups = regcall(duplicated, _f)
+    idx = regcall(as_integer, _f)[~dups]
+    idx = idx[~pd.isnull(_f[~dups])]
+    return regcall(lvls_reorder, _f, idx, ordered=ordered)
 
 
 as_factor = fct_inorder
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_infreq(_f: ForcatsType, ordered: bool = None) -> Categorical:
+def fct_infreq(_f, ordered: bool = None) -> Categorical:
     """Reorder factor levels by frequency
 
     Args:
@@ -141,22 +115,20 @@ def fct_infreq(_f: ForcatsType, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    return lvls_reorder(
+    return regcall(
+        lvls_reorder,
         _f,
-        order(
-            table(_f, __calling_env=CallingEnvs.REGULAR).values.flatten(),
+        regcall(
+            order,
+            regcall(table, _f).values.flatten(),
             decreasing=True,
-            base0_=True,
-            __calling_env=CallingEnvs.REGULAR,
         ),
         ordered=ordered,
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_inseq(_f: ForcatsType, ordered: bool = None) -> Categorical:
+def fct_inseq(_f, ordered: bool = None) -> Categorical:
     """Reorder factor levels by numeric order
 
     Args:
@@ -168,31 +140,25 @@ def fct_inseq(_f: ForcatsType, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
+    levs = regcall(levels, _f)
     num_levels = []
     for lev in levs:
         try:
-            numlev = as_integer(lev, __calling_env=CallingEnvs.REGULAR)
+            numlev = regcall(as_integer, lev)
         except (ValueError, TypeError):
             numlev = NA
         num_levels.append(numlev)
 
-    if all(is_null(num_levels)):
+    if all(pd.isnull(num_levels)):
         raise ValueError(
             "At least one existing level must be coercible to numeric."
         )
 
-    return lvls_reorder(
+    return regcall(
+        lvls_reorder,
         _f,
-        order(
-            num_levels,
-            na_last=True,
-            base0_=True,
-            __calling_env=CallingEnvs.REGULAR,
-        ),
+        regcall(order, num_levels, na_last=True),
         ordered=ordered,
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
@@ -207,7 +173,7 @@ def last2(_x: Iterable, _y: Sequence) -> Any:
     Returns:
         Last element of `_y` ordered by `_x`
     """
-    return list(_y[order(_x, na_last=False, base0_=True)])[-1]
+    return list(_y[order(_x, na_last=False)])[-1]
 
 
 @register_func(None, context=Context.EVAL)
@@ -221,12 +187,12 @@ def first2(_x: Sequence, _y: Sequence) -> Any:
     Returns:
         First element of `_y` ordered by `_x`
     """
-    return _y[order(_x, base0_=True)][0]
+    return _y[order(_x)][0]
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_reorder(
-    _f: ForcatsType,
+    _f,
     _x: Sequence,
     *args: Any,
     _fun: Callable = median,
@@ -267,22 +233,16 @@ def fct_reorder(
     if not is_scalar(summary.iloc[0, 0]):
         raise ValueError("`fun` must return a single value per group.")
 
-    return lvls_reorder(
+    return regcall(
+        lvls_reorder,
         _f,
-        order(
-            summary.iloc[:, 0],
-            decreasing=_desc,
-            base0_=True,
-            __calling_env=CallingEnvs.REGULAR,
-        ),
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
+        regcall(order, summary.iloc[:, 0], decreasing=_desc),
     )
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_reorder2(
-    _f: ForcatsType,
+    _f,
     _x: Sequence,
     _y: Sequence,
     *args: Any,
@@ -333,21 +293,15 @@ def fct_reorder2(
     if not isinstance(summary, Series) or not is_scalar(summary[0]):
         raise ValueError("`fun` must return a single value per group.")
 
-    return lvls_reorder(
+    return regcall(
+        lvls_reorder,
         _f,
-        order(
-            summary,
-            decreasing=_desc,
-            base0_=True,
-            __calling_env=CallingEnvs.REGULAR,
-        ),
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
+        regcall(order, summary, decreasing=_desc),
     )
 
 
 @register_verb(ForcatsRegType)
-def fct_shuffle(_f: ForcatsType) -> Categorical:
+def fct_shuffle(_f) -> Categorical:
     """Randomly permute factor levels
 
     Args:
@@ -358,16 +312,11 @@ def fct_shuffle(_f: ForcatsType) -> Categorical:
     """
     _f = check_factor(_f)
 
-    return lvls_reorder(
-        _f,
-        sample(lvls_seq(_f, base0_=True), __calling_env=CallingEnvs.REGULAR),
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    return regcall(lvls_reorder, _f, regcall(sample, lvls_seq(_f)))
 
 
 @register_verb(ForcatsRegType)
-def fct_rev(_f: ForcatsType) -> Categorical:
+def fct_rev(_f) -> Categorical:
     """Reverse order of factor levels
 
     Args:
@@ -378,16 +327,11 @@ def fct_rev(_f: ForcatsType) -> Categorical:
     """
     _f = check_factor(_f)
 
-    return lvls_reorder(
-        _f,
-        rev(lvls_seq(_f, base0_=True), __calling_env=CallingEnvs.REGULAR),
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    return regcall(lvls_reorder, _f, regcall(rev, lvls_seq(_f)))
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_shift(_f: ForcatsType, n: int = 1) -> Categorical:
+def fct_shift(_f, n: int = 1) -> Categorical:
     """Shift factor levels to left or right, wrapping around at end
 
     Args:
@@ -398,12 +342,7 @@ def fct_shift(_f: ForcatsType, n: int = 1) -> Categorical:
     Returns:
         The factor with levels shifted
     """
-    nlvls = nlevels(_f, __calling_env=CallingEnvs.REGULAR)
-    lvl_order = (seq_len(nlvls, base0_=True) + n) % nlvls
+    nlvls = regcall(nlevels, _f)
+    lvl_order = (regcall(seq_len, nlvls) + n) % nlvls
 
-    return lvls_reorder(
-        _f,
-        lvl_order,
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    return regcall(lvls_reorder, _f, lvl_order)

@@ -46,13 +46,8 @@ def fct_count(_f, sort: bool = False, prop=False) -> Categorical:
 
     df = DataFrame(
         {
-            "f": regcall(fct_inorder,
-                regcall(levels, f2)
-            ),
-            "n": regcall(tabulate,
-                f2,
-                regcall(nlevels, f2)
-            ),
+            "f": regcall(fct_inorder, regcall(levels, f2)),
+            "n": regcall(tabulate, f2, regcall(nlevels, f2)),
         }
     )
 
@@ -60,12 +55,14 @@ def fct_count(_f, sort: bool = False, prop=False) -> Categorical:
         df = df.append({"f": NA, "n": n_na}, ignore_index=True)
 
     if sort:
-        df = regcall(arrange,
+        df = regcall(
+            arrange,
             df,
             desc(f.n, __calling_env=CallingEnvs.PIPING),
         )
     if prop:
-        df = regcall(mutate,
+        df = regcall(
+            mutate,
             df,
             p=prop_table(f.n, __calling_env=CallingEnvs.PIPING),
         )
@@ -91,10 +88,7 @@ def fct_match(_f, lvls: Any) -> Iterable[bool]:
     if is_scalar(lvls):
         lvls = [lvls]
 
-    bad_lvls = regcall(setdiff,
-        lvls,
-        regcall(levels, _f)
-    )
+    bad_lvls = regcall(setdiff, lvls, regcall(levels, _f))
     if len(bad_lvls) > 0:
         bad_lvls = np.array(bad_lvls)[~pd.isnull(bad_lvls)]
     if len(bad_lvls) > 0:

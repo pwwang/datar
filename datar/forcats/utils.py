@@ -12,6 +12,7 @@ ForcatsRegType = (
     np.ndarray,
 )
 
+
 def check_factor(_f) -> Categorical:
     """Make sure the input become a factor"""
     if not is_categorical_dtype(_f):
