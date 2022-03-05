@@ -1,12 +1,16 @@
 """Checking an iterable against itself or another one"""
 
 import numpy as np
+
 from ..core.factory import func_factory
 
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
 which = func_factory(
     "transform",
+    "x",
     name="which",
+    qualname="datar.base.which",
     func=np.flatnonzero,
     doc="""Convert a bool iterable to indexes
 
@@ -17,11 +21,14 @@ which = func_factory(
     Returns:
         The indexes
     """,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 which_min = func_factory(
     "agg",
+    "x",
     name="which_min",
+    qualname="datar.base.which_min",
     func=np.argmin,
     doc="""R's `which.min()`
 
@@ -33,11 +40,14 @@ which_min = func_factory(
     Returns:
         The index of the element with the maximum value
     """,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 which_max = func_factory(
     "agg",
+    "x",
     name="which_max",
+    qualname="datar.base.which_max",
     func=np.argmax,
     doc="""R's `which.max()`
 
@@ -49,4 +59,5 @@ which_max = func_factory(
     Returns:
         The index of the element with the minimum value
     """,
+    signature=SINGLE_ARG_SIGNATURE,
 )

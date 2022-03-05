@@ -5,6 +5,9 @@ import pytest
 import numpy
 from pandas.testing import assert_frame_equal
 from datar.all import *
+from datar.core.tibble import TibbleGrouped
+
+from ..conftest import assert_iterable_equal
 
 
 def test_set_uses_coercion_rules():
@@ -44,7 +47,7 @@ def test_setdiff_handles_factors_with_na():
     res = setdiff(df1, df2)
     assert is_factor(res.x)
     assert levels(res.x) == ["a"]
-    assert is_na(res.x[0])
+    assert_iterable_equal(is_na(res.x[0]), [True])
 
 
 def test_intersect_does_not_unnecessarily_coerce():
@@ -64,8 +67,8 @@ def test_set_operations_reconstruct_grouping_metadata():
     assert out.equals(exp)
 
     out = intersect(df1, df2)
-    exp = filter(df1, f.x >= 3)
-    assert out.equals(exp)
+    exp = filter(df1, f.x >= 3).reset_index(drop=True)
+    assert_frame_equal(out, exp)
 
     out = union(df1, df2)
     exp = tibble(x=seq(1, 6), g=rep([1, 2, 3], each=2)) >> group_by(f.g)
@@ -84,7 +87,7 @@ def test_set_operations_reconstruct_grouping_metadata():
 
 def test_set_operations_keep_the_ordering_of_the_data():
     # test_that("set operations keep the ordering of the data (#3839)", {
-    rev_df = lambda df: df >> get(rev(seq_len(nrow(df), base0_=True)))
+    rev_df = lambda df: df >> get(rev(seq_len(nrow(df)))-1)
 
     df1 = tibble(x=seq(1, 4), g=rep([1, 2], each=2))
     df2 = tibble(x=seq(3, 6), g=rep([2, 3], each=2))
@@ -94,15 +97,15 @@ def test_set_operations_keep_the_ordering_of_the_data():
     assert out.equals(exp)
 
     out = setdiff(rev_df(df1), df2)
-    exp = filter(rev_df(df1), f.x < 3)
+    exp = filter(rev_df(df1), f.x < 3).reset_index(drop=True)
     assert out.equals(exp)
 
     out = intersect(df1, df2)
-    exp = filter(df1, f.x >= 3)
+    exp = filter(df1, f.x >= 3).reset_index(drop=True)
     assert out.equals(exp)
 
     out = intersect(rev_df(df1), df2)
-    exp = filter(rev_df(df1), f.x >= 3)
+    exp = filter(rev_df(df1), f.x >= 3).reset_index(drop=True)
     assert out.equals(exp)
 
     out = union(df1, df2)
@@ -127,9 +130,9 @@ def test_set_operations_remove_duplicates():
     exp = filter(df1, f.x < 3) >> distinct()
     assert out.equals(exp)
 
-    out = intersect(df1, df2)
+    out = intersect(df1, df2).reset_index(drop=True)
     exp = filter(df1, f.x >= 3) >> distinct()
-    assert out.equals(exp)
+    assert out.equals(exp.reset_index(drop=True))
 
     out = union(df1, df2)
     exp = tibble(x=seq(1, 6), g=rep([1, 2, 3], each=2))
@@ -179,3 +182,24 @@ def test_errors():
 
     with pytest.raises(ValueError, match="not compatible"):
         intersect(tibble(x=1), tibble(x=1, y=2))
+
+
+def test_intersect_union_setdiff_keep_y_groups():
+    x = tibble(x=[1, 2, 3])
+    y = x.group_by('x')
+
+    out = intersect(x, y)
+    assert out.group_vars == ['x']
+    assert out.shape[0] == 3
+
+    out = union(x, y)
+    assert out.group_vars == ['x']
+    assert out.shape[0] == 3
+
+    out = union_all(x, y)
+    assert out.group_vars == ['x']
+    assert out.shape[0] == 6
+
+    out = setdiff(x, y)
+    assert out.group_vars == ['x']
+    assert out.shape[0] == 0

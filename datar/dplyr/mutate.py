@@ -11,7 +11,7 @@ from pipda import register_verb, evaluate_expr, ReferenceAttr, ReferenceItem
 from ..core.contexts import Context, ContextEvalRefCounts
 from ..core.utils import arg_match, name_of, regcall
 from ..core.broadcast import add_to_tibble
-from ..core.tibble import TibbleRowwise, Tibble
+from ..core.tibble import reconstruct_tibble
 from ..base import setdiff, union, intersect, c
 from ..tibble import as_tibble
 from .group_data import group_vars
@@ -159,19 +159,11 @@ def mutate(
         )
 
     data = data[keep]
-    # redo grouping if grouping variables are mutated
-    # but we don't need to do it for rowwise tibble
-    if (
-        not isinstance(data, TibbleRowwise)
-        and len(intersect(gvars, mutated_cols)) > 0
-    ):
-        grouped = data._datar["grouped"]
-        data = Tibble(data).group_by(
-            gvars,
-            drop=grouped.observed,
-            sort=grouped.sort,
-            dropna=grouped.dropna,
-        )
+    # redo grouping if original columns changed
+    # so we don't have discripency on
+    # df.x.obj when df is grouped
+    if intersect(_data.columns, mutated_cols).size > 0:
+        data = reconstruct_tibble(_data, data)
 
     # used for group_by
     data._datar["mutated_cols"] = mutated_cols

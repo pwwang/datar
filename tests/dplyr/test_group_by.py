@@ -54,7 +54,7 @@ from datar.base import (
     letters,
     sqrt,
 )
-from datar.stats import runif
+from datar.base import runif
 from ..conftest import assert_iterable_equal
 
 
@@ -116,20 +116,21 @@ def test_mutate_does_not_loose_variables():
 
 
 def test_orders_by_groups():
-    df = tibble(a=sample(range(1, 11), 3000, replace=True)) >> group_by(f.a)
+    df = tibble(a=sample(range(1, 11), 3000, replace=True)) >> group_by(f.a, _sort=True)
     out = df >> count()
-    assert_iterable_equal(out.a, range(1, 11))
+    assert_iterable_equal(out.a.obj, range(1, 11))
 
-    df = tibble(a=sample(letters[:10], 3000, replace=True)) >> group_by(f.a)
+    df = tibble(a=sample(letters[:10], 3000, replace=True)) >> group_by(f.a, _sort=True)
     out = df >> count()
-    assert_iterable_equal(out.a, letters[:10])
+    assert_iterable_equal(out.a.obj, letters[:10])
 
     df = tibble(a=sample(sqrt(range(1, 11)), 3000, replace=True)) >> group_by(
-        f.a
+        f.a,
+        _sort=True,
     )
     out = df >> count()
     expect = list(sqrt(range(1, 11)))
-    assert_iterable_equal(out.a, expect)
+    assert_iterable_equal(out.a.obj, expect)
 
 
 def test_by_tuple_values():
@@ -145,8 +146,8 @@ def test_by_tuple_values():
     )
     out = df >> count()
     # assert out.y.tolist() == [(1,2), (1,2,3)]
-    assert out.y.tolist() == [1, 2]
-    assert out.n.tolist() == [2, 1]
+    assert out.y.obj.tolist() == [1, 2]
+    assert out.n.obj.tolist() == [2, 1]
 
 
 def test_select_add_group_vars():
@@ -158,11 +159,9 @@ def test_one_group_for_NA():
     x = c(NA, NA, NA, range(10, 0, -1), range(10, 0, -1))
     w = numpy.array(c(20, 30, 40, range(1, 11), range(1, 11))) * 10
 
-    assert n_distinct(x) == 11
+    assert n_distinct(x, na_rm=False) == 11
     res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
-    # assert nrow(res) == 11
-    # See Known Issues of core.grouped.TibbleGrouped
-    assert nrow(res) == 10
+    assert nrow(res) == 11
 
 
 def test_zero_row_dfs():
@@ -350,9 +349,7 @@ def test_joins_maintains__drop():
         _drop=True,
     )
     res = full_join(df1, df2, by="f1")
-    # assert n_groups(res) == 3
-    # acts differently
-    assert n_groups(res) == 2
+    assert n_groups(res) == 3
 
 
 def test_add_passes_drop():

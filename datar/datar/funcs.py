@@ -1,17 +1,14 @@
 """Basic functions"""
-from typing import Iterable
-
-import numpy as np
 from pandas import Series
-from pipda import register_func
-
+from pandas.core.groupby import SeriesGroupBy
+from pipda import evaluate_expr
+from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
-from ..core.utils import ensure_nparray
 
 
-@register_func(None, context=Context.EVAL)
-def itemgetter(data: Iterable, *subscripts) -> np.ndarray:
+@func_factory("apply", "x")
+def itemgetter(x, subscr, __args_raw=None):
     """Itemgetter as a function for verb
 
     In datar expression, we can do:
@@ -23,11 +20,25 @@ def itemgetter(data: Iterable, *subscripts) -> np.ndarray:
 
     Args:
         data: The data to be get items from
-        *subscripts: The subscripts
+        subscr: The subscripts
     """
-    data = ensure_nparray(data)
-    flattened = Collection(
-        subs.values if isinstance(subs, Series) else subs for subs in subscripts
-    )
+    # allow f[:2] to work
+    subscr = evaluate_expr(subscr, x, Context.EVAL)
+    if isinstance(subscr, Collection):
+        subscr.expand(pool=x.size)
 
-    return data[flattened]
+    if isinstance(subscr, Series):
+        subscr = subscr.values
+
+    out = x.iloc[subscr]
+    if isinstance(__args_raw["x"], Series):
+        return out
+    return out.values
+
+
+itemgetter.register(
+    SeriesGroupBy,
+    func=None,
+    post=lambda out, x, subscr, __args_raw=None:
+    out.explode().astype(x.obj.dtype)
+)

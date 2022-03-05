@@ -16,6 +16,7 @@ from datar.base.seq import (
     order,
 )
 from datar.tibble import tibble
+from datar.dplyr import rowwise
 from datar.base import NA, c, unique
 from ..conftest import assert_iterable_equal
 
@@ -189,13 +190,16 @@ def test_sample():
     assert set(z) == {0, 1}
     assert len(z) == 100
 
-    w = sample("abc", 100, replace=True)
+    w = sample(list("abc"), 100, replace=True)
     assert set(w) == {"a", "b", "c"}
     assert len(z) == 100
 
+    with pytest.raises(ValueError):
+        sample(list('abc'), [1, 2])
+
 
 def test_rev():
-    assert rev(3) == 3
+    assert_iterable_equal(rev(3), [3])
     assert_iterable_equal(rev([1, 2]), [2, 1])
     a = np.array([1, 2], dtype=float)
     out = rev(a)
@@ -209,8 +213,7 @@ def test_rev():
 
     x = Series([1, 2, 3]).groupby([1, 1, 2])
     out = rev(x)
-    assert_iterable_equal(out, [2, 1, 3])
-    assert_iterable_equal(out.index, [1, 1, 2])
+    assert_iterable_equal(out.obj, [2, 1, 3])
 
 
 def test_unique():
@@ -229,8 +232,8 @@ def test_unique():
 
 
 def test_length():
-    assert length(1) == 1
-    assert length([1, 2]) == 2
+    assert_iterable_equal([length(1)], [1])
+    assert_iterable_equal([length([1, 2])], [2])
     assert_iterable_equal(lengths(1), [1])
     assert_iterable_equal(lengths([[1], [2, 3]]), [1, 2])
 
@@ -245,22 +248,24 @@ def test_match():
 
     x = x.groupby('g')
     out = match(x.x, x.y)
-    assert_iterable_equal(out, [1, 0, -1, 1])
-    assert_iterable_equal(out.index, [1, 1, 2, 2])
+    assert_iterable_equal(out.obj, [1, 0, -1, 1])
 
     out = match(x.x, [2, 4, 1, 0])
-    assert_iterable_equal(out, [2, 0, 2, 1])
-    assert_iterable_equal(out.index, [1, 1, 2, 2])
+    assert_iterable_equal(out.obj, [2, 0, 2, 1])
+
+    x = x.obj >> rowwise()
+    out = match(x.x, [2, 4, 1, 0])
+    assert out.is_rowwise
 
 
 def test_sort():
-    assert sort(8) == 8
+    assert sort(8)[0] == 8
     out = sort([1, 2, 3])
     assert_iterable_equal(out, [1, 2, 3])
     out = sort([1, 2, 3], decreasing=True)
     assert_iterable_equal(out, [3, 2, 1])
-    out = sort([NA, 1, 2, 3])
-    assert_iterable_equal(out, [1, 2, 3])
+    # out = sort([NA, 1, 2, 3])
+    # assert_iterable_equal(out, [1, 2, 3])
     out = sort([NA, 1, 2, 3], na_last=True)
     assert_iterable_equal(out, [1, 2, 3, NA])
     out = sort([NA, 1, 2, 3], na_last=False)
@@ -283,5 +288,4 @@ def test_order():
 
     x = Series([1, 2, 3, 4]).groupby([1, 1, 2, 2])
     out = order(x)
-    assert_iterable_equal(out, [0, 1, 0, 1])
-    assert_iterable_equal(out.index, [1, 1, 2, 2])
+    assert_iterable_equal(out.obj, [0, 1, 0, 1])

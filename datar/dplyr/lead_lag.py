@@ -8,14 +8,14 @@ from pandas.api.types import is_scalar
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.factory import _transform_dispatched
+from ..core.factory import dispatching
 from .order_by import with_order
 
 
-@_transform_dispatched
+@dispatching(kind="transform", qualname="datar.dplyr.lead/lag")
 def _shift(x, n, default=None, order_by=None):
-    if not isinstance(n, int) or n < 0:
-        raise ValueError("`lead-lag` expect a non-negative integer for `n`.")
+    if not isinstance(n, int):
+        raise ValueError("`lead-lag` expect an integer for `n`.")
 
     if not is_scalar(default) and len(default) > 1:
         raise ValueError("`lead-lag` Expect scalar or length-1 `default`.")
@@ -32,9 +32,6 @@ def _shift(x, n, default=None, order_by=None):
         out = with_order(order_by, Series.shift, newx, n, fill_value=default)
     else:
         out = newx.shift(n, fill_value=default)
-
-    if isinstance(x, Series):
-        out.index = x.index
 
     return out
 

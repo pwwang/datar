@@ -53,9 +53,8 @@ def arrange(_data, *args, _by_group=False, **kwargs):
         sorting_cols = sorting_df._datar["mutated_cols"]
 
     sorting_df = DataFrame(sorting_df, copy=False).sort_values(
-        list(sorting_cols)
+        list(sorting_cols), na_position="last"
     )
-
     out = _data.reindex(sorting_df.index)
     if isinstance(_data, TibbleGrouped):
         out.reset_index(drop=True, inplace=True)

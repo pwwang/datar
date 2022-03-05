@@ -5,13 +5,11 @@ from pandas import Series
 from pandas.api.types import is_scalar
 from pandas.core.groupby import SeriesGroupBy
 
-from ..core.broadcast import broadcast_to
 from ..core.factory import func_factory
-from ..core.utils import ensure_nparray
 
 
-@func_factory("transform")
-def between(x, left, right, inclusive=True):
+@func_factory("transform", "x")
+def between(x, left, right, inclusive="both"):
     """Function version of `left <= x <= right`, works for both scalar and
     vector data
 
@@ -28,44 +26,32 @@ def between(x, left, right, inclusive=True):
         A bool value if `x` is scalar, otherwise an array of boolean values
         Note that it will be always False when NA appears in x, left or right.
     """
-    out = Series(x).between(left, right, inclusive).values
-    if is_scalar(out):
-        return out[0]
-
-    return out
+    return x.between(left, right, inclusive)
 
 
-between.register(Series, "between")
+# faster
+between.register(SeriesGroupBy, "between")
 
 
-@func_factory("transform")
-def cummean(x):
+@func_factory("transform", "x")
+def cummean(x: Series):
     """Get cumulative means"""
-    if is_scalar(x):
-        return x
-
-    return np.cumsum(x) / (np.arange(len(x)) + 1.0)
+    return x.cumsum() / (np.arange(x.size) + 1.0)
 
 
-@func_factory("transform")
-def cumall(x):
+@func_factory("transform", "x")
+def cumall(x, na_as=False):
     """Get cumulative bool. All cases after first False"""
-    if is_scalar(x):
-        return bool(x)
-
-    return np.array(x).astype(bool).cumprod().astype(bool)
+    return x.fillna(na_as).cumprod().astype(bool)
 
 
-@func_factory("transform")
-def cumany(x):
+@func_factory("transform", "x")
+def cumany(x, na_as=False):
     """Get cumulative bool. All cases after first True"""
-    if is_scalar(x):
-        return bool(x)
-
-    return np.array(x).astype(bool).cumsum().astype(bool)
+    return x.fillna(na_as).cumsum().astype(bool)
 
 
-@func_factory("transform")
+@func_factory("transform", {"x", "replace"})
 def coalesce(x, *replace):
     """Replace missing values
 
@@ -79,31 +65,24 @@ def coalesce(x, *replace):
         A vector the same length as the first argument with missing values
         replaced by the first non-missing value.
     """
-    if not replace:
-        return x
-
-    y = Series(x)
     for repl in replace:
-        y = y.combine_first(broadcast_to(repl, y.index))
+        x = x.combine_first(repl)
 
-    return y[0] if is_scalar(x) else y.values
+    return x
 
 
-@coalesce.register(SeriesGroupBy, replace=True)
+@coalesce.register(SeriesGroupBy, meta=False)
 def _(x, *replace):
-    y = x.obj
-    for repl in replace:
-        y = y.combine_first(broadcast_to(repl, y.index, x.grouper))
-
-    out = y.groupby(x.grouper)
-    if isinstance(x, "is_rowwise", False):
+    out = coalesce.dispatched(x.obj, *(repl.obj for repl in replace))
+    out = out.groupby(x.grouper)
+    if getattr(x, "is_rowwise", False):
         out.is_rowwise = True
 
     return out
 
 
-@func_factory("transform")
-def na_if(x, y):
+@func_factory("transform", {"x", "y"})
+def na_if(x, y, __args_raw=None):
     """Convert an annoying value to NA
 
     Args:
@@ -113,27 +92,21 @@ def na_if(x, y):
     Returns:
         A vector with values replaced.
     """
-    if is_scalar(x):
-        if not is_scalar(y):
-            raise ValueError(
-                "In na_if(x, y): `y` must be scalar when x is scalar."
-            )
-        return y if pd.isnull(x) else x
-
-    x = np.array(x)
-    # better dtype?
-    x = x.astype(object)
-    x[x == y] = np.nan
+    rawx = __args_raw["x"] if __args_raw else x
+    lenx = 1 if is_scalar(rawx) else len(rawx)
+    if lenx < y.size:
+        raise ValueError(
+            f"`y` must be length {lenx} (same as `x`), not {y.size}."
+        )
+    x[(x == y).values] = np.nan
     return x
 
 
-@coalesce.register(SeriesGroupBy, replace=True)
-def _(x, y):
-    xobj = x.obj.copy().astype(object)
-    y = broadcast_to(y, xobj.index, x.grouper)
-    xobj[xobj == y] = np.nan
-    out = xobj.groupby(x.grouper)
-    if isinstance(x, "is_rowwise", False):
+@na_if.register(SeriesGroupBy, meta=False)
+def _(x, y, __args_raw=None):
+    out = na_if.dispatched(x.obj, y.obj)
+    out = out.groupby(x.grouper)
+    if getattr(x, "is_rowwise", False):
         out.is_rowwise = True
 
     return out
@@ -141,39 +114,42 @@ def _(x, y):
 
 near = func_factory(
     "transform",
+    {"a", "b"},
     name="near",
+    qualname="datar.dplyr.near",
     doc="""Compare numbers with tolerance
 
     Args:
-        x: and
-        y: Numbers to compare
+        a: and
+        b: Numbers to compare
         rtol: The relative tolerance parameter
         atol: The absolute tolerance parameter
         equal_nan: Whether to compare NaN's as equal.
-            If True, NA's in `x` will be
-            considered equal to NA's in `y` in the output array.
+            If True, NA's in `a` will be
+            considered equal to NA's in `b` in the output array.
 
     Returns:
-        A bool array indicating element-wise equvalence between x and y
+        A bool array indicating element-wise equvalence between a and b
     """,
     func=np.isclose,
 )
 
 
-@near.register(SeriesGroupBy, replace=True)
+@near.register(SeriesGroupBy, meta=False)
 def _(x, y, rtol=1e-05, atol=1e-08, equal_nan=False):
-    xobj = x.obj.copy().astype(object)
-    y = broadcast_to(y, xobj.index, x.grouper)
-    out = np.isclose(xobj, y, rtol=rtol, atol=atol, equal_nan=equal_nan)
+    out = Series(
+        near.dispatched(x.obj, y.obj, rtol, atol, equal_nan),
+        index=x.obj.index,
+    )
     out = out.groupby(x.grouper)
-    if isinstance(x, "is_rowwise", False):
+    if getattr(x, "is_rowwise", False):
         out.is_rowwise = True
 
     return out
 
 
-@func_factory("agg")
-def nth(x, n, order_by=None, default=np.nan):  # allow it to be SeriesGroupBy
+@func_factory("agg", {"x", "order_by"})
+def nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
     """Get the nth element of x
 
     See https://dplyr.tidyverse.org/reference/nth.html
@@ -184,39 +160,53 @@ def nth(x, n, order_by=None, default=np.nan):  # allow it to be SeriesGroupBy
         order_by: An optional vector used to determine the order
         default: A default value to use if the position does not exist
             in the input.
-        base0_: Whether `n` is 0-based or not.
 
     Returns:
         A single element of x at `n'th`
     """
-    x = ensure_nparray(x)
-    if order_by is not None:
-        order_by = np.array(order_by)
-        x = x[order_by.argsort()]
     if not isinstance(n, int):
         raise TypeError("`nth` expects `n` to be an integer")
 
+    order_by_null = pd.isnull(__args_raw["order_by"])
+    if is_scalar(order_by_null):
+        order_by_null = np.array([order_by_null], dtype=bool)
+
+    if not order_by_null.all():
+        x = x.iloc[order_by.argsort().values]
+
     try:
-        return x[n]
+        return x.iloc[n]
     except (ValueError, IndexError, TypeError):
         return default
 
 
-@func_factory("agg")
+@func_factory("agg", {"x", "order_by"})
 def first(
     x,
-    order_by=None,
+    order_by=np.nan,
     default=np.nan,
 ):
     """Get the first element of x"""
-    return nth.__raw__(x, 0, order_by=order_by, default=default)
+    return nth.dispatched(
+        x,
+        0,
+        order_by=order_by,
+        default=default,
+        __args_raw={"order_by": order_by},
+    )
 
 
-@func_factory("agg")
+@func_factory("agg", {"x", "order_by"})
 def last(
     x,
-    order_by=None,
+    order_by=np.nan,
     default=np.nan,
 ):
     """Get the last element of x"""
-    return nth.__raw__(x, -1, order_by=order_by, default=default)
+    return nth.dispatched(
+        x,
+        -1,
+        order_by=order_by,
+        default=default,
+        __args_raw={"order_by": order_by},
+    )

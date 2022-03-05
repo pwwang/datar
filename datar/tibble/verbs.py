@@ -117,13 +117,13 @@ def add_row(
     if not args and not kwargs:
         df = DataFrame(index=[0], columns=_data.columns)
     else:
-        df = tibble(*args, **kwargs, frame_=2)
+        df = tibble(*args, **kwargs)
         if df.shape[0] == 0:
             for col in _data.columns:
                 df[col] = Series(dtype=_data[col].dtype)
 
     extra_vars = regcall(setdiff, df.columns, _data.columns)
-    if extra_vars:
+    if extra_vars.size > 0:
         raise ValueError(f"New rows can't add columns: {extra_vars}")
 
     pos = _pos_from_before_after(_before, _after, _data.shape[0])
@@ -175,7 +175,10 @@ def add_column(
     if df.shape[1] == 0:
         return _data.copy()
 
-    df = broadcast_to(df, _data.index, "new columns")
+    grouper = None
+    if isinstance(_data, TibbleGrouped):
+        grouper = _data._datar["grouped"].grouper
+    df = broadcast_to(df, _data.index, grouper)
     pos = _pos_from_before_after_names(_before, _after, _data.columns.tolist())
 
     out = _cbind_at(_data, df, pos, _name_repair)

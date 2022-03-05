@@ -67,11 +67,11 @@ def test_join_respect_zero_len_groups():
     df1 = tibble(
         f=factor([1,1,2,2], levels=[1,2,3]),
         x=[1,2,1,4]
-    ) >> group_by(f.f)
+    ) >> group_by(f.f, _sort=True)
     df2 = tibble(
         f=factor([2,2,3,3], levels=[1,2,3]),
         x=[1,2,3,4]
-    ) >> group_by(f.f)
+    ) >> group_by(f.f, _sort=True)
 
     gsize = group_size(left_join(df1, df2, by=f.f))
     assert gsize == [2,4]

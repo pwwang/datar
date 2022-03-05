@@ -5,7 +5,7 @@ import inspect
 from functools import singledispatch
 
 import numpy as np
-from pandas import DataFrame, Index, Series
+from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
 from pandas.core.groupby import SeriesGroupBy
 from pipda.utils import CallingEnvs
@@ -49,15 +49,15 @@ def regcall(func, *args, **kwargs):
     return func(*args, **kwargs, __calling_env=CallingEnvs.REGULAR)
 
 
-def ensure_nparray(x):
+def ensure_nparray(x, dtype=None):
     if is_scalar(x):
-        return np.array(x).ravel()
+        return np.array(x, dtype=dtype).ravel()
 
     if isinstance(x, dict):
-        return np.array(list(x))
+        return np.array(list(x), dtype=dtype)
 
     if not isinstance(x, np.ndarray):
-        return np.array(x)
+        return np.array(x, dtype=dtype)
 
     return x
 
@@ -99,8 +99,8 @@ def vars_select(
     from .collections import Collection
     from ..base import unique
 
-    if not isinstance(all_columns, Index):
-        all_columns = Index(all_columns, dtype=object)
+    # if not isinstance(all_columns, Index):
+    #     all_columns = Index(all_columns, dtype=object)
 
     columns = [
         column.name

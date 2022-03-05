@@ -5,7 +5,7 @@ import pytest
 from datar import f
 from datar.datasets import mtcars
 from datar.base import colnames, ncol, nrow, c, NA, sum, mean, names
-from datar.stats import rnorm
+from datar.base import rnorm
 from datar.tibble import tibble
 from datar.dplyr import (
     group_vars,

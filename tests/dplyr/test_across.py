@@ -39,7 +39,7 @@ from datar.dplyr import (
     rowwise,
     filter,
 )
-from datar.stats import runif, sd
+from datar.base import runif, sd
 from datar.core.tibble import TibbleRowwise
 
 from ..conftest import assert_iterable_equal

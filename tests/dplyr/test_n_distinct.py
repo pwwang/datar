@@ -35,7 +35,7 @@ def test_n_disinct_gives_the_correct_results_on_iris():
 
 def test_n_distinct_treats_na_correctly():
     # test_that("n_distinct treats NA correctly in the REALSXP case (#384)", {
-    assert n_distinct(c(1.0, NA, NA)) == 2
+    assert n_distinct(c(1.0, NA, NA), na_rm=False) == 2
 
 
 def test_n_distinct_recyles_len1_vec():

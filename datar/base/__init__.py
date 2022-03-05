@@ -33,6 +33,10 @@ from .arithmetic import (
     log2,
     log10,
     log1p,
+    std,
+    sd,
+    weighted_mean,
+    quantile,
 )
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_double, as_float, as_int, as_integer, as_numeric
@@ -103,6 +107,7 @@ from .special import (
     psigamma,
     trigamma,
 )
+from .stats import rnorm, rpois, runif
 from .string import (
     as_character,
     as_str,

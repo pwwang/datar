@@ -13,8 +13,7 @@ from datar.base.funs import (
     expandgrid,
     rank,
 )
-from datar.base import table, pi, paste0
-from datar.stats import rnorm
+from datar.base import table, pi, paste0, rnorm
 from ..conftest import assert_iterable_equal
 
 

@@ -57,10 +57,10 @@ def _(_data: TibbleGrouped) -> Tibble:
     return Tibble(grouper.result_index.to_frame(index=False), copy=False)
 
 
-@group_keys.register(GroupBy)
-def _(_data: GroupBy) -> Tibble:
-    grouper = _data.grouper
-    return Tibble(grouper.result_index.to_frame(index=False), copy=False)
+# @group_keys.register(GroupBy)
+# def _(_data: GroupBy) -> Tibble:
+#     grouper = _data.grouper
+#     return Tibble(grouper.result_index.to_frame(index=False), copy=False)
 
 
 @group_keys.register(TibbleRowwise)

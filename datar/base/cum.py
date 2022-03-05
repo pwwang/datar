@@ -1,13 +1,15 @@
 """Cumulative functions"""
 import numpy as np
-from pandas import Series
-from pandas.core.generic import NDFrame
 from pandas.core.groupby import GroupBy
 
+from datar.core.tibble import TibbleGrouped
+
 from ..core.factory import func_factory
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
 cumsum = func_factory(
     "transform",
+    "x",
     doc="""Cumulative sum of elements.
 
     Args:
@@ -17,10 +19,12 @@ cumsum = func_factory(
         An array of cumulative sum of elements in x
     """,
     func=np.cumsum,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 cumprod = func_factory(
     "transform",
+    "x",
     doc="""Cumulative product of elements.
 
     Args:
@@ -30,10 +34,11 @@ cumprod = func_factory(
         An array of cumulative product of elements in x
     """,
     func=np.cumprod,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@func_factory("transform")
+@func_factory("transform", "x")
 def cummin(x):
     """Cummulative min along elements in x
 
@@ -46,13 +51,14 @@ def cummin(x):
     Returns:
         An array of cumulative min of elements in x
     """
-    return Series(x).cummin().values
+    return x.cummin()
 
 
-cummin.register((NDFrame, GroupBy), "cummin")
+# faster
+cummin.register((TibbleGrouped, GroupBy), "cummin")
 
 
-@func_factory("transform")
+@func_factory("transform", "x")
 def cummax(x):
     """Cummulative max along elements in x
 
@@ -65,7 +71,7 @@ def cummax(x):
     Returns:
         An array of cumulative max of elements in x
     """
-    return Series(x).cummax().values
+    return x.cummax()
 
 
-cummax.register((NDFrame, GroupBy), "cummax")
+cummax.register((TibbleGrouped, GroupBy), "cummax")

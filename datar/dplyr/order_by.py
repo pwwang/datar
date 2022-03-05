@@ -31,7 +31,7 @@ def order_by(order, call):
     from ..datar import itemgetter
 
     order = order_fun(order, __calling_env=CallingEnvs.PIPING)
-    if not isinstance(call, Function) or len(call._pipda_args) > 1:
+    if not isinstance(call, Function) or len(call._pipda_args) < 1:
         raise ValueError(
             "In `order_by()`: `call` must be a registered "
             f"function call with data, not `{type(call).__name__}`. \n"

@@ -309,7 +309,7 @@ def test_errors():
         iris >> filter([True, False])
 
     # wrong size in column
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError):
         iris >> group_by(f.Species) >> filter(tibble([True, False]))
     with pytest.raises(ValueError):
         iris >> rowwise() >> filter(tibble([True, False]))

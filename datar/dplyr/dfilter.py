@@ -10,10 +10,12 @@ from pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import logger
-from ..core.tibble import Tibble, TibbleGrouped
+from ..core.utils import logger, regcall
+from ..core.tibble import Tibble, TibbleGrouped, reconstruct_tibble
 from ..core.broadcast import broadcast_to
 from ..core.operator import _binop
+
+from .group_by import ungroup
 
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -56,4 +58,8 @@ def filter(
         return _data.take([])
 
     condition = getattr(condition, "values", condition)
-    return _data[condition]
+    out = regcall(ungroup, _data)[condition]
+    if isinstance(_data, TibbleGrouped):
+        out.reset_index(drop=True, inplace=True)
+
+    return reconstruct_tibble(_data, out)

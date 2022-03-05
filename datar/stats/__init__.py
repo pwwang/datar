@@ -1,1 +1,0 @@
-from .funs import rnorm, runif, rpois, quantile, std, sd, weighted_mean

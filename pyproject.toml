@@ -10,7 +10,7 @@ repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with pandas
-pipda = "^0.5.4"
+pipda = "^0.5.6"
 diot = "^0.1.1"
 # pipda already requires the following
 # executing = "*"
@@ -37,7 +37,7 @@ show_error_codes = true
 strict_optional = false
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
+addopts = "-vv --tb=short -n auto --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 # addopts = "-vv --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
     "error"

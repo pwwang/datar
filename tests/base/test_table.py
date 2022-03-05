@@ -1,7 +1,6 @@
 import pytest
 
 import numpy as np
-from datar import stats
 from datar.base import (
     table,
     tabulate,
@@ -15,6 +14,8 @@ from datar.base import (
     as_factor,
     rep,
     c,
+    rpois,
+    quantile,
 )
 from datar.core.defaults import NA_REPR
 from datar import f
@@ -30,7 +31,7 @@ from ..conftest import assert_iterable_equal
 
 def test_table():
     # https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/table
-    z = stats.rpois(100, 5)
+    z = rpois(100, 5)
     x = table(z)
     assert sum(x.values.flatten()) == 100
 
@@ -53,7 +54,7 @@ def test_table():
 
     # -----------------
     with data_context(airquality) as _:
-        qt = stats.quantile(f.Temp)
+        qt = quantile(f.Temp)
         ct = cut(f.Temp, qt)
         tab = table(ct, f.Month)
 

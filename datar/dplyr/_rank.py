@@ -3,9 +3,9 @@ from functools import singledispatch
 
 import numpy as np
 import pandas as pd
-from pandas import Categorical, Series
+from pandas import Categorical, DataFrame, Series
 from pandas.api.types import is_scalar
-from pandas.core.groupby import GroupBy
+from pandas.core.groupby import GroupBy, SeriesGroupBy
 from pandas.core.generic import NDFrame
 
 from ..core.tibble import TibbleGrouped
@@ -40,34 +40,43 @@ def _(
     method,
     percent=False,
 ):
-    return data.rank(
+    out = data.rank(
         method=method,
         pct=percent,
         na_option=(
             "keep" if na_last == "keep" else "top" if not na_last else "bottom"
         ),
     )
+    return out
 
 
 @singledispatch
 def _row_number(x):
-    return _rank(x, na_last="keep", method="first").values
+    out = _rank(x, na_last="keep", method="first")
+    return out.values
 
 
-@_row_number.register(GroupBy)
+@_row_number.register(SeriesGroupBy)
 def _(x):
-    return x.cumcount() + 1
+    return x.transform(_row_number)
 
 
 @_row_number.register(TibbleGrouped)
 def _(x):
-    return _row_number(x._datar["grouped"])
+    return _row_number(
+        Series(np.arange(x.shape[0]), index=x.index).groupby(
+            x._datar["grouped"].grouper
+        )
+    )
 
 
 @_row_number.register(NDFrame)
 def _(x):
-    dtype = object if x.shape[0] == 0 else None
-    return Series(range(1, x.shape[0] + 1), index=x.index, dtype=dtype)
+    if x.ndim > 1:
+        if x.shape[1] == 0:
+            return []
+        x = Series(np.arange(x.shape[0]), index=x.index)
+    return _rank(x, na_last="keep", method="first")
 
 
 @singledispatch
@@ -83,9 +92,25 @@ def _(x, n):
     return _ntile(np.array(list(x)), n)
 
 
-@_ntile.register(NDFrame)
+@_ntile.register(Series)
 def _(x, n):
-    return _ntile(x.values, n)
+    return Series(_ntile(x.values, n), index=x.index, name=x.name)
+
+
+@_ntile.register(DataFrame)
+def _(x, n):
+    x = _row_number(x)
+    return _ntile(x, n)
+
+
+@_ntile.register(TibbleGrouped)
+def _(x, n):
+    grouped = x._datar["grouped"]
+    if x.shape[1] == 0:  # pragma: no cover
+        x = _row_number(grouped)
+    else:
+        x = x[x.columns[0]]
+    return _ntile(x, n)
 
 
 @_ntile.register(np.ndarray)
@@ -156,28 +181,12 @@ def _cume_dist(x, na_last="keep"):
 @_cume_dist.register(NDFrame)
 def _(x, na_last="keep"):
     ranking = _rank(x, na_last, "min")
-    total = x.shape[0]
+    total = (~pd.isnull(ranking)).sum()
     ret = ranking.transform(lambda r: ranking.le(r).sum() / total)
-    ret[pd.isnull(ranking)] = np.nan
+    ret[pd.isnull(ranking).values] = np.nan
     return ret
 
 
 @_cume_dist.register(GroupBy)
 def _(x, na_last="keep"):
-    ranking = _rank(x, na_last, "min").groupby(x.grouper)
-    # faster way?
-    return (
-        ranking.apply(
-            lambda ranks: (
-                np.array(
-                    [
-                        np.nan if pd.isnull(r) else (ranks <= r).sum()
-                        for r in ranks
-                    ]
-                )
-                / ranks.size
-            )
-        )
-        .explode()
-        .astype(float)
-    )
+    return x.transform(_cume_dist.dispatch(Series), na_last=na_last)

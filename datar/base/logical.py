@@ -13,7 +13,7 @@ FALSE = False
 
 
 @register_func(None, context=Context.EVAL)
-def as_logical(x):
+def as_logical(x, na=None):
     """Convert an object or elements of an iterable into bool
 
     Args:
@@ -24,7 +24,7 @@ def as_logical(x):
         When x is iterable, convert elements of it into bools
         Otherwise, convert x to bool.
     """
-    return _as_type(x, bool)
+    return _as_type(x, bool, na=na)
 
 
 as_bool = as_logical

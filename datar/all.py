@@ -11,7 +11,6 @@ from .dplyr import _no_warn as _
 from .dplyr import _builtin_names as _dplyr_builtin_names
 from .dplyr import *
 from .dplyr import _warn as _
-from .stats import *
 from .tibble import *
 # from .tidyr import *
 

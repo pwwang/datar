@@ -44,9 +44,7 @@ from ..conftest import assert_iterable_equal
 ])
 def test_func_with_1arg(fun, x, exp):
     out = fun(x)
-    if is_scalar(exp):
-        out, exp = [out], [exp]
-    assert_iterable_equal(out, exp, approx=True)
+    assert_iterable_equal(out, [exp], approx=True)
 
 
 def test_atan2():

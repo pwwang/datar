@@ -113,9 +113,6 @@ class DatarOperator(Operator):
 
     def _find_op_func(self, opname: str) -> Callable:
         """Find the function for the operator"""
-        if opname[0] == "r":
-            return None
-
         full_op_name = f"_op_{opname}"
         if full_op_name in dir(self):
             return getattr(self, full_op_name)

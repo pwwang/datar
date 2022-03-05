@@ -58,9 +58,9 @@ def bind_rows(
 
     key_data = {}
     if isinstance(_data, list):
+        _data = [d for d in _data if d is not None]
         for i, dat in enumerate(_data):
-            if dat is not None:
-                key_data[i] = _construct_tibble(dat)
+            key_data[i] = _construct_tibble(dat)
     elif _data is not None:
         key_data[0] = _construct_tibble(_data)
 
@@ -115,7 +115,16 @@ def bind_rows(
             .reset_index(drop=True)
         )
 
-    return pd.concat(key_data.values(), copy=_copy).reset_index(drop=True)
+    to_concat = [
+        kdata
+        for kdata in
+        key_data.values()
+        if kdata.shape[0] > 0
+    ]
+    if not to_concat:
+        return key_data[0].loc[[], :]
+
+    return pd.concat(to_concat, copy=_copy).reset_index(drop=True)
 
 
 @bind_rows.register(TibbleGrouped, context=Context.PENDING)

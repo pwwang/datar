@@ -22,78 +22,78 @@ def test_preserve_orders():
 #   expect_s3_class(lag(y), "POSIXct")
 # })
 
+# Wait for replace_na
+# def test_dplyr_issue_925():
+#     data = tribble(
+#         f.name,
+#         f.time,
+#         "Rob",
+#         3,
+#         "Pete",
+#         2,
+#         "Rob",
+#         5,
+#         "John",
+#         3,
+#         "Rob",
+#         2,
+#         "Pete",
+#         3,
+#         "John",
+#         2,
+#         "Pete",
+#         4,
+#         "John",
+#         1,
+#         "Pete",
+#         1,
+#         "Rob",
+#         4,
+#         "Rob",
+#         1,
+#     )
+#     res = data >> group_by(f.name) >> mutate(lag_time=lag(f.time))
+#     rob = (
+#         filter(res, f.name == "Rob")
+#         >> ungroup()
+#         >> replace_na(0)
+#         >> pull(to="list")
+#     )
+#     assert rob == [0.0, 3.0, 5.0, 2.0, 4.0]
+#     pete = (
+#         filter(res, f.name == "Pete")
+#         >> ungroup()
+#         >> replace_na(0)
+#         >> pull(to="list")
+#     )
+#     assert pete == [0.0, 2.0, 3.0, 4.0]
+#     john = (
+#         filter(res, f.name == "John")
+#         >> ungroup()
+#         >> replace_na(0)
+#         >> pull(to="list")
+#     )
+#     assert john == [0.0, 3.0, 2.0]
 
-def test_dplyr_issue_925():
-    data = tribble(
-        f.name,
-        f.time,
-        "Rob",
-        3,
-        "Pete",
-        2,
-        "Rob",
-        5,
-        "John",
-        3,
-        "Rob",
-        2,
-        "Pete",
-        3,
-        "John",
-        2,
-        "Pete",
-        4,
-        "John",
-        1,
-        "Pete",
-        1,
-        "Rob",
-        4,
-        "Rob",
-        1,
-    )
-    res = data >> group_by(f.name) >> mutate(lag_time=lag(f.time))
-    rob = (
-        filter(res, f.name == "Rob")
-        >> ungroup()
-        >> replace_na(0)
-        >> pull(to="list")
-    )
-    assert rob == [0.0, 3.0, 5.0, 2.0, 4.0]
-    pete = (
-        filter(res, f.name == "Pete")
-        >> ungroup()
-        >> replace_na(0)
-        >> pull(to="list")
-    )
-    assert pete == [0.0, 2.0, 3.0, 4.0]
-    john = (
-        filter(res, f.name == "John")
-        >> ungroup()
-        >> replace_na(0)
-        >> pull(to="list")
-    )
-    assert john == [0.0, 3.0, 2.0]
 
+# def test_dplyr_issue_937():
+#     df = tibble(name=rep(c("Al", "Jen"), 3), score=rep(c(100, 80, 60), 2))
 
-def test_dplyr_issue_937():
-    df = tibble(name=rep(c("Al", "Jen"), 3), score=rep(c(100, 80, 60), 2))
-
-    res = df >> group_by(f.name) >> mutate(next_score=lead(f.score))
-    al = (
-        filter(res, f.name == "Al")
-        >> ungroup()
-        >> replace_na(0)
-        >> pull(to="list")
-    )
-    assert al == [60.0, 80.0, 0.0]
-    jen = (
-        filter(res, f.name == "Jen")
-        >> ungroup()
-        >> replace_na(0)
-        >> pull(to="list")
-    )
-    assert jen == [100.0, 60.0, 0.0]
+#     res = df >> group_by(f.name) >> mutate(next_score=lead(f.score))
+#     al = (
+#         filter(res, f.name == "Al")
+#         >> ungroup()
+#         >> replace_na(0)
+#         >> pull(to="list")
+#     )
+#     assert al == [60.0, 80.0, 0.0]
+#     jen = (
+#         filter(res, f.name == "Jen")
+#         >> ungroup()
+#         >> replace_na(0)
+#         >> pull(to="list")
+#     )
+#     assert jen == [100.0, 60.0, 0.0]
 
 
 # test_that("lead() and lag() work for matrices (#5028)", {
@@ -117,16 +117,16 @@ def test_check_size_of_default():
 
 
 def test_errors():
-    with pytest.raises(ValueError):
-        lead(letters, -1)
-    with pytest.raises(ValueError):
+    # with pytest.raises(ValueError):
+    #   lead(letters, -1) # ok, like lag
+    with pytest.raises(TypeError):
         lead(letters, "1")
-    with pytest.raises(ValueError):
-        lag(letters, -1)
+    # with pytest.raises(ValueError):
+    #   lag(letters, -1) # ok, like lead
     with pytest.raises(ValueError):
         lag(letters, "1")
-    # with pytest.raises(ValueError):
-    #     lag(["1", "2", "3"], default=False)
+    with pytest.raises(ValueError):
+        lag(["1", "2", "3"], default=[1, 1])
     with pytest.raises(ValueError):
         lag(["1", "2", "3"], default=[])
 

@@ -3,13 +3,15 @@ import re
 
 import numpy as np
 import pandas as pd
+from pandas import Series
+from pandas.core.groupby import SeriesGroupBy
 from pandas.api.types import is_string_dtype, is_scalar
 from pipda import register_func
 
-from ..core.defaults import NA_REPR
+
 from ..core.tibble import TibbleRowwise
 from ..core.contexts import Context
-from ..core.factory import func_factory, _transform_dispatched
+from ..core.factory import func_factory, dispatching
 from ..core.utils import (
     arg_match,
     ensure_nparray,
@@ -18,6 +20,7 @@ from ..core.utils import (
 )
 from .casting import _as_type
 from .testing import _register_type_testing
+from .logical import as_logical
 from .seq import lengths
 
 
@@ -93,19 +96,18 @@ is_str = is_string = is_character
 
 
 # Grep family -----------------------------------
-@_transform_dispatched
+@dispatching(kind="transform", qualname="datar.base.grep")
 def _grep(
     x, pattern, ignore_case=False, value=False, fixed=False, invert=False
 ):
-    matched = grepl.__origfunc__(
-        pattern,
+    matched = _grepl.dispatch(Series)(
         x,
+        pattern,
         ignore_case=ignore_case,
         fixed=fixed,
         invert=invert,
     )
 
-    x = ensure_nparray(x)
     if value:
         return x[matched]
 
@@ -136,7 +138,7 @@ def grep(
         (or values (`value=True`)).
     """
     return _grep(
-        x,
+        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
         pattern,
         ignore_case=ignore_case,
         value=value,
@@ -145,9 +147,9 @@ def grep(
     )
 
 
-@_transform_dispatched
+@dispatching(kind="transform", qualname="datar.base.grepl")
 def _grepl(x, pattern, ignore_case, fixed, invert):
-    pattern = _warn_more_pat_or_rep(pattern, "grep")
+    pattern = _warn_more_pat_or_rep(pattern, "grepl")
     return _match(
         x,
         pattern,
@@ -178,7 +180,7 @@ def grepl(
         A bool array indicating whether the elements in x match the pattern
     """
     return _grepl(
-        x,
+        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
         pattern,
         ignore_case=ignore_case,
         fixed=fixed,
@@ -186,7 +188,7 @@ def grepl(
     )
 
 
-@_transform_dispatched
+@dispatching(kind="transform", qualname="datar.base.sub")
 def _sub(x, pattern, replacement, ignore_case, fixed):
     return _sub_(
         pattern=pattern,
@@ -219,7 +221,7 @@ def sub(
         An array of strings with matched parts replaced.
     """
     return _sub(
-        x,
+        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
         pattern,
         replacement,
         ignore_case=ignore_case,
@@ -227,7 +229,7 @@ def sub(
     )
 
 
-@_transform_dispatched
+@dispatching(kind="transform", qualname="datar.base.gsub")
 def _gsub(x, pattern, replacement, ignore_case, fixed):
     return _sub_(
         pattern=pattern,
@@ -255,7 +257,7 @@ def gsub(
         [sub()](datar.base.string.sub)
     """
     return _gsub(
-        x,
+        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
         pattern,
         replacement,
         ignore_case=ignore_case,
@@ -327,7 +329,7 @@ def _sub_(
 _sub_ = np.vectorize(_sub_, excluded={"pattern", "replacement"})
 
 
-@func_factory("transform", is_vectorized=False, otypes=[object])
+@func_factory("transform", "x")
 def nchar(
     x,
     type="chars",
@@ -337,16 +339,13 @@ def nchar(
 ):
     """Get the size of the elements in x"""
     x, keep_na = _prepare_nchar(x, type, keep_na)
-    out = _nchar_scalar(
+    return _nchar_scalar(
         x, retn=type, allow_na=allow_na, keep_na=keep_na, na_len=_na_len
     )
-    if pd.isnull(out):
-        return np.nan
-    return out
 
 
-@func_factory("transform", is_vectorized=False, otypes=[object])
-def nzchar(x, keep_na=None):
+@func_factory("transform", "x")
+def nzchar(x, keep_na=False):
     """Find out if elements of a character vector are non-empty strings.
 
     Args:
@@ -356,11 +355,10 @@ def nzchar(x, keep_na=None):
     Returns:
         A bool array to tell whether elements in x are non-empty strings
     """
-    x = as_character(x, _na=np.nan if keep_na else NA_REPR)
-    if pd.isnull(x):
-        return np.nan
-
-    return bool(x)
+    x = regcall(as_character, x, _na=np.nan if keep_na else "")
+    if not keep_na:
+        return x.fillna(False).astype(bool)
+    return as_logical(x, na=np.nan)
 
 
 # nchar helpers --------------------------------
@@ -372,9 +370,10 @@ def _prepare_nchar(x, type, keep_na):
     if keep_na is None:
         keep_na = type != "width"
 
-    return as_character(x), keep_na
+    return regcall(as_character, x), keep_na
 
 
+@np.vectorize
 def _nchar_scalar(x, retn, allow_na, keep_na, na_len):
     """Get the size of a scalar string"""
     if pd.isnull(x):
@@ -440,7 +439,7 @@ paste0 = lambda *args, collapse=None: paste.__origfunc__(
 # sprintf ----------------------------------------------------------------
 
 
-@func_factory("transform", is_vectorized=False)
+@func_factory("transform", {"fmt"})
 def sprintf(fmt, *args):
     """C-style String Formatting
 
@@ -452,17 +451,18 @@ def sprintf(fmt, *args):
         A scalar string if all fmt, *args are scalar strings, otherwise
         an array of formatted strings
     """
-    return fmt % args
+
+    return fmt.transform(lambda x: np.nan if pd.isnull(x) else str(x) % args)
 
 
 # substr, substring ----------------------------------
 
 
-@func_factory("transform", is_vectorized=False, otypes=[object])
+@func_factory("transform", "x")
 def substr(
     x,
     start,
-    stop,
+    stop
 ):
     """Extract substrings in strings.
 
@@ -474,17 +474,15 @@ def substr(
     Returns:
         The substrings from `x`
     """
-    if pd.isnull(x):
-        return np.nan
-
-    return str(x)[start:stop]
+    x = regcall(as_character, x)
+    return x.str[start:stop]
 
 
-@func_factory("transform", is_vectorized=False, otypes=[object])
+@func_factory("transform", "x")
 def substring(
     x,
     first,
-    last=1000000,
+    last=1000000
 ):
     """Extract substrings in strings.
 
@@ -496,21 +494,14 @@ def substring(
     Returns:
         The substrings from `x`
     """
-    if pd.isnull(x):
-        return np.nan
-
-    return str(x)[first:last]
+    x = regcall(as_character, x)
+    return x.str[first:last]
 
 
 # strsplit --------------------------------
 
 
-@func_factory(
-    "transform",
-    is_vectorized=False,
-    otypes=[object],
-    excluded={"split", "fixed"},
-)
+@func_factory("transform", {"x", "split"})
 def strsplit(x, split, fixed=False):
     """Split strings by separator
 
@@ -523,14 +514,18 @@ def strsplit(x, split, fixed=False):
         List of split strings of x if both x and split are scalars. Otherwise,
         an array of split strings
     """
-    if fixed:
-        split = re.escape(split)
-    split = re.compile(split)
-    return split.split(x)
+    def split_str(string, sep):
+        if fixed:
+            return string.split(sep)
+
+        sep = re.compile(sep)
+        return sep.split(string)
+
+    return np.vectorize(split_str, [object])(x, split)
 
 
 # startsWith, endsWith
-@func_factory("transform", is_vectorized=False)
+@func_factory("transform", "x")
 def startswith(x, prefix):
     """Determines if entries of x start with prefix
 
@@ -541,10 +536,11 @@ def startswith(x, prefix):
     Returns:
         A bool vector for each element in x if element startswith the prefix
     """
-    return str(x).startswith(prefix)
+    x = regcall(as_character, x)
+    return x.str.startswith(prefix)
 
 
-@func_factory("transform", is_vectorized=False)
+@func_factory("transform", "x")
 def endswith(x, suffix):
     """Determines if entries of x end with suffix
 
@@ -555,10 +551,11 @@ def endswith(x, suffix):
     Returns:
         A bool vector for each element in x if element endswith the suffix
     """
-    return str(x).endswith(suffix)
+    x = regcall(as_character, x)
+    return x.str.endswith(suffix)
 
 
-@func_factory("transform", is_vectorized=False)
+@func_factory("transform", "x")
 def strtoi(x, base=0):
     """Convert strings to integers according to the given base
 
@@ -570,19 +567,10 @@ def strtoi(x, base=0):
     Returns:
         Converted integers
     """
-    return int(x, base=base)
+    return x.transform(int, base=base)
 
 
-@_transform_dispatched(
-    is_vectorized=False, otypes=[object], excluded={"old", "new"}
-)
-def _chartr(x, old, new):
-    for oldc, newc in zip(old, new):
-        x = x.replace(oldc, newc)
-    return x
-
-
-@register_func(None, context=Context.EVAL)
+@func_factory("transform", "x")
 def chartr(old, new, x):
     """Replace strings char by char
 
@@ -600,10 +588,12 @@ def chartr(old, new, x):
         raise ValueError("'old' is longer than 'new'")
 
     new = new[: len(old)]
-    return _chartr(x, old, new)
+    for oldc, newc in zip(old, new):
+        x = x.str.replace(oldc, newc)
+    return x
 
 
-@func_factory("transform", is_vectorized=False)
+@func_factory("transform", "x")
 def tolower(x):
     """Convert strings to lower case
 
@@ -613,10 +603,11 @@ def tolower(x):
     Returns:
         Converted strings
     """
-    return str(x).lower()
+    x = regcall(as_character, x)
+    return x.str.lower()
 
 
-@func_factory("transform", is_vectorized=False)
+@func_factory("transform", "x")
 def toupper(x):
     """Convert strings to upper case
 
@@ -626,14 +617,11 @@ def toupper(x):
     Returns:
         Converted strings
     """
-    return str(x).upper()
+    x = regcall(as_character, x)
+    return x.str.upper()
 
 
-@func_factory(
-    "transform",
-    is_vectorized=False,
-    excluded={"which", "whitespace"},
-)
+@func_factory("transform", "x")
 def trimws(x, which="both", whitespace=r"[ \t\r\n]"):
     """Remove leading and/or trailing whitespace from character strings.
 
@@ -649,7 +637,8 @@ def trimws(x, which="both", whitespace=r"[ \t\r\n]"):
         The strings with whitespaces removed
     """
     which = arg_match(which, "which", ["both", "left", "right"])
-    x = str(x)
+
+    x = regcall(as_character, x)
 
     if which == "both":
         expr = f"^{whitespace}|{whitespace}$"
@@ -658,4 +647,4 @@ def trimws(x, which="both", whitespace=r"[ \t\r\n]"):
     else:
         expr = f"{whitespace}$"
 
-    return re.sub(expr, "", x)
+    return np.vectorize(re.sub, excluded={"pattern", "repl"})(expr, "", x)

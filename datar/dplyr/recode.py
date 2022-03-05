@@ -6,12 +6,11 @@ https://github.com/tidyverse/dplyr/blob/master/R/recode.R
 import numpy as np
 import pandas as pd
 from pandas import Categorical, Series
-from pandas.api.types import is_scalar, is_categorical_dtype
-from pipda import register_func
+from pandas.api.types import is_scalar, is_categorical_dtype, is_numeric_dtype
 
+from datar.core.tibble import SeriesCategorical
 
 from ..core.factory import func_factory
-from ..core.contexts import Context
 from ..core.utils import logger, regcall
 from ..base import c, intersect
 from ..base.na import NA_integer_, NA_character_
@@ -19,7 +18,10 @@ from ..base.na import NA_integer_, NA_character_
 
 def _get_first(x):
     """Get first raw item from an iterable"""
-    x = x[0]
+    try:
+        x = x.iloc[0]
+    except (AttributeError, IndexError):
+        x = x[0]
     try:
         return x.item()
     except AttributeError:
@@ -57,7 +59,7 @@ def _check_length(val, x, name):
 
 def _check_type(val, out_type, name):
     """Check the type of the values to recode"""
-    if isinstance(None, out_type):
+    if isinstance(out_type, type) and isinstance(None, out_type):
         return  # pragma: no cover
 
     if val.dtype is np.dtype(object):
@@ -116,7 +118,7 @@ def _validate_recode_default(
         out[~pd.isnull(x)]
     ):
         logger.warning(
-            "Unreplaced values treated as np.nan as `_x` is not compatible. "
+            "Unreplaced values treated as NA as `_x` is not compatible. "
             "Please specify replacements exhaustively or supply `_default`",
         )
 
@@ -222,7 +224,7 @@ def _check_args(values, default, missing):
         raise ValueError("No replacements provided.")
 
 
-@func_factory("transform")
+@func_factory("transform", "_x")
 def recode(
     _x,
     *args,
@@ -247,23 +249,16 @@ def recode(
     Returns:
         The vector with values replaced
     """
-    if is_scalar(_x):
-        _x = [_x]
+    if is_categorical_dtype(_x):  # Categorical
+        return recode.dispatched.dispatch(SeriesCategorical)(
+            _x,
+            *args,
+            _default=_default,
+            _missing=_missing,
+            **kwargs,
+        )
 
-    if not isinstance(_x, np.ndarray):
-        _x_obj = np.array(_x, dtype=object)  # Keep NAs
-        _x = np.array(_x)
-        if np.issubdtype(_x.dtype, np.str_):
-            na_len = len(NA_character_)
-            if (_x.dtype.itemsize >> 2) < na_len:  # length not enough
-                _x = _x.astype(f"<U{na_len}")
-            _x[pd.isnull(_x_obj)] = NA_character_
-        elif np.issubdtype(_x.dtype, np.integer):
-            _x[pd.isnull(_x_obj)] = NA_integer_
-
-    if np.issubdtype(_x.dtype, np.number) or np.issubdtype(
-        np.array(_x[~pd.isnull(_x)].tolist()).dtype, np.number
-    ):
+    if is_numeric_dtype(_x):
         return _recode_numeric(
             _x, *args, _default=_default, _missing=_missing, **kwargs
         )
@@ -273,7 +268,7 @@ def recode(
     )
 
 
-@recode.register(Series)
+@recode.register(SeriesCategorical, meta=False)
 def _(
     _x,
     *args,
@@ -282,20 +277,7 @@ def _(
     **kwargs,
 ):
     """Recode factors"""
-    if not is_categorical_dtype(_x):  # non-categorical Series
-        return Series(
-            recode.__raw__(
-                _x.values,
-                *args,
-                _default=_default,
-                _missing=_missing,
-                **kwargs,
-            ),
-            index=_x.index,
-            name=_x.name,
-        )
-    if isinstance(_x, Series):
-        x = _x.values  # get the Categorical object
+    x = _x.values  # get the Categorical object
 
     values = _args_to_recodings(*args, **kwargs)
     if not values:
@@ -338,7 +320,7 @@ def _(
     return Series(out[x.codes], index=_x.index, name=_x.name)
 
 
-@register_func(None, context=Context.EVAL)
+@func_factory("transform", "_x")
 def recode_factor(
     _x,
     *args,
@@ -352,7 +334,13 @@ def recode_factor(
     see recode().
     """
     values = _args_to_recodings(*args, **kwargs)
-    recoded = recode(_x, values, _default=_default, _missing=_missing)
+
+    recoded = recode.dispatched.dispatch(Series)(
+        _x,
+        values,
+        _default=_default,
+        _missing=_missing,
+    )
 
     out_type = type(_get_first(recoded))
     _default = _recode_default(_x, _default, out_type)
@@ -371,7 +359,10 @@ def recode_factor(
     )
     levels = regcall(intersect, all_levels, recoded_levels)
 
-    return Categorical(recoded, categories=levels, ordered=_ordered)
+    return Series(
+        Categorical(recoded, categories=levels, ordered=_ordered),
+        index=_x.index,
+    )
 
 
 recode_categorical = recode_factor

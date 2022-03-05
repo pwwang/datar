@@ -1,27 +1,27 @@
 """Arithmetic or math functions"""
 
-import math
+import inspect
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from pandas.core.groupby import SeriesGroupBy, GroupBy
-from pandas.core.generic import NDFrame
-from pipda import register_func, register_verb
 
-from ..core.factory import func_factory
+from ..core.factory import func_factory, verb_factory
 from ..core.tibble import Tibble, TibbleGrouped
-from ..core.utils import (
-    ensure_nparray,
-    logger,
-)
+from ..core.utils import ensure_nparray, logger, regcall
 from ..core.contexts import Context
 
-from .testing import is_numeric
+if TYPE_CHECKING:
+    from pandas.core.generic import NDFrame
+
+SINGLE_ARG_SIGNATURE = inspect.signature(lambda x: None)
 
 
 def _check_all_numeric(x, fun_name):
-    if x.apply(is_numeric).all():
+    from .testing import is_numeric
+    if x.apply(lambda x: regcall(is_numeric, x)).all():
         return
 
     raise ValueError(f"In {fun_name}(...): input must be all numeric.")
@@ -38,8 +38,8 @@ def _warn_na_rm(funcname, na_rm, extra_info=""):
 
 
 # cor?, range, summary, iqr
-@func_factory("agg", stof=False)
-def sum(x, na_rm=True):
+@func_factory("agg", "x")
+def sum(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Sum of the input.
 
     Args:
@@ -53,12 +53,11 @@ def sum(x, na_rm=True):
     Returns:
         The sum of the input
     """
-    func = np.nansum if na_rm else np.sum
-    return func(x)
+    return x.sum(skipna=na_rm)
 
 
 sum.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "sum",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "sum", na_rm, "Use f.x.sum(min_count=...) to control NA produces."
@@ -67,8 +66,8 @@ sum.register(
 )
 
 
-@func_factory("agg", stof=False)
-def prod(x, na_rm=True):
+@func_factory("agg", "x")
+def prod(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Product of the input.
 
     Args:
@@ -82,12 +81,11 @@ def prod(x, na_rm=True):
     Returns:
         The prod of the input
     """
-    func = np.nanprod if na_rm else np.prod
-    return func(x)
+    return x.prod(skipna=na_rm)
 
 
 prod.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "prod",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "sum", na_rm, "Use f.x.prod(min_count=...) to control NA produces."
@@ -96,8 +94,8 @@ prod.register(
 )
 
 
-@func_factory("agg", stof=False)
-def mean(x, na_rm=True):
+@func_factory("agg", "x")
+def mean(x: "NDFrame", na_rm=True) -> "NDFrame":
     """Mean of the input.
 
     Args:
@@ -110,12 +108,11 @@ def mean(x, na_rm=True):
     Returns:
         The mean of the input
     """
-    func = np.nanmean if na_rm else np.mean
-    return func(x)
+    return x.mean(skipna=na_rm)
 
 
 mean.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "mean",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "mean",
@@ -125,8 +122,8 @@ mean.register(
 )
 
 
-@func_factory("agg", stof=False)
-def median(x, na_rm=True):
+@func_factory("agg", "x")
+def median(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Median of the input.
 
     Args:
@@ -139,12 +136,11 @@ def median(x, na_rm=True):
     Returns:
         The median of the input
     """
-    func = np.nanmedian if na_rm else np.median
-    return func(x)
+    return x.median(skipna=na_rm)
 
 
 median.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "median",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "median",
@@ -154,8 +150,8 @@ median.register(
 )
 
 
-@func_factory("agg", stof=False)
-def min(x, na_rm=True):
+@func_factory("agg", "x")
+def min(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Min of the input.
 
     Args:
@@ -169,12 +165,11 @@ def min(x, na_rm=True):
     Returns:
         The min of the input
     """
-    func = np.nanmin if na_rm else np.min
-    return func(x)
+    return x.min(skipna=na_rm)
 
 
 min.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "min",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "min", na_rm, "Use f.x.min(min_count=...) to control NA produces."
@@ -183,8 +178,8 @@ min.register(
 )
 
 
-@func_factory("agg", stof=False)
-def max(x, na_rm=True):
+@func_factory("agg", "x")
+def max(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Max of the input.
 
     Args:
@@ -198,12 +193,11 @@ def max(x, na_rm=True):
     Returns:
         The max of the input
     """
-    func = np.nanmax if na_rm else np.max
-    return func(x)
+    return x.max(skipna=na_rm)
 
 
 max.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "max",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "max", na_rm, "Use f.x.max(min_count=...) to control NA produces."
@@ -212,8 +206,8 @@ max.register(
 )
 
 
-@func_factory("agg", stof=False)
-def var(x, na_rm=True, ddof=1):
+@func_factory("agg", "x")
+def var(x: "NDFrame", na_rm: bool = True, ddof: int = 1) -> "NDFrame":
     """Variance of the input.
 
     Args:
@@ -227,12 +221,11 @@ def var(x, na_rm=True, ddof=1):
     Returns:
         The variance of the input
     """
-    func = np.nanvar if na_rm else np.var
-    return func(x, ddof=ddof)
+    return x.var(skipna=na_rm, ddof=ddof)
 
 
 var.register(
-    (NDFrame, GroupBy),
+    (TibbleGrouped, GroupBy),
     "var",
     pre=lambda x, na_rm=True, ddof=1: _warn_na_rm(
         "var",
@@ -242,8 +235,12 @@ var.register(
 )
 
 
-@register_func(None, context=Context.EVAL)
-def pmin(*x, na_rm=False):
+@func_factory("agg", "x")
+def pmin(
+    *x: Union["NDFrame", GroupBy],
+    na_rm: bool = False,
+    __args_frame: DataFrame = None,
+) -> Series:
     """Get the min value rowwisely
 
     Args:
@@ -253,11 +250,15 @@ def pmin(*x, na_rm=False):
     Returns:
         The rowwise min of `*x`
     """
-    return Tibble.from_args(*x).min(axis=1, skipna=na_rm)
+    return __args_frame.min(axis=1, skipna=na_rm)
 
 
-@register_func(None, context=Context.EVAL)
-def pmax(*x, na_rm=True):
+@func_factory("agg", "x")
+def pmax(
+    *x: Union["NDFrame", GroupBy],
+    na_rm: bool = False,
+    __args_frame: DataFrame = None,
+) -> Series:
     """Get the max value rowwisely
     Args:
         *x: The iterables. Elements will be recycled to the max length
@@ -266,32 +267,29 @@ def pmax(*x, na_rm=True):
     Returns:
         The rowwise max of `*x`
     """
-    return Tibble.from_args(*x).max(axis=1, skipna=na_rm)
+    return __args_frame.max(axis=1, skipna=na_rm)
 
 
-@func_factory("transform")
-def round(x, ndigits=0):
-    """Rounding a number
+round = func_factory(
+    "transform",
+    "x",
+    doc="""Rounding a number
 
     Args:
         x: The input
-        ndigits: number of digits to keep
+        ndigits: number of digits to keep. Must be positional argument.
 
     Returns:
         The rounded input
-    """
-    return np.round(x, decimals=ndigits)
-
-
-round.register(
-    (NDFrame, GroupBy),
-    "round",
-    pre=lambda x, ndigits=0: (x, (ndigits,), {})
+    """,
+    signature=inspect.signature(lambda x, ndigits=0: None),
+    func=np.round,
 )
 
 
 sqrt = func_factory(
     "transform",
+    "x",
     doc="""Get the square root of a number/numbers
 
     Args:
@@ -300,12 +298,15 @@ sqrt = func_factory(
     Returns:
         The square root of the input
     """,
+    qualname="datar.base.sqrt",
     func=np.sqrt,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 abs = func_factory(
     "transform",
+    "x",
     doc="""Get the absolute value of a number/numbers
 
     Args:
@@ -315,11 +316,14 @@ abs = func_factory(
         The absolute values of the input
     """,
     func=np.abs,
+    qualname="datar.base.abs",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 sign = func_factory(
     "transform",
+    "x",
     doc="""Get the signs of the corresponding elements of x
 
     Args:
@@ -329,11 +333,14 @@ sign = func_factory(
         The signs of the corresponding elements of x
     """,
     func=np.sign,
+    qualname="datar.base.sign",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 trunc = func_factory(
     "transform",
+    "x",
     doc="""Get the integers truncated for each element in x
 
     Args:
@@ -344,11 +351,14 @@ trunc = func_factory(
         Note the dtype is still float.
     """,
     func=np.trunc,
+    qualname="datar.base.trunc",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 ceiling = func_factory(
     "transform",
+    "x",
     name="ceiling",
     doc="""Get the ceiling integer of a number/numbers
 
@@ -359,11 +369,14 @@ ceiling = func_factory(
         The ceiling integer of the input
     """,
     func=np.ceil,
+    qualname="datar.base.ceiling",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 floor = func_factory(
     "transform",
+    "x",
     doc="""Get the floor integer of a number/numbers
 
     Args:
@@ -373,11 +386,13 @@ floor = func_factory(
         The floor integer of the input
     """,
     func=np.floor,
+    qualname="datar.base.floor",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@func_factory("transform", stof=False, is_vectorized=False, excluded={"digits"})
-def signif(x: float, digits: int = 6) -> float:
+@func_factory("transform", {"x", "digits"})
+def signif(x: Series, digits: Series = 6) -> Series:
     """Rounds the values in its first argument to the specified number of
     significant digits
 
@@ -388,11 +403,12 @@ def signif(x: float, digits: int = 6) -> float:
     Returns:
         The rounded values for each element in x
     """
-    return round(x, int(digits - math.ceil(math.log10(abs(x)))))
+    ndigits = digits - x.abs().transform("log10").transform("ceil")
+    return np.vectorize(np.round)(x, ndigits.astype(int))
 
 
-@func_factory("transform")
-def log(x, base=np.e):
+@func_factory("transform", {"x", "base"})
+def log(x: Series, base: Series = np.e) -> Series:
     """Computes logarithms, by default natural logarithm
 
     Args:
@@ -408,6 +424,7 @@ def log(x, base=np.e):
 
 exp = func_factory(
     "transform",
+    "x",
     doc="""Calculates the power of natural number
 
     Args:
@@ -417,11 +434,14 @@ exp = func_factory(
         Power of natural number of element-wise power of natural number for x
     """,
     func=np.exp,
+    qualname="datar.base.exp",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 log2 = func_factory(
     "transform",
+    "x",
     doc="""Computes logarithms with base 2
 
     Args:
@@ -432,11 +452,14 @@ log2 = func_factory(
         log2 of elements in x
     """,
     func=np.log2,
+    qualname="datar.base.log2",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 log10 = func_factory(
     "transform",
+    "x",
     doc="""Computes logarithms with base 10
 
     Args:
@@ -447,11 +470,14 @@ log10 = func_factory(
         log10 of elements in x
     """,
     func=np.log10,
+    qualname="datar.base.log10",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 log1p = func_factory(
     "transform",
+    "x",
     doc="""Computes log(1+x)
 
     Args:
@@ -462,10 +488,12 @@ log1p = func_factory(
         log(1+x) of elements in x
     """,
     func=np.log1p,
+    qualname="datar.base.log1p",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@verb_factory(DataFrame, context=Context.EVAL)
 def cov(x, y=None, ddof=1) -> Tibble:
     """Compute pairwise covariance of dataframe columns,
     or between two variables
@@ -499,7 +527,7 @@ def _(x, y, ddof=1):
     return df._datar["grouped"].cov(ddof=ddof).droplevel(-1)["cov"].iloc[::2]
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@verb_factory(DataFrame, context=Context.EVAL)
 def _scale(x, center=True, scale=True):
     """Scaling and Centering of a numeric data frame
 
@@ -568,7 +596,13 @@ def _scale(x, center=True, scale=True):
 @_scale.register(Series)
 def _(x, center=True, scale=True):
     """Scaling on series"""
-    return _scale(x.to_frame(), center, scale)
+    return _scale(x.to_frame(), center, scale).iloc[:, 0]
+
+
+@_scale.register(SeriesGroupBy)
+def _(x, center=True, scale=True):
+    """Scaling on series"""
+    return x.transform(_scale.dispatch(Series), center=center, scale=scale)
 
 
 @_scale.register((list, tuple, np.ndarray))
@@ -584,7 +618,7 @@ def _(
 scale = _scale
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def col_sums(
     x,
     na_rm=False,
@@ -610,7 +644,7 @@ def col_sums(
     return x.sum(skipna=na_rm, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def row_sums(
     x,
     na_rm=False,
@@ -632,7 +666,7 @@ def row_sums(
     return x.sum(axis=1, skipna=na_rm, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def col_means(
     x,
     na_rm=False,
@@ -658,7 +692,7 @@ def col_means(
     return x.mean(skipna=na_rm, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def row_means(
     x,
     na_rm=False,
@@ -680,7 +714,7 @@ def row_means(
     return x.mean(axis=1, skipna=na_rm, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def col_sds(
     x,
     na_rm=False,
@@ -708,7 +742,7 @@ def col_sds(
     return x.std(skipna=na_rm, ddof=ddof, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def row_sds(
     x,
     na_rm=False,
@@ -731,7 +765,7 @@ def row_sds(
     return x.std(axis=1, skipna=na_rm, ddof=ddof, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def col_medians(
     x,
     na_rm=False,
@@ -757,7 +791,7 @@ def col_medians(
     return x.median(skipna=na_rm, numeric_only=True)
 
 
-@register_verb(DataFrame)
+@verb_factory(DataFrame)
 def row_medians(
     x,
     na_rm=False,
@@ -777,3 +811,87 @@ def row_medians(
     """
     _check_all_numeric(x, "row_medians")
     return x.median(numeric_only=True, axis=1, skipna=na_rm)
+
+
+@func_factory("transform", "x")
+def quantile(
+    x: Series,
+    probs=(0.0, 0.25, 0.5, 0.75, 1.0),
+    na_rm: bool = True,
+    interpolation: str = "linear",
+):
+    """produces sample quantiles corresponding to the given probabilities.
+
+    Args:
+        x: The data to sample
+        probs: numeric vector of probabilities with values in [0,1]
+        na_rm: if true, any ‘NA’ and ‘NaN’'s are removed from ‘x’
+            before the quantiles are computed.
+        quantile: {'linear', 'lower', 'higher', 'midpoint', 'nearest'}
+            This optional parameter specifies the interpolation method to use,
+            when the desired quantile lies between two data points i and j.
+            fractional part of the index surrounded by i and j.
+            - lower: i.
+            - higher: j.
+            - nearest: i or j whichever is nearest.
+            - midpoint: (i + j) / 2.
+
+    Returns:
+        An array of quantile values
+    """
+    _warn_na_rm("quantile", na_rm)
+    return x.quantile(q=probs, interpolation=interpolation)
+
+
+quantile.register(
+    (TibbleGrouped, GroupBy),
+    "quantile",
+    pre=(
+        lambda x, probs=(
+            0.0,
+            0.25,
+            0.5,
+            0.75,
+            1.0,
+        ), na_rm=True, interpolation="linear": _warn_na_rm("quantile", na_rm)
+        or (x, (), dict(q=probs, interpolation=interpolation))
+    ),
+)
+
+
+@func_factory("agg", "x")
+def std(
+    x: Series,
+    na_rm: bool = True,
+    # numpy default is 0. Make it 1 to be consistent with R
+    ddof: int = 1,
+) -> float:
+    """Get standard deviation of the input"""
+    return x.std(skipna=na_rm, ddof=ddof)
+
+
+std.register(
+    (TibbleGrouped, GroupBy),
+    "std",
+    pre=lambda x, na_rm=True, ddof=1: _warn_na_rm("sd/std", na_rm)
+    or (x, (), {"ddof": ddof}),
+)
+
+sd = std
+
+
+@func_factory("transform", {"x", "w"})
+def weighted_mean(
+    x: Series, w: Series = 1, na_rm=True, __args_raw=None
+) -> Series:
+    """Calculate weighted mean"""
+    if __args_raw["w"] is not None and np.nansum(w) == 0:
+        return np.nan
+
+    if na_rm:
+        na_mask = pd.isnull(x)
+        x = x[~na_mask.values]
+        w = w[~na_mask.values]
+        return np.average(x, weights=w)
+
+    return np.average(x, weights=w)

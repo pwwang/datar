@@ -7,7 +7,7 @@ from datar.datasets import mtcars
 from datar.core.contexts import Context
 from datar.core.exceptions import NameNonUniqueError
 from datar.core.tibble import TibbleRowwise
-from datar.stats import runif, quantile
+from datar.base import runif, quantile, rnorm
 from datar.base import c, mean, rep, seq_len, dim, letters, sum, length
 from datar.dplyr import (
     summarise,
@@ -337,8 +337,8 @@ def test_use_pandas_series_func_gh14():
 def test_summarise_rowwise():
     params = tibble(sim=[1, 2, 3], n=[1, 2, 3], mean=[1, 2, 1], sd=[1, 4, 2])
 
-    # out = params >> rowwise(f.sim) >> summarise(z=rnorm(f.n, f.mean, f.sd))
-    # assert len(out.columns) == 2
-    # assert len(out.z.values[0]) == 1
-    # assert len(out.z.values[1]) == 2
-    # assert len(out.z.values[2]) == 3
+    out = params >> rowwise(f.sim) >> summarise(z=rnorm(f.n, f.mean, f.sd))
+    assert len(out.columns) == 2
+    assert len(out.z.obj.values[0]) == 1
+    assert len(out.z.obj.values[1]) == 2
+    assert len(out.z.obj.values[2]) == 3

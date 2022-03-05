@@ -8,10 +8,11 @@ from ..core.factory import func_factory
 
 from .testing import _register_type_testing
 from .casting import _as_type
-
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
 re = func_factory(
     "transform",
+    "x",
     name="re",
     doc="""Real part of complex numbers
 
@@ -22,10 +23,12 @@ re = func_factory(
         The real part of the complex numbers
     """,
     func=np.real,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 im = func_factory(
     "transform",
+    "x",
     name="im",
     doc="""Real part of complex numbers
 
@@ -36,11 +39,14 @@ im = func_factory(
         The real part of the complex numbers
     """,
     func=np.imag,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 mod = func_factory(
     "transform",
+    "x",
     name="mod",
+    qualname="datar.base.mod",
     doc="""Modulus of complex numbers
 
     Args:
@@ -50,10 +56,12 @@ mod = func_factory(
         The Modulus of the complex numbers
     """,
     func=np.absolute,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 arg = func_factory(
     "transform",
+    "x",
     name="arg",
     doc="""Angles of complex numbers
 
@@ -64,10 +72,13 @@ arg = func_factory(
         The Angles of the complex numbers
     """,
     func=np.angle,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 conj = func_factory(
     "transform",
+    "x",
+    qualname="datar.base.conj",
     doc="""conjugate of complex numbers
 
     Args:
@@ -77,6 +88,7 @@ conj = func_factory(
         The conjugate of the complex numbers
     """,
     func=np.conj,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 

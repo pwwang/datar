@@ -1,37 +1,117 @@
+import inspect
+from collections import namedtuple
 from functools import singledispatch
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
-import numpy as np
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar, is_categorical_dtype
-from pandas.core.groupby import SeriesGroupBy, GroupBy
-
-from pipda import register_func
+from pandas import DataFrame
+from pandas.api.types import is_categorical_dtype, is_scalar
+from pandas.core.groupby import SeriesGroupBy
+from pipda import register_func, register_verb
 
 from .contexts import Context
+from .utils import arg_match
 from .tibble import (
     SeriesCategorical,
-    TibbleGrouped,
     SeriesRowwise,
+    Tibble,
+    TibbleGrouped,
     TibbleRowwise,
+    reconstruct_tibble,
 )
-from .utils import arg_match
+
+if TYPE_CHECKING:
+    from inspect import Signature
 
 NO_DEFAULT = object()
 
+MetaInfo = namedtuple(
+    "MetaInfo",
+    [
+        # The pre/post hook to handle arguments before running
+        # apply/agg/transform
+        "pre",
+        "post",
+        # The function to run apply/agg/transform
+        "func",
+    ],
+)
 
-def _register_factory(proxy):
-    def _register(
-        types, func=NO_DEFAULT, pre=None, post=None, replace=False, stof=True
-    ):
-        if func is NO_DEFAULT:
-            return lambda fun=None: _register(
-                types, func=fun, pre=pre, post=post, replace=replace, stof=stof
+
+def _preprocess_args(sign: "Signature", data_args, args, kwargs):
+    bound = sign.bind(*args, **kwargs)
+    bound.apply_defaults()
+    if is_scalar(data_args):
+        data_args = {data_args}
+
+    values = []
+    to_expand = {}
+    for arg in data_args:
+        if arg in sign.parameters:
+            if (
+                sign.parameters[arg].kind
+                == sign.parameters[arg].VAR_POSITIONAL
+            ):
+                to_expand[arg] = [
+                    f"{arg}[{i}]" for i, _ in enumerate(bound.arguments[arg])
+                ]
+                values.extend(bound.arguments[arg])
+            else:
+                values.append(bound.arguments[arg])
+        elif "[" in arg:
+            vararg, idx = arg[:-1].split("[", 1)
+            values.append(bound.arguments[vararg][int(idx)])
+        else:
+            raise ValueError(f"Data argument doesn't exist: {arg}.")
+
+    if not to_expand:
+        names = data_args
+    else:
+        names = []
+        for darg in data_args:
+            if darg in to_expand:
+                names.extend(to_expand[darg])
+            else:
+                names.append(darg)
+
+    args_df = Tibble.from_pairs(names, values, _name_repair="minimal")
+    args_raw = bound.arguments.copy()
+    for arg in bound.arguments:
+        if arg == "__args_frame":
+            bound.arguments[arg] = args_df
+        elif arg == "__args_raw":
+            bound.arguments[arg] = args_raw
+        elif arg in args_df:
+            bound.arguments[arg] = args_df[arg]
+        elif sign.parameters[arg].kind == sign.parameters[arg].VAR_POSITIONAL:
+            star_args = bound.arguments[arg]
+            bound.arguments[arg] = tuple(
+                args_df[f"{arg}[{i}]"] if f"{arg}[{i}]" in args_df else sarg
+                for i, sarg in enumerate(star_args)
             )
 
-        if replace and (pre or post):
+    return bound
+
+
+def _run_pandas(kind, func, x, args, kwargs, axis=None, apply_type=None):
+    method = getattr(x, kind)
+    if axis is None:
+        return method(func, *args, **kwargs)
+    if kind == "apply":
+        return method(func, axis, result_type=apply_type, args=args, **kwargs)
+
+    return method(func, axis, *args, **kwargs)
+
+
+def _register_factory(dispatched, initial_func):
+    def _register(types, func=NO_DEFAULT, pre=None, post=None, meta=True):
+        if func is NO_DEFAULT:
+            return lambda fun=None: _register(
+                types, func=fun, pre=pre, post=post, meta=meta
+            )
+
+        if not meta and (pre or post):
             raise ValueError(
-                "If `replace` is true, no `pre` or `post` hook "
+                "If not registering meta, no `pre` or `post` hook "
                 "should be specified."
             )
 
@@ -39,490 +119,211 @@ def _register_factory(proxy):
             types = [types]
 
         for type_ in types:
-            proxy.register(type_)(
-                {
-                    "pre": pre,
-                    "post": post,
-                    "replace": replace,
-                    "func": func,
-                    "stof": stof,
-                }
-            )
+            if meta:
+                dispatched.meta.register(type_)(
+                    MetaInfo(pre, post, func or initial_func)
+                )
+            elif func is None:
+                raise ValueError("No function to register.")
+            else:
+                dispatched.register(type_)(func)
 
     return _register
 
 
-def _attach_rowwise(out, x):
-    out = out.groupby(x.grouper)
-    setattr(out, "is_rowwise", getattr(x, "is_rowwise", False))
-    return out
+def _apply_meta(metainfo: MetaInfo, qualname, run, x, args, kwargs):
+    if metainfo.pre:
+        arguments = metainfo.pre(x, *args, **kwargs)
+        if arguments is not None:
+            x, args, kwargs = arguments
 
+    try:
+        out = run(x, args, kwargs)
+    except Exception as exc:
+        raise ValueError(f"{exc} (registered function: {qualname})") from exc
 
-def _run(
-    kind,
-    x,
-    args,
-    kwargs,
-    func,
-    reginfo,
-    post=None,
-    axis=None,
-    result_type=None,
-):
-    if reginfo["replace"]:
-        return reginfo["func"](x, *args, **kwargs)
-
-    if reginfo["pre"]:
-        preproc = reginfo["pre"](x, *args, **kwargs)
-        if preproc is not None:
-            x, args, kwargs = preproc
-
-    run_fun = getattr(x, kind)
-    func = reginfo["func"] or func
-    if kind != "apply":
-        if axis is None:
-            out = run_fun(func, *args, **kwargs)
-        else:
-            out = run_fun(func, axis, *args, **kwargs)
-    else:
-        if axis is None:
-            out = run_fun(func, *args, **kwargs)
-        else:
-            out = run_fun(
-                func,
-                axis,
-                result_type=result_type,
-                args=args,
-                **kwargs,
-            )
-
-    if reginfo["post"]:
-        return reginfo["post"](out, x, *args, **kwargs)
-
-    if callable(post):
-        return post(out, x)
+    if metainfo.post:
+        return metainfo.post(out, x, *args, **kwargs)
 
     return out
 
 
-def _transform_dispatched(func=None, is_vectorized=True, **vec_kwargs):
+def dispatching(func=None, kind=None, qualname=None, apply_type=None):
     if func is None:
-        return lambda fun: _transform_dispatched(
-            func=fun,
-            is_vectorized=is_vectorized,
-            **vec_kwargs,
+        return lambda fn: dispatching(
+            func=fn, kind=kind, qualname=qualname, apply_type=apply_type
         )
 
-    if not is_vectorized:
-        vec_func = np.vectorize(func, **vec_kwargs)
-    else:
-        vec_func = func
+    DEFAULT_META = MetaInfo(None, None, None)
 
     @singledispatch
-    def _dispatched(x, *args, **kwargs):
-        if is_scalar(x):
-            return func(x, *args, **kwargs)
-        # list, tuple, np.ndarray, etc
-        return vec_func(x, *args, **kwargs)
-
-    @_dispatched.register(Series)
-    def _(x: Series, *args, **kwargs):
-        if is_categorical_dtype(x):
-            reginfo = _dispatched.proxy.dispatch(SeriesCategorical)
+    def _dispatched(__x, *args, **kwargs):
+        # Series if Series not registered
+        if is_categorical_dtype(__x):
+            metainfo = _dispatched.meta.dispatch(SeriesCategorical)
         else:
-            reginfo = _dispatched.proxy.dispatch(x.__class__)
+            metainfo = _dispatched.meta.dispatch(__x.__class__)
 
-        return _run(
-            "transform",
-            x.to_frame(),
+        fun = metainfo.func or func
+        if isinstance(fun, str):
+            run_func = lambda x, a, kw: getattr(x, fun)(*a, **kw)
+        else:
+            run_func = lambda x, a, kw: fun(x, *a, **kw)
+
+        return _apply_meta(
+            metainfo,
+            qualname,
+            run_func,
+            __x,
             args,
             kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
         )
+
+    @_dispatched.register(SeriesGroupBy)
+    def _(__x, *args, **kwargs):
+        if getattr(__x, "is_rowwise", False):
+            metainfo = _dispatched.meta.dispatch(SeriesRowwise)
+        else:
+            metainfo = _dispatched.meta.dispatch(__x.__class__)
+
+        out = _apply_meta(
+            metainfo,
+            qualname,
+            lambda x, a, kw: _run_pandas(
+                kind, metainfo.func or func, x, a, kw
+            ),
+            __x,
+            args,
+            kwargs,
+        )
+        if kind == "transform" and not metainfo.post:
+            out = out.groupby(__x.grouper)
+            if getattr(__x, "is_rowwise", False):
+                out.is_rowwise = True
+        return out
 
     @_dispatched.register(DataFrame)
-    def _(x: DataFrame, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "transform",
-            x,
-            args,
-            kwargs,
-            func=vec_func,
-            reginfo=reginfo,
-            axis=0,
-        )
-
-    @_dispatched.register(GroupBy)
-    def _(x: GroupBy, *args, **kwargs):
-        if getattr(x, "is_rowwise", False):
-            reginfo = _dispatched.proxy.dispatch(SeriesRowwise)
-        else:
-            reginfo = _dispatched.proxy.dispatch(x.__class__)
-
-        return _run(
-            "transform",
-            x,
-            args,
-            kwargs,
-            func=vec_func,
-            reginfo=reginfo,
-            post=_attach_rowwise,
-        )
-
-    @_dispatched.register(TibbleGrouped)
-    def _(x: TibbleGrouped, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "transform",
-            x._datar["grouped"],
-            args,
-            kwargs,
-            func=vec_func,
-            reginfo=reginfo,
-            axis=0,
-            post=lambda out, x: out.regroup(),
-        )
-
-    _dispatched.proxy = singledispatch(
-        {"pre": None, "post": None, "replace": False, "func": None}
-    )
-    return _dispatched
-
-
-def _apply_dispatched(func=None, stof=True, result_type=None):
-    if func is None:
-        return lambda fun: _apply_dispatched(func=fun, result_type=result_type)
-
-    DEFAULT_META = {
-        "pre": None,
-        "post": None,
-        "replace": False,
-        "func": None,
-        "stof": stof,
-    }
-
-    @singledispatch
-    def _dispatched(x, *args, **kwargs):
-        # list, tuple, np.ndarray, etc
-        return func(x, *args, **kwargs)
-
-    @_dispatched.register(Series)
-    def _(x: Series, *args, **kwargs):
-        # treat the series as a whole instead of element one by one
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        if reginfo["stof"] is not None:
-            stof = reginfo["stof"]
-
-        if stof:
-            return _run(
-                "apply",
-                x.to_frame(),
-                args,
-                kwargs,
-                func=func,
-                reginfo=reginfo,
+    def _(__x, *args, **kwargs):
+        metainfo = _dispatched.meta.dispatch(__x.__class__)
+        return _apply_meta(
+            metainfo,
+            qualname,
+            lambda x, a, kw: _run_pandas(
+                kind,
+                metainfo.func or func,
+                x,
+                a,
+                kw,
                 axis=0,
-                result_type=result_type,
-            ).iloc[:, 0]
-
-        return _run(
-            "apply",
-            x,
+                apply_type=apply_type,
+            ),
+            __x,
             args,
             kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
-            result_type=result_type,
-        )
-
-    @_dispatched.register(DataFrame)
-    def _(x: DataFrame, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "apply",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
-            result_type=result_type,
-        )
-
-    @_dispatched.register(GroupBy)
-    def _(x: GroupBy, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "apply",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-        )
-
-    @_dispatched.register(SeriesRowwise)
-    def _(x: SeriesRowwise, *args, **kwargs):
-        """Aggregation on SeriesRowwise object does nothing"""
-        reginfo = _dispatched.proxy.dispatch(SeriesRowwise)
-        reginfo_sgb = _dispatched.proxy.dispatch(SeriesGroupBy)
-        if reginfo is reginfo_sgb or reginfo is DEFAULT_META:
-            # not specifically registered for SeriesRowwise
-            raise ValueError(
-                f"`{_dispatched.proxy.__name__}` is not registered for "
-                "rowwise variable."
-            )
-
-        return _run(
-            "apply",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
         )
 
     @_dispatched.register(TibbleGrouped)
-    def _(x: TibbleGrouped, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        if reginfo is DEFAULT_META:
-            return _dispatched(x._datar["grouped"], *args, **kwargs)
-
-        return _run(
-            "apply",
-            x,
+    def _(__x, *args, **kwargs):
+        metainfo = _dispatched.meta.dispatch(__x.__class__)
+        out = _apply_meta(
+            metainfo,
+            qualname,
+            lambda x, a, kw: _run_pandas(
+                kind,
+                metainfo.func or func,
+                x._datar["grouped"],
+                a,
+                kw,
+            ),
+            __x,
             args,
             kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
-            result_type=result_type,
         )
+        if kind == "transform" and not metainfo.post:
+            return reconstruct_tibble(__x, out)
+        return out
 
     @_dispatched.register(TibbleRowwise)
-    def _(x: TibbleRowwise, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "apply",
-            x,
+    def _(__x, *args, **kwargs):
+        metainfo = _dispatched.meta.dispatch(__x.__class__)
+        out = _apply_meta(
+            metainfo,
+            qualname,
+            lambda x, a, kw: _run_pandas(
+                kind,
+                metainfo.func or func,
+                x,
+                a,
+                kw,
+                axis=1,
+                apply_type=apply_type,
+            ),
+            __x,
             args,
             kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=1,
-            result_type=result_type,
         )
+        if kind == "transform" and not metainfo.post:
+            return reconstruct_tibble(__x, out)
+        return out
 
-    _dispatched.proxy = singledispatch(DEFAULT_META)
-    return _dispatched
-
-
-def _agg_dispatched(func=None, stof=True):
-    if func is None:
-        return lambda fun: _agg_dispatched(func=fun)
-
-    DEFAULT_META = {
-        "pre": None,
-        "post": None,
-        "replace": False,
-        "func": None,
-        "stof": stof,
-    }
-
-    @singledispatch
-    def _dispatched(x, *args, **kwargs):
-        # list, tuple, np.ndarray, etc
-        return func(x, *args, **kwargs)
-
-    @_dispatched.register(DataFrame)
-    def _(x: DataFrame, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "agg",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
-        )
-
-    @_dispatched.register(Series)
-    def _(x: Series, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        if reginfo["stof"] is not None:
-            stof = reginfo["stof"]
-
-        out = _run(
-            "agg",
-            x.to_frame() if stof else x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
-        )
-        return out[0] if stof else out
-
-    @_dispatched.register(GroupBy)
-    def _(x: GroupBy, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "agg",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-        )
-
-    @_dispatched.register(SeriesRowwise)
-    def _(x: SeriesRowwise, *args, **kwargs):
-        """Aggregation on SeriesRowwise object does nothing"""
-        reginfo = _dispatched.proxy.dispatch(SeriesRowwise)
-        reginfo_sgb = _dispatched.proxy.dispatch(SeriesGroupBy)
-        if reginfo is reginfo_sgb or reginfo is DEFAULT_META:
-            # not specifically registered for SeriesRowwise
-            return x.obj.copy().groupby(x.grouper)
-
-        return _run(
-            "agg",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-        )
-
-    @_dispatched.register(TibbleGrouped)
-    def _(x: TibbleGrouped, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "agg",
-            x._datar["grouped"],
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=0,
-        )
-
-    @_dispatched.register(TibbleRowwise)
-    def _(x: TibbleRowwise, *args, **kwargs):
-        reginfo = _dispatched.proxy.dispatch(x.__class__)
-        return _run(
-            "agg",
-            x,
-            args,
-            kwargs,
-            func=func,
-            reginfo=reginfo,
-            axis=1,
-        )
-
-    _dispatched.proxy = singledispatch(DEFAULT_META)
+    _dispatched.meta = singledispatch(DEFAULT_META)
     return _dispatched
 
 
 def func_factory(
     kind,  # transform, agg/aggregate, apply
-    is_vectorized=True,
+    data_args,
     name=None,
+    qualname=None,
     doc=None,
+    apply_type=None,
+    keep_series=False,
+    context=Context.EVAL,
+    signature=None,
     func=None,
-    result_type=None,
-    stof=True,
-    **vec_kwargs,
 ):
-    """Factory for functions without data as first argument.
-
-    This function is used to initiate a function that used on different types
-    of data. For example:
-    >>> @func_factory(kind="transform")
-    >>> def cubic(x):
-    >>>     return x ** 3
-
-    If no further registration, then the default behavior for scalar and
-    np.ndarray will be handled by the function directly.
-
-    For Series/DataFrame object, the result of `mean(f.x)` will be
-    `x.transform(cubic)`
-
-    For SeriesGroupBy object, the result will be
-    `x.obj.transform(cubic).groupby(x.grouper)`
-
-    For TibbleGrouped object, the result will be `x.transform(cubic).regroup()`
-
-    The behavior for each type can be customized by, for example, for Series
-    object:
-    >>> cubic.register(Series, lambda x: x ** 3)
-
-    Similar for aggregate and apply.
-
-    Args:
-        kind: Either "transform", or "agg/aggregate"
-        # kind: Either "transform", "apply" or "agg/aggregate"
-        is_vectorized: Whether the function is vectorized, only for transform.
-        name: The name of the function returned.
-            If not provided, will be `func.__name__`
-        doc: Docstring of the function returned.
-            If not provided, will be `func.__doc__`
-        func: The function to work on scalars, sequences and np.ndarrays
-            If not provided, this function will return a decorator
-        result_type: The result type for apply.
-            See more defaults on pandas DataFrame.apply's doc
-        stof: Whether convert the series to frame and then do
-            apply, transform or agg/aggregate
-            >>> s = Series([1, 2, 3])
-            >>> s.agg(np.sum)  # 6
-            >>> # however, when we wrap it:
-            >>> out = s.agg(lambda x: np.sum(x))
-            >>> # out == s
-            >>> # but we expect 6
-            >>> # to do it:
-            >>> s.to_frame().agg(lambda x: np.sum(x))[0]
-
-    Returns:
-        If func is not provided, a decorator to decorate a function. Otherwise
-        a function registered by
-        `pipda.register_func(None, context=Context.EVAL)`
-    """
-    kind = arg_match(kind, "kind", ["transform", "apply", "agg", "aggregate"])
+    kind = arg_match(
+        kind, "kind", ["transform", "apply", "agg", "aggregate", None]
+    )
     # kind = arg_match(kind, "kind", ["transform", "agg", "aggregate"])
 
     if func is None:
         # work as a decorator
         return lambda fun: func_factory(
             kind=kind,
-            is_vectorized=is_vectorized,
+            data_args=data_args,
             name=name,
+            qualname=qualname,
             doc=doc,
+            apply_type=apply_type,
+            keep_series=keep_series,
+            context=context,
             func=fun,
-            **vec_kwargs,
         )
 
-    dispatched = (
-        _transform_dispatched(func, is_vectorized, **vec_kwargs)
-        if kind == "transform"
-        else _apply_dispatched(func, stof, result_type)
-        if kind == "apply"
-        else _agg_dispatched(func, stof)
-    )
+    funcname = name or func.__name__
+    qualname = qualname or func.__qualname__
 
-    def pipda_func(x, *args, **kwargs):
-        if isinstance(x, SeriesGroupBy) and getattr(x, "is_rowwise", False):
-            return dispatched.dispatch(SeriesRowwise)(x, *args, **kwargs)
+    if kind is None:
+        dispatched = func
+    else:
+        dispatched = dispatching(func, kind, qualname, apply_type)
 
-        return dispatched(x, *args, **kwargs)
+    sign = signature or inspect.signature(func)
 
-    pipda_func.__name__ = dispatched.proxy.__name__ = name or func.__name__
-    pipda_func.__qualname__ = pipda_func.__name__
-    pipda_func.__doc__ = doc or func.__doc__
-    pipda_func.register = _register_factory(dispatched.proxy)
-    pipda_func.__raw__ = func
+    def _pipda_func(__x, *args, **kwargs):
+        bound = _preprocess_args(sign, data_args, (__x, *args), kwargs)
+        return dispatched(*bound.args, **bound.kwargs)
 
-    return register_func(None, context=Context.EVAL, func=pipda_func)
+    _pipda_func.__name__ = funcname
+    _pipda_func.__qualname__ = qualname
+    _pipda_func.__doc__ = doc or func.__doc__
+    _pipda_func.dispatched = dispatched
+    _pipda_func.register = _register_factory(dispatched, func)
+    _pipda_func.__raw__ = func
+
+    return register_func(None, context=context, func=_pipda_func)
+
+
+context_func_factory = register_func
+verb_factory = register_verb

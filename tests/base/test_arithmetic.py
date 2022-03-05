@@ -56,7 +56,7 @@ def test_sum(caplog):
     assert sum(Series([1, 2])) == 3
     # Series GroupBy
     out = sum(Series([1, 2, 3, 4]).groupby([1, 1, 2, 2]))
-    assert_series_equal(out, Series([3, 7], index=[1, 2]))
+    assert_series_equal(out, Series([3, 7], index=[1, 2], name="x"))
 
     caplog.clear()
     out = sum(Series([1, 2, 3, 4]).groupby([1, 1, 2, 2]), na_rm=False)
@@ -89,8 +89,7 @@ def test_max():
 
 
 def test_var():
-    with pytest.warns(RuntimeWarning):
-        assert_iterable_equal([var(1)], [NA])
+    assert_iterable_equal([var(1)], [NA])
     assert var([1, 2, 3]) == 1
 
 
@@ -105,29 +104,29 @@ def test_pmax():
 
 
 def test_round():
-    assert round(1.23456) == 1.0
+    assert_iterable_equal(round(1.23456), [1.0])
     assert_iterable_equal(round([1.23456, 3.45678]), [1.0, 3.0])
     assert_iterable_equal(round([1.23456, 3.45678], 1), [1.2, 3.5])
 
 
 def test_sqrt():
-    assert sqrt(1) == 1
+    assert_iterable_equal(sqrt(1), [1])
     with pytest.warns(RuntimeWarning):
-        assert_iterable_equal([sqrt(-1)], [NA])
+        assert_iterable_equal(sqrt(-1), [NA])
 
 
 def test_abs():
-    assert abs(1) == 1
+    assert_iterable_equal(abs(1), [1])
     assert_iterable_equal(abs([-1, 1]), [1, 1])
 
 
 def test_ceiling():
-    assert ceiling(1.1) == 2
+    assert_iterable_equal(ceiling(1.1), [2])
     assert_iterable_equal(ceiling([-1.1, 1.1]), [-1, 2])
 
 
 def test_floor():
-    assert floor(1.1) == 1
+    assert_iterable_equal(floor(1.1), [1])
     assert_iterable_equal(floor([-1.1, 1.1]), [-2, 1])
 
 
@@ -198,19 +197,19 @@ def test_col_row_verbs():
 def test_scale():
 
     out = [1, 2, 3] >> scale()
-    assert_iterable_equal(out.scaled, [-1.0, 0.0, 1.0])
-    assert_iterable_equal(out.attrs["scaled:center"], [2])
-    assert_iterable_equal(out.attrs["scaled:scale"], [1])
+    assert_iterable_equal(out, [-1.0, 0.0, 1.0])
+    # assert_iterable_equal(out.attrs["scaled:center"], [2])
+    # assert_iterable_equal(out.attrs["scaled:scale"], [1])
 
     out = scale([1, 2, 3], center=1)
-    assert_iterable_equal(out.scaled, [0.0, 0.6324555, 1.2649111], approx=True)
-    assert_iterable_equal(out.attrs["scaled:center"], [1])
-    assert_iterable_equal(out.attrs["scaled:scale"], [1.581139], approx=True)
+    assert_iterable_equal(out, [0.0, 0.6324555, 1.2649111], approx=True)
+    # assert_iterable_equal(out.attrs["scaled:center"], [1])
+    # assert_iterable_equal(out.attrs["scaled:scale"], [1.581139], approx=True)
 
     out = [1, 2, 3] >> scale(scale=1)
-    assert_iterable_equal(out.scaled, [-1.0, 0.0, 1.0])
-    assert_iterable_equal(out.attrs["scaled:center"], [2])
-    assert_iterable_equal(out.attrs["scaled:scale"], [1])
+    assert_iterable_equal(out, [-1.0, 0.0, 1.0])
+    # assert_iterable_equal(out.attrs["scaled:center"], [2])
+    # assert_iterable_equal(out.attrs["scaled:scale"], [1])
 
     with pytest.raises(ValueError):
         scale([1, 2, 3], center=[1, 2])
@@ -234,18 +233,18 @@ def test_signif():
 
 
 def test_sign():
-    assert sign(2) == 1
-    assert sign(-2) == -1
+    assert_iterable_equal(sign(2), [1])
+    assert_iterable_equal(sign(-2), [-1])
 
 
 def test_trunc():
-    assert trunc(1.1) == 1
+    assert_iterable_equal(trunc(1.1), [1])
 
 
 def test_log():
-    assert pytest.approx(log(exp(1))) == 1.0
-    assert pytest.approx(log(4, 4)) == 1.0
-    assert pytest.approx(log([exp(1), exp(2)])) == [1.0, 2.0]
-    assert pytest.approx(log2(2)) == 1.0
-    assert pytest.approx(log10(10)) == 1.0
-    assert pytest.approx(log1p(np.e - 1)) == 1.0
+    assert_iterable_equal(log(exp(1)), [1.0], approx=True)
+    assert_iterable_equal(log(4, 4), [1.0], approx=True)
+    assert_iterable_equal(log(exp([1, 2])), [1.0, 2.0], approx=True)
+    assert_iterable_equal(log2(2), [1.0], approx=True)
+    assert_iterable_equal(log10(10), [1.0], approx=True)
+    assert_iterable_equal(log1p(np.e - 1), [1.0], approx=True)

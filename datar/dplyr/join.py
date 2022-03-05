@@ -1,14 +1,14 @@
 """Mutating joins"""
 import pandas as pd
-from pandas import DataFrame
-from pandas.api.types import union_categoricals, is_scalar, is_categorical_dtype
+from pandas import Categorical, DataFrame
+from pandas.api.types import is_scalar, is_categorical_dtype
 from pipda import register_verb
 
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
 from ..core.utils import regcall
-from ..base import intersect, setdiff
+from ..base import intersect, setdiff, union
 from .dfilter import filter as filter_
 
 
@@ -70,8 +70,15 @@ def _join(
         ret = pd.merge(newx, y, on=by, how=how, copy=copy, suffixes=suffix)
         for col in by:
             # try recovering factor columns
-            if is_categorical_dtype(newx[col]) and is_categorical_dtype(y[col]):
-                ret[col] = union_categoricals([newx[col], y[col]])[:ret.shape[0]]
+            if is_categorical_dtype(x[col]) and is_categorical_dtype(y[col]):
+                ret[col] = Categorical(
+                    ret[col],
+                    categories=regcall(
+                        union,
+                        x[col].cat.categories,
+                        y[col].cat.categories,
+                    ),
+                )
 
     return reconstruct_tibble(x, ret)
 

@@ -3,6 +3,7 @@
 import pytest
 from pandas.api.types import is_string_dtype, is_numeric_dtype
 from datar import f
+from datar.core.tibble import TibbleGrouped
 from datar.testing import assert_tibble_equal
 from datar.tibble import tibble
 from datar.dplyr import relocate, where, last_col
@@ -79,3 +80,10 @@ def test_before_0():
     df = tibble(x=1, y=2)
     out = relocate(df, f.y, _before=0)
     assert out.columns.tolist() == ["y", "x"]
+
+
+def test_rename_gvars():
+    df = tibble(x=1, y=2).group_by('x')
+    out = relocate(df, g=f.x, _after=f.y)
+    assert isinstance(out, TibbleGrouped)
+    assert out.group_vars == ['g']

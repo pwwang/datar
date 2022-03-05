@@ -12,7 +12,7 @@ from pandas.testing import assert_frame_equal
 from datar import f
 from datar.core.tibble import TibbleGrouped
 from datar.tibble import tibble
-from datar.stats import sd
+from datar.base import sd
 from datar.base import (
     c,
     rep,

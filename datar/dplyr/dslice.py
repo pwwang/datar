@@ -8,7 +8,7 @@ from typing import Any, Iterable, Union
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from pandas.api.types import is_integer
+# from pandas.api.types import is_integer
 from pipda import register_verb, Expression
 
 from ..core.broadcast import _ungroup
@@ -49,8 +49,8 @@ def slice(
     Returns:
         The sliced dataframe
     """
-    if _preserve:
-        logger.warning("`slice()` doesn't support `_preserve` argument yet.")
+    # if _preserve:
+    #     logger.warning("`slice()` doesn't support `_preserve` argument yet.")
 
     if not rows:
         return _data.copy()
@@ -334,15 +334,15 @@ def _sanitize_rows(rows: Iterable, nrow: int) -> np.ndarray:
     if rows.error:
         raise rows.error from None
 
-    invalid_type_rows = [
-        row
-        for row in rows.unmatched
-        if not is_integer(row) or pd.isnull(row)
-    ]
-    if invalid_type_rows:
-        raise TypeError(
-            "`slice()` expressions should return indices, got "
-            f"{type(invalid_type_rows[0])}"
-        )
+    # invalid_type_rows = [
+    #     row
+    #     for row in rows.unmatched
+    #     if not is_integer(row) or pd.isnull(row)
+    # ]
+    # if invalid_type_rows:
+    #     raise TypeError(
+    #         "`slice()` expressions should return indices, got "
+    #         f"{type(invalid_type_rows[0])}"
+    #     )
 
     return np.array(rows, dtype=int)

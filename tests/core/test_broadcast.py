@@ -1,5 +1,5 @@
 import pytest
-from pandas import Index, Series
+from pandas import Categorical, DataFrame, Index, Series
 from pandas.testing import assert_frame_equal
 from datar import f
 from datar.core.tibble import TibbleGrouped, TibbleRowwise
@@ -11,6 +11,7 @@ from datar.core.broadcast import (
     broadcast_to,
     add_to_tibble,
     init_tibble_from,
+    _get_index_grouper,
 )
 
 from ..conftest import assert_iterable_equal
@@ -264,17 +265,18 @@ def test_broadcast_to_arrays_groupby():
 
 def test_broadcast_to_ndframe_ndframe():
     df = tibble(x=[1, 2, 3])
-    value = Series([1, 2, 3], index=[1, 2, 3])
+    value = Series([1, 2, 3], index=[0, 1, 2])
     out = broadcast_to(value, df.index)
-    assert_iterable_equal(out, [None, 1, 2])
+    assert_iterable_equal(out, [1, 2, 3])
 
     out = broadcast_to(value.to_frame(name="x"), df.index)
-    assert_iterable_equal(out.x, [None, 1, 2])
+    assert_iterable_equal(out.x, [1, 2, 3])
 
 
 def test_broadcast_to_ndframe_groupby():
-    df = tibble(x=[1, 2, 2, 1, 1, 2]).groupby('x')
+    df = tibble(x=[1, 2, 2, 1, 1, 2]).groupby('x', sort=True)
     value = Series([8, 10], index=[1, 2])
+    value.index.name = "x"
     out = broadcast_to(value, df.obj.index, df.grouper)
     assert out.tolist() == [8, 10, 10, 8, 8, 10]
 
@@ -404,3 +406,76 @@ def test_add_to_tibble():
     value = tibble(a=[3, 4])
     tbl = add_to_tibble(df, None, value, allow_dup_names=True)
     assert_iterable_equal(tbl.columns, ["a", "a"])
+
+
+def test_catindex():
+    df = tibble(g=[1, 1, 2, 2]).group_by('g')
+    x = Series(
+        [5, 6],
+        index=Index(Categorical([1, 2], categories=[1, 2, 3]),
+        name="g")
+    )
+    out = broadcast_to(x, df.index, df.g.grouper)
+    assert_iterable_equal(out, [5, 5, 6, 6])
+
+
+    df = tibble(g=[1, 2]).group_by('g')
+    x = Series(
+        [5, 5, 6, 6],
+        index=Index(Categorical([1, 1, 2, 2], categories=[1, 2, 3]),
+        name="g")
+    )
+    base = _broadcast_base(x, df)
+    assert_iterable_equal(base.g.obj, [1, 1, 2, 2])
+
+
+def test_recycle_scalar_composed_base():
+    base = tibble(x=1)
+    value = Series([1, 2])
+    out = _broadcast_base(value, base)
+    assert_iterable_equal(out.x, [1, 1])
+
+
+def test_recycle_len1_list_gets_scalar():
+    assert broadcast_to([1], None, None) == 1
+
+
+def test_recycle_same_index_ndframe():
+    index = Index([1, 2])
+    s1 = Series([1, 2], index=index)
+    s2 = Series([3, 4], index=index)
+    out = broadcast_to(s2, s1.index)
+    assert out is s2
+
+
+def test_scalar_composed_value_gets_recycled():
+    s = Series(1)
+    out = broadcast_to(s, index=Index(range(3)))
+    assert_iterable_equal(out, [1, 1, 1])
+
+
+def test_empty_frame_gets_recycled():
+    df = DataFrame()
+    out = broadcast_to(df, index=Index(range(3)))
+    assert out.index.equals(Index(range(3)))
+
+def test_incompatible_index():
+    s1 = Series([1, 2], index=[0, 1])
+    s2 = Series([3, 4], index=[1, 2]).groupby([1, 2])
+    with pytest.raises(ValueError):
+        broadcast_to(s1, s2.obj.index)
+
+    with pytest.raises(ValueError):
+        broadcast_to(s1, s2.obj.index, s2.grouper)
+
+
+def test_nongrouped_value_with_equal_index_gets_recycled():
+    s1 = Series([1, 2], index=[3, 4]).groupby([1, 2])
+    s2 = Series([3, 4], index=[3, 4])
+    out = broadcast_to(s2, s1.obj.index, s1.grouper)
+    assert out is s2
+
+
+def test_get_index_grouper():
+    out = _get_index_grouper(1)
+    assert out == (None, None)

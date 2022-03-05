@@ -18,13 +18,14 @@ from pandas.api.types import (
     is_float_dtype,
     is_numeric_dtype,
 )
-# from pandas.core.generic import NDFrame
 from pandas.core.groupby import GroupBy, SeriesGroupBy
-from pandas.core.generic import NDFrame
 from pipda import register_func
 
+from ..core.tibble import TibbleGrouped
 from ..core.contexts import Context
 from ..core.factory import func_factory
+
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
 
 def _register_type_testing(
@@ -35,8 +36,9 @@ def _register_type_testing(
 ):
     """Register type testing function"""
 
-    @func_factory("agg", name=name, doc=doc)
-    def _testing(x):
+    @func_factory("agg", "x", name=name, doc=doc)
+    def _testing(x, __args_raw=None):
+        x = __args_raw["x"]
         if is_scalar_pd(x):
             return isinstance(x, scalar_types)
 
@@ -45,7 +47,7 @@ def _register_type_testing(
 
         return builtins.all(isinstance(elem, scalar_types) for elem in x)
 
-    _testing.register((NDFrame, GroupBy), dtype_checker)
+    _testing.register((TibbleGrouped, GroupBy), dtype_checker)
     return _testing
 
 
@@ -120,9 +122,7 @@ is_scalar = is_atomic
 @register_func(None, context=Context.EVAL)
 def is_element(x, elems):
     """R's `is.element()` or `%in%`.
-
     Alias `is_in()`
-
     We can't do `a %in% b` in python (`in` behaves differently), so
     use this function instead
     """
@@ -153,9 +153,19 @@ is_in = is_element
 
 
 all = func_factory(
-    "agg", func=builtins.all, doc="Check if all elements are true."
+    "agg",
+    "x",
+    func=builtins.all,
+    doc="Check if all elements are true.",
+    qualname="datar.base.all",
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 any = func_factory(
-    "agg", func=builtins.any, doc="Check if any elements is true."
+    "agg",
+    "x",
+    func=builtins.any,
+    doc="Check if any elements is true.",
+    qualname="datar.base.any",
+    signature=SINGLE_ARG_SIGNATURE,
 )

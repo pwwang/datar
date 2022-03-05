@@ -1,8 +1,5 @@
 """Bessel function family"""
-
-from pipda import register_func
-
-from ..core.contexts import Context
+from ..core.factory import func_factory
 
 
 def _get_special_func_from_scipy(name):
@@ -31,7 +28,13 @@ def _register_bessel_function(
 
     if exp_fun is None:
 
-        @register_func(None, context=Context.EVAL)
+        @func_factory(
+            "transform",
+            "x",
+            name=name,
+            qualname=f"datar.base.{name}",
+            doc=doc,
+        )
         def bessel_fun(x, nu):
             """Bessel function"""
             # use faster version for order 0 and 1
@@ -44,7 +47,13 @@ def _register_bessel_function(
 
     else:
 
-        @register_func(None, context=Context.EVAL)
+        @func_factory(
+            "transform",
+            "x",
+            name=name,
+            qualname=f"datar.base.{name}",
+            doc=doc,
+        )
         def bessel_fun(x, nu, expon_scaled=False):
             """Modified bessel function"""
             # use faster version for order 0 and 1
@@ -61,8 +70,6 @@ def _register_bessel_function(
             fun = _get_special_func_from_scipy(common_fun)
             return fun(nu, x)
 
-    bessel_fun.__name__ = name
-    bessel_fun.__doc__ = doc
     return bessel_fun
 
 

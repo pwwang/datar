@@ -3,9 +3,10 @@ import pytest
 import numpy as np
 from pandas import Series
 from datar import f
+from datar.core.tibble import TibbleGrouped
 from datar.datasets import iris
 from datar.dplyr import mutate
-from datar.tibble import tibble, tribble, tibble_row
+from datar.tibble import tibble, tribble, tibble_row, as_tibble
 from datar.base import seq, c, rep, sum, letters, LETTERS
 from datar.testing import assert_tibble_equal
 
@@ -14,7 +15,7 @@ from ..conftest import assert_iterable_equal
 
 def test_mixed_numbering():
     df = tibble(a=f[:5], b=seq(5), c=c(0, 1, 2, [3, 4]), d=c(f[:3], c(3, 4)))
-    exp = tibble(a=seq(5), b=f.a, c=f.a, d=f.a)
+    exp = tibble(a=range(5), b=seq(5), c=f.a, d=f.a)
     assert_tibble_equal(df, exp)
 
 
@@ -171,7 +172,7 @@ def test_subsetting_correct_nrow():
 
 
 def test_one_row_retains_column():
-    df = tibble(a=range(4), b=seq(-4))
+    df = tibble(a=range(4), b=seq(-4, -1))
     out = tibble(y=df).loc[0, :]
     expect = tibble(y=df.loc[0, :].values)
     assert_iterable_equal(out.values.flatten(), expect.values.flatten())
@@ -295,3 +296,28 @@ def test_tibble_row():
 
     df = tibble_row()
     assert df.shape == (1, 0)
+
+# tibble with index
+def test_tibble_index():
+
+    df = tibble(a=seq(5), _index=seq(5, 1))
+    out = tibble(df.a)
+    assert_iterable_equal(out.index, seq(5, 1))
+
+    out = tibble(df.a, _drop_index=True)
+    assert_iterable_equal(out.index, seq(0, 4))
+
+
+# as_tibble
+def test_as_tibble():
+    x = {"a": [1]}
+    out = as_tibble(x)
+    assert_tibble_equal(out, tibble(a=1))
+
+    gf = out.groupby('a')
+    out = as_tibble(gf)
+    assert isinstance(out, TibbleGrouped)
+    assert_iterable_equal(out.group_vars, ["a"])
+
+    out2 = as_tibble(out)
+    assert out2 is out

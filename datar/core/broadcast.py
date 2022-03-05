@@ -77,7 +77,7 @@ def _agg_result_compatible(index: "Index", grouper: "Grouper") -> bool:
     if isinstance(index, CategoricalIndex):
         index = index.remove_unused_categories()
 
-    size1 = index.value_counts(sort=False)
+    size1 = index.value_counts(sort=False, dropna=False)
     size2 = grouper.size()
 
     return ((size1 == 1) | (size2 == 1) | (size1.values == size2.values)).all()
@@ -308,7 +308,7 @@ def _(
 
         if isinstance(value.index, CategoricalIndex):
             val_sizes = value.index.remove_unused_categories().value_counts(
-                sort=False
+                sort=False,
             )
         else:
             val_sizes = value.index.value_counts(sort=False)
@@ -425,7 +425,10 @@ def broadcast_to(
     idx = np.concatenate(
         [grouper.groups[gdata] for gdata in grouper.group_keys_seq]
     )
-    return Series(np.tile(value, grouper.ngroups), index=idx).reindex(index)
+    # make np.tile([[3, 4]], 2) to be [[3, 4], [3, 4]],
+    # instead of [[3, 4, 3, 4]]
+    repeats = (grouper.ngroups, ) + (1, ) * (np.ndim(value) - 1)
+    return Series(np.tile(value, repeats).tolist(), index=idx).reindex(index)
 
 
 @broadcast_to.register(NDFrame)
@@ -462,22 +465,29 @@ def _(
     # grouper's index
     # This is typically an aggregated result to the orignal structure
     # For example:  f.x.mean() / f.x
-    if isinstance(value, Series):
-        out = Series(
-            value,
-            index=grouper.result_index.take(grouper.group_info[0]),
-            name=value.name,
-            copy=False,
-        )
-    else:  # DataFrame
-        out = Tibble(
-            value,
-            index=grouper.result_index.take(grouper.group_info[0]),
-            copy=False,
-        )
+    if _agg_result_compatible(value.index, grouper):
 
-    out.index = index
-    return out
+        if isinstance(value, Series):
+            out = Series(
+                value,
+                index=grouper.result_index.take(grouper.group_info[0]),
+                name=value.name,
+                copy=False,
+            )
+        else:  # DataFrame
+            out = Tibble(
+                value,
+                index=grouper.result_index.take(grouper.group_info[0]),
+                copy=False,
+            )
+
+        out.index = index
+        return out
+
+    if value.index.equals(index):
+        return value
+
+    raise ValueError("Incompatible value to recycle.")
 
 
 @broadcast_to.register(GroupBy)
@@ -573,6 +583,9 @@ def broadcast2(left, right) -> Tuple[Any, Any, "Grouper", bool]:
     """Broadcast 2 values for operators"""
     left_pri = _type_priority(left)
     right_pri = _type_priority(right)
+    if left_pri == right_pri == -1:
+        return left, right, None, False
+
     if left_pri > right_pri:
         left = _broadcast_base(right, left)
         index, grouper = _get_index_grouper(left)

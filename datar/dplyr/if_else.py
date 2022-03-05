@@ -6,11 +6,12 @@ https://github.com/tidyverse/dplyr/blob/master/R/case_when.R
 import numpy as np
 import pandas as pd
 from pandas import Series
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
-from ..core.utils import ensure_nparray, regcall
+from ..core.utils import regcall
 from ..tibble import tibble
 from .group_by import ungroup
 
@@ -32,6 +33,9 @@ def if_else(condition, true, false, missing=None):
     Returns:
         A series with values replaced.
     """
+    if isinstance(condition, SeriesGroupBy):
+        return _if_else_sgb(condition, true, false, missing)
+
     if missing is None:
         missing = np.nan
         na_conds = False
@@ -44,7 +48,7 @@ def if_else(condition, true, false, missing=None):
     elif isinstance(condition, np.ndarray):
         newcond = np.nan_to_num(condition)
     else:
-        newcond = np.nan_to_num(ensure_nparray(condition))
+        newcond = np.nan_to_num(condition, 0.0)
 
     newcond = newcond.astype(bool)
 
@@ -66,6 +70,23 @@ def if_else(condition, true, false, missing=None):
         return out
 
     return out.values
+
+
+# SeriesGroupBy
+def _if_else_sgb(condition, true, false, missing=None):
+    if missing is None:
+        missing = np.nan
+    df = tibble(condition, true, false, missing, _name_repair="minimal")
+    # use obj so df.x won't get a SeriesGroupBy
+    grouped = df._datar["grouped"]
+    out = regcall(
+        if_else,
+        grouped.obj.iloc[:, 0],
+        grouped.obj.iloc[:, 1],
+        grouped.obj.iloc[:, 2],
+        grouped.obj.iloc[:, 3],
+    )
+    return out.groupby(condition.grouper)
 
 
 @register_func(None, context=Context.EVAL)

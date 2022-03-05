@@ -34,7 +34,7 @@ def cur_data_all(_data, _context=None):
     """gives the current data for the current group
     (including grouping variables)"""
     _data = _context.meta.get("input_data", _data)
-    return Series([_data], dtype=object)
+    return Series([_data.copy()], dtype=object)
 
 
 @cur_data_all.register(TibbleGrouped)

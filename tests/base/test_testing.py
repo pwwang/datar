@@ -39,8 +39,8 @@ def test_is_atomic():
 
 
 def test_is_element():
-    assert is_element(1, [1, 2])
-    assert not is_element(0, [1, 2])
+    assert_iterable_equal([is_element(1, [1, 2])], [True])
+    assert_iterable_equal([is_element(0, [1, 2])], [False])
     assert_iterable_equal(is_element([0, 1], [1, 2]), [False, True])
 
     df = tibble(x=[1, 2, 1, 2], y=[1, 1, 2, 2]).groupby("y")

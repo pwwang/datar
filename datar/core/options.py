@@ -24,7 +24,7 @@ OPTIONS = Diot(
 )
 
 
-def enable_pdtypes_callback(enable: bool) -> None:
+def enable_pdtypes_callback(enable: bool) -> None:  # pragma: no cover
     from .utils import logger
     try:
         import pdtypes

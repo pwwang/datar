@@ -23,6 +23,25 @@ def _as_date_dummy(
     raise ValueError(f"Unable to convert to date with type: {type(x)!r}")
 
 
+@_as_date_dummy.register(np.datetime64)
+def _(
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
+    return _as_date_dummy(
+        pd.to_datetime(x),
+        format=format,
+        try_formats=try_formats,
+        optional=optional,
+        tz=tz,
+        origin=origin,
+    )
+
+
 @_as_date_dummy.register(datetime.date)
 def _(
     x,
@@ -90,25 +109,6 @@ def _(
     )
 
 
-# @_as_date_dummy.register(Series)
-# def _(
-#     x,
-#     format=None,
-#     try_formats=None,
-#     optional=False,
-#     tz=0,
-#     origin=None,
-# ):
-#     return _as_date_dummy(
-#         x.values[0],
-#         format=format,
-#         try_formats=try_formats,
-#         optional=optional,
-#         tz=tz,
-#         origin=origin,
-#     )
-
-
 @_as_date_dummy.register(int)
 @_as_date_dummy.register(np.integer)
 def _(
@@ -132,7 +132,13 @@ def _(
     return dt
 
 
-@func_factory("transform", is_vectorized=False)
+_as_date_dummy = np.vectorize(
+    _as_date_dummy,
+    excluded={"format", "try_formats", "optional", "origin", "tz"}
+)
+
+
+@func_factory("transform", "x")
 def as_date(
     x,
     format=None,
@@ -174,12 +180,13 @@ def as_date(
             optional=optional,
             origin=origin,
             tz=tz,
-        )
+        ).tolist()
     )
 
 
 as_pd_date = func_factory(
     "transform",
+    "arg",
     name="as_pd_date",
     doc="""Alias of pandas.to_datetime(), but registered as a function
     so that it can be used in verbs.

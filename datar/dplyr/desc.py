@@ -1,13 +1,12 @@
 """Provides desc"""
 import numpy as np
-from pandas import Series
-from pandas.api.types import is_scalar
+from pandas import Categorical, Series
 
 from ..core.tibble import SeriesCategorical
 from ..core.factory import func_factory
 
 
-@func_factory("transform")
+@func_factory("transform", "x")
 def desc(x):
     """Transform a vector into a format that will be sorted in descending order
 
@@ -22,13 +21,15 @@ def desc(x):
     Returns:
         The descending order of x
     """
-    if is_scalar(x):
-        return x
-
-    return x[::-1]
-
-
-desc.register(Series, lambda x: -x)
+    try:
+        out = -x
+    except (ValueError, TypeError):
+        cat = Categorical(x.values)
+        out = desc.dispatched(
+            Series(cat, index=x.index)
+        )
+    out.name = None
+    return out
 
 
 @desc.register(SeriesCategorical)
@@ -36,4 +37,4 @@ def _(x):
     cat = x.values
     code = cat.codes.astype(float)
     code[code == -1.0] = np.nan
-    return Series(-code, name=x.name, index=x.index)
+    return Series(-code, index=x.index)

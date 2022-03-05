@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
+from pandas import Series
 from pandas.api.types import is_scalar, is_integer
-from pandas.core.generic import NDFrame
 from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import register_func
 
@@ -95,7 +94,7 @@ def c(*elems):
     return Collection(*elems)
 
 
-@func_factory("apply")
+@func_factory("apply", "x")
 def rep(
     x,
     times=1,
@@ -152,30 +151,23 @@ rep.register(
 )
 
 
-@func_factory("agg")
+@func_factory("agg", "x")
 def length(x):
     """Get length of elements"""
-    if is_scalar(x):
-        return 1
-
-    return len(x)
+    return x.size
 
 
-length.register(GroupBy, "count")
+length.register((TibbleGrouped, GroupBy), "count")
 
 
-@func_factory("transform")
+@func_factory("agg", "x")
 def lengths(x):
     """Get Lengths of elementss of a vector"""
-    # optimize according to dtype?
-    if is_scalar(x):
-        return np.array([1], dtype=int)
-
-    return np.array([length.__raw__(elem) for elem in x], dtype=int)
+    return x.transform(lambda y: 1 if is_scalar(y) else len(y))
 
 
-@func_factory("apply")
-def order(x, decreasing=False, na_last=None):
+@func_factory("transform", "x")
+def order(x: Series, decreasing=False, na_last=True):
     """Sorting or Ordering Vectors
 
     Args:
@@ -183,24 +175,21 @@ def order(x, decreasing=False, na_last=None):
         decreasing: Should the vector sort be increasing or decreasing?
         na_last: for controlling the treatment of `NA`s.  If `True`, missing
             values in the data are put last; if `FALSE`, they are put
-            first. If None, they are removed.
-            For Series and SeriesGroupBy objects, it defaults to True
+            first.
 
     Returns:
         The sorted array
     """
-    x = ensure_nparray(x)
-    if pd.isnull(na_last):
-        x = x[~pd.isnull(x)]
+    if not na_last or decreasing:
+        na = -np.inf
     else:
-        if not na_last or decreasing:
-            na = -np.inf
-        else:
-            na = np.inf
-        x = np.nan_to_num(x, nan=na)
+        na = np.inf
 
-    out = np.argsort(x)
-    return out[::-1] if decreasing else out
+    out = np.argsort(x.fillna(na))
+    if decreasing:
+        out = out[::-1]
+        out.index = x.index
+    return out
 
 
 order.register(
@@ -208,47 +197,27 @@ order.register(
     func=None,
     post=(
         lambda out, x, decreasing=False, na_last=None:
-        out.explode().astype(int)
+        out.explode().astype(int).groupby(x.grouper)
     ),
 )
 
 
-@func_factory("apply")
-def rev(x):
+@func_factory("transform", "x")
+def rev(x, __args_raw=None):
     """Get reversed vector"""
-    if is_scalar(x):
-        return x
+    rawx = __args_raw["x"]
+    if isinstance(rawx, (Series, SeriesGroupBy)):  # groupby from transform()
+        out = x[::-1]
+        out.index = x.index
+        return out
 
-    return x[::-1]
+    if is_scalar(rawx):
+        return np.array([rawx], dtype=type(rawx))
 
-
-rev.register(
-    NDFrame,
-    func=None,
-    post=lambda out, x: setattr(out, "index", x.index) or out
-)
-
-
-rev.register(
-    GroupBy,
-    func=None,
-    post=lambda out, x: out.droplevel(-1)
-)
+    return rawx[::-1]
 
 
-# @register_func(None, context=Context.EVAL)
-# def unique(x):
-#     """Get unique elements"""
-#     if is_scalar(x):
-#         return x
-
-#     if isinstance(x, SeriesGroupBy):
-#         return x.unique().explode().astype(x.obj.dtype)
-
-#     return pd.unique(x)  # keeps order
-
-
-@func_factory("apply")
+@func_factory("agg", "x")
 def sample(
     x,
     size=None,
@@ -273,18 +242,21 @@ def sample(
         A vector of length size with elements drawn from either x or from the
         integers 1:x.
     """
-    if isinstance(x, str):
-        x = list(x)
     if size is None:
         size = len(x) if not is_scalar(x) else x
+    elif not is_scalar(size):
+        if len(size) > 1:
+            raise ValueError(
+                "In sample(...): multiple `size`s are not supported yet."
+            )
     return np.random.choice(x, int(size), replace=replace, p=prob)
 
 
-@func_factory("apply")
+@func_factory("transform", "x")
 def sort(
     x,
     decreasing=False,
-    na_last=None,
+    na_last=True,
 ):
     """Sorting or Ordering Vectors
 
@@ -293,23 +265,18 @@ def sort(
         decreasing: Should the vector sort be increasing or decreasing?
         na_last: for controlling the treatment of `NA`s.  If `True`, missing
             values in the data are put last; if `FALSE`, they are put
-            first; if `None`, they are removed.
+            first;
 
     Returns:
         The sorted array
     """
-    if is_scalar(x):
-        return x
-
-    idx = order.__raw__(x, decreasing=decreasing, na_last=na_last)
-    x = ensure_nparray(x)
-    if pd.isnull(na_last):
-        x = x[~pd.isnull(x)]
-
-    return x[idx]
+    idx = order.__raw__(x, decreasing=decreasing, na_last=na_last).values
+    out = x.iloc[idx]
+    out.index = x.index
+    return out
 
 
-@func_factory("apply")
+@register_func(None, context=Context.EVAL)
 def match(x, table, nomatch=-1):
     """match returns a vector of the positions of (first) matches of
     its first argument in its second.
@@ -323,30 +290,32 @@ def match(x, table, nomatch=-1):
             Instead of NA in R, this function takes -1 for non-matched elements
             to keep the type as int.
     """
-    x = ensure_nparray(x)
-    table = ensure_nparray(table)
-    sorter = np.argsort(table)
-    searched = np.searchsorted(table, x, sorter=sorter).ravel()
-    out = sorter.take(searched, mode="clip")
-    out[~np.isin(x, table)] = nomatch
-    return out
+    def match_dummy(xx, tab):
+        sorter = np.argsort(tab)
+        searched = np.searchsorted(tab, xx, sorter=sorter).ravel()
+        out = getattr(sorter, "values", sorter).take(searched, mode="clip")
+        out[~np.isin(xx, tab)] = nomatch
+        return out
 
+    if isinstance(x, SeriesGroupBy) and isinstance(table, SeriesGroupBy):
+        from ..tibble import tibble
 
-@match.register(SeriesGroupBy, replace=True)
-def _(x, table, nomatch=-1):
-    if not isinstance(table, SeriesGroupBy):
-        return (
-            x.apply(match.__raw__, table=table, nomatch=nomatch)
-            .explode()
-            .astype(int)
-        )
+        df = tibble(x=x, y=table)
+        return df._datar["grouped"].apply(
+            lambda g: match_dummy(g.x, g.y)
+        ).explode().astype(int).groupby(x.grouper)
 
-    from ..tibble import tibble
+    if isinstance(x, SeriesGroupBy):
+        out = x.transform(match_dummy, tab=table).groupby(x.grouper)
+        if getattr(x, "is_rowwise", False):
+            out.is_rowwise = True
+        return out
 
-    df = tibble(x=x, table=table)  # TibbleGrouped
-    return (
-        df._datar["grouped"]
-        .apply(lambda g: match.__raw__(g["x"], g["table"], nomatch=nomatch))
-        .explode()
-        .astype(int)
-    )
+    # # really needed?
+    # if isinstance(table, SeriesGroupBy):
+    #     return table.apply(lambda e: match_dummy(x, e)).explode().astype(int)
+
+    if isinstance(x, Series):
+        return Series(match_dummy(x, table), index=x.index)
+
+    return match_dummy(x, table)

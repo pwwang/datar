@@ -126,6 +126,7 @@ def test_as_date_error():
 
 def test_as_pd_date():
 
-    assert as_pd_date("Sep 16, 2021") == pd.Timestamp(
-        "2021-09-16 00:00:00"
+    assert_iterable_equal(
+        as_pd_date("Sep 16, 2021"),
+        [pd.Timestamp("2021-09-16 00:00:00")]
     )

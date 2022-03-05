@@ -32,11 +32,11 @@ def test_sort_empty_df():
 
 
 def test_na_end():
-    df = tibble(x=c(2, 1, NA))  # NA makes it float
+    df = tibble(x=c(4, 3, NA))  # NA makes it float
     out = df >> arrange(f.x)
-    assert_iterable_equal(out.x, [1, 2, None])
+    assert_iterable_equal(out.x, [3, 4, None])
     out = df >> arrange(desc(f.x))
-    assert_iterable_equal(out.x, [2, 1, None])
+    assert_iterable_equal(out.x, [4, 3, None])
 
 
 def test_errors():
@@ -50,7 +50,7 @@ def test_errors():
     with pytest.raises(KeyError):
         df >> arrange(f.y)
 
-    with pytest.raises(ValueError, match="incompatible index"):
+    with pytest.raises(ValueError, match="Length of values"):
         df >> arrange(rep(f.x, 2))
 
 

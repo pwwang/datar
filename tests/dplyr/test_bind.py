@@ -179,12 +179,12 @@ def test_bind_na_cols():
     out = df1 >> bind_rows(df2)
     res = out >> get(2, f.x)
     y = is_na(res)
-    assert y
+    assert_iterable_equal(y, [True])
 
     out = df2 >> bind_rows(df1)
     res = out >> get(0, f.x)
     y = is_na(res)
-    assert y
+    assert_iterable_equal(y, [True])
 
     y = is_categorical(out.x)
     assert y

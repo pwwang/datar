@@ -136,7 +136,7 @@ class Tibble(DataFrame):
             result = super().__getitem__(key)
         except KeyError:
             subdf_cols = [
-                col for col in self.columns if col.startswith(f"{key}$")
+                col for col in self.columns if str(col).startswith(f"{key}$")
             ]
             if not subdf_cols:
                 raise
@@ -150,8 +150,8 @@ class Tibble(DataFrame):
         from .broadcast import broadcast_to
         value = broadcast_to(value, self.index)
 
-        if isinstance(value, GroupBy):
-            value = value.obj
+        # if isinstance(value, GroupBy):
+        #     value = value.obj
 
         if isinstance(key, str) and isinstance(value, DataFrame):
             if value.shape[1] == 0:
@@ -258,7 +258,11 @@ class TibbleGrouped(Tibble):
                 dropna=grouped.dropna,
             )
 
-        return cls(grouped.obj, copy=deep, meta={"grouped": grouped})
+        meta = {"grouped": grouped}
+        if cls is TibbleRowwise:
+            meta["group_vars"] = []
+
+        return cls(grouped.obj, copy=deep, meta=meta)
 
     def __getitem__(self, key):
         result = super().__getitem__(key)
@@ -308,7 +312,7 @@ class TibbleGrouped(Tibble):
     def transform(self, *args, **kwargs):
         """Transform brings the metadata of original df, we need to update it"""
         out = super().transform(*args, **kwargs)
-        return out.regroup()
+        return out.regroup(inplace=False)
 
     def copy(self, deep: bool = True) -> "TibbleGrouped":
         grouped = self._datar["grouped"]
@@ -325,7 +329,7 @@ class TibbleGrouped(Tibble):
     def reindex(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.reindex(self, *args, **kwargs)
         result.reset_index(drop=True, inplace=True)
-        return result.regroup()
+        return result.regroup(inplace=False)
 
     def take(self, *args, **kwargs) -> "TibbleGrouped":
         result = Tibble.take(self, *args, **kwargs)
@@ -333,7 +337,7 @@ class TibbleGrouped(Tibble):
             return result
 
         result.reset_index(drop=True, inplace=True)
-        return result.regroup()
+        return result.regroup(inplace=False)
 
     def sample(self, *args, **kwargs) -> "TibbleGrouped":
         grouped = self._datar["grouped"]
@@ -407,18 +411,23 @@ class TibbleRowwise(TibbleGrouped):
         out._datar["group_vars"] = self._datar["group_vars"]
         return out
 
-    def regroup(self, hard=True, inplace=True) -> "TibbleGrouped":
+    def regroup(self, hard=True, inplace=True) -> "TibbleRowwise":
         """Apply my grouping settings to another data frame"""
         # hard = False, structure and grouping variables not changed
         if not hard:
-            return super().regroup(hard=hard, inplace=inplace)
+            out = super().regroup(hard=hard, inplace=inplace)
+            out._datar["group_vars"] = self.group_vars
+            return out
 
         new = self.groupby(Index(range(self.shape[0])), sort=False)
         if not inplace:
-            return self.__class__.from_groupby(new)
+            out = self.__class__.from_groupby(new)
+            out._datar["group_vars"] = self.group_vars
+            return out
 
         self._datar["grouped"] = new
         self._datar["grouped"].obj = Tibble(self, copy=False)
+        self._datar["group_vars"] = self.group_vars
         return self
 
 

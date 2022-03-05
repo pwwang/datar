@@ -2,15 +2,14 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/distinct.R
 """
-import pandas as pd
 from pandas import DataFrame
-from pandas.api.types import is_scalar
+from pandas.core.groupby import GroupBy
 from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.factory import func_factory
 from ..core.utils import regcall
-from ..core.tibble import Tibble, reconstruct_tibble
+from ..core.tibble import Tibble, TibbleGrouped, reconstruct_tibble
 from ..base import union, setdiff, intersect
 from .mutate import mutate
 
@@ -62,13 +61,14 @@ def distinct(_data, *args, _keep_all=False, **kwargs):
     return reconstruct_tibble(_data, Tibble(out, copy=False))
 
 
-@func_factory("agg")
-def n_distinct(x, na_rm=False):
+@func_factory("agg", "x")
+def n_distinct(x, na_rm=True):
     """Get the length of distinct elements"""
-    if is_scalar(x):
-        return 0 if na_rm and pd.isnull(x) else 1
+    return x.nunique(dropna=na_rm)
 
-    if not na_rm:
-        return pd.unique(x).size
 
-    return pd.notnull(pd.unique(x)).sum()
+n_distinct.register(
+    (TibbleGrouped, GroupBy),
+    "nunique",
+    pre=lambda x, na_rm=True: (x, (), {"dropna": na_rm}),
+)

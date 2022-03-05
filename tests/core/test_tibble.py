@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from pandas import DataFrame
 from pandas.api.types import is_float_dtype, is_integer_dtype
@@ -68,9 +69,15 @@ def test_tibble_from_args():
 
 def test_tibble_setitem():
     df = Tibble.from_args(a=[1, 2, 3])
-    gf = Tibble.from_args(b=[4, 5, 6]).group_by(["b"])
-    df["b"] = gf._datar["grouped"]
-    assert_frame_equal(df["b"], DataFrame(gf))
+    # gf = Tibble.from_args(b=[4, 5, 6]).group_by(["b"])
+    # df["b"] = gf._datar["grouped"]
+    df2 = df.copy()
+    df["b"] = df2
+    assert_frame_equal(df["b"], DataFrame(df2))
+
+    # 0-col df with NA
+    df["c"] = Tibble.from_args()
+    assert_iterable_equal(df.c, [np.nan] * 3)
 
 
 def test_tibble_group_by():
@@ -134,3 +141,20 @@ def test_tibble_rowwise():
 
     df3 = df2.copy()
     assert_tibble_equal(df2, df3)
+
+
+def test_footer():
+    df = Tibble.from_args(x=[1, 2, 3]).group_by('x')
+    assert "n=3" in str(df)
+    assert "n=3" in df._repr_html_()
+
+
+def test_regroup_nohard():
+    df = Tibble.from_args(x=[1, 2, 3]).group_by('x')
+    out = df.regroup(hard=False, inplace=False)
+    assert out is not df
+    assert out._datar["grouped"] is not df._datar["grouped"]
+
+    out = df.regroup(hard=True, inplace=True)
+    assert out is df
+    assert out._datar["grouped"] is df._datar["grouped"]

@@ -1,14 +1,17 @@
 """Trigonometric and Hyperbolic Functions"""
+from functools import singledispatch
 import numpy as np
 from pandas import Series
 from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
-from ..core.tibble import TibbleRowwise
+
+from ..core.tibble import TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
 from ..core.factory import func_factory
 
 from .constants import pi
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
 
 def _register_trig_hb_func(name, doc, np_name=None):
@@ -20,7 +23,15 @@ def _register_trig_hb_func(name, doc, np_name=None):
     else:
         func = np_fun
 
-    return func_factory("transform", name=name, doc=doc, func=func)
+    return func_factory(
+        "transform",
+        "x",
+        qualname=f"datar.base.{name}",
+        name=name,
+        doc=doc,
+        func=func,
+        signature=SINGLE_ARG_SIGNATURE
+    )
 
 
 sin = _register_trig_hb_func(
@@ -213,8 +224,22 @@ atanh = _register_trig_hb_func(
 )
 
 
-@register_func(None, context=Context.EVAL)
-def atan2(y, x):
+@singledispatch
+def _atan2(args_frame, y, x):
+    return np.arctan2(y, x)
+
+
+@_atan2.register(TibbleGrouped)
+def _atan2_grouped(args_frame, y, x):
+    out = args_frame.agg(lambda row: np.arctan2(row.y, row.x), axis=1)
+    out = out.groupby(y.grouper)
+    if getattr(y, "is_rowwise", False):
+        out.is_rowwise = True
+    return out
+
+
+@func_factory(None, {"y", "x"})
+def atan2(y, x, __args_frame=None):
     """Calculates the angle between the x-axis and the vector (0,0) -> (x,y)
 
     Args:
@@ -224,16 +249,4 @@ def atan2(y, x):
     Returns:
         The angle between x-axis and vector (0,0) -> (x,y)
     """
-    from ..tibble import tibble
-
-    df = tibble(y=y, x=x)
-    out = df.apply(lambda row: np.arctan2(*row), axis=1)
-    if isinstance(df, TibbleRowwise):
-        out = out.groupby(getattr(x, "grouper", getattr(y, "grouper", None)))
-        out.is_rowwise = True
-        return out
-
-    if isinstance(y, (Series, SeriesGroupBy)):
-        return out
-
-    return out.values
+    return _atan2(__args_frame, y, x)

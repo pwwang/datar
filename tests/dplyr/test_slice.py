@@ -4,7 +4,7 @@ from pandas.testing import assert_frame_equal
 import pytest
 from datar import f
 from datar.datasets import mtcars
-from datar.tibble import tibble
+from datar.tibble import tibble, as_tibble
 from datar.base import nrow, c, NA, rep, seq, dim, names
 from datar.dplyr import (
     slice,
@@ -41,7 +41,7 @@ def test_slice_handles_numeric_input():
     exp = g >> filter(row_number() == 1)
     assert_frame_equal(res, exp)
 
-    res1 = mtcars >> slice(0)
+    res1 = mtcars >> slice(0) >> as_tibble()
     res2 = mtcars >> filter(row_number() == 1)
     assert_frame_equal(res1, res2)
 
@@ -423,6 +423,9 @@ def test_slice_head_tail_on_grouped_data():
 
 def test_slice_family_on_rowwise_df():
     df = tibble(x=f[1:6]) >> rowwise()
+    out = df >> slice_head(prop=.1)
+    assert out.shape[0] == 0
+
     out = df >> slice([0, 1, 2])
     assert isinstance(out, TibbleRowwise)
     assert nrow(out) == 5
@@ -446,3 +449,24 @@ def test_slice_family_on_rowwise_df():
     out = df >> slice_sample(n=3)
     assert isinstance(out, TibbleRowwise)
     assert nrow(out) == 5
+
+
+def test_preserve_prop_not_support(caplog):
+    df = tibble(x=f[:5]) >> group_by(f.x)
+    df >> slice(f.x == 2, _preserve=True)
+    assert "_preserve" in caplog.text
+
+    with pytest.raises(ValueError):
+        df >> slice_min(f.x, prop=.5)
+
+    with pytest.raises(ValueError):
+        df >> slice_max(f.x, prop=.5)
+
+    with pytest.raises(ValueError):
+        df >> slice_sample(f.x, prop=.5)
+
+
+def test_wrong_indices():
+    df = tibble(x=f[:3])
+    with pytest.raises(TypeError):
+        df >> slice("a")
