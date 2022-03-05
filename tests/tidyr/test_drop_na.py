@@ -3,21 +3,21 @@
 import pytest
 from pandas.testing import assert_frame_equal
 from datar.all import *
-from datar.core.exceptions import ColumnNotExistingError
+
 
 def test_empty_call_drops_every_row():
     df = tibble(x=c(1,2,NA), y=c("a", NA, "b"))
     # NA is a float
-    exp = tibble(x=1, y="a", dtypes_={'x': float})
+    exp = tibble(x=1, y="a", _dtypes={'x': float})
     assert_frame_equal(drop_na(df), exp)
 
 def test_only_considers_specified_vars():
     df = tibble(x=c(1,2,NA), y=c("a", None, "b"))
-    exp = tibble(x=[1,2], y=c("a", None), dtypes_={'x': float})
+    exp = tibble(x=[1,2], y=c("a", None), _dtypes={'x': float})
     out = drop_na(df, f.x)
     assert_frame_equal(out, exp)
 
-    exp = tibble(x=[1], y=c("a"), dtypes_={'x': float})
+    exp = tibble(x=[1], y=c("a"), _dtypes={'x': float})
     out = drop_na(df, f[f.x:f.y])
     assert_frame_equal(out, exp)
 
@@ -39,7 +39,7 @@ def test_empty_call_drops_every_row():
 
 def test_errors_are_raised():
     df = tibble(x=c(1,2,NA), y=c("a", NA, "b"))
-    with  pytest.raises(ColumnNotExistingError):
+    with  pytest.raises(KeyError):
         drop_na(df, f.z)
 
 def test_single_variable_var_doesnot_lose_dimension():

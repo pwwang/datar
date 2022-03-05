@@ -7,11 +7,10 @@ from typing import Union
 
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, reconstruct_tibble
-from ..core.grouped import DataFrameGroupBy
+from ..core.utils import vars_select, regcall
+from ..core.tibble import TibbleGrouped, reconstruct_tibble
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -19,7 +18,6 @@ def fill(
     _data: DataFrame,
     *columns: Union[str, int],
     _direction: str = "down",
-    base0_: bool = None,
 ) -> DataFrame:
     """Fills missing values in selected columns using the next or
     previous entry.
@@ -33,8 +31,6 @@ def fill(
             Currently either "down" (the default), "up",
             "downup" (i.e. first down and then up) or
             "updown" (first up and then down).
-        base0_: Whether `*columns` are 0-based if given by indexes
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with NAs being replaced.
@@ -49,24 +45,26 @@ def fill(
                 method="ffill" if _direction.endswith("down") else "bfill",
             )
     else:
-        colidx = vars_select(data.columns, *columns, base0=base0_)
-        data.iloc[:, colidx] = fill(
+        colidx = vars_select(data.columns, *columns)
+        data.iloc[:, colidx] = regcall(
+            fill,
             data.iloc[:, colidx],
             _direction=_direction,
-            __calling_env=CallingEnvs.REGULAR,
         )
     return data
 
 
-@fill.register(DataFrameGroupBy, context=Context.SELECT)
+@fill.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    _data: DataFrameGroupBy, *columns: str, _direction: str = "down"
-) -> DataFrameGroupBy:
-    # DataFrameGroupBy
+    _data: TibbleGrouped,
+    *columns: str,
+    _direction: str = "down",
+) -> TibbleGrouped:
+    # TibbleGrouped
     out = _data._datar_apply(
         fill,
         *columns,
         _direction=_direction,
         _drop_index=False,
     ).sort_index()
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
+    return reconstruct_tibble(_data, out)

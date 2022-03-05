@@ -18,7 +18,7 @@ class ContextEval(ContextEvalPipda):
     # def eval_symbolic(self, data):
     #     from .tibble import Tibble
 
-    #     if isinstance(data, (DataFrameGroupBy, DataFrame)) and not isinstance(
+    #     if isinstance(data, (TibbleGrouped, DataFrame)) and not isinstance(
     #         data, Tibble
     #     ):
     #         from ..tibble import as_tibble

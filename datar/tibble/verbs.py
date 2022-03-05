@@ -103,7 +103,6 @@ def add_row(
         _before: and
         _after: row index where to add the new rows.
             (default to add after the last row)
-        base0_: Whether `_before` and `_after` are 0-based or not.
 
     Returns:
         The dataframe with the added rows
@@ -149,7 +148,7 @@ def add_column(
     _before=None,
     _after=None,
     _name_repair="check_unique",
-    dtypes_=None,
+    _dtypes=None,
     **kwargs,
 ):
     """Add one or more columns to an existing data frame.
@@ -161,16 +160,13 @@ def add_column(
         _before: and
         _after: Column index or name where to add the new columns
             (default to add after the last column)
-        base0_: Whether `_before` and `_after` are 0-based if they are index.
-            if not given, will be determined by `get_option('index_base_0')`,
-            which is `False` by default.
-        dtypes_: The dtypes for the new columns, either a uniform dtype or a
+        _dtypes: The dtypes for the new columns, either a uniform dtype or a
             dict of dtypes with keys the column names
 
     Returns:
         The dataframe with the added columns
     """
-    df = tibble(*args, **kwargs, _name_repair="minimal", dtypes_=dtypes_)
+    df = tibble(*args, **kwargs, _name_repair="minimal", _dtypes=_dtypes)
 
     if df.shape[1] == 0:
         return _data.copy()

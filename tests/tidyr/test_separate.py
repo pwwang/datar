@@ -1,10 +1,10 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/HEAD/tests/testthat/test-separate.R
-from datar.core.grouped import DataFrameGroupBy
 import pytest
 from datar.all import *
+from datar.core.tibble import TibbleGrouped
 from pandas.testing import assert_frame_equal
-from .conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal
 
 def test_missing_values_in_input_are_missing_in_output():
     df = tibble(x=c(NA, "a b"))
@@ -151,7 +151,7 @@ def test_can_handle_collapsed_rows():
     assert_iterable_equal(out.y, list("adefgh"))
 
 def test_can_handle_empty_dfs():
-    df = tibble(a=[], b=[], dtypes_=str)
+    df = tibble(a=[], b=[], _dtypes=str)
     rs = separate_rows(df, f.b)
     assert_frame_equal(rs, df)
 
@@ -172,12 +172,12 @@ def test_drops_grouping_when_needed():
     assert group_vars(out) == ['x']
 
     out = df >> group_by(f.y) >> separate_rows(f.y)
-    assert not isinstance(out, DataFrameGroupBy)
+    assert not isinstance(out, TibbleGrouped)
 
 def test_drops_grouping_on_zero_row_dfs_when_needed():
     df = tibble(x = [], y = []) >> group_by(f.y)
     out = df >> separate_rows(f.y)
-    assert not isinstance(out, DataFrameGroupBy)
+    assert not isinstance(out, TibbleGrouped)
 
 
 

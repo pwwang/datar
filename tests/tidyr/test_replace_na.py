@@ -3,8 +3,9 @@
 import pytest
 import numpy
 from datar.all import *
-from .conftest import assert_iterable_equal
 from pandas.testing import assert_frame_equal
+
+from ..conftest import assert_iterable_equal
 # vector ------------------------------------------------------------------
 
 def test_empty_call_does_nothing():
@@ -38,7 +39,7 @@ def test_df_missing_values_are_replaced():
 def test_df_no_complain_about_non_existing_vars():
     df = tibble(a=c(1, NA))
     out = replace_na(df, {'a': 100, 'b':0})
-    assert_frame_equal(out, tibble(a=c(1,100), dtypes_=float))
+    assert_frame_equal(out, tibble(a=c(1,100), _dtypes=float))
 
 def test_df_can_replace_NULLs_in_list_column():
     df = tibble(x=[[1], NULL])

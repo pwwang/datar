@@ -64,7 +64,7 @@ def table(
     """uses the cross-classifying factors to build a contingency table of
     the counts at each combination of factor levels.
 
-    When used with DataFrameGroupBy data, groups are ignored.
+    When used with TibbleGrouped data, groups are ignored.
 
     Args:
         input: and

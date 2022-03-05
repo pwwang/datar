@@ -3,18 +3,17 @@
 https://github.com/tidyverse/tidyr/blob/HEAD/R/pivot-long.R
 """
 import re
-from typing import Iterable, Mapping, Callable, Union
+from typing import Mapping, Callable, Union
 
 import pandas
 from pandas import DataFrame
-from pandas.core.dtypes.common import is_categorical_dtype
+from pandas.api.types import is_categorical_dtype, is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
-from ..core.types import NAType, StringOrIter, Dtype, is_scalar
-from ..core.utils import vars_select, apply_dtypes, reconstruct_tibble
+from ..core.utils import vars_select, apply_dtypes, regcall
+from ..core.tibble import reconstruct_tibble
 from ..core.names import repair_names
 
 from ..base import setdiff, union
@@ -27,19 +26,18 @@ from .separate import separate
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_longer(
     _data: DataFrame,
-    cols: StringOrIter,
-    names_to: Union[NAType, str, Iterable[Union[NAType, str]]] = "name",
+    cols,
+    names_to="name",
     names_prefix: str = None,
     names_sep: str = None,
     names_pattern: str = None,
-    names_ptypes: Union[Dtype, Mapping[str, Dtype]] = None,
+    names_dtypess=None,
     names_transform: Union[Callable, Mapping[str, Callable]] = None,
     names_repair="check_unique",
     values_to: str = "value",
     values_drop_na: bool = False,
-    values_ptypes: Union[Dtype, Mapping[str, Dtype]] = None,
+    values_dtypess=None,
     values_transform: Union[Callable, Mapping[str, Callable]] = None,
-    base0_: bool = None,
 ):
     """ "lengthens" data, increasing the number of rows and
     decreasing the number of columns.
@@ -88,9 +86,9 @@ def pivot_longer(
             or a single string (specifying a regular expression to split on).
         names_pattern: takes the same specification as extract(),
             a regular expression containing matching groups (()).
-        names_ptypes: and
-        values_ptypes: A list of column name-prototype pairs.
-            A prototype (or ptype for short) is a zero-length vector
+        names_dtypess: and
+        values_dtypess: A list of column name-prototype pairs.
+            A prototype (or dtypes for short) is a zero-length vector
             (like integer() or numeric()) that defines the type, class, and
             attributes of a vector. Use these arguments if you want to confirm
             that the created columns are the types that you expect.
@@ -124,8 +122,6 @@ def pivot_longer(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        base0_: Whether `cols` are 0-based if given by indexes
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The pivoted dataframe.
@@ -133,7 +129,7 @@ def pivot_longer(
     rowid_column = "_PIVOT_ROWID_"
     ret = _data.assign(**{rowid_column: range(_data.shape[0])})
     all_columns = ret.columns
-    columns = _data.columns[vars_select(_data.columns, cols, base0=base0_)]
+    columns = _data.columns[vars_select(_data.columns, cols)]
     id_columns = all_columns.difference(columns)
 
     if is_scalar(names_to):
@@ -164,7 +160,9 @@ def pivot_longer(
             "Only one of `names_sep` or `names_pattern` should be supplied."
         )
 
-    var_name = "__tmp_names_to__" if names_pattern or names_sep else names_to[0]
+    var_name = (
+        "__tmp_names_to__" if names_pattern or names_sep else names_to[0]
+    )
     ret = ret.melt(
         id_vars=id_columns,
         # Use the rest columns automatically.
@@ -181,47 +179,29 @@ def pivot_longer(
         ret[values_to] = ret[values_to].astype("category")
 
     if names_pattern:
-        ret = extract(
+        ret = regcall(
+            extract,
             ret,
             var_name,
             into=names_to,
             regex=names_pattern,
-            __calling_env=CallingEnvs.REGULAR,
         )
 
     if names_sep:
-        ret = separate(
+        ret = regcall(
+            separate,
             ret,
             var_name,
             into=names_to,
             sep=names_sep,
-            __calling_env=CallingEnvs.REGULAR,
         )
     # extract/separate puts `into` last
-    ret = relocate(
-        ret,
-        values_to,
-        _after=-1,
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    ret = regcall(relocate, ret, values_to, _after=-1)
 
     if ".value" in names_to:
-        names_to = setdiff(
-            names_to,
-            [".value"],
-            __calling_env=CallingEnvs.REGULAR,
-        )
-        index_columns = union(
-            id_columns,
-            names_to,
-            __calling_env=CallingEnvs.REGULAR,
-        )
-        names_to = setdiff(
-            names_to,
-            na_names_to,
-            __calling_env=CallingEnvs.REGULAR,
-        )
+        names_to = regcall(setdiff, names_to, [".value"])
+        index_columns = regcall(union, id_columns, names_to)
+        names_to = regcall(setdiff, names_to, na_names_to)
 
         # keep the order
         value_columns = pandas.unique(ret[".value"].values)
@@ -249,11 +229,11 @@ def pivot_longer(
         ret.dropna(subset=values_to, inplace=True)
 
     names_data = ret.loc[:, names_to]  # SettingwithCopyWarning
-    apply_dtypes(names_data, names_ptypes)
+    apply_dtypes(names_data, names_dtypess)
     ret[names_to] = names_data
 
     values_data = ret[values_to]
-    apply_dtypes(values_data, values_ptypes)
+    apply_dtypes(values_data, values_dtypess)
     ret[values_to] = values_data
 
     if names_transform:
@@ -270,7 +250,7 @@ def pivot_longer(
             elif name in values_transform:
                 ret[name] = ret[name].apply(values_transform[name])
 
-    names = repair_names(ret.columns.tolist(), names_repair, base0_=base0_)
+    names = repair_names(ret.columns.tolist(), names_repair)
     ret.columns = names
 
     return reconstruct_tibble(_data, ret)

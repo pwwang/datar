@@ -2,14 +2,14 @@
 
 from typing import List, Any, Union, Callable, Mapping
 
-import pandas
+import pandas as pd
 from pandas import DataFrame, Index
+from pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.types import StringOrIter, is_scalar
-from ..core.utils import vars_select, reconstruct_tibble
-from ..core.exceptions import ColumnNotExistingError
+from ..core.utils import vars_select
+from ..core.tibble import reconstruct_tibble
 
 from ..base import NA, identity
 from ..base.na import NA_integer_
@@ -20,17 +20,16 @@ ROWID_COLUMN = "_PIVOT_ROWID_"
 @register_verb(DataFrame, context=Context.SELECT)
 def pivot_wider(
     _data: DataFrame,
-    id_cols: StringOrIter = None,
-    names_from: StringOrIter = "name",
+    id_cols=None,
+    names_from="name",
     names_prefix: str = "",
     names_sep: str = "_",
     names_glue: str = None,
     names_sort: bool = False,
     # names_repair: str = "check_unique", # todo
-    values_from: StringOrIter = "value",
+    values_from="value",
     values_fill: Any = None,
     values_fn: Union[Callable, Mapping[str, Callable]] = identity,
-    base0_: bool = None,
 ) -> DataFrame:
     """ "widens" data, increasing the number of columns and decreasing
     the number of rows.
@@ -64,9 +63,6 @@ def pivot_wider(
             This can be a dict you want to apply different aggregations to
             different value columns.
             If not specified, will be `numpy.mean`
-        base0_: Whether `id_cols`, `names_from` and `values_from`
-            are 0-based if given by indexes.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The pivoted dataframe.
@@ -80,7 +76,7 @@ def pivot_wider(
 
     if id_cols is None:
         all_cols = _data.columns
-        names_from = all_cols[vars_select(all_cols, names_from, base0=base0_)]
+        names_from = all_cols[vars_select(all_cols, names_from)]
         # values_from could be a df-column
         new_values_from = []
         for value_from in values_from:
@@ -89,13 +85,11 @@ def pivot_wider(
                     col for col in all_cols if col.startswith(f"{value_from}$")
                 ]
                 if not df_cols:
-                    raise ColumnNotExistingError(value_from)
+                    raise KeyError(value_from)
                 new_values_from.extend(df_cols)
             else:
                 new_values_from.append(value_from)
-        values_from = all_cols[
-            vars_select(all_cols, *new_values_from, base0=base0_)
-        ]
+        values_from = all_cols[vars_select(all_cols, *new_values_from)]
         id_cols = all_cols.difference(names_from).difference(values_from)
 
     # build multiindex pivot table
@@ -136,7 +130,7 @@ def pivot_wider(
     for col in values_from:
         ret[col].fillna(NA_integer_, inplace=True)
 
-    ret = pandas.pivot_table(
+    ret = pd.pivot_table(
         ret,
         index=id_cols,
         columns=names_from,

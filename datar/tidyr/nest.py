@@ -5,14 +5,14 @@ https://github.com/tidyverse/tidyr/blob/master/R/nest.R
 from typing import Callable, Mapping, Union, Iterable, List
 import re
 
-import pandas
+import pandas as pd
+from pandas.api.types import is_scalar
 from pandas import DataFrame, Series
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
-from ..core.types import Dtype, is_scalar
-from ..core.utils import vars_select, recycle_value, to_df, reconstruct_tibble
-from ..core.grouped import DatarGroupBy, DatarRowwise
+from ..core.utils import vars_select, regcall
+from ..core.broadcast import broadcast_to, init_tibble_from
+from ..core.tibble import TibbleGrouped, TibbleRowwise, reconstruct_tibble
 from ..core.contexts import Context
 
 from ..base import setdiff, NA
@@ -26,7 +26,6 @@ from .pack import unpack
 def nest(
     _data: DataFrame,
     _names_sep: str = None,
-    base0_: bool = None,
     **cols: Union[str, int],
 ) -> DataFrame:
     """Nesting creates a list-column of data frames
@@ -40,8 +39,6 @@ def nest(
             The names of the new outer columns will be formed by pasting
             together the outer and the inner column names, separated by
             `_names_sep`.
-        base0_: Whether `**cols` are 0-based
-            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Nested data frame.
@@ -53,7 +50,7 @@ def nest(
     colgroups = {}
     usedcols = set()
     for group, columns in cols.items():
-        old_cols = all_columns[vars_select(all_columns, columns, base0=base0_)]
+        old_cols = all_columns[vars_select(all_columns, columns)]
         usedcols = usedcols.union(old_cols)
         newcols = (
             old_cols
@@ -62,9 +59,9 @@ def nest(
         )
         colgroups[group] = dict(zip(newcols, old_cols))
 
-    asis = setdiff(_data.columns, usedcols, __calling_env=CallingEnvs.REGULAR)
+    asis = regcall(setdiff, _data.columns, usedcols)
     keys = _data[asis]
-    u_keys = distinct(keys, __calling_env=CallingEnvs.REGULAR)
+    u_keys = regcall(distinct, keys)
     nested = []
     for group, columns in colgroups.items():
         if _names_sep is None:  # names as is
@@ -80,37 +77,26 @@ def nest(
             val = _vec_split(to_split, keys).val
         nested.append(val.reset_index(drop=True))
 
-    out = pandas.concat(nested, ignore_index=True, axis=1)
+    out = pd.concat(nested, ignore_index=True, axis=1)
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
-    return bind_cols(
-        u_keys,
-        recycle_value(out, u_keys.shape[0]),
-        __calling_env=CallingEnvs.REGULAR,
-    )
+    return regcall(bind_cols, u_keys, broadcast_to(out, u_keys.index))
 
 
-@nest.register(DatarGroupBy, context=Context.SELECT)
+@nest.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    _data: DatarGroupBy,
+    _data: TibbleGrouped,
     _names_sep: str = None,
-    base0_: bool = None,
     **cols: Mapping[str, Union[str, int]],
-) -> DatarGroupBy:
+) -> TibbleGrouped:
     """Nesting grouped dataframe"""
     if not cols:
         cols = {
-            "data": setdiff(
-                _data.columns,
-                group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-                __calling_env=CallingEnvs.REGULAR,
-            )
+            "data": regcall(setdiff, _data.columns, regcall(group_vars, _data))
         }
-    out = nest.dispatch(DataFrame)(
-        _data, **cols, _names_sep=_names_sep, base0_=base0_
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
+    out = nest.dispatch(DataFrame)(_data, **cols, _names_sep=_names_sep)
+    return reconstruct_tibble(_data, out)
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -118,10 +104,9 @@ def unnest(
     data: DataFrame,
     *cols: Union[str, int],
     keep_empty: bool = False,
-    ptype: Union[Dtype, Mapping[str, Dtype]] = None,
+    dtypes=None,
     names_sep: str = None,
     names_repair: Union[str, Callable] = "check_unique",
-    base0_: bool = None,
 ) -> DataFrame:
     """Flattens list-column of data frames back out into regular columns.
 
@@ -135,7 +120,7 @@ def unnest(
             dropped from the output.
             If you want to preserve all rows, use `keep_empty` = `True` to
             replace size-0 elements with a single row of missing values.
-        ptype: Providing the dtypes for the output columns.
+        dtypes: Providing the dtypes for the output columns.
             Could be a single dtype, which will be applied to all columns, or
             a dictionary of dtypes with keys for the columns and values the
             dtypes.
@@ -152,8 +137,6 @@ def unnest(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        base0_: Whether `cols` are 0-based
-            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Data frame with selected columns unnested.
@@ -162,10 +145,10 @@ def unnest(
         raise ValueError("`*cols` is required when using unnest().")
 
     all_columns = data.columns
-    cols = vars_select(all_columns, cols, base0=base0_)
+    cols = vars_select(all_columns, cols)
     cols = all_columns[cols]
 
-    if isinstance(data, DatarGroupBy):
+    if isinstance(data, TibbleGrouped):
         out = data.copy(copy_grouped=True)
     else:
         out = data.copy()
@@ -173,46 +156,43 @@ def unnest(
     for col in cols:
         out[col] = _as_df(data[col])
 
-    out = unchop(
+    out = regcall(
+        unchop,
         out,
         cols,
         keep_empty=keep_empty,
-        ptype=ptype,
-        base0_=base0_,
-        __calling_env=CallingEnvs.REGULAR,
+        dtypes=dtypes,
     )
-    return unpack(
+    return regcall(
+        unpack,
         out,
         cols,
         names_sep=names_sep,
         names_repair=names_repair,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
-@unnest.register(DatarRowwise, context=Context.SELECT)
+@unnest.register(TibbleRowwise, context=Context.SELECT)
 def _(
-    data: DatarRowwise,
+    data: TibbleRowwise,
     *cols: Union[str, int],
     keep_empty: bool = False,
-    ptype: Union[Dtype, Mapping[str, Dtype]] = None,
+    dtypes=None,
     names_sep: str = None,
     names_repair: Union[str, Callable] = "check_unique",
-    base0_: bool = None,
-) -> DatarGroupBy:
+) -> TibbleGrouped:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
         data,
         *cols,
         keep_empty=keep_empty,
-        ptype=ptype,
+        dtypes=dtypes,
         names_sep=names_sep,
         names_repair=names_repair,
-        base0_=base0_,
     )
-    return DatarGroupBy(
+    return TibbleGrouped(
         out,
-        _group_vars=group_vars(data, __calling_env=CallingEnvs.REGULAR),
+        _group_vars=regcall(group_vars, data),
         _group_drop=group_by_drop_default(data),
     )
 
@@ -242,8 +222,8 @@ def _as_df(series: Series) -> List[DataFrame]:
                 )
             else:
                 out.append(val)
-        elif is_scalar(val) and pandas.isnull(val):
+        elif is_scalar(val) and pd.isnull(val):
             out.append(val)
         else:
-            out.append(to_df(val, name=series.name))
+            out.append(init_tibble_from(val, name=series.name))
     return out

@@ -20,8 +20,6 @@ def rename(_data, **kwargs):
     Args:
         _data: The dataframe
         **kwargs: The new_name = old_name pairs
-        base0_: Whether the old_name is 0-based if given by indexes.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with new names
@@ -64,8 +62,6 @@ def rename_with(_data, _fn, *args, **kwargs):
             no non-keyword arguments are allowed to pass to the function, use
             keyword arguments instead.
         **kwargs: keyword arguments for `_fn`
-        base0_: Whether the old_name is 0-based if given by indexes.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with new names

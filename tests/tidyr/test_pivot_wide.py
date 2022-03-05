@@ -2,9 +2,8 @@
 # https://github.com/tidyverse/tidyr/blob/HEAD/tests/testthat/test-pivot-wide.R
 import pytest
 from datar.all import *
-from datar.core.exceptions import ColumnNotExistingError
 from pandas.testing import assert_frame_equal
-from .conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal
 
 def test_can_pivot_all_cols_to_wide():
     df = tibble(key=list('xyz'), val=f[1:3])
@@ -58,7 +57,7 @@ def test_nested_df_pivot_correctly():
     assert_iterable_equal(out['a$x'], [1,2])
     assert_iterable_equal(out['b$y'], [7,8])
 
-    with pytest.raises(ColumnNotExistingError):
+    with pytest.raises(KeyError):
         pivot_wider(df, names_from=f.g, values_from=f.e)
 
 def test_works_with_empty_key_vars():

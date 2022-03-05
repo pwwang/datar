@@ -7,10 +7,10 @@ from typing import Iterable, Mapping, Any
 
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.utils import reconstruct_tibble
+from ..core.tibble import reconstruct_tibble
+from ..core.utils import regcall
 
 from ..dplyr import full_join
 from .replace_na import replace_na
@@ -42,16 +42,16 @@ def complete(
     Returns:
         Data frame with missing values completed
     """
-    full = expand(data, *args, **kwargs, __calling_env=CallingEnvs.REGULAR)
+    full = regcall(expand, data, *args, **kwargs)
     if full.shape[0] == 0:
         return data.copy()
 
-    full = full_join(
+    full = regcall(
+        full_join,
         full,
         data,
         by=full.columns.tolist(),
-        __calling_env=CallingEnvs.REGULAR,
     )
-    full = replace_na(full, fill, __calling_env=CallingEnvs.REGULAR)
+    full = regcall(replace_na, full, fill)
 
     return reconstruct_tibble(data, full)

@@ -89,7 +89,7 @@ def test_handles_scalar_results():
         >> filter(min(f.mpg) > 0)
         >> arrange(f.cyl, f.mpg)
     )
-    # See DataFrameGroupBy's Known issues
+    # See TibbleGrouped's Known issues
     df3 = mtcars >> group_by(f.cyl) >> arrange(f.cyl, f.mpg)
     assert_frame_equal(df2, df3)
 

@@ -439,7 +439,7 @@ class SeriesCategorical(Series):
     """Class only used for dispatching"""
 
 
-def reconstruct_tibble(orig, out, drop=None):
+def reconstruct_tibble(orig, out, drop=None, ungrouping_vars=None):
     """Try to reconstruct the structure of `out` based on `orig`
 
     The rule is
@@ -461,17 +461,19 @@ def reconstruct_tibble(orig, out, drop=None):
     Returns:
         The reconstructed out
     """
-    from ..base import intersect
+    from ..base import intersect, setdiff
 
     if not isinstance(out, Tibble):
         out = Tibble(out, copy=False)
 
     if isinstance(orig, TibbleRowwise):
         gvars = regcall(intersect, orig.group_vars, out.columns)
+        gvars = regcall(setdiff, gvars, ungrouping_vars or [])
         out = out.rowwise(gvars)
 
     elif isinstance(orig, TibbleGrouped):
         gvars = regcall(intersect, orig.group_vars, out.columns)
+        gvars = regcall(setdiff, gvars, ungrouping_vars or [])
         if len(gvars) > 0:
             out = out.group_by(
                 gvars,

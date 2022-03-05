@@ -1,11 +1,11 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/master/tests/testthat/test-nest.R
-from pandas.core.dtypes.common import is_categorical_dtype
 import pytest
+from pandas.api.types import is_categorical_dtype
 from pandas.testing import assert_frame_equal
 from datar.all import *
-from datar.core.grouped import DatarGroupBy, DatarRowwise
-from .conftest import assert_iterable_equal
+from datar.core.tibble import TibbleGrouped, TibbleRowwise
+from ..conftest import assert_iterable_equal
 
 # nest --------------------------------------------------------------------
 def test_nest_turns_grouped_values_into_one_list_df():
@@ -24,7 +24,7 @@ def test_nest_uses_grouping_vars_if_present():
 def test_nest_provides_grouping_vars_override_grouped_defaults():
     df = tibble(x=1, y=2, z=3) >> group_by(f.x)
     out = nest(df, data=f.y)
-    assert isinstance(out, DatarGroupBy)
+    assert isinstance(out, TibbleGrouped)
     assert out.columns.tolist() == ['x', 'z', 'data']
     assert out.data.values[0].columns.tolist() == ['y']
 
@@ -217,28 +217,28 @@ def test_unnest_list_of_empty_dfs():
 def test_unnest_rowwise_df_becomes_grouped_df():
     df = tibble(g=1, x=[[1,2,3]]) >> rowwise(f.g)
     rs = df >> unnest(f.x)
-    assert isinstance(rs, DatarGroupBy)
-    assert not isinstance(rs, DatarRowwise)
+    assert isinstance(rs, TibbleGrouped)
+    assert not isinstance(rs, TibbleRowwise)
     assert group_vars(rs) == ['g']
 
 def test_unnest_grouping_preserved():
     df = tibble(g=1, x=[[1,2,3]]) >> group_by(f.g)
     rs = df >> unnest(f.x)
-    assert isinstance(rs, DatarGroupBy)
-    assert not isinstance(rs, DatarRowwise)
+    assert isinstance(rs, TibbleGrouped)
+    assert not isinstance(rs, TibbleRowwise)
     assert group_vars(rs) == ['g']
 
 # Empty inputs ------------------------------------------------------------
 
 def test_unnest_empty_data_frame():
-    df = tibble(x=[], y=[], dtypes_={'x': int})
+    df = tibble(x=[], y=[], _dtypes={'x': int})
     out = unnest(df, f.y)
     assert dim(out) == (0, 2)
 
 
 ## unable to do it due to NAs being float
-# test_that("unnest() preserves ptype", {
-#   tbl <- tibble(x = integer(), y = list_of(ptype = tibble(a = integer())))
+# test_that("unnest() preserves dtypes", {
+#   tbl <- tibble(x = integer(), y = list_of(dtypes = tibble(a = integer())))
 #   res <- unnest(tbl, y)
 #   expect_equal(res, tibble(x = integer(), a = integer()))
 # })

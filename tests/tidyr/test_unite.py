@@ -1,10 +1,10 @@
 # tests grabbed from:
 # url
-import pytest
+import pytest  # noqa
+
 from datar.all import *
-import pandas
 from pandas.testing import assert_frame_equal
-from .conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal
 
 
 def test_unite_pastes_columns_togeter_and_removes_old_col():

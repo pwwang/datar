@@ -1,6 +1,6 @@
 """Some functions from R-base
 
-If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
+If a function uses DataFrame/TibbleGrouped as first argument, it may be
 registered by `register_verb` and should be placed in `./verbs.py`
 """
 import itertools

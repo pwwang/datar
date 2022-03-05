@@ -33,10 +33,8 @@ def select(
     to be included: `f[f.col1:f.col2:0]`
 
     Args:
-        *columns: The columns to select
-        **renamings: The columns to rename and select in new => old column way.
-        base0_: Whether the columns are 0-based if given by indexes
-            If not provided, will use `datar.base.get_option('index.base.0')`
+        *args: The columns to select
+        **kwargs: The columns to rename and select in new => old column way.
 
     Returns:
         The dataframe with select columns

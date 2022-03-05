@@ -178,9 +178,6 @@ def across(
             single function case and `{_col}_{_fn}` for the case where
             a list is used for _fns. In such a case, `{_fn}` is 0-based.
             To use 1-based index, use `{_fn1}`
-        base0_: Indicating whether the columns are 0-based if selected
-            by indexes. if not provided, will use
-            `datar.base.get_option('index.base.0')`.
         _fn_context: Defines the context to evaluate the arguments for functions
             if they are plain functions.
             Note that registered functions will use its own context

@@ -4,7 +4,7 @@ import pytest
 from datar.all import *
 
 from pandas.testing import assert_frame_equal
-from .conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal
 
 def test_can_pivot_all_cols_to_long():
     df = tibble(x=f[1:2], y=f[3:4])

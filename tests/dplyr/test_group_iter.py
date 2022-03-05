@@ -234,19 +234,19 @@ def test_group_modify_works_on_ungrouped_df():
     assert out.equals(head(mtcars, 2))
 
 
-# test_that("group_map() uses ptype on empty splits (#4421)", {
+# test_that("group_map() uses dtypes on empty splits (#4421)", {
 #   res <- mtcars %>%
 #     group_by(cyl) %>%
 #     filter(hp > 1000) %>%
 #     group_map(~.x)
 #   expect_equal(res, list(), ignore_attr = TRUE)
-#   ptype <- attr(res, "ptype")
-#   expect_equal(names(ptype), setdiff(names(mtcars), "cyl"))
-#   expect_equal(nrow(ptype), 0L)
-#   expect_s3_class(ptype, "data.frame")
+#   dtypes <- attr(res, "dtypes")
+#   expect_equal(names(dtypes), setdiff(names(mtcars), "cyl"))
+#   expect_equal(nrow(dtypes), 0L)
+#   expect_s3_class(dtypes, "data.frame")
 # })
 
-# test_that("group_modify() uses ptype on empty splits (#4421)", {
+# test_that("group_modify() uses dtypes on empty splits (#4421)", {
 #   res <- mtcars %>%
 #     group_by(cyl) %>%
 #     filter(hp > 1000) %>%
@@ -431,10 +431,10 @@ def test_group_split_on_a_rowwise_df_returns_a_list_of_tibbles():
 def test_group_split_works_with_subclasses_implementing_group_by_ungroup():
     # test_that("group_split() works with subclasses implementing group_by()
     # / ungroup()", {
-    class DataFrameGroupBy1(TibbleGrouped):
+    class TibbleGrouped1(TibbleGrouped):
         ...
 
-    df = DataFrameGroupBy1.from_groupby(
+    df = TibbleGrouped1.from_groupby(
         DataFrame(dict(x=[1, 2, 2])).groupby("x")
     )
     out = group_split.list(df, f.x)

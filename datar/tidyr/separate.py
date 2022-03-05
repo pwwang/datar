@@ -4,23 +4,16 @@ expression or numeric locations
 https://github.com/tidyverse/tidyr/blob/HEAD/R/separate.R
 """
 import re
-from typing import Any, Iterable, List, Tuple, Union, Mapping
+from typing import Any, List, Tuple, Union
 
-import pandas
+import pandas as pd
 from pandas import DataFrame
+from pandas.api.types import is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.types import Dtype, NAType, is_scalar
-from ..core.grouped import DataFrameGroupBy
-from ..core.utils import (
-    logger,
-    vars_select,
-    apply_dtypes,
-    position_at,
-    reconstruct_tibble,
-)
+from ..core.tibble import TibbleGrouped, reconstruct_tibble
+from ..core.utils import logger, vars_select, apply_dtypes, regcall
 
 from ..base import NA
 from ..dplyr import ungroup, mutate
@@ -32,13 +25,12 @@ from .chop import unchop
 def separate(
     data: DataFrame,
     col: Union[str, int],
-    into: Union[NAType, str, Iterable[Union[NAType, str]]],
+    into,
     sep: Union[int, str] = r"[^0-9A-Za-z]+",
     remove: bool = True,
-    convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
+    convert=False,
     extra: str = "warn",
     fill: str = "warn",
-    base0_: bool = None,
 ) -> DataFrame:
     """Given either a regular expression or a vector of character positions,
     turns a single character column into multiple columns.
@@ -69,9 +61,6 @@ def separate(
             - "warn" (the default): emit a warning and fill from the right
             - "right": fill with missing values on the right
             - "left": fill with missing values on the left
-        base0_: Whether `col` is 0-based when given by index and Whether `sep`
-            is 0-based if given by position
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with separated columns.
@@ -79,14 +68,14 @@ def separate(
     if is_scalar(into):
         into = [into]  # type: ignore
 
-    if not all(isinstance(it, str) or pandas.isnull(it) for it in into):
+    if not all(isinstance(it, str) or pd.isnull(it) for it in into):
         raise ValueError("`into` must be a string or a list of strings.")
 
     all_columns = data.columns
-    col = vars_select(all_columns, col, base0=base0_)
+    col = vars_select(all_columns, col)
     col = all_columns[col[0]]
 
-    colindex = [i for i, outcol in enumerate(into) if not pandas.isnull(outcol)]
+    colindex = [i for i, outcol in enumerate(into) if not pd.isnull(outcol)]
     non_na_elems = lambda row: [row[i] for i in colindex]
     # series.str.split can't do extra and fill
     # extracted = data[col].str.split(sep, expand=True).iloc[:, colindex]
@@ -100,14 +89,14 @@ def separate(
         sep=sep,
         extra=extra,
         fill=fill,
-        base0=base0_,
         extra_warns=extra_warns,
         missing_warns=missing_warns,
     )
 
     if extra_warns:
         logger.warning(
-            "Expected %s pieces. " "Additional pieces discarded in %s rows %s.",
+            "Expected %s pieces. "
+            "Additional pieces discarded in %s rows %s.",
             nout,
             len(extra_warns),
             extra_warns,
@@ -126,7 +115,7 @@ def separate(
     apply_dtypes(separated, convert)
 
     out = data.drop(columns=[col]) if remove else data
-    out = mutate(out, separated, __calling_env=CallingEnvs.REGULAR)
+    out = regcall(mutate, out, separated)
 
     return reconstruct_tibble(data, out)
 
@@ -136,8 +125,7 @@ def separate_rows(
     data: DataFrame,
     *columns: Tuple[str],
     sep: str = r"[^0-9A-Za-z]+",
-    convert: Union[bool, Dtype, Mapping[str, Dtype]] = False,
-    base0_: bool = None,
+    convert=False,
 ) -> DataFrame:
     """Separates the values and places each one in its own row.
 
@@ -147,44 +135,39 @@ def separate_rows(
         sep: Separator between columns.
         convert: The universal type for the extracted columns or a dict for
             individual ones
-        base0_: Whether `columns` is 0-based when given by index
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Dataframe with rows separated and repeated.
     """
     all_columns = data.columns
-    selected = all_columns[vars_select(all_columns, *columns, base0=base0_)]
+    selected = all_columns[vars_select(all_columns, *columns)]
     out = (
         data.copy(copy_grouped=True)
-        if isinstance(data, DataFrameGroupBy)
+        if isinstance(data, TibbleGrouped)
         else data.copy()
     )
-    for sel in selected:
+    for sel in selected:  # TODO: apply together
         out[sel] = out[sel].apply(
             _separate_col,
             nout=0,
             sep=sep,
             extra="merge",
             fill="right",
-            base0=base0_,
             extra_warns=[],
             missing_warns=[],
         )
 
-    out = unchop(
+    out = regcall(
+        unchop,  # TODO: use df.x.explode()
         out,
         selected,
         keep_empty=True,
-        ptype=convert,
-        base0_=base0_,
-        __calling_env=CallingEnvs.REGULAR,
+        dtypes=convert,
     )
     return reconstruct_tibble(
         out,
-        ungroup(out, __calling_env=CallingEnvs.REGULAR),
-        selected,
-        keep_rowwise=True,
+        regcall(ungroup, out),
+        ungrouping_vars=selected,
     )
 
 
@@ -194,24 +177,19 @@ def _separate_col(
     sep: Union[str, int],
     extra: str,
     fill: str,
-    base0: bool,
-
     extra_warns: List[str] = [],  # mutatable to save warnings
     missing_warns: List[str] = [],
-) -> List[Union[str, NAType]]:
+):
     """Separate the column"""
-    if (is_scalar(elem) and pandas.isnull(elem)) or (
-        not is_scalar(elem) and any(pandas.isnull(elem))
+    if (is_scalar(elem) and pd.isnull(elem)) or (
+        not is_scalar(elem) and any(pd.isnull(elem))
     ):
         return [NA] * nout if nout > 0 else NA  # type: ignore
 
     elem = str(elem)
     if isinstance(sep, int):
-        try:
-            tmp = position_at(sep, len(elem), base0)
-        except IndexError:
-            tmp = 0 if sep < 0 else len(elem) - 1
-        tmp = sep - 1 if sep < 0 else tmp
+        tmp = max(0, sep)
+        tmp = min(tmp, len(elem) - 1)
         row = [elem[: tmp + 1], elem[tmp + 1 :]]
     else:
         row = re.split(sep, elem, 0 if nout == 0 else nout - 1)

@@ -3,7 +3,7 @@
 import pytest
 from pandas.testing import assert_frame_equal
 from datar.all import *
-from .conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal
 
 
 def test_default_returns_first_alpha_group():

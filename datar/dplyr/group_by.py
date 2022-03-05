@@ -52,7 +52,7 @@ def group_by(
         **kwargs: Extra variables to group the dataframe
 
     Return:
-        A `DataFrameGroupBy` object
+        A `TibbleGrouped` object
     """
     from .mutate import mutate
 
@@ -117,8 +117,6 @@ def rowwise(
         *cols:  Variables to be preserved when calling summarise().
             This is typically a set of variables whose combination
             uniquely identify each row.
-        base0_: Whether indexes are 0-based if columns are selected by indexes.
-            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A row-wise data frame
@@ -167,8 +165,6 @@ def ungroup(
     Args:
         x: The data frame
         *cols: Variables to remove from the grouping variables.
-        base0_: If columns are selected with indexes, whether they are 0-based.
-            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A data frame with selected columns removed from the grouping variables.

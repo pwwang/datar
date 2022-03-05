@@ -1,6 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/master/tests/testthat/test-chop.R
-import pytest
+import pytest  # noqa
 from pandas.testing import assert_frame_equal
 from datar.all import *
 
@@ -24,10 +24,7 @@ def test_chop_grouping_preserves():
     assert group_vars(out) == ['g']
 
 def test_can_chop_empty_frame():
-    df = tibble(x=[], y=[])
-    df.index = []
-    df['x'] = df['x'].astype(object)
-    df['y'] = df['y'].astype(object)
+    df = tibble(x=[], y=[], _dtypes=object)
     assert_frame_equal(df >> chop(f.y), df)
     assert_frame_equal(df >> chop(f.x), df[['y', 'x']])
 
@@ -47,12 +44,12 @@ def test_chop_with_all_column_keys():
 
 def test_unchop_extends_into_rows():
     df = tibble(x = [1, 2], y = [NULL, seq(1, 4)])
-    out = df >> unchop(f.y, ptype=int)
+    out = df >> unchop(f.y, dtypes=int)
     assert_frame_equal(out, tibble(x=[2,2,2,2], y=[1,2,3,4]))
 
 def test_can_unchop_multiple_cols():
     df = tibble(x=[1,2], y=[[1], [2,3]], z=[[4], [5,6]])
-    out = df >> unchop(c(f.y, f.z), ptype=int)
+    out = df >> unchop(c(f.y, f.z), dtypes=int)
     assert_frame_equal(out, tibble(
         x=[1,2,2],
         y=[1,2,3],
@@ -65,16 +62,16 @@ def test_unchopping_nothing_leaves_input_unchanged():
 
 def test_unchopping_null_inputs_are_dropped():
     df = tibble(
-        x = f[1:4],
+        x = f[1:5],
         y = [NULL, [1,2], 4, NULL],
         z = [NULL, [1,2], NULL, 5]
     )
-    out = df >> unchop(c(f.y, f.z), ptype=float)
+    out = df >> unchop(c(f.y, f.z), dtypes=float)
     assert_frame_equal(out, tibble(
         x=[2,2,3,4],
         y=[1,2,4,NA],
         z=[1,2,NA,5],
-        dtypes_=float
+        _dtypes=float
     ))
 
 def test_unchop_optionally_keep_empty_rows():
@@ -85,7 +82,7 @@ def test_unchop_optionally_keep_empty_rows():
         # z = [tibble(x=[]), tibble(x=[1,2])]
     )
     out = df >> unchop(f.y, keep_empty=True)
-    assert_frame_equal(out, tibble(x=[1,2,2], y=[None, 1,2], dtypes_={'y': object}))
+    assert_frame_equal(out, tibble(x=[1,2,2], y=[None, 1,2], _dtypes={'y': object}))
 
 #   out <- df %>% unchop(z, keep_empty = TRUE)
 #   expect_equal(out$x, c(1, 2, 2))
@@ -93,12 +90,12 @@ def test_unchop_optionally_keep_empty_rows():
 # })
 
 def test_unchop_preserves_columns_of_empty_inputs():
-    df = tibble(x=[], y=[], z=[], dtypes_={'x': int})
+    df = tibble(x=[], y=[], z=[], _dtypes={'x': int})
     assert unchop(df, f.y).columns.tolist() == ['x', 'y', 'z']
     assert unchop(df, [f.y, f.z]).columns.tolist() == ['x', 'y', 'z']
 
 # test_that("respects list_of types", {
-#   df <- tibble(x = integer(), y = list_of(.ptype = integer()))
+#   df <- tibble(x = integer(), y = list_of(.dtypes = integer()))
 #   expect_equal(df %>% unchop(y), tibble(x = integer(), y = integer()))
 # })
 
@@ -115,11 +112,11 @@ def test_unchop_empty_list():
     df = tibble(x=[], y=tibble(z=[]))
     # support nested df?
     out = unchop(df, f['y$z']) >> pull(f.y)
-    assert_frame_equal(out >> drop_index(), tibble(z=[], dtypes_=object))
+    assert_frame_equal(out >> drop_index(), tibble(z=[]))
 
 def test_unchop_recycles_size_1_inputs():
     df = tibble(x=[[1], [2,3]], y=[[2,3], [1]])
-    out = unchop(df, [f.x, f.y], ptype=int)
+    out = unchop(df, [f.x, f.y], dtypes=int)
     exp = tibble(x=[1,2,3], y=[2,3,1])
     # exp = tibble(x=[1,1,2,3], y=[2,3,1,1])
     assert_frame_equal(out, exp)
@@ -130,26 +127,26 @@ def test_unchop_can_specify_dtypes():
     # No extra columns added
     exp = tibble(x=[1,1], y=[1,2])
     # exp = tibble(x=[1,1], y=[1,2], z=[NA,NA])
-    out = unchop(df, f.y, ptype=dtypes)
+    out = unchop(df, f.y, dtypes=dtypes)
     assert_frame_equal(out, exp)
 
-# test_that("can specify a ptype with extra columns", {
+# test_that("can specify a dtypes with extra columns", {
 #   df <- tibble(x = 1, y = list(1, 2))
-#   ptype <- tibble(y = numeric(), z = numeric())
+#   dtypes <- tibble(y = numeric(), z = numeric())
 
 #   expect <- tibble(x = c(1, 1), y = c(1, 2), z = c(NA_real_, NA_real_))
 
-#   expect_identical(unchop(df, y, ptype = ptype), expect)
+#   expect_identical(unchop(df, y, dtypes = dtypes), expect)
 # })
 
-def test_unchop_can_specify_dtypes_to_force_output_type():
+def test_unchop_can_specify__dtypesto_force_output_type():
     df = tibble(x=[[1,2]])
-    out = unchop(df, f.x, ptype=float)
+    out = unchop(df, f.x, dtypes=float)
     exp = tibble(x=[1.0,2.0])
     assert_frame_equal(out, exp)
 
 def test_can_unchop_empty_data_frame():
-    chopped = tibble(x=[], y=[[]])
+    chopped = tibble(x=[], y=[])
     out = unchop(chopped, f.y)
     assert out.shape == (0, 2)
 

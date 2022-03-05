@@ -129,3 +129,26 @@ def vars_select(
 def nargs(fun):
     """Get the number of arguments of a function"""
     return len(inspect.signature(fun).parameters)
+
+
+def apply_dtypes(df: DataFrame, dtypes) -> None:
+    """Apply dtypes to data frame"""
+    if dtypes is None or dtypes is False:
+        return
+
+    if dtypes is True:
+        inferred = df.convert_dtypes()
+        for col in df:
+            df[col] = inferred[col]
+        return
+
+    if not isinstance(dtypes, dict):
+        dtypes = dict(zip(df.columns, [dtypes] * df.shape[1]))  # type: ignore
+
+    for column, dtype in dtypes.items():
+        if column in df:
+            df[column] = df[column].astype(dtype)
+        else:
+            for col in df:
+                if col.startswith(f"{column}$"):
+                    df[col] = df[col].astype(dtype)

@@ -5,14 +5,13 @@ https://github.com/tidyverse/tidyr/blob/master/R/pack.R
 from typing import Iterable, Set, Union, Callable
 
 from pandas import DataFrame
+from pandas.api.types import is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
-from ..core.utils import vars_select, copy_attrs, reconstruct_tibble
+from ..core.utils import vars_select, regcall
+from ..core.tibble import reconstruct_tibble, TibbleGrouped
 from ..core.contexts import Context
-from ..core.types import StringOrIter, IntOrIter, is_scalar
 from ..core.names import repair_names
-from ..core.grouped import DataFrameGroupBy
 
 from ..base import setdiff
 from ..dplyr import bind_cols
@@ -22,7 +21,6 @@ from ..dplyr import bind_cols
 def pack(
     _data: DataFrame,
     _names_sep: str = None,
-    base0_: bool = None,
     **cols: Union[str, int],
 ) -> DataFrame:
     """Makes df narrow by collapsing a set of columns into a single df-column.
@@ -36,8 +34,6 @@ def pack(
             The names of the new outer columns will be formed by pasting
             together the outer and the inner column names, separated by
             `_names_sep`.
-        base0_: Whether `**cols` are 0-based
-            if not provided, will use `datar.base.get_option('index.base.0')`
     """
     if not cols:
         return _data.copy()
@@ -48,7 +44,7 @@ def pack(
     colgroups = {}
     usedcols = set()
     for group, columns in cols.items():
-        oldcols = all_columns[vars_select(all_columns, columns, base0=base0_)]
+        oldcols = all_columns[vars_select(all_columns, columns)]
         usedcols = usedcols.union(oldcols)
         newcols = (
             oldcols
@@ -62,26 +58,17 @@ def pack(
         for newcol, oldcol in columns:
             cols[f"{group}${newcol}"] = _data[oldcol]
 
-    asis = setdiff(
-        _data.columns,
-        usedcols,
-        __calling_env=CallingEnvs.REGULAR,
-    )
-    out = bind_cols(
-        _data[asis],
-        DataFrame(cols),
-        __calling_env=CallingEnvs.REGULAR,
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
+    asis = regcall(setdiff, _data.columns, usedcols)
+    out = regcall(bind_cols, _data[asis], DataFrame(cols))
+    return reconstruct_tibble(_data, out)
 
 
 @register_verb(DataFrame, context=Context.SELECT)
 def unpack(
     data: DataFrame,
-    cols: Union[StringOrIter, IntOrIter],
+    cols,
     names_sep: str = None,
     names_repair: Union[str, Callable] = "check_unique",
-    base0_: bool = None,
 ) -> DataFrame:
     """Makes df wider by expanding df-columns back out into individual columns.
 
@@ -103,8 +90,6 @@ def unpack(
                 but check they are unique,
             - "universal": Make the names unique and syntactic
             - a function: apply custom name repair
-        base0_: Whether `cols` are 0-based
-            if not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         Data frame with given columns unpacked.
@@ -113,16 +98,11 @@ def unpack(
         cols = [cols]
 
     all_columns = data.columns
-    cols = _check_present(
-        data,
-        cols,
-        all_columns,
-        base0=base0_,
-    )
+    cols = _check_present(data, cols, all_columns)
 
     out = (
         data.copy(copy_grouped=True)
-        if isinstance(data, DataFrameGroupBy)
+        if isinstance(data, TibbleGrouped)
         else data.copy()
     )
     new_cols = []
@@ -140,10 +120,9 @@ def unpack(
         else:
             new_cols.append(col)
 
-    new_cols = repair_names(new_cols, names_repair, base0_)
+    new_cols = repair_names(new_cols, names_repair)
     out.columns = new_cols
 
-    copy_attrs(out, data)
     return out
 
 
@@ -151,13 +130,12 @@ def _check_present(
     data: DataFrame,
     cols: Iterable[Union[int, str]],
     all_columns: Iterable[str],
-    base0: bool = None,
 ) -> Set[str]:
     """Check if cols are packed columns"""
     out = set()
     for col in cols:
         if not isinstance(col, str):
-            columns = vars_select(all_columns, col, base0=base0)
+            columns = vars_select(all_columns, col)
             columns = all_columns[columns][0].split("$", 1)[0]
         else:
             columns = [col]

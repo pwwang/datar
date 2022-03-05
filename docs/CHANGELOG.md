@@ -9,6 +9,7 @@
 - Change all arguments end with "_" to arguments start with it to avoid confusion
 - Move module `datar.stats` to `datar.base.stats`
 - Default all `na_rm` arguments to `True`
+- Rename all `ptype` arguments for `tidyr` verbs into `dtypes`
 
 ### Details
 - Expose `options`, `options_context`, `add_option` and `get_option` in `datar/__init__.py` and remove them from `datar.base`

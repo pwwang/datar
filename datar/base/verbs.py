@@ -140,7 +140,7 @@ def diag(x=1, nrow=None, ncol=None):
     """Extract, construct a diagonal dataframe or replace the diagnal of
     a dataframe.
 
-    When used with DataFrameGroupBy data, groups are ignored
+    When used with TibbleGrouped data, groups are ignored
 
     Args:
         x: a matrix, vector or scalar

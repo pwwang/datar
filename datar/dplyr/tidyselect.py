@@ -276,7 +276,6 @@ def num_range(
         range_: A sequence of integers, like `range(3)` (produces `0,1,2`).
         width: Optionally, the "width" of the numeric range.
             For example, a range of 2 gives "01", a range of three "001", etc.
-        base0_: Whether it is 0-based
 
     Returns:
         A list of ranges with prefix.

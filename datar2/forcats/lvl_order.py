@@ -40,7 +40,6 @@ def fct_relevel(
     _f: ForcatsType,
     *lvls: Any,
     after: int = 0,
-    base0_: bool = None,
 ) -> Categorical:
     """Reorder factor levels by hand
 
@@ -54,12 +53,6 @@ def fct_relevel(
             Any levels not mentioned will be left in their existing order,
             by default after the explicitly mentioned levels.
         after: Where should the new values be placed?
-        base0_: Whether after is 0-based.
-            if not given, will use `get_option("index.base.0")`.
-            When it's 1-based, after=0 will append to the beginning,
-            -1 will append to the end.
-            When 0-based, after=None will append to the beginning,
-            -1 to the end
 
     Returns:
         The factor with levels replaced

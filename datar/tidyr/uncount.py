@@ -2,14 +2,13 @@
 
 from typing import Any, Iterable
 
-import numpy
 from pandas import DataFrame
+from pandas.api.types import is_scalar, is_number
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.types import IntOrIter, is_scalar
-from ..core.utils import get_option, reconstruct_tibble
+from ..core.utils import regcall
+from ..core.tibble import reconstruct_tibble
 
 from ..dplyr import group_by, mutate, row_number, ungroup
 
@@ -19,10 +18,9 @@ INDEX_COLUMN = "_UNCOUND_INDEX_"
 @register_verb(DataFrame, context=Context.EVAL)
 def uncount(
     data: DataFrame,
-    weights: IntOrIter,
+    weights,
     _remove: bool = True,
     _id: str = None,
-    base0_: bool = None,
 ) -> DataFrame:
     """Duplicating rows according to a weighting variable
 
@@ -33,8 +31,6 @@ def uncount(
             then this column is removed.
         _id: Supply a string to create a new variable which gives a
             unique identifier for each created row (0-based).
-        base0_: Whether the generated `_id` columns are 0-based.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         dataframe with rows repeated.
@@ -61,15 +57,13 @@ def uncount(
     out.reset_index(drop=True, inplace=True)
 
     if _id:
-        base = int(not get_option("index.base.0", base0_))
 
-        out = ungroup(
+        out = regcall(
+            ungroup,
             mutate(
-                group_by(out, INDEX_COLUMN, __calling_env=CallingEnvs.REGULAR),
-                **{_id: row_number() + base - 1},
-                __calling_env=CallingEnvs.REGULAR,
+                regcall(group_by, out, INDEX_COLUMN),
+                **{_id: row_number() - 1},
             ),
-            __calling_env=CallingEnvs.REGULAR,
         )
 
     out.drop(columns=[INDEX_COLUMN], inplace=True)
@@ -79,7 +73,7 @@ def uncount(
 def _check_weights(weights: Iterable[Any]) -> None:
     """Check if uncounting weights are valid"""
     for weight in weights:
-        if not isinstance(weight, (int, float, numpy.number)):
+        if not is_number(weight):
             raise ValueError("`weights` must evaluate to numerics.")
         if weight < 0:
             raise ValueError("All elements in `weights` must be >= 0.")
