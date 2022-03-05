@@ -1,7 +1,8 @@
 """Provides forcats verbs to manipulate factor level values"""
 from typing import Any, Callable, Iterable, List, Mapping, Union
 
-import numpy
+import numpy as np
+import pandas as pd
 from pandas import Categorical, DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs, functype
@@ -17,17 +18,16 @@ from ..base import (
     rank,
 )
 from ..core.contexts import Context
-from ..core.types import ForcatsRegType, ForcatsType, NumericType, is_null
-from ..core.utils import get_option, logger
+from ..core.utils import logger, regcall
 from ..dplyr import recode_factor, if_else
-from .utils import check_factor
+from .utils import check_factor, ForcatsRegType
 from .lvls import lvls_reorder, lvls_revalue
 from .lvl_order import fct_relevel
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_anon(
-    _f: ForcatsType,
+    _f,
     prefix: str = "",
     base0_: bool = None,
 ) -> Categorical:
@@ -70,7 +70,7 @@ def fct_anon(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_recode(
-    _f: ForcatsType,
+    _f,
     *args: Mapping[Any, Any],
     **kwargs: Any,
 ) -> Categorical:
@@ -132,7 +132,7 @@ def fct_recode(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_collapse(
-    _f: ForcatsType,
+    _f,
     other_level: Any = None,
     **kwargs: List,
 ) -> Categorical:
@@ -170,9 +170,9 @@ def fct_collapse(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_lump_min(
-    _f: ForcatsType,
+    _f,
     min: int,
-    w: Iterable[NumericType] = None,
+    w = None,
     other_level: Any = "Other",
 ) -> Categorical:
     """lumps levels that appear fewer than `min` times.
@@ -210,9 +210,9 @@ def fct_lump_min(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_lump_prop(
-    _f: ForcatsType,
-    prop: NumericType,
-    w: Iterable[NumericType] = None,
+    _f,
+    prop,
+    w = None,
     other_level: Any = "Other",
 ) -> Categorical:
     """Lumps levels that appear in fewer `prop * n` times.
@@ -261,9 +261,9 @@ def fct_lump_prop(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_lump_n(
-    _f: ForcatsType,
+    _f,
     n: int,
-    w: Iterable[NumericType] = None,
+    w = None,
     other_level: Any = "Other",
     ties_method: str = "min",
 ) -> Categorical:
@@ -311,7 +311,7 @@ def fct_lump_n(
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_lump_lowfreq(_f: ForcatsType, other_level: Any = "Other"):
+def fct_lump_lowfreq(_f, other_level: Any = "Other"):
     """lumps together the least frequent levels, ensuring
     that "other" is still the smallest level.
 
@@ -341,10 +341,10 @@ def fct_lump_lowfreq(_f: ForcatsType, other_level: Any = "Other"):
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_lump(
-    _f: ForcatsType,
+    _f,
     n: int = None,
-    prop: NumericType = None,
-    w: Iterable[NumericType] = None,
+    prop = None,
+    w = None,
     other_level: Any = "Other",
     ties_method: str = "min",
 ) -> Categorical:
@@ -388,7 +388,7 @@ def fct_lump(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_other(
-    _f: ForcatsType,
+    _f,
     keep: Iterable = None,
     drop: Iterable = None,
     other_level: Any = "Other",
@@ -433,7 +433,7 @@ def fct_other(
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_relabel(
-    _f: ForcatsType,
+    _f,
     _fun: Callable,
     *args: Any,
     **kwargs: Any,
@@ -469,9 +469,9 @@ def fct_relabel(
 
 
 def check_weights(
-    w: Iterable[NumericType],
-    n: int = None,
-) -> Iterable[NumericType]:
+    w,
+    n: int = None
+):
     """Check the weights"""
     if w is None:
         return w
@@ -495,9 +495,9 @@ def check_weights(
 
 
 def check_calc_levels(
-    _f: ForcatsType,
-    w: Iterable[NumericType] = None,
-) -> Mapping[str, Union[ForcatsType, NumericType]]:
+    _f,
+    w = None
+):
     """Check levels to be calculated"""
     _f = check_factor(_f)
     w = check_weights(w, len(_f))
@@ -517,7 +517,7 @@ def check_calc_levels(
     return {"_f": _f, "count": cnt, "total": total}
 
 
-def lump_cutoff(x: Iterable[NumericType]) -> int:
+def lump_cutoff(x) -> int:
     """Lump together smallest groups, ensuring that the collective
     "other" is still the smallest group. Assumes x is vector
     of counts in descending order"""
@@ -533,7 +533,7 @@ def lump_cutoff(x: Iterable[NumericType]) -> int:
     return len(x)  # pragma: no cover
 
 
-def in_smallest(x: Iterable[NumericType]) -> Iterable[bool]:
+def in_smallest(x) -> Iterable[bool]:
     """Check if elements in x are the smallest of x"""
     ord_x = order(
         x,

@@ -16,7 +16,7 @@ from pipda import register_verb
 from ..core.utils import (
     vars_select,
     apply_dtypes,
-    regcall,
+    regcall
 )
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, reconstruct_tibble

@@ -1,12 +1,14 @@
 """Provides other helper functions for factors"""
 from typing import Any, Iterable
-import numpy
+
+import numpy as np
+import pandas as pd
 from pandas import Categorical, DataFrame
+from pandas.api.types import is_scalar
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
-from ..core.types import ForcatsRegType, ForcatsType, is_null, is_scalar
-from ..core.utils import Array
+from ..core.utils import regcall
 from ..core.contexts import Context
 
 from ..core.defaults import f
@@ -22,12 +24,12 @@ from ..base import (
 )
 from ..dplyr import arrange, desc, mutate
 
-from .utils import check_factor
+from .utils import check_factor, ForcatsRegType
 from .lvl_order import fct_inorder
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
+def fct_count(_f, sort: bool = False, prop=False) -> Categorical:
     """Count entries in a factor
 
     Args:
@@ -40,18 +42,16 @@ def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
         A data frame with columns `f`, `n` and `p`, if prop is True
     """
     f2 = check_factor(_f)
-    n_na = sum(is_null(f2))
+    n_na = sum(pd.isnull(f2))
 
     df = DataFrame(
         {
-            "f": fct_inorder(
-                levels(f2, __calling_env=CallingEnvs.REGULAR),
-                __calling_env=CallingEnvs.REGULAR,
+            "f": regcall(fct_inorder,
+                regcall(levels, f2)
             ),
-            "n": tabulate(
+            "n": regcall(tabulate,
                 f2,
-                nlevels(f2, __calling_env=CallingEnvs.REGULAR),
-                __calling_env=CallingEnvs.REGULAR,
+                regcall(nlevels, f2)
             ),
         }
     )
@@ -60,23 +60,21 @@ def fct_count(_f: ForcatsType, sort: bool = False, prop=False) -> Categorical:
         df = df.append({"f": NA, "n": n_na}, ignore_index=True)
 
     if sort:
-        df = arrange(
+        df = regcall(arrange,
             df,
             desc(f.n, __calling_env=CallingEnvs.PIPING),
-            __calling_env=CallingEnvs.REGULAR,
         )
     if prop:
-        df = mutate(
+        df = regcall(mutate,
             df,
             p=prop_table(f.n, __calling_env=CallingEnvs.PIPING),
-            __calling_env=CallingEnvs.REGULAR,
         )
 
     return df
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_match(_f: ForcatsType, lvls: Any) -> Iterable[bool]:
+def fct_match(_f, lvls: Any) -> Iterable[bool]:
     """Test for presence of levels in a factor
 
     Do any of `lvls` occur in `_f`?
@@ -93,21 +91,20 @@ def fct_match(_f: ForcatsType, lvls: Any) -> Iterable[bool]:
     if is_scalar(lvls):
         lvls = [lvls]
 
-    bad_lvls = setdiff(
+    bad_lvls = regcall(setdiff,
         lvls,
-        levels(_f, __calling_env=CallingEnvs.REGULAR),
-        __calling_env=CallingEnvs.REGULAR,
+        regcall(levels, _f)
     )
     if len(bad_lvls) > 0:
-        bad_lvls = Array(bad_lvls)[~is_null(bad_lvls)]
+        bad_lvls = np.array(bad_lvls)[~pd.isnull(bad_lvls)]
     if len(bad_lvls) > 0:
         raise ValueError(f"Levels not present in factor: {bad_lvls}.")
 
-    return numpy.isin(_f, lvls)
+    return np.isin(_f, lvls)
 
 
 @register_verb(ForcatsRegType)
-def fct_unique(_f: ForcatsType) -> Categorical:
+def fct_unique(_f) -> Categorical:
     """Unique values of a factor
 
     Args:
@@ -116,6 +113,6 @@ def fct_unique(_f: ForcatsType) -> Categorical:
     Returns:
         The factor with the unique values in `_f`
     """
-    lvls = levels(_f, __calling_env=CallingEnvs.REGULAR)
-    is_ord = is_ordered(_f, __calling_env=CallingEnvs.REGULAR)
+    lvls = regcall(levels, _f)
+    is_ord = regcall(is_ordered, _f)
     return factor(lvls, lvls, exclude=None, ordered=is_ord)
