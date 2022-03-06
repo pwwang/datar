@@ -20,7 +20,7 @@ pip install -U datar
 # pip install -U varname pipda datar
 ```
 
-`datar` requires python 3.7.1+ and is backended by `pandas (1.2+)`.
+`datar` requires python 3.7.1+ and is backended by `pandas (1.3+)`.
 
 ## Example usage
 

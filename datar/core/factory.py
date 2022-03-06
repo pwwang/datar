@@ -283,6 +283,38 @@ def func_factory(
     signature=None,
     func=None,
 ):
+    """Register non-data/contextual functions
+
+    Args:
+        kind: what kind of operation we should do on higher-order data structure
+            (for example, `DataFrame` compared to `Series`)
+            using the base function we registered.
+        data_args: The arguments of the base function to be vectorized and
+            recycled.
+            The values of those arguments will compose a frame,
+            which can be accessed by `__args_frame` argument in your
+            base function. Since those values become `Series` objects,
+            the raw values can be accessed by `__args_raw`.
+        name: and
+        qualname: and
+        doc: The `__name__`, `__qualname__` and `__doc__` for the final
+            returned function
+        apply_type: The result type when we do apply on frames,
+            only for kind `apply`. See the doc of `DataFrame.apply()`
+        context: The context to evaluate the function
+        signature: The function signature to detect data arguments from the
+            function arguments. Default is `inspect.signature(func)`.
+            But inspect cannot detect signature of some functions,
+            for example, `numpy.sqrt()`, then you can pass a signature instead.
+        keep_series: Whether try to keep the result as series
+            if input is not series.
+        func: The base function. The default data type to handle is `Series`.
+            When hight-order data is encountered, for example,
+            `SeriesGroupBy`, with `kind` `agg`, `sgb.agg(func)` will run for it.
+
+    Returns:
+        A pipda registered function
+    """
     kind = arg_match(
         kind, "kind", ["transform", "apply", "agg", "aggregate", None]
     )

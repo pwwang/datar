@@ -40,7 +40,16 @@ def cur_data_all(_data, _context=None):
 @cur_data_all.register(TibbleGrouped)
 def _(_data, _context=None):
     _data = _context.meta.get("input_data", _data)
-    return _data._datar["grouped"].apply(lambda g: Series([g])).iloc[:, 0]
+    grouped = _data._datar["grouped"]
+    return Series(
+        [
+            grouped.obj.loc[grouped.grouper.groups[key], :]
+            for key in grouped.grouper.result_index
+        ],
+        name="cur_data_all",
+        dtype=object,
+        index=grouped.grouper.result_index,
+    )
 
 
 @register_func(DataFrame, verb_arg_only=True)
@@ -56,7 +65,9 @@ def cur_data(_data, _context=None):
 def _(_data, _context=None):
     _data = _context.meta.get("input_data", _data)
     cols = regcall(setdiff, _data.columns, _data.group_vars or [])
-    return _data._datar["grouped"].apply(lambda g: Series([g[cols]])).iloc[:, 0]
+    return (
+        _data._datar["grouped"].apply(lambda g: Series([g[cols]])).iloc[:, 0]
+    )
 
 
 @register_func(DataFrame, verb_arg_only=True)

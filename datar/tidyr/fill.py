@@ -67,5 +67,6 @@ def _(
         *columns,
         _direction=_direction,
         __calling_env=CallingEnvs.REGULAR,
-    ).sort_index()
+        # drop the index, pandas 1.4 and <1.4 act differently
+    ).sort_index().reset_index(drop=True)
     return reconstruct_tibble(_data, out)

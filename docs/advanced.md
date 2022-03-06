@@ -78,6 +78,7 @@ def func_factory(
     apply_type=None,
     context=Context.EVAL,
     signature=None,
+    keep_series=False,
     func=None,
 ):
 ```
@@ -89,6 +90,7 @@ def func_factory(
   - https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.apply.html
 - `context`: The context to evaluate the function
 - `signature`: The function signature to detect data arguments from the function arguments. Default is `inspect.signature(func)`. But inspect cannot detect signature of some functions, for example, `numpy.sqrt()`, then you can pass a signature instead.
+- `keep_series`: Whether try to keep the result as series if input is not series.
 - `func`: The base function. The default data type to handle is `Series`. When hight-order data is encountered, for example, `SeriesGroupBy`, with `kind` `agg`, `sgb.agg(func)` will run for it.
 
 

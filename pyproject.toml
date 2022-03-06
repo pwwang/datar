@@ -15,12 +15,12 @@ diot = "^0.1.1"
 # pipda already requires the following
 # executing = "*"
 # varname = "*"
-pandas = "^1.2"
+pandas = "^1.3"
 toml = "^0.10.2"
 pdtypes = { version = "^0.0.4", optional = true }
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
-python-slugify = {version = "^5.0.2", optional = true}
+python-slugify = {version = "^6", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

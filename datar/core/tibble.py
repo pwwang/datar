@@ -148,8 +148,6 @@ class Tibble(DataFrame):
 
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
-        print(value)
-        print(self)
         value = broadcast_to(value, self.index)
 
         # if isinstance(value, GroupBy):
@@ -276,6 +274,7 @@ class TibbleGrouped(Tibble):
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
         grouped = self._datar["grouped"]
+
         value = broadcast_to(value, self.index, grouped.grouper)
 
         if isinstance(key, str) and isinstance(value, DataFrame):
@@ -314,7 +313,8 @@ class TibbleGrouped(Tibble):
     def transform(self, *args, **kwargs):
         """Transform brings the metadata of original df, we need to update it"""
         out = super().transform(*args, **kwargs)
-        return out.regroup(inplace=False)
+        # pandas < 1.4, _datar not carried by transform
+        return reconstruct_tibble(self, out)
 
     def copy(self, deep: bool = True) -> "TibbleGrouped":
         grouped = self._datar["grouped"]
@@ -349,8 +349,7 @@ class TibbleGrouped(Tibble):
 
     def convert_dtypes(self, *args, **kwargs) -> "TibbleGrouped":
         out = DataFrame.convert_dtypes(self, *args, **kwargs)
-        out._datar["grouped"].obj = Tibble(out, copy=False)
-        return out
+        return reconstruct_tibble(self, out)
 
     def group_by(
         self,

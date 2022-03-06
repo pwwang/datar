@@ -1,7 +1,7 @@
 ## 0.6.0
 
 ### General
-- Adopt `pipda` 0.5.6
+- Adopt `pipda` 0.5.7
 - Reimplement the split-apply-combine rule to solve all performance issues
 - Remove all `base0_` options and all indices are now 0-based, except `base.seq()`, ranks and their variants
 - Remove messy type annotations for now, will add them back in the future
@@ -28,6 +28,7 @@
 - `rep()` now works with frames
 - `c_across()` now returns a rowwise df to work with functions that apply to df on `axis=1`
 - `datar.dplyr.order_by()` now only works like it does in `r-dplyr` and only in side a verb
+- `datar.dplyr.group_by()` detauls `_sort` to `False` for speed
 - Only raise error for duplicated column names when selected by column name instead of index
 - `base.scale()` returns a series rather than a frame when works with a series
 - Other fixes and optimizations

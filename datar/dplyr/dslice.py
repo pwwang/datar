@@ -8,6 +8,7 @@ from typing import Any, Iterable, Union
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
+
 # from pandas.api.types import is_integer
 from pipda import register_verb, Expression
 
@@ -71,10 +72,26 @@ def _(
 
     grouped = _data._datar["grouped"]
     gsizes = grouped.grouper.size()
-    indices = np.concatenate([
-        grouped.grouper.indices[key].take(_sanitize_rows(rows, gsizes[key]))
+    indices = [
+        grouped.grouper.indices[key].take(
+            _sanitize_rows(rows, gsizes.loc[key])
+        )
         for key in grouped.grouper.result_index
-    ])
+        # grouped.grouper.indices[key] gets empty [] when it's an empty group
+        if grouped.grouper.indices[key].size > 0
+    ]
+    if indices:
+        indices = np.concatenate(
+            [
+                grouped.grouper.indices[key].take(
+                    _sanitize_rows(rows, gsizes.loc[key])
+                )
+                for key in grouped.grouper.result_index
+                # grouped.grouper.indices[key] gets empty []
+                # when it's an empty group
+                if grouped.grouper.indices[key].size > 0
+            ]
+        )
 
     return _data.take(indices)
 
