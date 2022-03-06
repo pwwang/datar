@@ -16,6 +16,7 @@ diot = "^0.1.1"
 # executing = "*"
 # varname = "*"
 pandas = "^1.2"
+toml = "^0.10.2"
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
 python-slugify = {version = "^5.0.2", optional = true}

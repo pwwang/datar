@@ -124,7 +124,7 @@ def _(
     indices = np.concatenate(
         [
             grouped.grouper.indices[key][: ns[key]]
-            for key in grouped.grouper.group_keys_seq
+            for key in grouped.grouper.result_index
         ]
     )
 
@@ -180,7 +180,7 @@ def _(
     indices = np.concatenate(
         [
             grouped.grouper.indices[key][-ns[key] :]
-            for key in grouped.grouper.group_keys_seq
+            for key in grouped.grouper.result_index
         ]
     )
 

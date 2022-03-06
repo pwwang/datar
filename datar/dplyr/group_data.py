@@ -87,7 +87,7 @@ def _(_data: GroupBy) -> List[List[int]]:
     grouper = _data.grouper
     return [
         list(grouper.indices[group_key])
-        for group_key in grouper.group_keys_seq
+        for group_key in grouper.result_index
     ]
 
 

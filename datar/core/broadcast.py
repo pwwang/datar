@@ -422,7 +422,7 @@ def broadcast_to(
     # length of each group is checked in _broadcast_base
     # A better way to distribute the value to each group?
     idx = np.concatenate(
-        [grouper.groups[gdata] for gdata in grouper.group_keys_seq]
+        [grouper.groups[gdata] for gdata in grouper.result_index]
     )
     # make np.tile([[3, 4]], 2) to be [[3, 4], [3, 4]],
     # instead of [[3, 4, 3, 4]]
@@ -453,7 +453,7 @@ def _(
     # length of each group is checked in _broadcast_base
     # A better way to distribute the value to each group?
     idx = np.concatenate(
-        [grouper.groups[gdata] for gdata in grouper.group_keys_seq]
+        [grouper.groups[gdata] for gdata in grouper.result_index]
     )
     # make np.tile([[3, 4]], 2) to be [[3, 4], [3, 4]],
     # instead of [[3, 4, 3, 4]]
