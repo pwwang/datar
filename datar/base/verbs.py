@@ -427,7 +427,7 @@ def proportions(x, margin=None):
 prop_table = proportions
 
 
-@proportions.register((list, tuple, np.array, Series))
+@proportions.register((list, tuple, np.ndarray, Series))
 def _(x, margin=None):
     """proportions for vectors"""
     x = ensure_nparray(x)
