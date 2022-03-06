@@ -24,6 +24,7 @@ from ..base import (
     setdiff,
     table,
 )
+from ..core.collections import Collection
 from ..core.contexts import Context
 from ..core.utils import logger, regcall
 from .lvls import lvls_reorder, lvls_seq
@@ -34,7 +35,7 @@ from .utils import check_factor, ForcatsRegType
 def fct_relevel(
     _f,
     *lvls: Any,
-    after: int = 0,
+    after: int = None,
 ) -> Categorical:
     """Reorder factor levels by hand
 
@@ -58,7 +59,7 @@ def fct_relevel(
     if len(lvls) == 1 and callable(lvls[0]):
         first_levels = lvls[0](old_levels)
     else:
-        first_levels = lvls
+        first_levels = Collection(lvls)
 
     unknown = regcall(setdiff, first_levels, old_levels)
 
@@ -68,7 +69,7 @@ def fct_relevel(
 
     new_levels = regcall(
         append,
-        regcall(setdiff, old_levels, first_levels),
+        regcall(setdiff, old_levels, first_levels).astype(old_levels.dtype),
         first_levels,
         after=after,
     )
@@ -343,6 +344,6 @@ def fct_shift(_f, n: int = 1) -> Categorical:
         The factor with levels shifted
     """
     nlvls = regcall(nlevels, _f)
-    lvl_order = (regcall(seq_len, nlvls) + n) % nlvls
+    lvl_order = (regcall(seq_len, nlvls) + n - 1) % nlvls
 
     return regcall(lvls_reorder, _f, lvl_order)

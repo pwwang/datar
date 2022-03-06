@@ -6,6 +6,7 @@ from .base import (
 from .base import _builtin_names as _base_builtin_names
 from .base import *
 from .base import _warn as _
+from .forcats import *
 from .datar import *
 from .dplyr import _no_warn as _
 from .dplyr import _builtin_names as _dplyr_builtin_names

@@ -13,7 +13,7 @@ from pipda import register_verb
 
 from ..core.utils import vars_select, apply_dtypes, regcall
 from ..core.contexts import Context
-from ..core.tibble import TibbleGrouped, reconstruct_tibble
+from ..core.tibble import reconstruct_tibble
 
 from ..base import union, setdiff, NA
 from ..dplyr import ungroup

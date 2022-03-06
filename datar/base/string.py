@@ -431,9 +431,10 @@ def paste(*args, sep=" ", collapse=None):
     return np.array(out, dtype=object)
 
 
-paste0 = lambda *args, collapse=None: paste.__origfunc__(
-    *args, sep="", collapse=collapse
-)
+@register_func(None, context=Context.EVAL)
+def paste0(*args, sep="", collapse=None):
+    """Paste with empty string as sep"""
+    return regcall(paste, *args, sep="", collapse=collapse)
 
 
 # sprintf ----------------------------------------------------------------
@@ -459,11 +460,7 @@ def sprintf(fmt, *args):
 
 
 @func_factory("transform", "x")
-def substr(
-    x,
-    start,
-    stop
-):
+def substr(x, start, stop):
     """Extract substrings in strings.
 
     Args:
@@ -479,11 +476,7 @@ def substr(
 
 
 @func_factory("transform", "x")
-def substring(
-    x,
-    first,
-    last=1000000
-):
+def substring(x, first, last=1000000):
     """Extract substrings in strings.
 
     Args:
@@ -514,6 +507,7 @@ def strsplit(x, split, fixed=False):
         List of split strings of x if both x and split are scalars. Otherwise,
         an array of split strings
     """
+
     def split_str(string, sep):
         if fixed:
             return string.split(sep)

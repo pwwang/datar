@@ -3,14 +3,14 @@ import pytest
 import numpy
 from datar.all import *
 
-from .conftest import assert_iterable_equal, assert_factor_equal
+from ..conftest import assert_iterable_equal, assert_factor_equal
 
 # fct_anon
 def test_new_levels_are_padded_numerics():
     f1 = factor(letters[:10])
     f2 = fct_anon(f1)
     assert_iterable_equal(
-        levels(f2), [str(i + 1).rjust(2, "0") for i in range(10)]
+        levels(f2), [str(i).rjust(2, "0") for i in range(10)]
     )
 
 
@@ -18,7 +18,7 @@ def test_prefix_added_to_start_of_level():
     f1 = factor("x")
     f2 = fct_anon(f1, prefix="X")
 
-    assert_iterable_equal(levels(f2), ["X1"])
+    assert_iterable_equal(levels(f2), ["X0"])
 
 
 # fct_collapse
@@ -287,7 +287,7 @@ def test_fct_lump_prop_works_when_weighted():
 def lump_test(x):
     from datar.forcats.lvl_value import in_smallest
     return paste(
-        if_else(in_smallest(numpy.array(x)), "X", letters[seq_along(x, base0_=True)]),
+        if_else(in_smallest(numpy.array(x)), "X", letters[seq_along(x)-1]),
         collapse="",
     )
 

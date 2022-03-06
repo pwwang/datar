@@ -1,10 +1,8 @@
-from datar.forcats.fct_multi import fct_cross
 import pytest
 
-import numpy
 from datar.all import *
 
-from .conftest import assert_iterable_equal, assert_factor_equal
+from ..conftest import assert_iterable_equal, assert_factor_equal
 
 # fct_c
 def test_fct_c():
@@ -45,9 +43,8 @@ def test_gives_correct_levels():
 
 
 def test_recycle_inputs():
-    from datar.core.exceptions import DataUnrecyclable
     assert len(fct_cross(["a"], c("a", "b", "c"), "d")) == 3
-    with pytest.raises(DataUnrecyclable):
+    with pytest.raises(ValueError):
         fct_cross(c("a", "b", "c"), c("a", "b"))
 
 
@@ -82,7 +79,7 @@ def test_gives_NA_output_on_NA_input():
     fruit[0] = NA
     f2 = fct_cross(fruit, colour)
 
-    assert is_na(f2[0])
+    assert is_na(f2[0]).all()
 
 
 def test_gives_NA_output_on_NA_input_when_keeping_empty_levels():
@@ -90,7 +87,7 @@ def test_gives_NA_output_on_NA_input_when_keeping_empty_levels():
     colour = as_factor(c("green", "green", "red", "green"))
     fruit[0] = NA
     f2 = fct_cross(fruit, colour, keep_empty=TRUE)
-    assert is_na(f2[0])
+    assert is_na(f2[0]).all()
 
 
 def test_can_combine_more_than_two_factors():

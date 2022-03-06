@@ -1,7 +1,6 @@
 """Lower-level APIs to manipulate the factors"""
 from typing import Iterable, List
 from pandas import Categorical
-from pandas.api.types import is_integer
 from pipda import register_verb
 
 from ..core.utils import regcall
@@ -14,6 +13,7 @@ from ..base import (
     as_integer,
     setequal,
     seq_along,
+    is_integer,
     factor,
     levels,
     match,
@@ -29,7 +29,7 @@ from .utils import check_factor, ForcatsRegType
 
 def lvls_seq(_f):
     """Get the index sequence of a factor levels"""
-    return regcall(seq_along, regcall(levels, _f))
+    return regcall(seq_along, regcall(levels, _f)) - 1
 
 
 def refactor(_f, new_levels: Iterable, ordered: bool = None) -> Categorical:
@@ -62,11 +62,11 @@ def lvls_reorder(
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    if not is_integer(idx):
+    if not regcall(is_integer, idx):
         raise ValueError("`idx` must be integers")
 
     len_idx = len(idx)
-    seq_lvls = regcall(lvls_seq, _f)
+    seq_lvls = lvls_seq(_f)
     if not regcall(setequal, idx, seq_lvls) or len_idx != regcall(nlevels, _f):
         raise ValueError(
             "`idx` must contain one integer for each level of `f`"
@@ -111,10 +111,10 @@ def lvls_revalue(
             recode_factor,
             out,
             dict(zip(regcall(levels, out), u_levels)),
-        )
+        ).values
 
     recodings = dict(zip(regcall(levels, _f), new_levels))
-    return regcall(recode_factor(_f, recodings))
+    return regcall(recode_factor, _f, recodings).values
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)

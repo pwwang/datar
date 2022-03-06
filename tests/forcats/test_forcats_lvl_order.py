@@ -3,7 +3,7 @@ import pytest
 import numpy
 from datar.all import *
 
-from .conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal
 
 # fct_relevel
 def test_warns_about_unknown_levels(caplog):
@@ -24,7 +24,7 @@ def test_moves_supplied_levels_to_front():
 def test_can_moves_supplied_levels_to_end():
     f1 = factor(c("a", "b", "c", "d"))
 
-    f2 = fct_relevel(f1, "a", "b", after = 2)
+    f2 = fct_relevel(f1, "a", "b", after = 1)
     f3 = fct_relevel(f1, "a", "b", after = -1)
     assert_iterable_equal(levels(f2), c("c", "d", "a", "b"))
     assert_iterable_equal(levels(f3), c("c", "d", "a", "b"))

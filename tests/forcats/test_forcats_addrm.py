@@ -1,10 +1,7 @@
-from datar.base.factor import is_ordered
-import pytest
+import pytest  # noqa
 
-import numpy
 from datar.all import *
-from datar.forcats import as_factor
-from .conftest import assert_iterable_equal, assert_factor_equal
+from ..conftest import assert_iterable_equal, assert_factor_equal
 
 # fct_expand
 def test_fct_expand():

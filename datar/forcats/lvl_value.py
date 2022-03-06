@@ -2,7 +2,7 @@
 from typing import Any, Callable, Iterable, List, Mapping
 
 import numpy as np
-from pandas import pd
+import pandas as pd
 from pandas import Categorical, DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs, functype
@@ -114,7 +114,7 @@ def fct_recode(
     if unknown:
         logger.warning("[fct_recode] Unknown levels in `_f`: %s", unknown)
 
-    return regcall(recode_factor, _f, for_recode)
+    return regcall(recode_factor, _f, for_recode).values
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -188,6 +188,8 @@ def fct_lump_min(
         other_level,
     )
 
+    new_levels = getattr(new_levels, "values", new_levels)
+
     if other_level in new_levels:
         _f = regcall(lvls_revalue, _f, new_levels)
         return fct_relevel(_f, other_level, after=-1)
@@ -236,6 +238,8 @@ def fct_lump_prop(
             other_level,
         )
 
+    new_levels = getattr(new_levels, "values", new_levels)
+
     if prop > 0 and sum(prop_n <= prop) <= 1:
         return _f
 
@@ -275,10 +279,12 @@ def fct_lump_n(
     _f = calcs["_f"]
 
     if n < 0:
-        rnk = rank(calcs["count"], ties_method=ties_method)
+        rnk = regcall(rank, calcs["count"], ties_method=ties_method)
         n = -n
     else:
-        rnk = rank(-calcs["count"], ties_method=ties_method)
+        rnk = regcall(rank, -calcs["count"], ties_method=ties_method)
+
+    rnk = getattr(rnk, "values", rnk)
 
     new_levels = regcall(
         if_else,
@@ -319,6 +325,8 @@ def fct_lump_lowfreq(_f, other_level: Any = "Other"):
         regcall(levels, _f),
         other_level,
     )
+
+    new_levels = getattr(new_levels, "values", new_levels)
 
     if other_level in new_levels:
         _f = regcall(lvls_revalue, _f, new_levels)

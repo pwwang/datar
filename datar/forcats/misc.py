@@ -52,7 +52,7 @@ def fct_count(_f, sort: bool = False, prop=False) -> Categorical:
     )
 
     if n_na > 0:
-        df = df.append({"f": NA, "n": n_na}, ignore_index=True)
+        df.loc[df.shape[0], :] = {"f": NA, "n": n_na}
 
     if sort:
         df = regcall(

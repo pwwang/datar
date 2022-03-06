@@ -135,8 +135,8 @@ def tabulate(bin, nbins=None):
     )
     tabled = regcall(table, bin)
     tabled = (
-        regcall(t, tabled)
-        .reindex(range(1, nbins + 1), fill_value=0)
+        tabled.T
+        .reindex(range(nbins), fill_value=0)
         .iloc[:, 0]
         .values
     )

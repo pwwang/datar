@@ -26,6 +26,13 @@ def assert_iterable_equal(x, y, na=SENTINEL, approx=False):
     assert x == y
 
 
+def assert_factor_equal(x, y, na=8525.8525, approx=False):
+    xlevs = x.categories
+    ylevs = y.categories
+    assert_iterable_equal(x, y, na=na, approx=approx)
+    assert_iterable_equal(xlevs, ylevs, na=na, approx=approx)
+
+
 def is_installed(pkg):
     try:
         __import__(pkg)
