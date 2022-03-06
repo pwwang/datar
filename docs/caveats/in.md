@@ -57,7 +57,7 @@ So instead, we ported `is.element()` from R:
 
 ```python
 >>> import numpy as np
->>> from datar.base import is_element
+>>> from datar.base import is_element # or you can use its alias: is_in
 >>>
 >>> arr = np.array([1,2,3,4])
 >>> elts = np.array([1,3,5])

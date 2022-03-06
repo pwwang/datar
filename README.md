@@ -93,11 +93,11 @@ df = tibble(x=numpy.linspace(0, 2*pi, 500))
 # easy to integrate with other libraries
 # for example: klib
 import klib
-from pipda import register_verb
+from datar.core.factory import verb_factory
 from datar.datasets import iris
 from datar.dplyr import pull
 
-dist_plot = register_verb(func=klib.dist_plot)
+dist_plot = verb_factory(func=klib.dist_plot)
 iris >> pull(f.Sepal_Length) >> dist_plot()
 ```
 

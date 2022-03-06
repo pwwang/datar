@@ -44,8 +44,8 @@ def relocate(
         - Groups are not affected
     """
     gvars = regcall(group_vars, _data)
+    _data = regcall(as_tibble, _data.copy())
 
-    _data = as_tibble(_data.copy())
     all_columns = _data.columns
     to_move, new_names = _eval_select(
         all_columns,

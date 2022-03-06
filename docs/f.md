@@ -13,7 +13,7 @@ There are different uses for the `f`.
 - Use as a proxy to refer to dataframe columns (i.e. `f.x`, `f['x']`)
 - Use as a slice container. For example:
     - `f[:3]` for `range(0,3)`
-    - `f[f.x:f.z]` for columns from `x` to `z`, inclusively. If you want to exclude the `stop` column: `f[f.x:f.z:0]`
+    - `f[f.x:f.z]` for columns from `x` to `z` (not indcluded). If you want to include the `stop` column: `f[f.x:f.z:1]`
 - Use as the column name marker for `tribble`:
     ```python
     tribble(

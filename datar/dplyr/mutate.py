@@ -74,9 +74,8 @@ def mutate(
         - Data frame attributes are preserved.
     """
     keep = arg_match(_keep, "_keep", ["all", "unused", "used", "none"])
-
     gvars = regcall(group_vars, _data)
-    data = as_tibble(_data.copy())
+    data = regcall(as_tibble, _data.copy())
     all_columns = data.columns
 
     mutated_cols = []
@@ -90,7 +89,7 @@ def mutate(
             mutated_cols.append(val._pipda_ref)
             continue
 
-        bkup_name = str(val)
+        bkup_name = name_of(val)
         val = evaluate_expr(val, data, context)
         if val is None:
             continue

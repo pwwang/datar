@@ -127,7 +127,7 @@ def rowwise(
         )
     idxes = vars_select(_data.columns, *cols)
     gvars = _data.columns[idxes]
-    return as_tibble(_data.reset_index(drop=True)).rowwise(gvars)
+    return regcall(as_tibble, _data.reset_index(drop=True)).rowwise(gvars)
 
 
 @rowwise.register(TibbleGrouped, context=Context.SELECT)

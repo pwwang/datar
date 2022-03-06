@@ -2,6 +2,7 @@
 import sys
 import logging
 import inspect
+import textwrap
 from functools import singledispatch
 
 import numpy as np
@@ -26,7 +27,9 @@ logger.addHandler(stream_handler)
 
 @singledispatch
 def name_of(value):
-    return str(value)
+    out = str(value)
+    out = textwrap.shorten(out, 16, break_on_hyphens=False, placeholder="...")
+    return out
 
 
 @name_of.register(Series)

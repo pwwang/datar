@@ -12,7 +12,10 @@
 - Rename all `ptype` arguments for `tidyr` verbs into `dtypes`
 
 ### Details
+- Introduct new API to register function `datar.core.factory.func_factory()`
+- Aliase `register_verb` and `register_func` as `verb_factory` and `context_func_factory` in `datar.core.factory`
 - Expose `options`, `options_context`, `add_option` and `get_option` in `datar/__init__.py` and remove them from `datar.base`
+- Attach `pipda.options` to `datar.options`
 - Move `head` and `tail` from `datar.utils` to `datar.base`
 - Remove redundant `unique` implentation from `datar.base.seq`
 - Add `datar.core.factory.func_factory()` for developers to register function that works with different types of data (`NDFrame`, `GropuBy`, etc)

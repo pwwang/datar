@@ -277,7 +277,6 @@ def func_factory(
     qualname=None,
     doc=None,
     apply_type=None,
-    keep_series=False,
     context=Context.EVAL,
     signature=None,
     func=None,
@@ -296,7 +295,6 @@ def func_factory(
             qualname=qualname,
             doc=doc,
             apply_type=apply_type,
-            keep_series=keep_series,
             context=context,
             func=fun,
         )

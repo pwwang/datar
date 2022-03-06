@@ -140,6 +140,9 @@ def test_slice_expand_literally_without_pool(s):
     assert slc == [1, 2]
     assert "Slice" in repr(slc)
 
+    slc = Slice(s[1:3:1])
+    assert slc == [1, 2, 3]
+
     slc = Slice(s[:3])
     assert slc == [0, 1, 2]
 
@@ -156,6 +159,8 @@ def test_slice_pool_required_for_str_start_stop(s):
 
 
 def test_slice_expands_with_pool(s):
+    slc = Slice(s["b":"d":1], pool=list("abcd"))
+    assert list(slc) == [1, 2, 3]
     slc = Slice(s["b":"d"], pool=list("abcd"))
     assert list(slc) == [1, 2]
     slc = Slice(s["b":], pool=list("abcd"))
