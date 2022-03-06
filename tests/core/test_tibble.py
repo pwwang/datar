@@ -9,8 +9,7 @@ from datar.core.exceptions import NameNonUniqueError
 from datar.core.tibble import Tibble, TibbleRowwise, TibbleGrouped
 from datar.testing import assert_tibble_equal
 
-
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, is_installed
 
 
 def test_tibble():
@@ -143,6 +142,9 @@ def test_tibble_rowwise():
     assert_tibble_equal(df2, df3)
 
 
+@pytest.mark.skipif(
+    not is_installed("pdtypes"), reason="'pdtypes' is not installed"
+)
 def test_footer():
     df = Tibble.from_args(x=[1, 2, 3]).group_by('x')
     assert "n=3" in str(df)

@@ -38,7 +38,7 @@ def _register_type_testing(
 
     @func_factory("agg", "x", name=name, doc=doc)
     def _testing(x, __args_raw=None):
-        x = __args_raw["x"]
+        x = __args_raw["x"]  # x as a series, dtype has been compromised
         if is_scalar_pd(x):
             return isinstance(x, scalar_types)
 

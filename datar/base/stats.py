@@ -1,4 +1,3 @@
-
 # r-stats
 from typing import Mapping
 from functools import singledispatch
@@ -36,17 +35,16 @@ def _rnorm(args_frame, n, mean, sd, raw_n):
 @_rnorm.register(TibbleGrouped)
 def _rnorm_grouped(args_frame, n, mean, sd, raw_n):
     return args_frame._datar["grouped"].apply(
-        lambda subdf:
-        np.random.normal(subdf["mean"], subdf["sd"], subdf.shape[0])
+        lambda subdf: np.random.normal(
+            subdf["mean"], subdf["sd"], subdf.shape[0]
+        )
     )
 
 
 @_rnorm.register(TibbleRowwise)
 def _rnorm_rowwise(args_frame, n, mean, sd, raw_n):
     return args_frame.agg(
-        lambda row:
-        np.random.normal(row["mean"], row["sd"], row["n"]),
-        axis=1
+        lambda row: np.random.normal(row["mean"], row["sd"], row["n"]), axis=1
     )
 
 
@@ -100,8 +98,7 @@ def _runif(args_frame, n, min, max, raw_n):
 @_runif.register(TibbleGrouped)
 def _runif_grouped(args_frame, n, min, max, raw_n):
     return args_frame._datar["grouped"].apply(
-        lambda subdf:
-        np.random.uniform(
+        lambda subdf: np.random.uniform(
             low=subdf["min"],
             high=subdf["max"],
             size=subdf.shape[0],
@@ -110,11 +107,18 @@ def _runif_grouped(args_frame, n, min, max, raw_n):
 
 
 @_runif.register(TibbleRowwise)
-def _runif_rowwise(args_frame, n, min, max, raw_n):
+def _runif_rowwise(
+    args_frame,
+    n,
+    min,
+    max,
+    raw_n,
+):  # pragma: no cover.  pytest-cov can't hit this, but it's tested
     return args_frame.agg(
-        lambda row:
-        np.random.uniform(low=row["min"], high=row["max"], size=row["n"]),
-        axis=1
+        lambda row: np.random.uniform(
+            low=row["min"], high=row["max"], size=row["n"]
+        ),
+        axis=1,
     )
 
 
@@ -165,8 +169,7 @@ def _rpois(args_frame, n, lambda_, raw_n):
 @_rpois.register(TibbleGrouped)
 def _rpois_grouped(args_frame, n, lambda_, raw_n):
     return args_frame._datar["grouped"].apply(
-        lambda subdf:
-        np.random.poisson(
+        lambda subdf: np.random.poisson(
             lam=subdf["lambda_"],
             size=subdf.shape[0],
         )
@@ -176,9 +179,8 @@ def _rpois_grouped(args_frame, n, lambda_, raw_n):
 @_rpois.register(TibbleRowwise)
 def _rpois_rowwise(args_frame, n, lambda_, raw_n):
     return args_frame.agg(
-        lambda row:
-        np.random.poisson(lam=row["lambda_"], size=row["n"]),
-        axis=1
+        lambda row: np.random.poisson(lam=row["lambda_"], size=row["n"]),
+        axis=1,
     )
 
 

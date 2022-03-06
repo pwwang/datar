@@ -49,7 +49,7 @@ def uncount(
     if not undata.index.is_unique:
         raise ValueError("Cannot uncount a frame with duplicated index.")
 
-    if weights.name in undata:
+    if weights.name in undata and _remove:
         del undata[weights.name]
 
     out = undata.reindex(undata.index.repeat(weights.values))

@@ -39,12 +39,15 @@ jobs:
           pip install wcwidth
           pip install scipy
           pip install python-slugify
+          pip install pdtypes
           # reinstall pandas to specific version
-          pip install $PANDAS
+          pip install -U $PANDAS
         env:
           PANDAS: ${{ matrix.pandas }}
       - name: Run flake8
         run: flake8 datar
+      - name: Show versions
+        run: python -c 'import datar; datar.get_versions()'
       - name: Test with pytest
         run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results

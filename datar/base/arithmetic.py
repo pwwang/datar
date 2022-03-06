@@ -404,7 +404,7 @@ def signif(x: Series, digits: Series = 6) -> Series:
         The rounded values for each element in x
     """
     ndigits = digits - x.abs().transform("log10").transform("ceil")
-    return np.vectorize(np.round)(x, ndigits.astype(int))
+    return Series(np.vectorize(np.round)(x, ndigits.astype(int)), index=x.index)
 
 
 @func_factory("transform", {"x", "base"})

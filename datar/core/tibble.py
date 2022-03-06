@@ -148,6 +148,8 @@ class Tibble(DataFrame):
 
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
+        print(value)
+        print(self)
         value = broadcast_to(value, self.index)
 
         # if isinstance(value, GroupBy):

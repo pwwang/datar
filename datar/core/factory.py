@@ -3,8 +3,9 @@ from collections import namedtuple
 from functools import singledispatch
 from typing import TYPE_CHECKING, Sequence
 
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pandas.api.types import is_categorical_dtype, is_scalar
+from pandas.core.base import PandasObject
 from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func, register_verb
 
@@ -278,6 +279,7 @@ def func_factory(
     doc=None,
     apply_type=None,
     context=Context.EVAL,
+    keep_series=False,
     signature=None,
     func=None,
 ):
@@ -311,7 +313,17 @@ def func_factory(
 
     def _pipda_func(__x, *args, **kwargs):
         bound = _preprocess_args(sign, data_args, (__x, *args), kwargs)
-        return dispatched(*bound.args, **bound.kwargs)
+
+        out = dispatched(*bound.args, **bound.kwargs)
+        if (
+            kind == "transform"
+            and not isinstance(__x, PandasObject)
+            and not keep_series
+            and isinstance(out, Series)
+        ):
+            return out.values
+
+        return out
 
     _pipda_func.__name__ = funcname
     _pipda_func.__qualname__ = qualname
