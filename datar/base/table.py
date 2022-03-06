@@ -139,7 +139,6 @@ def tabulate(bin, nbins=None):
         0 if nbins is None else nbins,
     )
     tabled = regcall(table, bin)
-    print(tabled.T)
     tabled = (
         tabled.T
         .reindex(range(1, nbins + 1), fill_value=0)

@@ -291,7 +291,7 @@ def fct_reorder2(
         )
     )
 
-    if not isinstance(summary, Series) or not is_scalar(summary[0]):
+    if not isinstance(summary, Series) or not is_scalar(summary.values[0]):
         raise ValueError("`fun` must return a single value per group.")
 
     return regcall(

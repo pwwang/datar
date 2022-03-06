@@ -262,6 +262,8 @@ def _vec_split(x: NDFrame, by: NDFrame) -> DataFrame:
     if df.shape[0] == 0:
         return Tibble(columns=["key", "val"])
     if by.shape[1] > 0:
+        if not isinstance(df, Tibble):
+            df = Tibble(df, copy=False)
         df = df.group_by(by.columns.tolist(), drop=True)
 
     gdata = regcall(group_data, df)

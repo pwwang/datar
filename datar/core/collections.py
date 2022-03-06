@@ -336,17 +336,18 @@ class Slice(Collection):
                 "`pool` is required when start/stop of slice are not indexes."
             )
 
-        inclusive = step == 1
+        inclusive = step in (1, -1)
 
         if start is None:
             start = 0
         if stop is None:
             stop = 0
         if step is None:
+            inclusive = False
             step = 1 if stop >= start else -1
 
         if inclusive:
-            stop += 1
+            stop += step
 
         out = []
         out_append = out.append
@@ -380,7 +381,13 @@ class Slice(Collection):
                 raise KeyError(stop)
             stop = self._index_from_pool(stop)
 
-        if step == 1:
-            stop += 1
+        if step in (1, -1):
+            if stop == 0 and step == -1:
+                stop = None
+            else:
+                stop += step
+
+        if step is None:
+            step = 1 if stop >= start else -1
 
         return list(range(*slice(start, stop, step).indices(len_pool)))

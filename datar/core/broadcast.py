@@ -79,8 +79,11 @@ def _agg_result_compatible(index: "Index", grouper: "Grouper") -> bool:
 
     size1 = index.value_counts(sort=False, dropna=False)
     size2 = grouper.size()
-
-    return ((size1 == 1) | (size2 == 1) | (size1.values == size2.values)).all()
+    return (
+        (size1.values == 1)
+        | (size2.values == 1)
+        | (size1.values == size2.values)
+    ).all()
 
 
 def _grouper_compatible(grouper1: "Grouper", grouper2: "Grouper") -> bool:
@@ -401,10 +404,7 @@ def broadcast_to(
     if not is_list_like(value):
         return value
 
-    if (
-        len(value) == 1
-        and not is_list_like(value[0])
-    ):
+    if len(value) == 1 and not is_list_like(value[0]):
         return value[0]
 
     if not grouper:
@@ -426,7 +426,7 @@ def broadcast_to(
     )
     # make np.tile([[3, 4]], 2) to be [[3, 4], [3, 4]],
     # instead of [[3, 4, 3, 4]]
-    repeats = (grouper.ngroups, ) + (1, ) * (np.ndim(value) - 1)
+    repeats = (grouper.ngroups,) + (1,) * (np.ndim(value) - 1)
     return Series(np.tile(value, repeats).tolist(), index=idx).reindex(index)
 
 

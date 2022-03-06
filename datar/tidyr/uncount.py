@@ -35,7 +35,7 @@ def uncount(
         dataframe with rows repeated.
     """
     grouped = getattr(data, "_datar", {}).get("grouped", None)
-    undata = regcall(ungroup, data)
+    undata = regcall(ungroup, data).copy()
     weights = broadcast_to(
         weights,
         data.index,

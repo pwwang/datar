@@ -1,13 +1,9 @@
 """Trigonometric and Hyperbolic Functions"""
 from functools import singledispatch
 import numpy as np
-from pandas import Series
-from pandas.core.groupby import SeriesGroupBy
-from pipda import register_func
 
 
-from ..core.tibble import TibbleGrouped, TibbleRowwise
-from ..core.contexts import Context
+from ..core.tibble import TibbleGrouped
 from ..core.factory import func_factory
 
 from .constants import pi

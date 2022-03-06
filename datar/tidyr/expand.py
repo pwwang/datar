@@ -118,7 +118,6 @@ def expand(
     cols = _dots_cols(*args, **kwargs)
     named = cols.pop("__named__")
     cols = {key: _sorted_unique(val) for key, val in cols.items()}
-    print(cols)
 
     out = expand_grid(**cols, _name_repair=_name_repair)
     out = _flatten_nested(out, named, _name_repair)
