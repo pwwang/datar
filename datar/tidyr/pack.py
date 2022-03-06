@@ -9,7 +9,7 @@ from pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.utils import vars_select, regcall
-from ..core.tibble import reconstruct_tibble, TibbleGrouped
+from ..core.tibble import reconstruct_tibble
 from ..core.contexts import Context
 from ..core.names import repair_names
 
@@ -58,7 +58,7 @@ def pack(
         for newcol, oldcol in columns:
             cols[f"{group}${newcol}"] = _data[oldcol]
 
-    asis = regcall(setdiff, _data.columns, usedcols)
+    asis = regcall(setdiff, _data.columns, list(usedcols))
     out = regcall(bind_cols, _data[asis], DataFrame(cols))
     return reconstruct_tibble(_data, out)
 
@@ -100,11 +100,7 @@ def unpack(
     all_columns = data.columns
     cols = _check_present(data, cols, all_columns)
 
-    out = (
-        data.copy(copy_grouped=True)
-        if isinstance(data, TibbleGrouped)
-        else data.copy()
-    )
+    out = data.copy()
     new_cols = []
     for col in data.columns:
         if "$" in col:

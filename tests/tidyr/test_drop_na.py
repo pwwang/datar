@@ -18,7 +18,7 @@ def test_only_considers_specified_vars():
     assert_frame_equal(out, exp)
 
     exp = tibble(x=[1], y=c("a"), _dtypes={'x': float})
-    out = drop_na(df, f[f.x:f.y])
+    out = drop_na(df, f[f.x:])
     assert_frame_equal(out, exp)
 
 def test_groups_are_preserved():

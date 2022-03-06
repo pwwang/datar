@@ -28,10 +28,10 @@ from functools import singledispatch
 from typing import TYPE_CHECKING, Any, Tuple, Union
 
 import numpy as np
-from pandas import DataFrame, Series, CategoricalIndex
+from pandas import Categorical, DataFrame, Series, CategoricalIndex
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
-from pandas.api.types import is_list_like, is_categorical_dtype
+from pandas.api.types import is_list_like
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
 from .utils import name_of
@@ -404,7 +404,6 @@ def broadcast_to(
     if (
         len(value) == 1
         and not is_list_like(value[0])
-        and not is_categorical_dtype(value)
     ):
         return value[0]
 
@@ -429,6 +428,38 @@ def broadcast_to(
     # instead of [[3, 4, 3, 4]]
     repeats = (grouper.ngroups, ) + (1, ) * (np.ndim(value) - 1)
     return Series(np.tile(value, repeats).tolist(), index=idx).reindex(index)
+
+
+@broadcast_to.register(Categorical)
+def _(
+    value: Categorical,
+    index: "Index",
+    grouper: "Grouper" = None,
+) -> Series:
+    """Broadcast categorical data"""
+    if not grouper:
+        if value.size == 0:
+            return Series(value, index=index)
+        if value.size == 1:
+            return Series(value.repeat(index.size), index=index)
+        # Series will raise the length problem
+        return Series(value, index=index)
+
+    gsizes = grouper.size()
+    if gsizes.size == 0:
+        return Series(value, index=index)
+
+    # broadcast value to each group
+    # length of each group is checked in _broadcast_base
+    # A better way to distribute the value to each group?
+    idx = np.concatenate(
+        [grouper.groups[gdata] for gdata in grouper.group_keys_seq]
+    )
+    # make np.tile([[3, 4]], 2) to be [[3, 4], [3, 4]],
+    # instead of [[3, 4, 3, 4]]
+    repeats = grouper.ngroups
+    value = Categorical(np.tile(value, repeats), categories=value.categories)
+    return Series(value, index=idx).reindex(index)
 
 
 @broadcast_to.register(NDFrame)
@@ -657,7 +688,7 @@ def add_to_tibble(
     if broadcast_tbl:
         tbl = _broadcast_base(value, tbl, name)
 
-    if name is None and isinstance(value, DataFrame):
+    if not name and isinstance(value, DataFrame):
         for col in value.columns:
             tbl = add_to_tibble(tbl, col, value[col], allow_dup_names)
 

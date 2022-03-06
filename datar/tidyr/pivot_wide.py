@@ -8,11 +8,12 @@ from pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import vars_select
+from ..core.utils import vars_select, regcall
 from ..core.tibble import reconstruct_tibble
 
 from ..base import NA, identity
 from ..base.na import NA_integer_
+from ..dplyr import ungroup
 
 ROWID_COLUMN = "_PIVOT_ROWID_"
 
@@ -74,6 +75,7 @@ def pivot_wider(
     if id_cols is not None and is_scalar(id_cols):
         id_cols = [id_cols]  # type: ignore
 
+    undata = regcall(ungroup, _data)
     if id_cols is None:
         all_cols = _data.columns
         names_from = all_cols[vars_select(all_cols, names_from)]
@@ -120,10 +122,10 @@ def pivot_wider(
     # 1   20 NaN   2     NaN   2
     if len(id_cols) == 0 and len(values_from) > 1:
         # need to add it to turn names_to to columns
-        ret = _data.assign(**{ROWID_COLUMN: 0})
+        ret = undata.assign(**{ROWID_COLUMN: 0})
         id_cols = [ROWID_COLUMN]
     else:
-        ret = _data
+        ret = undata
 
     # hold NAs in values_from columns, so that they won't be filled
     # by values_fill
@@ -152,7 +154,7 @@ def pivot_wider(
     ret.reset_index(drop=True, inplace=True)
     # Get the original NAs back
     for col in ret.columns.difference(id_cols):
-        ret[col].replace({NA_integer_: NA}, inplace=True)
+        ret[col] = ret[col].replace({NA_integer_: NA})
 
     if names_sort:
         ret = ret.loc[:, sorted(ret.columns)]

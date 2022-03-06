@@ -7,6 +7,7 @@ from typing import Union
 
 from pandas import DataFrame
 from pipda import register_verb
+from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
 from ..core.utils import vars_select, regcall
@@ -61,10 +62,10 @@ def _(
     _direction: str = "down",
 ) -> TibbleGrouped:
     # TibbleGrouped
-    out = _data._datar_apply(
+    out = _data._datar["grouped"].apply(
         fill,
         *columns,
         _direction=_direction,
-        _drop_index=False,
+        __calling_env=CallingEnvs.REGULAR,
     ).sort_index()
     return reconstruct_tibble(_data, out)

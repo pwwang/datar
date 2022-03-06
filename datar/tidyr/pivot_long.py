@@ -17,7 +17,7 @@ from ..core.tibble import reconstruct_tibble
 from ..core.names import repair_names
 
 from ..base import setdiff, union
-from ..dplyr import relocate
+from ..dplyr import relocate, ungroup
 
 from .extract import extract
 from .separate import separate
@@ -127,7 +127,9 @@ def pivot_longer(
         The pivoted dataframe.
     """
     rowid_column = "_PIVOT_ROWID_"
-    ret = _data.assign(**{rowid_column: range(_data.shape[0])})
+    ret = regcall(ungroup, _data).assign(
+        **{rowid_column: range(_data.shape[0])}
+    )
     all_columns = ret.columns
     columns = _data.columns[vars_select(_data.columns, cols)]
     id_columns = all_columns.difference(columns)
@@ -205,7 +207,7 @@ def pivot_longer(
 
         # keep the order
         value_columns = pandas.unique(ret[".value"].values)
-        ret.set_index(index_columns, inplace=True)
+        ret.set_index(list(index_columns), inplace=True)
         ret.index = list(ret.index)
         ret2 = ret.pivot(columns=".value", values=values_to).reset_index()
         id_data = DataFrame(ret2["index"].tolist(), columns=index_columns)

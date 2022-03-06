@@ -12,7 +12,7 @@ from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
 from ..core.utils import regcall
 
-from ..dplyr import full_join
+from ..dplyr import full_join, ungroup
 from .replace_na import replace_na
 from .expand import expand
 
@@ -42,7 +42,7 @@ def complete(
     Returns:
         Data frame with missing values completed
     """
-    full = regcall(expand, data, *args, **kwargs)
+    full = regcall(expand, regcall(ungroup, data), *args, **kwargs)
     if full.shape[0] == 0:
         return data.copy()
 

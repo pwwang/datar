@@ -6,20 +6,34 @@ from typing import Callable, Mapping, Union, Iterable, List
 import re
 
 import pandas as pd
-from pandas.api.types import is_scalar
 from pandas import DataFrame, Series
+from pandas.api.types import is_scalar
+from pandas.core.generic import NDFrame
 from pipda import register_verb
 
 from ..core.utils import vars_select, regcall
 from ..core.broadcast import broadcast_to, init_tibble_from
-from ..core.tibble import TibbleGrouped, TibbleRowwise, reconstruct_tibble
+from ..core.tibble import (
+    Tibble,
+    TibbleGrouped,
+    TibbleRowwise,
+    reconstruct_tibble,
+)
 from ..core.contexts import Context
 
 from ..base import setdiff, NA
-from ..dplyr import distinct, bind_cols, group_vars, group_by_drop_default
+from ..dplyr import (
+    distinct,
+    bind_cols,
+    group_vars,
+    group_by_drop_default,
+    group_data,
+    arrange,
+    ungroup,
+)
 
-from .chop import unchop, _vec_split
 from .pack import unpack
+from .chop import unchop
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -59,9 +73,9 @@ def nest(
         )
         colgroups[group] = dict(zip(newcols, old_cols))
 
-    asis = regcall(setdiff, _data.columns, usedcols)
+    asis = regcall(setdiff, _data.columns, list(usedcols))
     keys = _data[asis]
-    u_keys = regcall(distinct, keys)
+    u_keys = regcall(distinct, keys).reset_index(drop=True)
     nested = []
     for group, columns in colgroups.items():
         if _names_sep is None:  # names as is
@@ -81,6 +95,7 @@ def nest(
     out.columns = list(colgroups)
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
+
     return regcall(bind_cols, u_keys, broadcast_to(out, u_keys.index))
 
 
@@ -95,7 +110,9 @@ def _(
         cols = {
             "data": regcall(setdiff, _data.columns, regcall(group_vars, _data))
         }
-    out = nest.dispatch(DataFrame)(_data, **cols, _names_sep=_names_sep)
+    out = nest.dispatch(DataFrame)(
+        regcall(ungroup, _data), **cols, _names_sep=_names_sep
+    )
     return reconstruct_tibble(_data, out)
 
 
@@ -148,10 +165,7 @@ def unnest(
     cols = vars_select(all_columns, cols)
     cols = all_columns[cols]
 
-    if isinstance(data, TibbleGrouped):
-        out = data.copy(copy_grouped=True)
-    else:
-        out = data.copy()
+    out = regcall(ungroup, data)
 
     for col in cols:
         out[col] = _as_df(data[col])
@@ -163,13 +177,14 @@ def unnest(
         keep_empty=keep_empty,
         dtypes=dtypes,
     )
-    return regcall(
+    out = regcall(
         unpack,
         out,
         cols,
         names_sep=names_sep,
         names_repair=names_repair,
     )
+    return reconstruct_tibble(data, out)
 
 
 @unnest.register(TibbleRowwise, context=Context.SELECT)
@@ -183,17 +198,18 @@ def _(
 ) -> TibbleGrouped:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
-        data,
+        regcall(ungroup, data),
         *cols,
         keep_empty=keep_empty,
         dtypes=dtypes,
         names_sep=names_sep,
         names_repair=names_repair,
     )
-    return TibbleGrouped(
-        out,
-        _group_vars=regcall(group_vars, data),
-        _group_drop=group_by_drop_default(data),
+    if not data.group_vars:
+        return out
+
+    return TibbleGrouped.from_groupby(
+        out.groupby(data.group_vars, observed=group_by_drop_default(data))
     )
 
 
@@ -225,5 +241,34 @@ def _as_df(series: Series) -> List[DataFrame]:
         elif is_scalar(val) and pd.isnull(val):
             out.append(val)
         else:
-            out.append(init_tibble_from(val, name=series.name))
+            out.append(
+                init_tibble_from(val, name=getattr(series, "obj", series).name)
+            )
+    return out
+
+
+def _vec_split(x: NDFrame, by: NDFrame) -> DataFrame:
+    """Split a vector into groups
+
+    Returns a data frame with columns `key` and `val`. `key` is a stacked column
+    with data from by.
+    """
+    if isinstance(x, Series):  # pragma: no cover, always a data frame?
+        x = x.to_frame()
+    if isinstance(by, Series):  # pragma: no cover, always a data frame?
+        by = by.to_frame()
+
+    df = regcall(bind_cols, x, by)
+    if df.shape[0] == 0:
+        return Tibble(columns=["key", "val"])
+    if by.shape[1] > 0:
+        df = df.group_by(by.columns.tolist(), drop=True)
+
+    gdata = regcall(group_data, df)
+    gdata = regcall(arrange, gdata, gdata._rows)
+    out = Tibble(index=gdata.index)
+    out["key"] = gdata[by.columns]
+    out["val"] = [
+        x.iloc[rows, :].reset_index(drop=True) for rows in gdata._rows
+    ]
     return out

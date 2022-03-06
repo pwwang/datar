@@ -11,6 +11,7 @@ from ..core.utils import vars_select, regcall
 from ..core.tibble import reconstruct_tibble
 
 from ..base import setdiff
+from ..dplyr import ungroup
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -42,7 +43,7 @@ def unite(
     else:
         columns = all_columns[vars_select(all_columns, *columns)]
 
-    out = data.copy()
+    out = regcall(ungroup, data)
 
     def unite_cols(row):
         if na_rm:
@@ -63,6 +64,6 @@ def unite(
     if remove:
         cols_to_remove = regcall(setdiff, columns, [col])
         if len(cols_to_remove) > 0:
-            out.drop(columns=cols_to_remove, inplace=True)
+            out = out.drop(columns=cols_to_remove)
 
     return reconstruct_tibble(data, out)

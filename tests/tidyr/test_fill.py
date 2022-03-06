@@ -16,8 +16,8 @@ def test_all_missing_left_unchanged():
     up = fill(df, f.a, f.b, f.c, _direction="up")
 
     # DataFrame.fill() shrinks dtype
-    up['b'] = up.b.astype(object)
-    up['c'] = up.b.astype(object)
+    up['b'] = up.b.astype(float)
+    up['c'] = up.b.astype(float)
 
     assert_frame_equal(down, df)
     assert_frame_equal(up, df)
@@ -76,4 +76,4 @@ def test_fill_preserves_attributes():
 def test_fill_respects_grouping():
     df = tibble(x = c(1, 1, 2), y = c(1, NA, NA))
     out = df >> group_by(f.x) >> fill(f.y)
-    assert_iterable_equal(out.y, [1,1,NA])
+    assert_iterable_equal(out.y.obj, [1,1,NA])

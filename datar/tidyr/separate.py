@@ -12,7 +12,7 @@ from pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.tibble import TibbleGrouped, reconstruct_tibble
+from ..core.tibble import reconstruct_tibble
 from ..core.utils import logger, vars_select, apply_dtypes, regcall
 
 from ..base import NA
@@ -141,11 +141,7 @@ def separate_rows(
     """
     all_columns = data.columns
     selected = all_columns[vars_select(all_columns, *columns)]
-    out = (
-        data.copy(copy_grouped=True)
-        if isinstance(data, TibbleGrouped)
-        else data.copy()
-    )
+    out = regcall(ungroup, data)
     for sel in selected:  # TODO: apply together
         out[sel] = out[sel].apply(
             _separate_col,
@@ -164,10 +160,11 @@ def separate_rows(
         keep_empty=True,
         dtypes=convert,
     )
+
     return reconstruct_tibble(
+        data,
         out,
-        regcall(ungroup, out),
-        ungrouping_vars=selected,
+        ungrouping_vars=list(selected),
     )
 
 
@@ -188,9 +185,7 @@ def _separate_col(
 
     elem = str(elem)
     if isinstance(sep, int):
-        tmp = max(0, sep)
-        tmp = min(tmp, len(elem) - 1)
-        row = [elem[: tmp + 1], elem[tmp + 1 :]]
+        row = [elem[:sep], elem[sep:]]
     else:
         row = re.split(sep, elem, 0 if nout == 0 else nout - 1)
     if nout == 0:

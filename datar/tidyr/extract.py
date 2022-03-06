@@ -12,8 +12,10 @@ from pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import apply_dtypes, vars_select
+from ..core.utils import apply_dtypes, vars_select, regcall
 from ..core.tibble import reconstruct_tibble
+
+from ..dplyr import ungroup
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -74,7 +76,9 @@ def extract(
             f"`regex` should define {len(into)} groups; "
             f"found {regex.groups}."
         )
-    out = data[col].str.extract(regex)
+
+    undata = regcall(ungroup, data)
+    out = undata[col].str.extract(regex)
     out = {
         outcol: (
             out.iloc[:, indexes[0]]
@@ -87,6 +91,6 @@ def extract(
     out = DataFrame(out)
     apply_dtypes(out, convert)
 
-    base = data[all_columns.difference([col])] if remove else data
+    base = undata[all_columns.difference([col])] if remove else undata
     out = pd.concat([base, out], axis=1)
     return reconstruct_tibble(data, out)

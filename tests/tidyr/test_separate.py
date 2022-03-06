@@ -120,9 +120,8 @@ def test_drops_NA_columns():
 
 def test_checks_type_of_into_and_sep():
     df = tibble(x = "a:b")
-    with pytest.raises(ValueError, match="Index 0 given for 1-based indexing"):
-        # False for sep interpreted as 0
-        separate(df, f.x, "x", FALSE)
+    with pytest.raises(TypeError):
+        separate(df, f.x, "x", object())
 
     with pytest.raises(ValueError, match="must be a string"):
         df >> separate(f.x, FALSE)
@@ -146,7 +145,7 @@ def test_separate_on_group_vars():
 # separate_rows --------------------------------
 
 def test_can_handle_collapsed_rows():
-    df = tibble(x=f[1:3], y=c("a", "d,e,f", "g,h"))
+    df = tibble(x=f[1:4], y=c("a", "d,e,f", "g,h"))
     out = separate_rows(df, f.y)
     assert_iterable_equal(out.y, list("adefgh"))
 
@@ -168,7 +167,7 @@ def test_preserves_grouping():
 def test_drops_grouping_when_needed():
     df = tibble(x=1, y="a:b") >> group_by(f.x, f.y)
     out = df >> separate_rows(f.y)
-    assert_iterable_equal(out.y, c("a", "b"))
+    assert_iterable_equal(out.y.obj, c("a", "b"))
     assert group_vars(out) == ['x']
 
     out = df >> group_by(f.y) >> separate_rows(f.y)

@@ -9,20 +9,14 @@ import numpy
 import pandas
 from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
-from pandas.core.generic import NDFrame
 from pipda import register_verb
 
-
-from ..core.utils import (
-    vars_select,
-    apply_dtypes,
-    regcall
-)
+from ..core.utils import vars_select, apply_dtypes, regcall
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, reconstruct_tibble
 
 from ..base import union, setdiff, NA
-from ..dplyr import bind_cols, arrange, group_data, ungroup
+from ..dplyr import ungroup
 
 from .drop_na import drop_na
 
@@ -39,7 +33,7 @@ def _keep_column_order(df: DataFrame, order: Iterable[str]):
             out_columns.extend(
                 (dfcol for dfcol in df.columns if dfcol.startswith(f"{col}$"))
             )
-    if set(out_columns) != set(df.columns):
+    if set(out_columns) != set(df.columns):  # pragma: no cover
         raise ValueError("Given `order` does not select all columns.")
 
     return df[out_columns]
@@ -69,9 +63,7 @@ def chop(
     # when cols is empty
     # order may change for all_columns.difference([])
     key_cols = (
-        regcall(setdiff, all_columns, cols)
-        if cols.size > 0
-        else all_columns
+        regcall(setdiff, all_columns, cols) if cols.size > 0 else all_columns
     )
     ungrouped = regcall(ungroup, data)
     if key_cols.size == 0:
@@ -123,55 +115,19 @@ def unchop(
     Returns:
         A data frame with selected columns unchopped.
     """
+    # TODO: use df.explode() with pandas 1.3+?
     all_columns = data.columns
     cols = vars_select(all_columns, cols)
 
     if len(cols) == 0 or data.shape[0] == 0:
-        return (
-            data.copy(copy_grouped=True)
-            if isinstance(data, TibbleGrouped)
-            else data.copy()
-        )
+        return data.copy()
 
     cols = all_columns[cols]
     key_cols = all_columns.difference(cols).tolist()
-    out = _unchopping(data, cols, key_cols, keep_empty)
+    out = _unchopping(regcall(ungroup, data), cols, key_cols, keep_empty)
 
     apply_dtypes(out, dtypes)
     return reconstruct_tibble(data, out)
-
-
-def _vec_split(x: NDFrame, by: NDFrame) -> DataFrame:
-    """Split a vector into groups
-
-    Returns a data frame with columns `key` and `val`. `key` is a stacked column
-    with data from by.
-    """
-    if isinstance(x, Series):  # pragma: no cover, always a data frame?
-        x = x.to_frame()
-    if isinstance(by, Series):  # pragma: no cover, always a data frame?
-        by = by.to_frame()
-
-    df = regcall(bind_cols, x, by)
-    if df.shape[0] == 0:
-        return DataFrame(columns=["key", "val"])
-    df = df.group_by(by.columns.tolist())
-    gdata = regcall(group_data, df)
-    gdata = regcall(arrange, gdata, gdata._rows)
-    out = DataFrame(index=gdata.index)
-    out["key"] = gdata[by.columns]
-    out["val"] = [
-        x.iloc[rows, :].reset_index(drop=True) for rows in gdata._rows
-    ]
-    return out
-
-
-def _compact_df(data: DataFrame) -> DataFrame:
-    """Compact each series as list in a data frame"""
-    out = DataFrame(index=[0], columns=data.columns)
-    for col in data.columns:
-        out.loc[0, col] = data[col].values.tolist()
-    return out
 
 
 def _unchopping(
@@ -274,13 +230,19 @@ def _unchopping_df_column(
 def _unchopping_nondf_column(series: Series):
     """Unchopping non-dataframe column"""
     val_data = {}
-    vals = [[val] if is_scalar(val) else val for val in series]
+    vals = [
+        [val]
+        if is_scalar(val)
+        else val
+        for val in series
+    ]
+
     val_data[series.name] = Series(
         numpy.concatenate(
             vals,
             axis=None,
             # casting="no" # only for numpy 1.20.0+
         ),
-        dtype=series.dtype,
+        dtype=series.dtype if series.dtype is not None else object,
     )
     return val_data, [len(val) for val in vals], {}

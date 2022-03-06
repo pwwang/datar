@@ -4,13 +4,15 @@ import pytest
 from pandas.testing import assert_frame_equal
 from datar.all import *
 
+from ..conftest import assert_iterable_equal
+
 # pack --------------------------------------------------------------------
 
 def test_can_pack_multiple_columns():
     df = tibble(a1=1, a2=2, b1=1, b2=2)
     out = df >> pack(a=c(f.a1, f.a2), b=c(f.b1, f.b2))
 
-    assert colnames(out) == ['a', 'b']
+    assert_iterable_equal(colnames(out), ['a', 'b'])
     assert_frame_equal(out >> pull(f.a), df[['a1', 'a2']])
     assert_frame_equal(out >> pull(f.b), df[['b1', 'b2']])
 
@@ -22,7 +24,7 @@ def test_can_strip_outer_names_from_inner_names():
     df = tibble(ax=1, ay=2)
     out = pack(df, a=c(f.ax, f.ay), _names_sep="")
     out = out >> pull(f.a) >> colnames()
-    assert out == ['x', 'y']
+    assert_iterable_equal(out, ['x', 'y'])
 
 def test_grouping_preserved():
     df = tibble(g1=1, g2=2, g3=3)
@@ -53,7 +55,7 @@ def test_df_cols_are_directly_unpacked():
 def test_cannot_unpack_0col_dfs():
     # Since we only have fake packed data frame columns,
     # this gives nothing about the column, so it can't be unpacked
-    df = tibble(x=f[1:3], y=tibble(_rows=3))
+    df = tibble(x=f[1:4], y=tibble(_rows=3))
     # `y` doesn't even exist
     with pytest.raises(ValueError):
         df >> unpack(f.y)
@@ -82,10 +84,10 @@ def test_unpack_can_choose_separator():
     out = df >> unpack([f.y], names_sep='_')
     assert out.columns.tolist() == ['x', 'y_a', 'z$a']
 
-    out = df >> unpack([2], names_sep='_')
+    out = df >> unpack([1], names_sep='_')
     assert out.columns.tolist() == ['x', 'y_a', 'z$a']
 
 def test_unpack_cannot_select_multiple_columns_of_packed_df_by_indexes():
     df = tibble(x = 1, y = tibble(a = 2, b=3))
     with pytest.raises(ValueError, match="already been selected"):
-        df >> unpack([2,3])
+        df >> unpack([1,2])

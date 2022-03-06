@@ -13,10 +13,10 @@ def test_can_request_to_preserve_symbols():
     assert_frame_equal(df >> uncount(f.w, _remove=False), df)
 
 def test_unique_identifiers_created_on_request():
-    df = tibble(w=f[1:3])
+    df = tibble(w=f[1:4])
     assert_frame_equal(
         df >> uncount(f.w, _id="id"),
-        tibble(id=c(1, f[1:2], f[1:3]))
+        tibble(id=c(0, 1, 1, 2, 2, 2), _dtypes=int)
     )
 
 def test_expands_constants_and_expressions():
@@ -44,10 +44,15 @@ def test_must_evaluate_to_integer():
         uncount(df, "W")
 
 def test_works_with_0_weights():
-    df = tibble(x=f[1:2], w=[0,1])
+    df = tibble(x=f[1:3], w=[0,1])
     assert_frame_equal(df >> uncount(f.w), tibble(x=2))
 
 def test_errors_on_negative_weights():
     df = tibble(x=1, w=-1)
     with pytest.raises(ValueError, match="must be >= 0"):
         uncount(df, f.w)
+
+def test_cannot_uncount_dupindex():
+    df = tibble(x=[1,2,3], w=1, _index=[1,1,2])
+    with pytest.raises(ValueError):
+        df >> uncount(f.w)

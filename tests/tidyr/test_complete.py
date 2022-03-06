@@ -11,13 +11,13 @@ def test_complete_with_no_vars_return_data_asis():
     assert_frame_equal(complete(mtcars), mtcars)
 
 def test_basic_invocation_works():
-    df = tibble(x=f[1:2], y=f[1:2], z=f[3:4])
+    df = tibble(x=f[1:3], y=f[1:3], z=f[3:5])
     out = complete(df, f.x, f.y)
     assert nrow(out) == 4
     assert_iterable_equal(out.z, [3, NA, NA, 4])
 
 def test_preserves_grouping():
-    df = tibble(x=f[1:2], y=f[1:2], z=f[3:4]) >> group_by(f.x)
+    df = tibble(x=f[1:3], y=f[1:3], z=f[3:5]) >> group_by(f.x)
     out = complete(df, f.x, f.y)
     assert group_vars(out) == group_vars(df)
 
@@ -38,8 +38,8 @@ def test_empty_expansion_returns_original():
 
 def test_not_drop_unspecified_levels_in_complete():
     df = tibble(
-        x=f[1:3],
-        y=f[1:3],
+        x=f[1:4],
+        y=f[1:4],
         z=c("a", "b", "c")
     )
     df2 = df >> complete(z=c("a", "b"))

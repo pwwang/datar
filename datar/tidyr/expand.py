@@ -21,7 +21,7 @@ from ..core.utils import regcall
 from ..base import NA, NULL, factor, levels
 from ..base.factor import _ensure_categorical
 from ..tibble import tibble
-from ..dplyr import arrange, distinct, pull
+from ..dplyr import arrange, distinct, pull, ungroup
 
 
 @register_func(None, context=Context.EVAL)
@@ -118,6 +118,7 @@ def expand(
     cols = _dots_cols(*args, **kwargs)
     named = cols.pop("__named__")
     cols = {key: _sorted_unique(val) for key, val in cols.items()}
+    print(cols)
 
     out = expand_grid(**cols, _name_repair=_name_repair)
     out = _flatten_nested(out, named, _name_repair)
@@ -143,11 +144,11 @@ def _(
             **kwargs,
         )
 
-    out = data._datar_apply(apply_func)
+    out = data._datar["grouped"].apply(apply_func).droplevel(-1).reset_index()
     return reconstruct_tibble(data, out)
 
 
-@expand.register(TibbleRowwise, context=Context.EVAL)
+@expand.register(TibbleRowwise, context=Context.PENDING)
 def _(
     data: TibbleRowwise,
     *args: Union[Series, DataFrame],
@@ -155,8 +156,12 @@ def _(
     **kwargs: Union[Series, DataFrame],
 ) -> DataFrame:
     """Expand on rowwise dataframe"""
-    return expand.dispatch(DataFrame)(
-        data, *args, _name_repair=_name_repair, **kwargs
+    return regcall(
+        expand,
+        regcall(ungroup, data),
+        *args,
+        _name_repair=_name_repair,
+        **kwargs,
     )
 
 
