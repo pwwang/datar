@@ -188,8 +188,6 @@ def fct_lump_min(
         other_level,
     )
 
-    new_levels = getattr(new_levels, "values", new_levels)
-
     if other_level in new_levels:
         _f = regcall(lvls_revalue, _f, new_levels)
         return fct_relevel(_f, other_level, after=-1)
@@ -238,8 +236,6 @@ def fct_lump_prop(
             other_level,
         )
 
-    new_levels = getattr(new_levels, "values", new_levels)
-
     if prop > 0 and sum(prop_n <= prop) <= 1:
         return _f
 
@@ -284,8 +280,6 @@ def fct_lump_n(
     else:
         rnk = regcall(rank, -calcs["count"], ties_method=ties_method)
 
-    rnk = getattr(rnk, "values", rnk)
-
     new_levels = regcall(
         if_else,
         rnk <= n,
@@ -325,8 +319,6 @@ def fct_lump_lowfreq(_f, other_level: Any = "Other"):
         regcall(levels, _f),
         other_level,
     )
-
-    new_levels = getattr(new_levels, "values", new_levels)
 
     if other_level in new_levels:
         _f = regcall(lvls_revalue, _f, new_levels)
@@ -490,7 +482,7 @@ def check_calc_levels(_f, w=None):
     w = check_weights(w, len(_f))
 
     if w is None:
-        cnt = table(_f).iloc[0, :]
+        cnt = table(_f).iloc[0, :].values
         total = len(_f)
     else:
         cnt = (
@@ -498,6 +490,7 @@ def check_calc_levels(_f, w=None):
             .groupby("f", observed=False)
             .agg("sum")
             .iloc[:, 0]
+            .values
         )
         total = sum(w)
 

@@ -118,6 +118,8 @@ def tabulate(bin, nbins=None):
 
     Args:
         bin: A numeric vector (of positive integers), or a factor.
+            When bin is a factor, for example `factor(list("abc"))`,
+            it is recoded as `[1, 2, 3]` instead of `[0, 1, 2]`
         nbins: the number of bins to be used.
 
     Returns:
@@ -125,18 +127,22 @@ def tabulate(bin, nbins=None):
         There is a bin for each of the values ‘1, ..., nbins’
     """
     from .casting import as_integer
-    from .verbs import t
 
+    is_cat = is_categorical_dtype(bin)
     bin = regcall(as_integer, bin)
+    if is_cat:
+        bin = bin + 1
+
     nbins = max(
         1,
         bin if is_scalar(bin) else 0 if len(bin) == 0 else max(bin),
         0 if nbins is None else nbins,
     )
     tabled = regcall(table, bin)
+    print(tabled.T)
     tabled = (
         tabled.T
-        .reindex(range(nbins), fill_value=0)
+        .reindex(range(1, nbins + 1), fill_value=0)
         .iloc[:, 0]
         .values
     )

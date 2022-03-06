@@ -139,3 +139,7 @@ def test_table_error():
 def test_tabulate():
     out = tabulate(3)
     assert_iterable_equal(out, [0, 0, 1])
+
+    fac = factor(list("abc"))
+    out = tabulate(fac, 3)
+    assert_iterable_equal(out, [1, 1, 1])

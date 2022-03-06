@@ -225,7 +225,7 @@ def pivot_longer(
         values_to = value_columns
     else:
         values_to = [values_to]
-        ret.drop(columns=[rowid_column], inplace=True)
+        ret = ret.drop(columns=[rowid_column])
 
     if values_drop_na:
         ret.dropna(subset=values_to, inplace=True)

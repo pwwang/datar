@@ -292,8 +292,10 @@ def match(x, table, nomatch=-1):
     """
     def match_dummy(xx, tab):
         sorter = np.argsort(tab)
+        if isinstance(sorter, Series):
+            sorter = sorter.values
         searched = np.searchsorted(tab, xx, sorter=sorter).ravel()
-        out = getattr(sorter, "values", sorter).take(searched, mode="clip")
+        out = sorter.take(searched, mode="clip")
         out[~np.isin(xx, tab)] = nomatch
         return out
 

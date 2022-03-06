@@ -6,7 +6,7 @@ from typing import Iterable
 import operator
 
 import numpy as np
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pipda import register_verb
 
 from ..core.contexts import Context
@@ -57,7 +57,9 @@ def filter(
     if condition is False:
         return _data.take([])
 
-    condition = getattr(condition, "values", condition)
+    if isinstance(condition, Series):
+        condition = condition.values
+
     out = regcall(ungroup, _data)[condition]
     if isinstance(_data, TibbleGrouped):
         out.reset_index(drop=True, inplace=True)

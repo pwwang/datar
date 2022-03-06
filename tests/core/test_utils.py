@@ -37,10 +37,10 @@ from ..conftest import assert_iterable_equal
 #     with pytest.raises(ValueError):
 #         keep_column_order(df, ['x'])
 
-# def test_apply_dtypes():
-#     df = tibble(x=[1.0, 2.0])
-#     apply_dtypes(df, True)
-#     assert is_integer(df.x)
+def test_apply_dtypes():
+    df = tibble(x=[1.0, 2.0])
+    apply_dtypes(df, True)
+    assert is_integer(df.x)
 
 def test_arg_match():
     with pytest.raises(ValueError, match='abc'):

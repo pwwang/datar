@@ -53,23 +53,22 @@ def if_else(condition, true, false, missing=None):
     newcond = newcond.astype(bool)
 
     out = regcall(
-        case_when,   #
-        na_conds,    # 0
-        missing,     # 1
-        ~newcond,    # 2
-        false,       # 3
-        newcond,     # 4
-        true,        # 5
-        True,        # 6
-        missing,     # 7
+        case_when,  #
+        na_conds,  # 0
+        missing,  # 1
+        ~newcond,  # 2
+        false,  # 3
+        newcond,  # 4
+        true,  # 5
+        True,  # 6
+        missing,  # 7
     )
 
     if isinstance(condition, Series):
         out.index = condition.index
         out.name = condition.name
-        return out
 
-    return out.values
+    return out
 
 
 # SeriesGroupBy
@@ -105,6 +104,9 @@ def case_when(*when_cases):
     if not when_cases or len(when_cases) % 2 != 0:
         raise ValueError("No cases provided or case-value not paired.")
 
+    is_series = any(
+        isinstance(wc, (Series, SeriesGroupBy)) for wc in when_cases
+    )
     df = tibble(*when_cases, _name_repair="minimal")
 
     ungrouped = regcall(ungroup, df)
@@ -114,6 +116,7 @@ def case_when(*when_cases):
         condition = ungrouped.iloc[:, i - 1].fillna(False).values.astype(bool)
         value[condition] = ungrouped.iloc[:, i][condition]
 
-    value = value.to_frame()
+    value = value.to_frame(name="when_case_result")
     value = reconstruct_tibble(df, value)
-    return value.iloc[:, 0]
+    value = value["when_case_result"]
+    return value if is_series else value.values

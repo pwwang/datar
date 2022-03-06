@@ -19,7 +19,9 @@ def _rank(
     percent=False,
 ):
     """Rank the data"""
-    if not isinstance(data, Series):
+    is_series = isinstance(data, Series)
+
+    if not is_series:
         data = Series(data)
 
     out = data.rank(
@@ -30,7 +32,7 @@ def _rank(
         ),
     )
 
-    return out
+    return out if is_series else out.values
 
 
 @_rank.register(GroupBy)
@@ -52,8 +54,7 @@ def _(
 
 @singledispatch
 def _row_number(x):
-    out = _rank(x, na_last="keep", method="first")
-    return out.values
+    return _rank(x, na_last="keep", method="first")
 
 
 @_row_number.register(SeriesGroupBy)

@@ -2,6 +2,7 @@ import pytest
 from pandas import Categorical, DataFrame, Index, Series
 from pandas.testing import assert_frame_equal
 from datar import f
+from datar.base import factor
 from datar.core.tibble import TibbleGrouped, TibbleRowwise
 from datar.testing import assert_tibble_equal
 from datar.tibble import tibble
@@ -14,7 +15,7 @@ from datar.core.broadcast import (
     _get_index_grouper,
 )
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_factor_equal, assert_iterable_equal
 
 
 def test_broadcast_base_scalar():
@@ -238,6 +239,26 @@ def test_broadcast_base_ndframe_ndframe():
 def test_broadcast_to_scalar():
     value = broadcast_to(1, Index([1, 2]))
     assert value == 1
+
+
+def test_broadcast_to_factor():
+    x = factor(list("abc"))
+    base = Series([1, 2, 3])
+    out = broadcast_to(x, base.index)
+    assert_factor_equal(out.values, x)
+
+    # empty
+    x = factor([], levels=list("abc"))
+    base = Series([], dtype=object).groupby([])
+    out = broadcast_to(x, base.obj.index, base.grouper)
+    assert_factor_equal(out.values, x)
+
+    # grouped
+    x = factor(["a", "b"], list("abc"))
+    base = Series([1, 2, 3, 4], index=[4, 5, 6, 7]).groupby([1, 1, 2, 2])
+    out = broadcast_to(x, base.obj.index, base.grouper)
+    assert_iterable_equal(out.index, [4, 5, 6, 7])
+    assert_iterable_equal(out, ["a", "b"] * 2)
 
 
 def test_broadcast_to_arrays_ndframe():
