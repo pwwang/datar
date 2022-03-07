@@ -30,6 +30,9 @@ def test_quantile():
     assert_iterable_equal(out, [1, 2.5])
     assert_iterable_equal(out.index, [1, 2])
 
+    out = quantile(gf.x, probs=(0.5, ))
+    assert_iterable_equal(out, [1, 2.5])
+    assert_iterable_equal(out.index, [1, 2])
 
 def test_sd():
     df = tibble(x=[1, 2, 3], g=[1, 2, 2])
