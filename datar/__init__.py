@@ -30,7 +30,7 @@ _VersionsTuple = _namedtuple(
 )
 
 __all__ = ("f", "get_versions")
-__version__ = "0.5.5"
+__version__ = "0.6.0"
 
 
 def get_versions(prnt: bool = True) -> _VersionsTuple:
