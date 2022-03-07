@@ -1,66 +1,49 @@
 """Cumulative functions"""
-from typing import Any
+import numpy as np
+from pandas.core.groupby import GroupBy
 
-import numpy
-from pandas import Series
-from pipda import register_func
+from datar.core.tibble import TibbleGrouped
 
-from ..core.utils import register_numpy_func_x, Array
-from ..core.contexts import Context
-from ..core.types import is_scalar, is_null
+from ..core.factory import func_factory
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
-from .na import NA
-
-
-def _ensure_nas_after_na(x: Any) -> Any:
-    """Ensure NAs after first NA
-
-    Since `cum<x>()` in R produces NAs after any NA appearance, but
-    numpy/pandas just ignores the NAs and continue producing real values.
-    """
-    if is_scalar(x):
-        return x
-    na_indexes = numpy.flatnonzero(is_null(x))
-    if len(na_indexes) == 0:
-        return x
-    na_index = na_indexes[0]
-    x = Array(x)
-    x[na_index:] = NA
-    return x
-
-
-cumsum = register_numpy_func_x(
-    "cumsum",
-    "cumsum",
-    trans_in=_ensure_nas_after_na,
+cumsum = func_factory(
+    "transform",
+    "x",
     doc="""Cumulative sum of elements.
 
-Args:
-    x: Input array
+    Args:
+        x: Input array
 
-Returns:
-    An array of cumulative sum of elements in x
-""",
+    Returns:
+        An array of cumulative sum of elements in x
+    """,
+    func=np.cumsum,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
-cumprod = register_numpy_func_x(
-    "cumprod",
-    "cumprod",
-    trans_in=_ensure_nas_after_na,
+cumprod = func_factory(
+    "transform",
+    "x",
     doc="""Cumulative product of elements.
 
-Args:
-    x: Input array
+    Args:
+        x: Input array
 
-Returns:
-    An array of cumulative product of elements in x
-""",
+    Returns:
+        An array of cumulative product of elements in x
+    """,
+    func=np.cumprod,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@register_func(None, context=Context.EVAL)
-def cummin(x: Any) -> Any:
+@func_factory("transform", "x")
+def cummin(x):
     """Cummulative min along elements in x
+
+    Note that in `R`, it will be all NA's after an NA appears, but pandas will
+    ignore that NA value
 
     Args:
         x: Input array
@@ -68,15 +51,19 @@ def cummin(x: Any) -> Any:
     Returns:
         An array of cumulative min of elements in x
     """
-    if is_scalar(x):
-        return x
-    x = _ensure_nas_after_na(x)
-    return Series(x).cummin()
+    return x.cummin()
 
 
-@register_func(None, context=Context.EVAL)
-def cummax(x: Any) -> Any:
+# faster
+cummin.register((TibbleGrouped, GroupBy), "cummin")
+
+
+@func_factory("transform", "x")
+def cummax(x):
     """Cummulative max along elements in x
+
+    Note that in `R`, it will be all NA's after an NA appears, but pandas will
+    ignore that NA value
 
     Args:
         x: Input array
@@ -84,7 +71,7 @@ def cummax(x: Any) -> Any:
     Returns:
         An array of cumulative max of elements in x
     """
-    if is_scalar(x):
-        return x
-    x = _ensure_nas_after_na(x)
-    return Series(x).cummax()
+    return x.cummax()
+
+
+cummax.register((TibbleGrouped, GroupBy), "cummax")

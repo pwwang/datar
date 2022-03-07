@@ -1,16 +1,17 @@
 """Grouping metadata"""
 
-from typing import List
+from typing import List, Sequence, Union
 from pandas import DataFrame
+from pandas.core.groupby import GroupBy
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
-from ..core.grouped import DataFrameGroupBy
-from ..base import setdiff
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
+from ..core.utils import regcall
 
 
 @register_verb(DataFrame)
-def group_data(_data: DataFrame) -> DataFrame:
+def group_data(_data: DataFrame) -> Tibble:
     """Returns a data frame that defines the grouping structure.
 
     Args:
@@ -23,17 +24,18 @@ def group_data(_data: DataFrame) -> DataFrame:
 
         Note that `_rows` are always 0-based.
     """
-    rows = list(range(_data.shape[0]))
-    return DataFrame({"_rows": [rows]})
+    return Tibble({"_rows": regcall(group_rows, _data)})
 
 
-@group_data.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> DataFrame:
-    return _data._group_data
+@group_data.register((TibbleGrouped, GroupBy))
+def _(_data: Union[TibbleGrouped, GroupBy]) -> Tibble:
+    gpdata = regcall(group_keys, _data)
+    gpdata["_rows"] = regcall(group_rows, _data)
+    return gpdata
 
 
 @register_verb(DataFrame)
-def group_keys(_data: DataFrame) -> DataFrame:
+def group_keys(_data: DataFrame) -> Tibble:
     """Just grouping data without the `_rows` columns
 
     Note:
@@ -46,15 +48,24 @@ def group_keys(_data: DataFrame) -> DataFrame:
     Returns:
         The group data without `_rows` column.
     """
-    return DataFrame(index=[0])
+    return Tibble(index=[0])
 
 
-@group_keys.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> DataFrame:
-    # .copy() allows future modifications
-    return (
-        group_data(_data, __calling_env=CallingEnvs.REGULAR).iloc[:, :-1].copy()
-    )
+@group_keys.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> Tibble:
+    grouper = _data._datar["grouped"].grouper
+    return Tibble(grouper.result_index.to_frame(index=False), copy=False)
+
+
+# @group_keys.register(GroupBy)
+# def _(_data: GroupBy) -> Tibble:
+#     grouper = _data.grouper
+#     return Tibble(grouper.result_index.to_frame(index=False), copy=False)
+
+
+@group_keys.register(TibbleRowwise)
+def _(_data: TibbleRowwise) -> Tibble:
+    return Tibble(_data.loc[:, _data.group_vars])
 
 
 @register_verb(DataFrame)
@@ -64,11 +75,20 @@ def group_rows(_data: DataFrame) -> List[List[int]]:
     return [rows]
 
 
-@group_rows.register(DataFrameGroupBy)
-def _(_data: DataFrame) -> List[List[int]]:
-    return group_data(_data, __calling_env=CallingEnvs.REGULAR)[
-        "_rows"
-    ].tolist()
+@group_rows.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> List[List[int]]:
+    """Get row indices for each group"""
+    return regcall(group_rows, _data._datar["grouped"])
+
+
+@group_rows.register(GroupBy)
+def _(_data: GroupBy) -> List[List[int]]:
+    """Get row indices for each group"""
+    grouper = _data.grouper
+    return [
+        list(grouper.indices[group_key])
+        for group_key in grouper.result_index
+    ]
 
 
 @register_verb(DataFrame)
@@ -80,8 +100,8 @@ def group_indices(_data: DataFrame) -> List[int]:
     return [0] * _data.shape[0]
 
 
-@group_indices.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> List[int]:
+@group_indices.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> List[int]:
     ret = {}
     for row in group_data(
         _data, __calling_env=CallingEnvs.REGULAR
@@ -92,20 +112,9 @@ def _(_data: DataFrameGroupBy) -> List[int]:
 
 
 @register_verb(DataFrame)
-def group_vars(_data: DataFrame) -> List[str]:
+def group_vars(_data: DataFrame) -> Sequence[str]:
     """Gives names of grouping variables as character vector"""
-    # If it is a subdf of a DataFrameGroupBy, still be able to
-    # return the group_vars
-    index = _data.attrs.get("_group_index", None)
-    if index is None:
-        return []
-    gdata = _data.attrs["_group_data"]
-    return setdiff(gdata.columns, ["_rows"], __calling_env=CallingEnvs.REGULAR)
-
-
-@group_vars.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> List[str]:
-    return _data.attrs["_group_vars"]
+    return getattr(_data, "group_vars", [])
 
 
 # groups in dplyr returns R list
@@ -114,16 +123,14 @@ group_cols = group_vars
 
 
 @register_verb(DataFrame)
-def group_size(_data: DataFrame) -> List[int]:
+def group_size(_data: DataFrame) -> Sequence[int]:
     """Gives the size of each group"""
     return [_data.shape[0]]
 
 
-@group_size.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> List[int]:
-    return list(
-        map(len, group_data(_data, __calling_env=CallingEnvs.REGULAR)["_rows"])
-    )
+@group_size.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> Sequence[int]:
+    return list(map(len, regcall(group_rows, _data)))
 
 
 @register_verb(DataFrame)
@@ -132,6 +139,11 @@ def n_groups(_data: DataFrame) -> int:
     return 1
 
 
-@n_groups.register(DataFrameGroupBy)
-def _(_data: DataFrameGroupBy) -> int:
-    return group_data(_data, __calling_env=CallingEnvs.REGULAR).shape[0]
+@n_groups.register(TibbleGrouped)
+def _(_data: TibbleGrouped) -> int:
+    return _data._datar["grouped"].ngroups
+
+
+@n_groups.register(TibbleRowwise)
+def _(_data: TibbleRowwise) -> int:
+    return _data.shape[0]

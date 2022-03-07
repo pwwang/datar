@@ -2,61 +2,49 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/order-by.R
 """
-from typing import Callable, Iterable, Any, Sequence
+from pipda.function import FastEvalFunction, Function
+from pipda.utils import CallingEnvs
 
-from pandas import Series
-from pipda import register_func
-
-from ..core.contexts import Context
-from ..core.types import is_scalar
+from ..base import order as order_fun
 
 
-@register_func(None, context=Context.EVAL)
-def order_by(
-    order: Sequence[Any],
-    data: Sequence[Any],
-) -> Series:
+def order_by(order, call):
     """Order the data by the given order
 
     Note:
-        This behaves differently than `dplyr::order_by`, since we are unable
-        to maintain the `data` argument to stay uncalled here.
-
-        To control the order of the argument of a call, try `with_order`.
+        This function should be called as an argument
+        of a verb. If you want to call it regularly, try `with_order()`
 
     Examples:
-        >>> order_by(range(3,0), [5,4,3])
-        >>> # [3,4,5]
-        >>> order_by([5,4,3,2,1], cumsum([1,2,3,4,5]))
-        >>> # 15,10,6,3,1
-        >>> # instead of 15,14,12,9,5 from dplyr::order_by
+        >>> df = tibble(x=f[1:6])
+        >>> df >> mutate(y=order_by(f[5:], cumsum(f.x)))
+        >>> # df.y:
+        >>> # 15, 14, 12, 9, 5
 
     Args:
-        `order`: An iterable to control the data order
-        `data`: The data to be ordered
+        order: An iterable to control the data order
+        data: The data to be ordered
 
     Returns:
-        The odered series. Note the original class of data will be lost.
+        A Function expression for verb to evaluate.
     """
-    if is_scalar(order):
-        order = [order]
-    if is_scalar(data):
-        data = [data]
+    from ..datar import itemgetter
 
-    order = Series(order) if len(order) > 1 else Series(order, dtype=object)
-    order = order.sort_values()
-    out = Series(data) if len(data) > 1 else Series(data, dtype=object)
-    return out[order.index]
+    order = order_fun(order, __calling_env=CallingEnvs.PIPING)
+    if not isinstance(call, Function) or len(call._pipda_args) < 1:
+        raise ValueError(
+            "In `order_by()`: `call` must be a registered "
+            f"function call with data, not `{type(call).__name__}`. \n"
+            "            This function should be called as an argument "
+            "of a verb. If you want to call it regularly, try `with_order()`"
+        )
+
+    x = itemgetter(call._pipda_args[0], order, __calling_env=CallingEnvs.PIPING)
+    call._pipda_args = (x, *call._pipda_args[1:])
+    return FastEvalFunction(itemgetter, (call, order), {}, dataarg=False)
 
 
-@register_func(None, context=Context.EVAL)
-def with_order(
-    order: Iterable[Any],
-    func: Callable,
-    x: Iterable[Any],
-    *args: Any,
-    **kwargs: Any,
-) -> Series:
+def with_order(order, func, x, *args, **kwargs):
     """Control argument and result of a window function
 
     Examples:
@@ -71,12 +59,10 @@ def with_order(
         **kwargs: Other arugments for the function
 
     Returns:
-        A Seroes of ordered result
+        The ordered result or an expression if there is expression in arguments
     """
-    x = order_by(order, x)
-    # expecting func to return an iterable
-    out = func(x, *args, **kwargs)
-    if isinstance(out, Series):
-        # drop the index
-        out = out.reset_index(drop=True)
-    return order_by(order, out)
+    expr = order_by(
+        order,
+        FastEvalFunction(func, (x, *args), kwargs, dataarg=False)
+    )
+    return expr._pipda_fast_eval()

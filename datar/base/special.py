@@ -1,13 +1,11 @@
 """Special mathematical functions related to the beta and gamma functions."""
 
-import numpy
 from pipda import register_func
 
-from ..core.types import FloatOrIter, IntOrIter, NumericOrIter, is_scalar
+import numpy as np
+from pandas.api.types import is_scalar
 from ..core.contexts import Context
-from ..core.utils import Array
 from .bessel import _get_special_func_from_scipy
-from .na import NA
 
 # beta(a, b)              => scipy.special.beta(a,b)
 # lbeta(a, b)             => scipy.special.betaln(a,b)
@@ -19,13 +17,13 @@ from .na import NA
 # trigamma(x)             => scipy.special.polygamma(1, x)
 
 # choose(n, k)            => scipy.special.comb(n, k)
-# lchoose(n, k)           => numpy.log(scipy.special.comb(n,k))
+# lchoose(n, k)           => np.log(scipy.special.comb(n,k))
 # factorial(x)            => scipy.special.factoral(x)
-# lfactorial(x)           => numpy.log(scipy.special.factoral(x))
+# lfactorial(x)           => np.log(scipy.special.factoral(x))
 
 
 @register_func(None, context=Context.EVAL)
-def beta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
+def beta(a, b):
     """The beta function
 
     Note that when both `a` and `b` are iterables, the broadcast mechanism is
@@ -45,7 +43,7 @@ def beta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
 
 
 @register_func(None, context=Context.EVAL)
-def lbeta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
+def lbeta(a, b):
     """The natural logarithm of `beta()`
 
     Args:
@@ -55,11 +53,11 @@ def lbeta(a: FloatOrIter, b: FloatOrIter) -> FloatOrIter:
     Returns:
         The natural logarithm of value of the beta function
     """
-    return numpy.log(beta(a, b))
+    return np.log(beta(a, b))
 
 
 @register_func(None, context=Context.EVAL)
-def gamma(x: FloatOrIter) -> FloatOrIter:
+def gamma(x):
     """The gamma function
 
     Args:
@@ -70,15 +68,15 @@ def gamma(x: FloatOrIter) -> FloatOrIter:
     """
     fun = _get_special_func_from_scipy("gamma")
     if is_scalar(x) and x <= 0:
-        return NA
+        return np.nan
     if not is_scalar(x):
-        x = Array(x, dtype=float)
-        x[x <= 0.0] = NA
+        x = np.array(x, dtype=float)
+        x[x <= 0.0] = np.nan
     return fun(x)
 
 
 @register_func(None, context=Context.EVAL)
-def lgamma(x: FloatOrIter) -> FloatOrIter:
+def lgamma(x):
     """The nature logarithm of `gamma()`
 
     Args:
@@ -87,11 +85,11 @@ def lgamma(x: FloatOrIter) -> FloatOrIter:
     Returns:
         The natural logarithm of values of the gamma function
     """
-    return numpy.log(gamma(x))
+    return np.log(gamma(x))
 
 
 @register_func(None, context=Context.EVAL)
-def digamma(x: FloatOrIter) -> FloatOrIter:
+def digamma(x):
     """The digamma function.
 
     Args:
@@ -102,12 +100,12 @@ def digamma(x: FloatOrIter) -> FloatOrIter:
     """
     fun = _get_special_func_from_scipy("digamma")
     if x == 0.0:
-        return NA
+        return np.nan
     return fun(x)
 
 
 @register_func(None, context=Context.EVAL)
-def choose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
+def choose(n, k):
     """The number of combinations of N things taken k at a time.
 
     Note that when both `a` and `b` are iterables, the broadcast mechanism is
@@ -127,7 +125,7 @@ def choose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
 
 
 @register_func(None, context=Context.EVAL)
-def lchoose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
+def lchoose(n, k):
     """The natural logarithm of `choose()`
 
     Note that when both `a` and `b` are iterables, the broadcast mechanism is
@@ -142,15 +140,15 @@ def lchoose(n: FloatOrIter, k: IntOrIter) -> FloatOrIter:
     Returns:
         The natural logarithm of the total number of combinations.
     """
-    return numpy.log(choose(n, k))
+    return np.log(choose(n, k))
 
 
 @register_func(None, context=Context.EVAL)
-def factorial(x: FloatOrIter) -> FloatOrIter:
+def factorial(x):
     """The factorial of a number or array of numbers.
 
     Args:
-        Input values. If x < 0, the return value is NA.
+        Input values. If x < 0, the return value is np.nan.
 
     Returns:
         Factorial of x
@@ -159,28 +157,28 @@ def factorial(x: FloatOrIter) -> FloatOrIter:
     out = fun(x)
 
     if is_scalar(x):
-        out = NA if x < 0 else out
+        out = np.nan if x < 0 else out
         return out
 
-    out[Array(x) < 0] = NA
+    out[np.array(x) < 0] = np.nan
     return out
 
 
 @register_func(None, context=Context.EVAL)
-def lfactorial(x: FloatOrIter) -> FloatOrIter:
+def lfactorial(x):
     """The natural logarithm of `factorial()`
 
     Args:
-        Input values. If x < 0, the return value is NA.
+        Input values. If x < 0, the return value is np.nan.
 
     Returns:
         The natural logarithm of factorial of x
     """
-    return numpy.log(factorial(x))
+    return np.log(factorial(x))
 
 
 @register_func(None, context=Context.EVAL)
-def trigamma(x: FloatOrIter) -> FloatOrIter:
+def trigamma(x):
     """The second derivatives of the logarithm of the gamma function
 
     Args:
@@ -194,7 +192,7 @@ def trigamma(x: FloatOrIter) -> FloatOrIter:
 
 
 @register_func(None, context=Context.EVAL)
-def psigamma(x: FloatOrIter, deriv: NumericOrIter) -> FloatOrIter:
+def psigamma(x, deriv):
     """The deriv-th derivatives of the logarithm of the gamma function
 
     Args:
@@ -204,5 +202,5 @@ def psigamma(x: FloatOrIter, deriv: NumericOrIter) -> FloatOrIter:
         The value of the 2nd derivatives of the logarithm of the gamma function
     """
     fun = _get_special_func_from_scipy("polygamma")
-    deriv = numpy.round(deriv)
+    deriv = np.round(deriv)
     return fun(deriv, x)

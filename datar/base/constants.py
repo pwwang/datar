@@ -2,15 +2,15 @@
 import math
 from string import ascii_letters
 
-import numpy
+import numpy as np
 
 
 pi = math.pi
 
-letters = numpy.array(list(ascii_letters[:26]))
-LETTERS = numpy.array(list(ascii_letters[26:]))
+letters = np.array(list(ascii_letters[:26]), dtype=object)
+LETTERS = np.array(list(ascii_letters[26:]), dtype=object)
 
-month_abb = numpy.array(
+month_abb = np.array(
     [
         "Jan",
         "Feb",
@@ -24,9 +24,10 @@ month_abb = numpy.array(
         "Oct",
         "Nov",
         "Dec",
-    ]
+    ],
+    dtype=object,
 )
-month_name = numpy.array(
+month_name = np.array(
     [
         "January",
         "February",
@@ -40,5 +41,6 @@ month_name = numpy.array(
         "October",
         "November",
         "December",
-    ]
+    ],
+    dtype=object,
 )

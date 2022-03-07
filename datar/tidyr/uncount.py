@@ -2,27 +2,24 @@
 
 from typing import Any, Iterable
 
-import numpy
-from pandas import DataFrame
+from pandas import DataFrame, Series
+from pandas.api.types import is_number, is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
+from ..core.broadcast import broadcast_to
 from ..core.contexts import Context
-from ..core.types import IntOrIter, is_scalar
-from ..core.utils import get_option, reconstruct_tibble
+from ..core.utils import regcall
+from ..core.tibble import reconstruct_tibble
 
-from ..dplyr import group_by, mutate, row_number, ungroup
-
-INDEX_COLUMN = "_UNCOUND_INDEX_"
+from ..dplyr import ungroup
 
 
 @register_verb(DataFrame, context=Context.EVAL)
 def uncount(
     data: DataFrame,
-    weights: IntOrIter,
+    weights,
     _remove: bool = True,
     _id: str = None,
-    base0_: bool = None,
 ) -> DataFrame:
     """Duplicating rows according to a weighting variable
 
@@ -33,53 +30,42 @@ def uncount(
             then this column is removed.
         _id: Supply a string to create a new variable which gives a
             unique identifier for each created row (0-based).
-        base0_: Whether the generated `_id` columns are 0-based.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         dataframe with rows repeated.
     """
+    grouped = getattr(data, "_datar", {}).get("grouped", None)
+    undata = regcall(ungroup, data).copy()
+    weights = broadcast_to(
+        weights,
+        data.index,
+        None if grouped is None else grouped.grouper,
+    )
     if is_scalar(weights):
-        weights = [weights] * data.shape[0]  # type: ignore
+        weights = Series(weights, index=data.index)
 
     _check_weights(weights)
 
-    indexes = [
-        idx for i, idx in enumerate(data.index) for _ in range(int(weights[i]))
-    ]
+    if not undata.index.is_unique:
+        raise ValueError("Cannot uncount a frame with duplicated index.")
 
-    all_columns = data.columns
-    weight_name = getattr(weights, "name", None)
-    if weight_name in all_columns and weights is data[weight_name]:
-        rest_columns = all_columns.difference([weight_name])
-    else:
-        rest_columns = all_columns
+    if weights.name in undata and _remove:
+        del undata[weights.name]
 
-    out = data.loc[indexes, rest_columns] if _remove else data.loc[indexes, :]
-    # need the indexes to get the right id column
-    out = out.assign(**{INDEX_COLUMN: indexes})
-    out.reset_index(drop=True, inplace=True)
-
+    out = undata.reindex(undata.index.repeat(weights.values))
     if _id:
-        base = int(not get_option("index.base.0", base0_))
+        out.index.name = _id
+        out = out.reset_index()
+    else:
+        out = out.reset_index(drop=True)
 
-        out = ungroup(
-            mutate(
-                group_by(out, INDEX_COLUMN, __calling_env=CallingEnvs.REGULAR),
-                **{_id: row_number() + base - 1},
-                __calling_env=CallingEnvs.REGULAR,
-            ),
-            __calling_env=CallingEnvs.REGULAR,
-        )
-
-    out.drop(columns=[INDEX_COLUMN], inplace=True)
     return reconstruct_tibble(data, out)
 
 
 def _check_weights(weights: Iterable[Any]) -> None:
     """Check if uncounting weights are valid"""
     for weight in weights:
-        if not isinstance(weight, (int, float, numpy.number)):
+        if not is_number(weight):
             raise ValueError("`weights` must evaluate to numerics.")
         if weight < 0:
             raise ValueError("All elements in `weights` must be >= 0.")

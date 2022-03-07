@@ -1,40 +1,35 @@
 """Summarise each group to fewer rows"""
 
-from typing import Any, Iterable, Mapping, Union
+from itertools import chain
+from typing import Any, Tuple
 
 from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr
-from pipda.function import Function
-from pipda.utils import CallingEnvs
 
-from ..core.defaults import DEFAULT_COLUMN_PREFIX
-from ..core.contexts import Context
+from ..core.exceptions import NameNonUniqueError
+from ..core.contexts import Context, ContextEvalRefCounts
+from ..core.options import get_option
+from ..core.broadcast import add_to_tibble
 from ..core.utils import (
-    length_of,
-    recycle_df,
     arg_match,
-    check_column_uniqueness,
-    df_setitem,
-    name_mutatable_args,
     logger,
-    get_option,
-    reconstruct_tibble,
-    dedup_name,
+    name_of,
+    regcall,
 )
-from ..core.exceptions import ColumnNotExistingError
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 
-from .group_data import group_keys, group_vars, group_data
-from .group_by import group_by_drop_default
+from ..base import setdiff
+from .group_by import ungroup
+from .group_data import group_vars, group_keys
 
 
 @register_verb(DataFrame, context=Context.PENDING)
 def summarise(
     _data: DataFrame,
-    *args: Union[DataFrame, Mapping[str, Iterable[Any]]],
+    *args: Any,
     _groups: str = None,
     **kwargs: Any,
-) -> DataFrame:
+) -> Tibble:
     """Summarise each group to fewer rows
 
     See https://dplyr.tidyverse.org/reference/summarise.html
@@ -80,99 +75,65 @@ def summarise(
     Returns:
         The summary dataframe.
     """
-    check_column_uniqueness(
-        _data, "Can't transform a data frame with duplicate names"
-    )
-    _groups = arg_match(
-        _groups, "_groups", ["drop", "drop_last", "keep", "rowwise", None]
-    )
-    out = _summarise_build(_data, *args, **kwargs)
-    if _groups == "rowwise":
-        return DataFrameRowwise(out, _group_drop=group_by_drop_default(_data))
-    return out
+    if not _data.columns.is_unique:
+        raise NameNonUniqueError(
+            "Can't transform a data frame with duplicate names."
+        )
 
-
-@summarise.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-    _data: DataFrameGroupBy,
-    *args: Union[DataFrame, Mapping[str, Iterable[Any]]],
-    _groups: str = None,
-    **kwargs: Any,
-) -> DataFrame:
-    # empty
     _groups = arg_match(
         _groups, "_groups", ["drop", "drop_last", "keep", "rowwise", None]
     )
 
-    allone = True
-    if group_data(_data, __calling_env=CallingEnvs.REGULAR).shape[0] == 0:
-        out = _summarise_build(_data, *args, **kwargs).iloc[[], :]
-    else:
-
-        def apply_func(df):
-            nonlocal allone
-            if isinstance(df, Series):
-                # rowwise
-                df.name = 0
-                df = df.to_frame().T
-            out = summarise(
-                df, *args, **kwargs, __calling_env=CallingEnvs.REGULAR
-            )
-            if out.shape[0] != 1:
-                allone = False
-            return out
-
-        mappings = {}
-        for i, arg in enumerate(args):
-            if isinstance(arg, dict):
-                mappings.update(arg)
-            else:
-                mappings[f"{DEFAULT_COLUMN_PREFIX}{i}"] = arg
-        mappings.update(kwargs)
-
-        out = _data._datar_apply(apply_func, _mappings=mappings, _method="agg")
-
-    g_keys = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
+    gvars = regcall(group_vars, _data)
+    out, all_ones = _summarise_build(_data, *args, **kwargs)
     if _groups is None:
-        if allone and not isinstance(_data, DataFrameRowwise):
+        if not isinstance(_data, TibbleRowwise) and all_ones:
             _groups = "drop_last"
         else:
             _groups = "keep"
 
     if _groups == "drop_last":
-        if len(g_keys) > 1:
+        if len(gvars) > 1:
             if get_option("dplyr_summarise_inform"):
                 logger.info(
                     "`summarise()` has grouped output by "
                     "%s (override with `_groups` argument)",
-                    g_keys[:-1],
+                    gvars[:-1],
                 )
-            out = reconstruct_tibble(_data, out, [g_keys[-1]])
-    elif _groups == "keep" and g_keys:
+            out = TibbleGrouped.from_groupby(
+                out.groupby(
+                    list(gvars[:-1]),
+                    observed=_data._datar["grouped"].observed,
+                    sort=_data._datar["grouped"].sort,
+                )
+            )
+
+    elif _groups == "keep" and len(gvars) > 0:
         if get_option("dplyr_summarise_inform"):
             logger.info(
                 "`summarise()` has grouped output by "
                 "%s (override with `_groups` argument)",
-                g_keys,
+                gvars,
             )
-        out = DataFrameGroupBy(
-            out,
-            _group_vars=g_keys,
-            _group_drop=group_by_drop_default(_data),
+        grouped = _data._datar["grouped"]
+        out = out.group_by(
+            gvars,
+            sort=grouped.sort,
+            drop=grouped.observed,
+            dropna=grouped.dropna,
         )
+
     elif _groups == "rowwise":
-        out = reconstruct_tibble(
-            _data,
-            out,
-            keep_rowwise=True,
-        )
-    elif isinstance(_data, DataFrameRowwise) and get_option(
+        out = out.rowwise(gvars)
+
+    elif isinstance(_data, TibbleRowwise) and get_option(
         "dplyr_summarise_inform"
     ):
         logger.info(
             "`summarise()` has ungrouped output. "
             "You can override using the `_groups` argument."
         )
+
     # else: # drop
     return out
 
@@ -180,47 +141,57 @@ def _(
 summarize = summarise
 
 
-def _summarise_build(_data: DataFrame, *args: Any, **kwargs: Any) -> DataFrame:
+def _summarise_build(
+    _data: DataFrame,
+    *args: Any,
+    **kwargs: Any,
+) -> Tuple[Tibble, bool]:
     """Build summarise result"""
-    context = Context.EVAL.value
-    named = name_mutatable_args(*args, **kwargs)
+    if isinstance(_data, TibbleRowwise):
+        outframe = _data.loc[:, _data.group_vars]
+    else:
+        outframe = regcall(group_keys, _data)
+        if isinstance(_data, TibbleGrouped):
+            grouped = _data._datar["grouped"]
+            outframe = outframe.group_by(
+                grouped.grouper.names,
+                drop=grouped.observed,
+                dropna=grouped.dropna,
+                sort=grouped.sort,
+            )
 
-    out = group_keys(_data, __calling_env=CallingEnvs.REGULAR)
-    for key, val in named.items():
-        # support: df %>% muate(a=1, a=a+1)
-        key = dedup_name(key, list(named))
-
-        envdata = out
-        if out.shape[1] == 0 or (
-            isinstance(val, Function)
-            and getattr(val._pipda_func, "summarise_prefers_input", False)
-        ):
-            envdata = _data
-
+    all_ones = True
+    context = ContextEvalRefCounts({"input_data": _data})
+    for key, val in chain(enumerate(args), kwargs.items()):
         try:
-            val = evaluate_expr(val, envdata, context)
-        except (KeyError, ColumnNotExistingError):
-            # also recycle input
+            val = evaluate_expr(val, outframe, context)
+        except KeyError:
             val = evaluate_expr(val, _data, context)
 
         if val is None:
             continue
 
-        if key.startswith(DEFAULT_COLUMN_PREFIX) and isinstance(val, DataFrame):
-            # ignore key
-            for name, ser in val.to_dict("series").items():
-                if length_of(out) == 1:
-                    out, ser = recycle_df(out, ser, None, key)
-                out = df_setitem(out, name, ser)
-        elif isinstance(val, DataFrame):
-            for name, ser in val.to_dict("series").items():
-                if length_of(out) == 1:
-                    out, ser = recycle_df(out, ser, None, key)
-                out = df_setitem(out, f"{key}${name}", ser)
-        elif length_of(out) == 1:
-            out, val = recycle_df(out, val, None, key)
-            out = df_setitem(out, key, val)
-        else:
-            out = df_setitem(out, key, val)
+        if isinstance(key, int):
+            if isinstance(val, (DataFrame, Series)) and len(val) == 0:
+                continue
+            key = name_of(val)
 
-    return out
+        newframe = add_to_tibble(outframe, key, val, broadcast_tbl=True)
+        if newframe is not outframe:
+            # if it is broadcasted, then it should not be all ones.
+            # since all ones don't need to broadcast
+            all_ones = False
+
+        outframe = newframe
+
+    gvars = regcall(group_vars, _data)
+    tmp_cols = [
+        mcol
+        for mcol in outframe.columns
+        if mcol.startswith("_")
+        and mcol in context.used_refs
+        and mcol not in gvars
+    ]
+    outframe = regcall(ungroup, outframe)
+    outframe = outframe[regcall(setdiff, outframe.columns, tmp_cols)]
+    return outframe.reset_index(drop=True), all_ones

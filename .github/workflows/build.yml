@@ -13,12 +13,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # can't build numpy for 3.10 in CI
+        # python-version: [3.7, 3.8, 3.9, "3.10"]
         python-version: [3.7, 3.8, 3.9]
         pandas: [
-          pandas==1.2.0,
+          # pandas==1.2.0,
           pandas==1.3.0,
           pandas==1.4.0,
-          pandas # latest pandas for the specific python version
+          pandas # lastest
         ]
         exclude:
           - python-version: 3.7
@@ -40,12 +42,15 @@ jobs:
           pip install wcwidth
           pip install scipy
           pip install python-slugify
+          pip install pdtypes
           # reinstall pandas to specific version
           pip install -U $PANDAS
         env:
           PANDAS: ${{ matrix.pandas }}
       - name: Run flake8
         run: flake8 datar
+      - name: Show versions
+        run: python -c 'import datar; datar.get_versions()'
       - name: Test with pytest
         run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
@@ -68,7 +73,7 @@ jobs:
     if: github.event_name == 'release'
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.9]
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python # Set Python version

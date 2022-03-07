@@ -1,21 +1,19 @@
 """Functions related to complex numbers"""
-from typing import Any
-
-import numpy
-from pandas.core.dtypes.common import is_complex_dtype
+import numpy as np
+from pandas.api.types import is_complex_dtype
 from pipda import register_func
 
-from ..core.utils import register_numpy_func_x
-from ..core.types import ComplexOrIter
 from ..core.contexts import Context
-
+from ..core.factory import func_factory
 
 from .testing import _register_type_testing
 from .casting import _as_type
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
-re = register_numpy_func_x(
-    "re",
-    "real",
+re = func_factory(
+    "transform",
+    "x",
+    name="re",
     doc="""Real part of complex numbers
 
     Args:
@@ -24,24 +22,31 @@ re = register_numpy_func_x(
     Returns:
         The real part of the complex numbers
     """,
+    func=np.real,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
-im = register_numpy_func_x(
-    "im",
-    "imag",
-    doc="""Imaginary part of complex numbers
+im = func_factory(
+    "transform",
+    "x",
+    name="im",
+    doc="""Real part of complex numbers
 
     Args:
         x: The complex numbers
 
     Returns:
-        The imaginary part of the complex numbers
+        The real part of the complex numbers
     """,
+    func=np.imag,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
-mod = register_numpy_func_x(
-    "mod",
-    "absolute",
+mod = func_factory(
+    "transform",
+    "x",
+    name="mod",
+    qualname="datar.base.mod",
     doc="""Modulus of complex numbers
 
     Args:
@@ -50,11 +55,14 @@ mod = register_numpy_func_x(
     Returns:
         The Modulus of the complex numbers
     """,
+    func=np.absolute,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
-arg = register_numpy_func_x(
-    "arg",
-    "angle",
+arg = func_factory(
+    "transform",
+    "x",
+    name="arg",
     doc="""Angles of complex numbers
 
     Args:
@@ -63,11 +71,14 @@ arg = register_numpy_func_x(
     Returns:
         The Angles of the complex numbers
     """,
+    func=np.angle,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
-conj = register_numpy_func_x(
-    "conj",
-    "conj",
+conj = func_factory(
+    "transform",
+    "x",
+    qualname="datar.base.conj",
     doc="""conjugate of complex numbers
 
     Args:
@@ -76,11 +87,13 @@ conj = register_numpy_func_x(
     Returns:
         The conjugate of the complex numbers
     """,
+    func=np.conj,
+    signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 @register_func(None, context=Context.EVAL)
-def as_complex(x: Any, complex_type=numpy.complex_) -> ComplexOrIter:
+def as_complex(x, complex_type=np.complex_):
     """Convert an object or elements of an iterable into complex
 
     Args:
@@ -101,7 +114,7 @@ def as_complex(x: Any, complex_type=numpy.complex_) -> ComplexOrIter:
 
 is_complex = _register_type_testing(
     "is_complex",
-    scalar_types=(complex, numpy.complex_),
+    scalar_types=(complex, np.complex_),
     dtype_checker=is_complex_dtype,
     doc="""Test if a value is complexes
 

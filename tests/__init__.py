@@ -1,4 +1,6 @@
+import sys
 from pipda import options
-# don't warn on ast node detection failure in pytest assert statements
+from datar.base import set_seed
+
 options.warn_astnode_failure = False
-# options.assume_all_piping = True
+set_seed(8888)

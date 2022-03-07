@@ -3,10 +3,12 @@ from typing import Any, Union
 
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..base import setdiff, union
+from ..core.utils import regcall
+from ..core.tibble import Tibble, TibbleGrouped
+from ..base import setdiff, union, intersect
+from ..tibble import as_tibble
 from .group_data import group_vars
 from .select import _eval_select
 
@@ -17,9 +19,8 @@ def relocate(
     *args: Any,
     _before: Union[int, str] = None,
     _after: Union[int, str] = None,
-    base0_: bool = None,
     **kwargs: Any,
-) -> DataFrame:
+) -> Tibble:
     """change column positions
 
     See original API
@@ -32,8 +33,6 @@ def relocate(
         _before: and
         _after: Destination. Supplying neither will move columns to
             the left-hand side; specifying both is an error.
-        base0_: Whether `_before` and `_after` are 0-based if given by indexes.
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         An object of the same type as .data. The output has the following
@@ -44,15 +43,18 @@ def relocate(
         - Data frame attributes are preserved.
         - Groups are not affected
     """
-    gvars = group_vars(_data, __calling_env=CallingEnvs.REGULAR)
+    gvars = regcall(group_vars, _data)
+    _data = regcall(as_tibble, _data.copy())
+
     all_columns = _data.columns
     to_move, new_names = _eval_select(
         all_columns,
         *args,
         **kwargs,
-        base0_=base0_,
         _group_vars=gvars,
     )
+
+    to_move = list(to_move)
     if _before is not None and _after is not None:
         raise ValueError("Must supply only one of `_before` and `_after`.")
 
@@ -63,7 +65,6 @@ def relocate(
                 all_columns,
                 _before,
                 _group_vars=[],
-                base0_=base0_,
             )[0]
         )
         if where not in to_move:
@@ -75,7 +76,6 @@ def relocate(
                 all_columns,
                 _after,
                 _group_vars=[],
-                base0_=base0_,
             )[0]
         )
         if where not in to_move:
@@ -85,19 +85,20 @@ def relocate(
         if where not in to_move:
             to_move.append(where)
 
-    lhs = setdiff(range(where), to_move, __calling_env=CallingEnvs.REGULAR)
-    rhs = setdiff(
-        range(where + 1, _data.shape[1]),
-        to_move,
-        __calling_env=CallingEnvs.REGULAR,
-    )
-    pos = union(
-        lhs,
-        union(to_move, rhs, __calling_env=CallingEnvs.REGULAR),
-        __calling_env=CallingEnvs.REGULAR,
-    )
-    out = _data.iloc[:, pos].copy()
+    lhs = regcall(setdiff, range(where), to_move)
+    rhs = regcall(setdiff, range(where + 1, len(all_columns)), to_move)
+    pos = regcall(union, lhs, regcall(union, to_move, rhs))
+
+    out = _data.iloc[:, pos]
+    # out = out.copy()
     if new_names:
         out.rename(columns=new_names, inplace=True)
+        if (
+            isinstance(out, TibbleGrouped)
+            and len(regcall(intersect, gvars, new_names)) > 0
+        ):
+            out._datar["group_vars"] = [
+                new_names.get(gvar, gvar) for gvar in gvars
+            ]
 
     return out

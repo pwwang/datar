@@ -1,13 +1,8 @@
 """Bessel function family"""
-
-from typing import Callable, Iterable, Mapping, Tuple, Union
-
-from pipda import register_func
-
-from ..core.contexts import Context
+from ..core.factory import func_factory
 
 
-def _get_special_func_from_scipy(name: str) -> Callable:
+def _get_special_func_from_scipy(name):
     """Import bessel functions from scipy on the fly
 
     In order to make scipy dependency optional
@@ -23,18 +18,24 @@ def _get_special_func_from_scipy(name: str) -> Callable:
 
 
 def _register_bessel_function(
-    name: str,
-    common_fun: str,
-    faster_fun: Mapping[Union[int, float, Tuple], str],
-    exp_fun: str = None,
-    doc: str = "",
-) -> Callable:
+    name,
+    common_fun,
+    faster_fun,
+    exp_fun=None,
+    doc="",
+):
     """Register bessel function"""
 
     if exp_fun is None:
 
-        @register_func(None, context=Context.EVAL)
-        def bessel_fun(x: Iterable, nu: float) -> Iterable:
+        @func_factory(
+            "transform",
+            "x",
+            name=name,
+            qualname=f"datar.base.{name}",
+            doc=doc,
+        )
+        def bessel_fun(x, nu):
             """Bessel function"""
             # use faster version for order 0 and 1
             if nu in faster_fun:
@@ -46,10 +47,14 @@ def _register_bessel_function(
 
     else:
 
-        @register_func(None, context=Context.EVAL)
-        def bessel_fun(
-            x: Iterable, nu: float, expon_scaled: bool = False
-        ) -> Iterable:
+        @func_factory(
+            "transform",
+            "x",
+            name=name,
+            qualname=f"datar.base.{name}",
+            doc=doc,
+        )
+        def bessel_fun(x, nu, expon_scaled=False):
             """Modified bessel function"""
             # use faster version for order 0 and 1
             if (nu, expon_scaled) in faster_fun:
@@ -65,8 +70,6 @@ def _register_bessel_function(
             fun = _get_special_func_from_scipy(common_fun)
             return fun(nu, x)
 
-    bessel_fun.__name__ = name
-    bessel_fun.__doc__ = doc
     return bessel_fun
 
 

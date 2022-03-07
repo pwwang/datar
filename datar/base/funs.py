@@ -1,33 +1,32 @@
 """Some functions from R-base
 
-If a function uses DataFrame/DataFrameGroupBy as first argument, it may be
+If a function uses DataFrame/TibbleGrouped as first argument, it may be
 registered by `register_verb` and should be placed in `./verbs.py`
 """
 import itertools
-from typing import Any, Callable, Iterable, List, Union
-import numpy
 
+import numpy as np
 import pandas
-from pandas import Categorical, DataFrame
+from pandas.api.types import is_scalar
 from pipda import register_func
 
 from ..core.middlewares import WithDataEnv
-from ..core.types import NumericType, is_scalar
 from ..core.contexts import Context
-from ..core.utils import arg_match
+from ..core.tibble import Tibble
+from ..core.utils import arg_match, name_of
 from ..core.names import repair_names
 
 
 @register_func(None, context=Context.EVAL)
 def cut(
-    x: Iterable[NumericType],
-    breaks: Any,
-    labels: Iterable[Any] = None,
-    include_lowest: bool = False,
-    right: bool = True,
-    precision: int = 2,
-    ordered_result: bool = False,
-) -> Categorical:
+    x,
+    breaks,
+    labels=None,
+    include_lowest=False,
+    right=True,
+    precision=2,
+    ordered_result=False,
+):
     """Divides the range of x into intervals and codes the values in x
     according to which interval they fall. The leftmost interval corresponds
     to level one, the next leftmost to level two and so on.
@@ -68,7 +67,7 @@ def cut(
 
 
 @register_func(None, context=Context.EVAL)
-def identity(x: Any) -> Any:
+def identity(x):
     """Return whatever passed in
 
     Expression objects are evaluated using parent context
@@ -77,21 +76,22 @@ def identity(x: Any) -> Any:
 
 
 @register_func(None, context=Context.EVAL)
-def expandgrid(*args: Iterable[Any], **kwargs: Iterable[Any]) -> DataFrame:
+def expandgrid(*args, **kwargs):
     """Expand all combinations into a dataframe. R's `expand.grid()`"""
     iters = {}
-    for i, arg in enumerate(args):
-        name = getattr(arg, "name", getattr(arg, "__name__", f"Var{i}"))
+    for arg in args:
+        name = name_of(arg) or str(arg)
         iters[name] = arg
     iters.update(kwargs)
 
-    return DataFrame(
-        list(itertools.product(*iters.values())), columns=iters.keys()
+    return Tibble(
+        list(itertools.product(*iters.values())),
+        columns=iters.keys(),
     )
 
 
 @register_func(None, context=Context.EVAL)
-def outer(x, y, fun: Union[str, Callable] = "*") -> DataFrame:
+def outer(x, y, fun="*"):
     """Compute the outer product of two vectors.
 
     Args:
@@ -106,13 +106,13 @@ def outer(x, y, fun: Union[str, Callable] = "*") -> DataFrame:
         The data frame of the outer product of x and y
     """
     if fun == "*":
-        return DataFrame(numpy.outer(x, y))
+        return Tibble(np.outer(x, y))
 
-    return DataFrame([fun(xelem, y) for xelem in x])
+    return Tibble([fun(xelem, y) for xelem in x])
 
 
 @register_func(None, context=Context.EVAL)
-def make_names(names: Any, unique: bool = False) -> List[str]:
+def make_names(names, unique=False):
     """Make names available as columns and can be accessed by `df.<name>`
 
     The names will be transformed using `python-slugify` with
@@ -145,7 +145,7 @@ def make_names(names: Any, unique: bool = False) -> List[str]:
 
 
 @register_func(None, context=Context.EVAL)
-def make_unique(names: Any) -> List[str]:
+def make_unique(names):
     """Make the names unique.
 
     It's a shortcut for `make_names(names, unique=True)`
@@ -163,10 +163,10 @@ def make_unique(names: Any) -> List[str]:
 
 @register_func(None, context=Context.EVAL)
 def rank(
-    x: Iterable,
-    na_last: bool = True,
-    ties_method: str = "average",
-) -> Iterable:
+    x,
+    na_last=True,
+    ties_method="average",
+):
     """Returns the sample ranks of the values in a vector.
 
     Args:
@@ -190,14 +190,16 @@ def rank(
     )
 
     from ..dplyr.rank import _rank
+
     return _rank(x, na_last, method=ties_method)
+
 
 # ---------------------------------
 # Plain functions
 # ---------------------------------
 
 
-def data_context(data: DataFrame) -> Any:
+def data_context(data):
     """Evaluate verbs, functions in the
     possibly modifying (a copy of) the original data.
 

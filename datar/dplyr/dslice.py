@@ -3,30 +3,28 @@
 https://github.com/tidyverse/dplyr/blob/master/R/slice.R
 """
 import builtins
-from typing import Any, Iterable, List, Union
+from typing import Any, Iterable, Union
 
-from pandas import DataFrame, RangeIndex
-from pipda import register_verb
-from pipda.utils import CallingEnvs
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
 
+# from pandas.api.types import is_integer
+from pipda import register_verb, Expression
+
+from ..core.broadcast import _ungroup
 from ..core.contexts import Context
 from ..core.collections import Collection
-from ..core.utils import reconstruct_tibble
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.types import NumericOrIter
-
-from ..base import NA, unique, is_na
-from .group_by import ungroup
-from .dfilter import _filter_groups
+from ..core.utils import logger, regcall
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 
 
 @register_verb(DataFrame, context=Context.SELECT)
 def slice(
     _data: DataFrame,
-    *rows: NumericOrIter,
+    *rows: Union[int, str],
     _preserve: bool = False,
-    base0_: bool = None,
-) -> DataFrame:
+) -> Tibble:
     """Index rows by their (integer) locations
 
     Original APIs https://dplyr.tidyverse.org/reference/slice.html
@@ -46,68 +44,64 @@ def slice(
             instead: `slice(df, ~c(1))`
             Exclusive and inclusive expressions are allowed to be mixed, unlike
             in `dplyr`. They are expanded in the order they are passed in.
-        _preserve: Relevant when the _data input is grouped.
-            If _preserve = FALSE (the default), the grouping structure is
-            recalculated based on the resulting data,
-            otherwise the grouping is kept as is.
-        base0_: If rows are selected by indexes, whether they are 0-based.
-            If not provided, `datar.base.get_option('index.base.0')` is used.
+        _preserve: Just for compatibility with `dplyr`'s `filter`.
+            It's always `False` here.
 
     Returns:
         The sliced dataframe
     """
+    # if _preserve:
+    #     logger.warning("`slice()` doesn't support `_preserve` argument yet.")
+
     if not rows:
-        return _data
+        return _data.copy()
 
-    rows = _sanitize_rows(rows, _data.shape[0], base0_)
-    out = _data.iloc[rows, :]
-    if isinstance(_data.index, RangeIndex):
-        out.reset_index(drop=True, inplace=True)
-    # copy_attrs(out, _data) # attrs carried
-    return out
+    rows = _sanitize_rows(rows, _data.shape[0])
+    return _data.take(rows)
 
 
-@slice.register(DataFrameGroupBy, context=Context.PENDING)
+@slice.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    _data: DataFrameGroupBy,
+    _data: TibbleGrouped,
     *rows: Any,
     _preserve: bool = False,
-    base0_: bool = None,
-) -> DataFrameGroupBy:
+) -> TibbleGrouped:
     """Slice on grouped dataframe"""
-    out = _data._datar_apply(
-        slice, *rows, base0_=base0_, _drop_index=False
-    ).sort_index()
-    out = reconstruct_tibble(_data, out)
-    gdata = _filter_groups(out, _data, sort_rows=False)
+    if _preserve:
+        logger.warning("`slice()` doesn't support `_preserve` argument yet.")
 
-    if not _preserve and _data.attrs.get("_group_drop", True):
-        out.attrs["_group_data"] = gdata[gdata["_rows"].map(len) > 0]
+    grouped = _data._datar["grouped"]
+    gsizes = grouped.grouper.size()
+    indices = [
+        grouped.grouper.indices[key].take(
+            _sanitize_rows(rows, gsizes.loc[key])
+        )
+        for key in grouped.grouper.result_index
+        # grouped.grouper.indices[key] gets empty [] when it's an empty group
+        if grouped.grouper.indices[key].size > 0
+    ]
+    if indices:
+        indices = np.concatenate(
+            [
+                grouped.grouper.indices[key].take(
+                    _sanitize_rows(rows, gsizes.loc[key])
+                )
+                for key in grouped.grouper.result_index
+                # grouped.grouper.indices[key] gets empty []
+                # when it's an empty group
+                if grouped.grouper.indices[key].size > 0
+            ]
+        )
 
-    return out
+    return _data.take(indices)
 
 
-@slice.register(DataFrameRowwise, context=Context.PENDING)
-def _(
-    _data: DataFrameRowwise,
-    *rows: Any,
-    _preserve: bool = False,
-    base0_: bool = None,
-) -> DataFrameRowwise:
-    """Slice on grouped dataframe"""
-    out = slice.dispatch(DataFrame)(
-        _data,
-        *rows,
-        _preserve=_preserve,
-        base0_=base0_,
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
-
-
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_head(
-    _data: DataFrame, n: int = None, prop: float = None
-) -> DataFrame:
+    _data: DataFrame,
+    n: int = None,
+    prop: float = None,
+) -> Tibble:
     """Select first rows
 
     Args:
@@ -125,135 +119,146 @@ def slice_head(
         The sliced dataframe
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(
+    return regcall(
+        slice,
         _data,
         builtins.slice(None, n),
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
-@slice_head.register(DataFrameGroupBy, context=Context.PENDING)
-def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
-    """Slice on grouped dataframe"""
-    out = _data._datar_apply(
-        slice_head,
-        n=n,
-        prop=prop,
-        _drop_index=False,
-        __calling_env=CallingEnvs.REGULAR,
-    ).sort_index()
-    return reconstruct_tibble(_data, out)
-
-
-@slice_head.register(DataFrameRowwise, context=Context.PENDING)
+@slice_head.register(TibbleGrouped, context=Context.EVAL)
 def _(
-    _data: DataFrameRowwise, n: int = None, prop: float = None
-) -> DataFrameRowwise:
+    _data: DataFrame,
+    n: int = None,
+    prop: float = None,
+) -> TibbleGrouped:
     """Slice on grouped dataframe"""
-    out = slice_head.dispatch(DataFrame)(_data, n=n, prop=prop)
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
+    grouped = _data._datar["grouped"]
+    # Calculate n's of each group
+    ns = grouped.grouper.size().transform(lambda x: _n_from_prop(x, n, prop))
+    # Get indices of each group
+    # A better way?
+    indices = np.concatenate(
+        [
+            grouped.grouper.indices[key][: ns[key]]
+            for key in grouped.grouper.result_index
+        ]
+    )
+
+    return _data.take(indices)
 
 
-@register_verb(DataFrame)
-def slice_tail(_data: DataFrame, n: int = 1, prop: float = None) -> DataFrame:
+@slice_head.register(TibbleRowwise, context=Context.EVAL)
+def _(
+    _data: TibbleRowwise,
+    n: int = None,
+    prop: float = None,
+) -> TibbleRowwise:
+    """Slice on grouped dataframe"""
+    n = _n_from_prop(1, n, prop)
+
+    if n >= 1:
+        return _data.copy()
+
+    return _data.take([])
+
+
+@register_verb(DataFrame, context=Context.EVAL)
+def slice_tail(
+    _data: DataFrame,
+    n: int = 1,
+    prop: float = None,
+) -> Tibble:
     """Select last rows
 
     See Also:
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return slice(
+    return regcall(
+        slice,
         _data,
         builtins.slice(-n, None),
-        base0_=True,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
 
-@slice_tail.register(DataFrameGroupBy, context=Context.PENDING)
-def _(_data: DataFrame, n: int = None, prop: float = None) -> DataFrameGroupBy:
-    """Slice on grouped dataframe"""
-    out = _data._datar_apply(
-        slice_tail, n=n, prop=prop, _drop_index=False
-    ).sort_index()
-    return reconstruct_tibble(_data, out)
-
-
-@slice_tail.register(DataFrameRowwise, context=Context.PENDING)
+@slice_tail.register(TibbleGrouped, context=Context.EVAL)
 def _(
-    _data: DataFrameRowwise, n: int = None, prop: float = None
-) -> DataFrameRowwise:
+    _data: DataFrame,
+    n: int = None,
+    prop: float = None,
+) -> TibbleGrouped:
     """Slice on grouped dataframe"""
-    out = slice_tail.dispatch(DataFrame)(_data, n=n, prop=prop)
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
+    grouped = _data._datar["grouped"]
+    # Calculate n's of each group
+    ns = grouped.grouper.size().transform(lambda x: _n_from_prop(x, n, prop))
+    # Get indices of each group
+    # A better way?
+    indices = np.concatenate(
+        [
+            grouped.grouper.indices[key][-ns[key] :]
+            for key in grouped.grouper.result_index
+        ]
+    )
+
+    return _data.take(indices)
 
 
-@register_verb(DataFrame, extra_contexts={"order_by": Context.EVAL})
+@slice_tail.register(TibbleRowwise, context=Context.PENDING)
+def _(
+    _data: TibbleRowwise,
+    n: int = None,
+    prop: float = None,
+) -> TibbleRowwise:
+    """Slice on grouped dataframe"""
+    return regcall(
+        slice_head,
+        _data,
+        n=n,
+        prop=prop,
+    )
+
+
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_min(
     _data: DataFrame,
-    order_by: Iterable[Any],
+    order_by: Expression,
     n: int = 1,
     prop: float = None,
     with_ties: Union[bool, str] = True,
-) -> DataFrame:
+) -> Tibble:
     """select rows with lowest values of a variable.
 
-    See Also:
-        [`slice_head()`](datar.dplyr.slice.slice_head)
+    Args:
+        order_by: Variable or function of variables to order by.
+        n: and
+        prop: Provide either n, the number of rows, or prop, the proportion of
+            rows to select.
+            If neither are supplied, n = 1 will be used.
+            If n is greater than the number of rows in the group (or prop > 1),
+            the result will be silently truncated to the group size.
+            If the proportion of a group size is not an integer,
+            it is rounded down.
+        with_ties: Should ties be kept together?
+            The default, `True`, may return more rows than you request.
+            Use `False` to ignore ties, and return the first n rows.
     """
-    n = _n_from_prop(_data.shape[0], n, prop)
+    if isinstance(_data, TibbleGrouped) and prop is not None:
+        raise ValueError(
+            "`slice_min()` doesn't support `prop` for grouped data yet."
+        )
 
-    sorting_df = DataFrame(index=_data.index)
-    sorting_df["x"] = order_by
-    keep = {True: "all", False: "first"}.get(with_ties, with_ties)
-    sorting_df = sorting_df.nsmallest(n, "x", keep)
-    sorting_df = sorting_df.loc[~is_na(sorting_df.x), :]
+    if isinstance(_data, TibbleRowwise):
+        n = _n_from_prop(1, n, prop)
+    else:
+        n = _n_from_prop(_data.shape[0], n, prop)
 
-    out = _data.copy()  # attrs copied
-    out = out.loc[sorting_df.index, :]  # attrs kept
-    return out
-
-
-@slice_min.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-    _data: DataFrameGroupBy,
-    order_by: Iterable[Any],
-    n: int = 1,
-    prop: float = None,
-    with_ties: Union[bool, str] = True,
-) -> DataFrameGroupBy:
-    """slice_min for DataFrameGroupBy object"""
-    out = _data._datar_apply(
-        slice_min,
-        order_by=order_by,
-        n=n,
-        prop=prop,
-        with_ties=with_ties,
-    )
-    return reconstruct_tibble(_data, out)
+    sliced = order_by.nsmallest(n, keep="all" if with_ties else "first")
+    sliced = sliced[~pd.isnull(sliced)]
+    return _data.reindex(sliced.index.get_level_values(-1))
 
 
-@slice_min.register(DataFrameRowwise, context=Context.EVAL)
-def _(
-    _data: DataFrameRowwise,
-    order_by: Iterable[Any],
-    n: int = 1,
-    prop: float = None,
-    with_ties: Union[bool, str] = True,
-) -> DataFrameRowwise:
-    """slice_min for DataFrameRowwise object"""
-    out = slice_min.dispatch(DataFrame)(
-        ungroup(_data, __calling_env=CallingEnvs.REGULAR),
-        order_by=order_by,
-        n=n,
-        prop=prop,
-        with_ties=with_ties,
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
-
-
-@register_verb(DataFrame, extra_contexts={"order_by": Context.EVAL})
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_max(
     _data: DataFrame,
     order_by: Iterable[Any],
@@ -266,58 +271,22 @@ def slice_max(
     See Also:
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
-    n = _n_from_prop(_data.shape[0], n, prop)
+    if isinstance(_data, TibbleGrouped) and prop is not None:
+        raise ValueError(
+            "`slice_max()` doesn't support `prop` for grouped data yet."
+        )
 
-    sorting_df = DataFrame(index=_data.index)
-    sorting_df["x"] = order_by
-    keep = {True: "all", False: "first"}.get(with_ties, with_ties)
-    sorting_df = sorting_df.nlargest(n, "x", keep)
-    sorting_df = sorting_df.loc[~is_na(sorting_df.x), :]
+    if isinstance(_data, TibbleRowwise):
+        n = _n_from_prop(1, n, prop)
+    else:
+        n = _n_from_prop(_data.shape[0], n, prop)
 
-    out = _data.copy()  # attrs copied
-    out = out.loc[sorting_df.index, :]  # attrs kept
-    return out
-
-
-@slice_max.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-    _data: DataFrameGroupBy,
-    order_by: Iterable[Any],
-    n: int = 1,
-    prop: float = None,
-    with_ties: Union[bool, str] = True,
-) -> DataFrameGroupBy:
-    """slice_max for DataFrameGroupBy object"""
-    out = _data._datar_apply(
-        slice_max,
-        order_by=order_by,
-        n=n,
-        prop=prop,
-        with_ties=with_ties,
-    )
-    return reconstruct_tibble(_data, out)
+    sliced = order_by.nlargest(n, keep="all" if with_ties else "first")
+    sliced = sliced[~pd.isnull(sliced)]
+    return _data.reindex(sliced.index.get_level_values(-1))
 
 
-@slice_max.register(DataFrameRowwise, context=Context.EVAL)
-def _(
-    _data: DataFrameRowwise,
-    order_by: Iterable[Any],
-    n: int = 1,
-    prop: float = None,
-    with_ties: Union[bool, str] = True,
-) -> DataFrameRowwise:
-    """slice_max for DataFrameRowwise object"""
-    out = slice_max.dispatch(DataFrame)(
-        ungroup(_data, __calling_env=CallingEnvs.REGULAR),
-        order_by=order_by,
-        n=n,
-        prop=prop,
-        with_ties=with_ties,
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
-
-
-@register_verb(DataFrame, extra_contexts={"weight_by": Context.EVAL})
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_sample(
     _data: DataFrame,
     n: int = 1,
@@ -331,58 +300,30 @@ def slice_sample(
     See Also:
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
-    n = _n_from_prop(_data.shape[0], n, prop)
+    if (
+        prop is not None
+        and isinstance(_data, TibbleGrouped)
+        and not isinstance(_data, TibbleRowwise)
+    ):
+        raise ValueError(
+            "`slice_sample()` doesn't support `prop` for grouped data yet."
+        )
+
+    if isinstance(_data, TibbleRowwise):
+        n = _n_from_prop(1, n, prop)
+    else:
+        n = _n_from_prop(_data.shape[0], n, prop)
+
     if n == 0:
         # otherwise _data.sample raises error when weight_by is empty as well
-        return _data.iloc[[], :]
+        return _data.take([])
 
     return _data.sample(
         n=n,
         replace=replace,
-        weights=weight_by,
-        random_state=random_state,
-        axis=0,
-    )
-
-
-@slice_sample.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-    _data: DataFrameGroupBy,
-    n: int = 1,
-    prop: float = None,
-    weight_by: Iterable[Union[int, float]] = None,
-    replace: bool = False,
-    random_state: Any = None,
-) -> DataFrameGroupBy:
-    out = _data._datar_apply(
-        slice_sample,
-        n=n,
-        prop=prop,
-        weight_by=weight_by,
-        replace=replace,
+        weights=_ungroup(weight_by),
         random_state=random_state,
     )
-    return reconstruct_tibble(_data, out)
-
-
-@slice_sample.register(DataFrameRowwise, context=Context.EVAL)
-def _(
-    _data: DataFrameRowwise,
-    n: int = 1,
-    prop: float = None,
-    weight_by: Iterable[Union[int, float]] = None,
-    replace: bool = False,
-    random_state: Any = None,
-) -> DataFrameRowwise:
-    out = slice_sample.dispatch(DataFrame)(
-        _data,
-        n=n,
-        prop=prop,
-        weight_by=weight_by,
-        replace=replace,
-        random_state=random_state,
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
 
 
 def _n_from_prop(
@@ -404,17 +345,21 @@ def _n_from_prop(
     return min(n, total)
 
 
-def _sanitize_rows(rows: Iterable, nrow: int, base0: bool = None) -> List[int]:
+def _sanitize_rows(rows: Iterable, nrow: int) -> np.ndarray:
     """Sanitize rows passed to slice"""
-    rows = Collection(*rows, pool=nrow, base0=base0)
+    rows = Collection(*rows, pool=nrow)
     if rows.error:
-
         raise rows.error from None
-    invalid_type_rows = [
-        row
-        for row in rows.unmatched
-        if not isinstance(row, (int, type(None), type(NA)))
-    ]
-    if invalid_type_rows:
-        raise TypeError("`slice()` expressions should return indices.")
-    return unique(rows)
+
+    # invalid_type_rows = [
+    #     row
+    #     for row in rows.unmatched
+    #     if not is_integer(row) or pd.isnull(row)
+    # ]
+    # if invalid_type_rows:
+    #     raise TypeError(
+    #         "`slice()` expressions should return indices, got "
+    #         f"{type(invalid_type_rows[0])}"
+    #     )
+
+    return np.array(rows, dtype=int)

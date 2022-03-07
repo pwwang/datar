@@ -2,16 +2,14 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/rows.R
 """
-from typing import List
-
-import numpy
+import numpy as np
+import pandas as pd
 from pandas import DataFrame
+from pandas.api.types import is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..base import setdiff
-from ..core.types import StringOrIter, is_scalar, is_null, is_not_null
-from ..core.utils import logger
+from ..core.utils import logger, regcall
 from ..tibble import rownames_to_column
 
 from .bind import bind_rows
@@ -20,12 +18,7 @@ from .funs import coalesce
 
 
 @register_verb(DataFrame)
-def rows_insert(
-    x: DataFrame,
-    y: DataFrame,
-    by: StringOrIter = None,
-    copy: bool = True,
-) -> DataFrame:
+def rows_insert(x, y, by=None, copy=True):
     """Adds new rows to a data frame
 
     Argument `in_place` not supported, as we always do data frames here.
@@ -53,20 +46,15 @@ def rows_insert(
     _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
-    bad = is_not_null(idx)
+    bad = ~pd.isnull(idx)
     if any(bad):
         raise ValueError("Attempting to insert duplicate rows.")
 
-    return bind_rows(x, y, _copy=copy, __calling_env=CallingEnvs.REGULAR)
+    return regcall(bind_rows, x, y, _copy=copy)
 
 
 @register_verb(DataFrame)
-def rows_update(
-    x: DataFrame,
-    y: DataFrame,
-    by: StringOrIter = None,
-    copy: bool = True,
-) -> DataFrame:
+def rows_update(x, y, by=None, copy=True):
     """Modifies existing rows in a data frame
 
     See Also:
@@ -93,7 +81,7 @@ def rows_update(
     _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
-    bad = is_null(idx)
+    bad = pd.isnull(idx)
     if any(bad):
         raise ValueError("Attempting to update missing rows.")
 
@@ -105,12 +93,7 @@ def rows_update(
 
 
 @register_verb(DataFrame)
-def rows_patch(
-    x: DataFrame,
-    y: DataFrame,
-    by: StringOrIter = None,
-    copy: bool = True,
-) -> DataFrame:
+def rows_patch(x, y, by=None, copy=True):
     """Works like `rows_update()` but only overwrites `NA` values.
 
     See Also:
@@ -137,7 +120,7 @@ def rows_patch(
     _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
-    bad = is_null(idx)
+    bad = pd.isnull(idx)
     if any(bad):
         raise ValueError("Attempting to patch missing rows.")
 
@@ -147,17 +130,12 @@ def rows_patch(
 
     if copy:
         x = x.copy()
-    x.loc[idx, y.columns] = numpy.array(new_data).T
+    x.loc[idx, y.columns] = np.array(new_data).T
     return x
 
 
 @register_verb(DataFrame)
-def rows_upsert(
-    x: DataFrame,
-    y: DataFrame,
-    by: StringOrIter = None,
-    copy: bool = True,
-) -> DataFrame:
+def rows_upsert(x, y, by=None, copy=True):
     """Inserts or updates depending on whether or not the
     key value in `y` already exists in `x`.
 
@@ -187,23 +165,21 @@ def rows_upsert(
     _rows_check_key_df(y, key, df_name="y")
 
     idx = _rows_match(y[key], x[key])
-    new = is_null(idx)
+    new = pd.isnull(idx)
     # idx of x
     idx_existing = idx[~new]
 
     x.loc[idx_existing, y.columns] = y.loc[~new].values
-    return bind_rows(
-        x, y.loc[new], _copy=copy, __calling_env=CallingEnvs.REGULAR
-    )
+    return regcall(bind_rows, x, y.loc[new], _copy=copy)
 
 
 @register_verb(DataFrame)
 def rows_delete(
-    x: DataFrame,
-    y: DataFrame,
-    by: StringOrIter = None,
-    copy: bool = True,
-) -> DataFrame:
+    x,
+    y,
+    by=None,
+    copy=True,
+):
     """Deletes rows; key values in `y` must exist in `x`.
 
     See Also:
@@ -229,12 +205,12 @@ def rows_delete(
     _rows_check_key_df(x, key, df_name="x")
     _rows_check_key_df(y, key, df_name="y")
 
-    extra_cols = setdiff(y.columns, key, __calling_env=CallingEnvs.REGULAR)
+    extra_cols = regcall(setdiff, y.columns, key)
     if len(extra_cols) > 0:
         logger.info("Ignoring extra columns: %s", extra_cols)
 
     idx = _rows_match(y[key], x[key])
-    bad = is_null(idx)
+    bad = pd.isnull(idx)
 
     if any(bad):
         raise ValueError("Attempting to delete missing rows.")
@@ -248,7 +224,7 @@ def rows_delete(
 # helpers -----------------------------------------------------------------
 
 
-def _rows_check_key(by: StringOrIter, x: DataFrame, y: DataFrame) -> List[str]:
+def _rows_check_key(by, x, y):
     """Check the key and return the valid key"""
     if by is None:
         by = y.columns[0]
@@ -261,16 +237,16 @@ def _rows_check_key(by: StringOrIter, x: DataFrame, y: DataFrame) -> List[str]:
         if not isinstance(by_elem, str):
             raise ValueError("`by` must be a string or a list of strings.")
 
-    bad = setdiff(y.columns, x.columns, __calling_env=CallingEnvs.REGULAR)
+    bad = regcall(setdiff, y.columns, x.columns)
     if len(bad) > 0:
         raise ValueError("All columns in `y` must exist in `x`.")
 
     return by
 
 
-def _rows_check_key_df(df: DataFrame, by: List[str], df_name: str) -> None:
+def _rows_check_key_df(df, by, df_name) -> None:
     """Check key with the data frame"""
-    y_miss = setdiff(by, df.columns, __calling_env=CallingEnvs.REGULAR)
+    y_miss = regcall(setdiff, by, df.columns)
     if len(y_miss) > 0:
         raise ValueError(f"All `by` columns must exist in `{df_name}`.")
 
@@ -278,13 +254,9 @@ def _rows_check_key_df(df: DataFrame, by: List[str], df_name: str) -> None:
         raise ValueError(f"`{df_name}` key values are not unique.")
 
 
-def _rows_match(x: DataFrame, y: DataFrame) -> numpy.ndarray:
+def _rows_match(x, y):
     """Mimic vctrs::vec_match"""
     id_col = "__id__"
-    y_with_id = rownames_to_column(
-        y, var=id_col, __calling_env=CallingEnvs.REGULAR
-    )
+    y_with_id = regcall(rownames_to_column, y, var=id_col)
 
-    return left_join(x, y_with_id, __calling_env=CallingEnvs.REGULAR)[
-        id_col
-    ].values
+    return regcall(left_join, x, y_with_id)[id_col].values

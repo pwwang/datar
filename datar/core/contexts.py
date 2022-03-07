@@ -1,8 +1,6 @@
 """Provides specific contexts for datar"""
 from collections import defaultdict
 from enum import Enum
-from typing import Any, ClassVar
-from pandas.core.frame import DataFrame
 from pipda.context import (
     ContextBase,
     ContextEval as ContextEvalPipda,
@@ -10,47 +8,43 @@ from pipda.context import (
     ContextPending,
     ContextSelect,
 )
-from .exceptions import ColumnNotExistingError
+from pandas import DataFrame
 
 
 class ContextEval(ContextEvalPipda):
-    """Evaluation context with used references traced"""
+    """Evaluation context"""
 
-    name: ClassVar[str] = "eval"
+    # make it slow
+    # def eval_symbolic(self, data):
+    #     from .tibble import Tibble
 
-    def __init__(self):
-        self.used_refs = defaultdict(lambda: 0)
+    #     if isinstance(data, (TibbleGrouped, DataFrame)) and not isinstance(
+    #         data, Tibble
+    #     ):
+    #         from ..tibble import as_tibble
+    #         return as_tibble(data)
 
-    def getitem(
-        self, parent: Any, ref: Any, is_direct: bool = False, _attr=False
-    ) -> Any:
+    #     return super().eval_symbolic(data)
+
+    def getitem(self, parent, ref, level):
         """Interpret f[ref]"""
-
-        if is_direct and isinstance(ref, slice):
+        if level == 1 and isinstance(ref, slice):
             # Allow f[1:3] to be interpreted as 1:3
             from .collections import Collection
 
             return Collection(ref)
 
-        if is_direct:
-            self.used_refs[ref] += 1
         if isinstance(parent, DataFrame):
-            from .utils import df_getitem
+            return parent[ref]
 
-            try:
-                return df_getitem(parent, ref)
-            except KeyError as keyerr:
-                raise ColumnNotExistingError(str(keyerr)) from None
+        return super().getitem(parent, ref, level)
 
-        return (
-            super().getitem(parent, ref)
-            if not _attr
-            else super().getattr(parent, ref)
-        )
-
-    def getattr(self, parent: Any, ref: Any, is_direct: bool = False) -> Any:
+    def getattr(self, parent, ref, level):
         """Evaluate f.a"""
-        return self.getitem(parent, ref, is_direct, _attr=True)
+        if isinstance(parent, DataFrame):
+            return parent[ref]
+
+        return super().getattr(parent, ref, level)
 
     @property
     def ref(self) -> ContextBase:
@@ -58,6 +52,28 @@ class ContextEval(ContextEvalPipda):
 
         This function should return a `ContextBase` object."""
         return self
+
+
+class ContextEvalRefCounts(ContextEval):
+    """Evaluation context with used references traced"""
+
+    def __init__(self, meta=None):
+        super().__init__(meta)
+        self.used_refs = defaultdict(lambda: 0)
+
+    def getitem(self, parent, ref, level):
+        """Interpret f[ref]"""
+        if level == 1 and isinstance(ref, str):
+            self.used_refs[ref] += 1
+
+        return super().getitem(parent, ref, level)
+
+    def getattr(self, parent, ref, level):
+        """Evaluate f.a"""
+        if level == 1 and isinstance(ref, str):
+            self.used_refs[ref] += 1
+
+        return super().getattr(parent, ref, level)
 
 
 class Context(Enum):

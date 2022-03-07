@@ -2,77 +2,124 @@
 
 See souce https://github.com/tidyverse/dplyr/blob/master/R/context.R
 """
-from typing import Any, Iterable, List
-
-from pandas import DataFrame
+import numpy as np
+from pandas import DataFrame, Series
 from pipda import register_func
-from pipda.utils import CallingEnvs
 
-from ..core.contexts import Context
+from ..core.tibble import Tibble, TibbleGrouped
 from ..core.middlewares import CurColumn
+from ..core.utils import regcall
 from ..base import setdiff
-from .group_data import group_vars
+
+from .group_data import group_data, group_keys
 
 
 # n used directly in count
-@register_func(context=Context.EVAL, summarise_prefers_input=True)
-def n(series: Iterable[Any]) -> int:
+# @register_func(DataFrame, verb_arg_only=True)
+@register_func(DataFrame)
+def n(_data, _context=None):
     """gives the current group size."""
-    return len(series)
+    _data = _context.meta.get("input_data", _data)
+    return _data.shape[0]
 
 
-@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
-def cur_data_all(_data: DataFrame) -> DataFrame:
+@n.register(TibbleGrouped)
+def _(_data, _context=None):
+    _data = _context.meta.get("input_data", _data)
+    return _data._datar["grouped"].grouper.size()
+
+
+@register_func(DataFrame, verb_arg_only=True)
+def cur_data_all(_data, _context=None):
     """gives the current data for the current group
     (including grouping variables)"""
-    return _data
+    _data = _context.meta.get("input_data", _data)
+    return Series([_data.copy()], dtype=object)
 
 
-@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
-def cur_data(_data: DataFrame) -> int:
+@cur_data_all.register(TibbleGrouped)
+def _(_data, _context=None):
+    _data = _context.meta.get("input_data", _data)
+    grouped = _data._datar["grouped"]
+    return Series(
+        [
+            grouped.obj.loc[grouped.grouper.groups[key], :]
+            for key in grouped.grouper.result_index
+        ],
+        name="cur_data_all",
+        dtype=object,
+        index=grouped.grouper.result_index,
+    )
+
+
+@register_func(DataFrame, verb_arg_only=True)
+def cur_data(_data, _context=None):
     """gives the current data for the current group
     (excluding grouping variables)."""
-    return _data[
-        setdiff(
-            _data.columns,
-            group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-            __calling_env=CallingEnvs.REGULAR,
-        )
-    ]
+    _data = _context.meta.get("input_data", _data)
+    cols = regcall(setdiff, _data.columns, _data.group_vars or [])
+    return Series([_data[cols]], dtype=object)
 
 
-@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
-def cur_group(_data: DataFrame) -> DataFrame:
+@cur_data.register(TibbleGrouped)
+def _(_data, _context=None):
+    _data = _context.meta.get("input_data", _data)
+    cols = regcall(setdiff, _data.columns, _data.group_vars or [])
+    return (
+        _data._datar["grouped"].apply(lambda g: Series([g[cols]])).iloc[:, 0]
+    )
+
+
+@register_func(DataFrame, verb_arg_only=True)
+def cur_group(_data, _context=None):
     """gives the group keys, a tibble with one row and one column for
     each grouping variable."""
-    index = _data.attrs.get("_group_index", None)
-    if index is None:
-        return DataFrame(index=range(_data.shape[0]))
-
-    gdata = _data.attrs["_group_data"]
-    return gdata.iloc[[index], :-1]
+    _data = _context.meta.get("input_data", _data)
+    return Tibble(index=[0])
 
 
-@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
-def cur_group_id(_data: DataFrame) -> int:
+@cur_group.register(TibbleGrouped)
+def _(_data, _context=None):
+    _data = _context.meta.get("input_data", _data)
+    out = regcall(group_keys, _data)
+    # split each row as a df
+    out = out.apply(lambda row: row.to_frame().T, axis=1)
+    out.index = _data._datar["grouped"].grouper.result_index
+    return out
+
+
+@register_func(DataFrame, verb_arg_only=True)
+def cur_group_id(_data, _context=None):
     """gives a unique numeric identifier for the current group."""
-    return _data.attrs.get("_group_index", 1)
+    return 0
 
 
-@register_func(DataFrame, verb_arg_only=True, summarise_prefers_input=True)
-def cur_group_rows(_data: DataFrame) -> List[int]:
+@cur_group_id.register(TibbleGrouped)
+def _(_data, _context=None):
+    _data = _context.meta.get("input_data", _data)
+    grouper = _data._datar["grouped"].grouper
+    return Series(np.arange(grouper.ngroups), index=grouper.result_index)
+
+
+@register_func(DataFrame, verb_arg_only=True)
+def cur_group_rows(
+    _data,
+    _context=None,
+) -> np.ndarray:
     """Gives the row indices for the current group.
 
     Args:
         _data: The dataFrame.
 
     Returns:
-        The `_rows` from group data or row indexes (always 0-based).
+        The `_rows` from group data or row indexes
     """
-    index = _data.attrs.get("_group_index", None)
-    if index is None:
-        return list(range(_data.shape[0]))
-    return _data.attrs["_group_data"].loc[index, "_rows"]
+    _data = _context.meta.get("input_data", _data)
+    gdata = regcall(group_data, _data)
+    if isinstance(_data, TibbleGrouped):
+        return gdata.set_index(_data.group_vars)["_rows"]
+
+    return gdata["_rows"]
 
 
 def cur_column() -> CurColumn:

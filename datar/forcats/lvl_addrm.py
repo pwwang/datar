@@ -1,19 +1,20 @@
 """Provides functions to add or remove levels"""
 from typing import Any, Iterable, List
 
+import pandas as pd
 from pandas import Categorical
+from pandas.api.types import is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..base import levels, union, table, intersect, setdiff
 from ..core.contexts import Context
-from ..core.types import ForcatsRegType, ForcatsType, is_scalar, is_null
+from ..core.utils import regcall
 from .lvls import lvls_expand, lvls_union, refactor
-from .utils import check_factor
+from .utils import check_factor, ForcatsRegType
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_expand(_f: ForcatsType, *additional_levels: Any) -> Categorical:
+def fct_expand(_f, *additional_levels: Any) -> Categorical:
     """Add additional levels to a factor
 
     Args:
@@ -25,7 +26,7 @@ def fct_expand(_f: ForcatsType, *additional_levels: Any) -> Categorical:
         The factor with levels expanded
     """
     _f = check_factor(_f)
-    levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
+    levs = regcall(levels, _f)
     addlevs = []
     for alev in additional_levels:
         if is_scalar(alev):
@@ -33,13 +34,11 @@ def fct_expand(_f: ForcatsType, *additional_levels: Any) -> Categorical:
         else:
             addlevs.extend(alev)
     new_levels = union(levs, addlevs)
-    return lvls_expand(_f, new_levels, __calling_env=CallingEnvs.REGULAR)
+    return regcall(lvls_expand, _f, new_levels)
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_explicit_na(
-    _f: ForcatsType, na_level: Any = "(Missing)"
-) -> Categorical:
+def fct_explicit_na(_f, na_level: Any = "(Missing)") -> Categorical:
     """Make missing values explicit
 
     This gives missing values an explicit factor level, ensuring that they
@@ -55,7 +54,7 @@ def fct_explicit_na(
     """
     _f = check_factor(_f)
     # levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
-    is_missing = is_null(_f)
+    is_missing = pd.isnull(_f)
     # is_missing_level = is_null(levs)
 
     if any(is_missing):
@@ -72,7 +71,7 @@ def fct_explicit_na(
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
-def fct_drop(_f: ForcatsType, only: Any = None) -> Categorical:
+def fct_drop(_f, only: Any = None) -> Categorical:
     """Drop unused levels
 
     Args:
@@ -86,25 +85,25 @@ def fct_drop(_f: ForcatsType, only: Any = None) -> Categorical:
     """
     _f = check_factor(_f)
 
-    levs = levels(_f, __calling_env=CallingEnvs.REGULAR)
-    count = table(_f, __calling_env=CallingEnvs.REGULAR).iloc[0, :]
+    levs = regcall(levels, _f)
+    count = regcall(table, _f).iloc[0, :]
 
     to_drop = levs[count == 0]
     if only is not None and is_scalar(only):
         only = [only]
 
     if only is not None:
-        to_drop = intersect(to_drop, only, __calling_env=CallingEnvs.REGULAR)
+        to_drop = regcall(intersect, to_drop, only)
 
     return refactor(
         _f,
-        new_levels=setdiff(levs, to_drop, __calling_env=CallingEnvs.REGULAR),
+        new_levels=regcall(setdiff, levs, to_drop),
     )
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_unify(
-    fs: Iterable[ForcatsType],
+    fs,
     levels: Iterable = None,
 ) -> List[Categorical]:
     """Unify the levels in a list of factors
@@ -123,11 +122,5 @@ def fct_unify(
     out = []
     for fct in fs:
         fct = check_factor(fct)
-        out.append(
-            lvls_expand(
-                fct,
-                new_levels=levels,
-                __calling_env=CallingEnvs.REGULAR,
-            )
-        )
+        out.append(regcall(lvls_expand, fct, new_levels=levels))
     return out

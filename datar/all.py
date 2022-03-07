@@ -1,19 +1,19 @@
 """Import all constants, verbs and functions"""
-from . import f
-from .base import _no_warn as _  # don't override from datar.all import _no_warn
+from .core.defaults import f
+from .base import (
+    _no_warn as _,
+)  # don't override from datar.all import _no_warn
 from .base import _builtin_names as _base_builtin_names
 from .base import *
 from .base import _warn as _
+from .forcats import *
 from .datar import *
 from .dplyr import _no_warn as _
 from .dplyr import _builtin_names as _dplyr_builtin_names
 from .dplyr import *
 from .dplyr import _warn as _
-from .stats import *
 from .tibble import *
 from .tidyr import *
-from .utils import *
-from .forcats import *
 
 _builtin_names = _base_builtin_names.copy()
 _builtin_names.update(_dplyr_builtin_names)

@@ -2,15 +2,15 @@
 import inspect
 import re
 import keyword
-from typing import Callable, List, Sequence, Union, Iterable, Tuple
+from typing import Callable, List, Union, Iterable, Tuple
 
 import numpy
+from pandas.api.types import is_list_like
 
 from .exceptions import NameNonUniqueError
-from .types import is_iterable
 
 
-def _log_changed_names(changed_names: Iterable[Tuple[str, str]]) -> None:
+def _log_changed_names(changed_names: List[Tuple[str, str]]) -> None:
     """Log the changed names"""
     if not changed_names:
         return
@@ -27,13 +27,11 @@ def _repair_names_minimal(names: Iterable[str]) -> List[str]:
 
 
 def _repair_names_unique(
-    names: Sequence[str],
+    names: Iterable[str],
     quiet: bool = False,
     sanitizer: Callable = None,
-    base0_: bool = None,
 ) -> List[str]:
     """Make sure names are unique"""
-    base = int(not base0_)
     min_names = _repair_names_minimal(names)
     neat_names = [
         re.sub(r"(?:(?<!_)_{1,2}\d+|(?<!_)__)+$", "", name)
@@ -44,19 +42,21 @@ def _repair_names_unique(
 
     new_names = []
     changed_names = []
-    for i, name in enumerate(neat_names):
-        if neat_names.count(name) > 1 or name == "":
-            name = f"{name}__{i + base}"
-        if name != names[i]:
-            changed_names.append((names[i], name))
-        new_names.append(name)
+    for i, name in enumerate(names):
+        neat_name = neat_names[i]
+        if neat_names.count(neat_name) > 1 or neat_name == "":
+            neat_name = f"{neat_name}__{i}"
+        if neat_name != name:
+            changed_names.append((name, neat_name))
+        new_names.append(neat_name)
     if not quiet:
         _log_changed_names(changed_names)
     return new_names
 
 
 def _repair_names_universal(
-    names: Iterable[str], quiet: bool = False, base0_: bool = None
+    names: Iterable[str],
+    quiet: bool = False,
 ) -> List[str]:
     """Make sure names are safely to be used as variable or attribute"""
     min_names = _repair_names_minimal(names)
@@ -69,7 +69,6 @@ def _repair_names_universal(
             if keyword.iskeyword(name) or (name and name[0].isdigit())
             else name
         ),
-        base0_=base0_,
     )
     if not quiet:
         changed_names = [
@@ -106,7 +105,6 @@ BUILTIN_REPAIR_METHODS = dict(
 def repair_names(
     names: Iterable[str],
     repair: Union[str, Callable],
-    base0_: bool = None,
 ) -> List[str]:
     """Repair names based on the method
 
@@ -124,8 +122,6 @@ def repair_names(
             - A function, accepts either a list of names or a single name.
                 Function accepts a list of names must annotate the first
                 argument with `typing.Iterable` or `typing.Sequence`.
-        base0_: Whether the numeric suffix starts from 0 or not.
-            If not specified, will use `datar.base.get_option('index.base.0')`.
 
     Examples:
         >>> repair_names([None]*3, repair="minimal")
@@ -146,12 +142,9 @@ def repair_names(
         ValueError: when repair is not a string or callable
         NameNonUniqueError: when check_unique fails
     """
-    from .utils import get_option
-
-    base0_ = get_option("index.base.0", base0_)
     if isinstance(repair, str):
         repair = BUILTIN_REPAIR_METHODS[repair]  # type: ignore
-    elif is_iterable(repair) and all(isinstance(elem, str) for elem in repair):
+    elif is_list_like(repair) and all(isinstance(elem, str) for elem in repair):
         return repair  # type: ignore
     elif not callable(repair):
         raise ValueError("Expect a function for name repairing.")
@@ -162,16 +155,6 @@ def repair_names(
         "Iterable",
         "Sequence",
     ):  # scalar input
-        return [
-            repair(name, base0_=base0_)  # type: ignore[operator]
-            if "base0_" in parameters
-            else repair(name)  # type: ignore[operator]
-            for name in names
-        ]
+        return [repair(name) for name in names]
 
-    names = list(names)
-    return (
-        repair(names, base0_=base0_)  # type: ignore[operator]
-        if "base0_" in parameters
-        else repair(names)  # type: ignore[operator]
-    )
+    return repair(names)

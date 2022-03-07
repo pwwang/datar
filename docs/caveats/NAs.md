@@ -1,9 +1,13 @@
 
 - dtype
 
-    `NA` in datar sets to `numpy.nan`, which is a float. So that it causes problems for other dtypes of data, because setting a value to NA (float) in an array with other dtype is not compatible. Unlink R, python does not have missing value type for other dtypes.
+    `NA` in datar sets to `numpy.nan`, which is a float. So that it causes problems for other dtypes of data, because setting a value to NA (float) in an array with other dtype is not compatible. Unlike R, python does not have missing value type for other dtypes.
 
-    pandas has introduced it's own `NA` and some `NA` compatible dtypes. However, `numpy` is still not aware of it, which causes problems for internal computations.
+    Pandas is developing its own nullabled typing system. See:
+    https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html
+    https://pandas.pydata.org/pandas-docs/stable/user_guide/boolean.html
+
+    However, `numpy` is still not aware of it, which causes problems for internal computations.
 
 - string
 

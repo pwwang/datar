@@ -1,37 +1,33 @@
 """Cast values between types"""
-
-from typing import Any
-
-import numpy
+import numpy as np
+import pandas as pd
+from pandas.api.types import is_scalar, is_categorical_dtype
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
-from ..core.types import (
-    Dtype,
-    NumericOrIter,
-    DoubleOrIter,
-    IntOrIter,
-    is_scalar,
-    is_categorical,
-)
 from ..core.contexts import Context
-from ..core.utils import categorized, get_option
-from ..core.types import is_null
 
-from .na import NA
+from .factor import _ensure_categorical
 
 
-def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
+def _as_type(x, type_, na=None):
     """Convert x or elements of x to certain type"""
     if is_scalar(x):
-        if is_null(x) and na is not None:
+        if pd.isnull(x) and na is not None:
             return na
         return type_(x)  # type: ignore
+
+    if isinstance(x, SeriesGroupBy):
+        out = x.transform(_as_type, type_, na).groupby(x.grouper)
+        if getattr(x, "is_rowwise", False):
+            out.is_rowwise = True
+        return out
 
     if hasattr(x, "astype"):
         if na is None:
             return x.astype(type_)
 
-        na_mask = is_null(x)
+        na_mask = pd.isnull(x)
         out = x.astype(type_)
 
         try:
@@ -46,7 +42,7 @@ def _as_type(x: Any, type_: Dtype, na: Any = None) -> Any:
 
 
 @register_func(None, context=Context.EVAL)
-def as_double(x: Any) -> DoubleOrIter:
+def as_double(x):
     """Convert an object or elements of an iterable into double/float
 
     Args:
@@ -55,11 +51,11 @@ def as_double(x: Any) -> DoubleOrIter:
     Returns:
         Values converted into numpy.float64
     """
-    return _as_type(x, numpy.double)
+    return _as_type(x, np.double)
 
 
 @register_func(None, context=Context.EVAL)
-def as_float(x: Any, float_dtype: Dtype = numpy.float_) -> DoubleOrIter:
+def as_float(x, float_dtype=np.float_):
     """Convert an object or elements of an iterable into double/float
 
     Args:
@@ -73,11 +69,10 @@ def as_float(x: Any, float_dtype: Dtype = numpy.float_) -> DoubleOrIter:
 
 @register_func(None, context=Context.EVAL)
 def as_integer(
-    x: Any,
-    integer_dtype: Dtype = numpy.int_,
-    _keep_na: bool = True,
-    base0_: bool = None,
-) -> IntOrIter:
+    x,
+    integer_dtype=np.int_,
+    _keep_na=True,
+):
     """Convert an object or elements of an iterable into int64
 
     Alias `as_int`
@@ -95,24 +90,22 @@ def as_integer(
             - `numpy.intp`
         _keep_na: If True, NAs will be kept, then the dtype will be object
             (interger_dtype ignored)
-        base0_: When converting factors with strings, whether convert them into
-            0-based codes or not.
-            If not provided, will use `get_option('which.base.0')`
 
     Returns:
         Converted values according to the integer_dtype
     """
-    if is_categorical(x):
-        base0_ = get_option("which.base.0", base0_)
-        return categorized(x).codes + int(not base0_)
-    return _as_type(x, integer_dtype, na=NA if _keep_na else None)
+    if isinstance(x, SeriesGroupBy) and is_categorical_dtype(x.obj):
+        return x.obj.cat.codes.groupby(x.grouper)
+    if is_categorical_dtype(x):
+        return _ensure_categorical(x).codes
+    return _as_type(x, integer_dtype, na=np.nan if _keep_na else None)
 
 
 as_int = as_integer
 
 
 @register_func(None, context=Context.EVAL)
-def as_numeric(x: Any, _keep_na: bool = True) -> NumericOrIter:
+def as_numeric(x, _keep_na=True):
     """Make elements numeric
 
     Args:

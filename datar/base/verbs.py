@@ -1,82 +1,82 @@
 """Function from R-base that can be used as verbs"""
-from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
-
-import numpy
-from pandas import Categorical, DataFrame, Series
+import numpy as np
+import pandas as pd
+from pandas import Categorical, DataFrame, Series, Index
+from pandas.api.types import is_scalar
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.types import ArrayLikeType, IntType, is_scalar
-from ..core.utils import Array, arg_match, get_option, position_after
+from ..core.utils import (
+    arg_match,
+    regcall,
+    ensure_nparray,
+)
+# from .seq import unique
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def colnames(
-    df: DataFrame, new: Sequence[str] = None, _nested: bool = True
-) -> Union[List[Any], DataFrame]:
+def colnames(df, new=None, nested=True):
     """Get or set the column names of a dataframe
 
     Args:
         df: The dataframe
         new: The new names to set as column names for the dataframe.
+            It's like `R` operation: `colnames(df) <- c(...)`
+        nested: If `df` has no nested dataframes, this option has no effect.
+            Whether treat the nested dataframes as a whole
+
+    Examples:
+        >>> df = tibble(x=1, y=tibble(a=2, b=4))
+        >>> colnames(df)  # ['x', 'y']
+        >>> colnames(df, nested=False)  # ['x', 'y$a', 'y$b']
+        >>> colnames(df, ['m', 'n'])  # df with new names ['m', 'n$a', 'n$b']
+        >>> colnames(df, ['m', 'n'], nested=False)
+        >>> # df with new names: ['m', 'n', 'y$b']
 
     Returns:
-        A list of column names if names is None, otherwise return the dataframe
+        A list of column names if new is None, otherwise return the dataframe
         with new column names.
         if the input dataframe is grouped, the structure is kept.
     """
-    from ..stats.verbs import set_names
+    has_nest = any("$" in str(col) for col in df.columns)
+    if not has_nest or not nested:
+        if new is None:
+            return df.columns.values
+        df = df.copy()
+        df.columns = new
+        return df
 
-    if not _nested:
-        if new is not None:
-            return set_names(df, new, __calling_env=CallingEnvs.REGULAR)
-        return df.columns.tolist()
+    # x, y, y -> x, y
+    names = Index([col.split("$", 1)[0] for col in df.columns])
+    names = regcall(unique, names)
+    if new is None:
+        return names if nested else df.columns.values
+    mappings = dict(zip(names, new))
+    newnames = []
+    for col in df.columns:
+        if col in mappings:
+            newnames.append(mappings[col])
+        else:
+            name, subcol = col.split("$", 1)
+            newnames.append(f"{mappings[name]}${subcol}")
 
-    if new is not None:
-        namei = 0
-        newnames = []
-        last_parts0 = None
-        for colname in df.columns:
-            parts = str(colname).split("$", 1)
-            if not newnames:
-                if len(parts) < 2:
-                    newnames.append(new[namei])
-                else:
-                    last_parts0 = parts[0]
-                    newnames.append(f"{new[namei]}${parts[1]}")
-            elif len(parts) < 2:
-                namei += 1
-                newnames.append(new[namei])
-            elif last_parts0 and colname.startswith(f"{last_parts0}$"):
-                newnames.append(f"{new[namei]}${parts[1]}")
-            else:
-                namei += 1
-                newnames.append(f"{new[namei]}${parts[1]}")
-                last_parts0 = parts[0]
-        return set_names(df, newnames, __calling_env=CallingEnvs.REGULAR)
+    df = df.copy()
+    df.columns = newnames
+    return df
 
-    cols = [
-        col.split("$", 1)[0] if isinstance(col, str) else col
-        for col in df.columns
-    ]
-    out = []
-    for col in cols:
-        if col not in out:
-            out.append(col)
-    return out
+
+names = colnames
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def rownames(
-    df: DataFrame, new: Sequence[str] = None
-) -> Union[List[Any], DataFrame]:
+def rownames(df, new=None):
     """Get or set the row names of a dataframe
 
     Args:
         df: The dataframe
         new: The new names to set as row names for the dataframe.
-        copy: Whether return a copy of dataframe with new row names
 
     Returns:
         A list of row names if names is None, otherwise return the dataframe
@@ -88,28 +88,25 @@ def rownames(
         df.index = new
         return df
 
-    return df.index.tolist()
+    return df.index.values
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def dim(x: DataFrame, _nested: bool = True) -> Tuple[int]:
+def dim(x, nested=True):
     """Retrieve the dimension of a dataframe.
 
     Args:
         x: a dataframe
-        _nested: When there is _nesteded df, count as 1.
+        nested: When there is _nesteded df, count as 1.
 
     Returns:
         The shape of the dataframe.
     """
-    return (
-        nrow(x, __calling_env=CallingEnvs.REGULAR),
-        ncol(x, _nested, __calling_env=CallingEnvs.REGULAR),
-    )
+    return (regcall(nrow, x), regcall(ncol, x, nested))
 
 
 @register_verb(DataFrame)
-def nrow(_data: DataFrame) -> int:
+def nrow(_data) -> int:
     """Get the number of rows in a dataframe
 
     Args:
@@ -122,34 +119,28 @@ def nrow(_data: DataFrame) -> int:
 
 
 @register_verb(DataFrame)
-def ncol(_data: DataFrame, _nested: bool = True):
+def ncol(_data, nested=True):
     """Get the number of columns in a dataframe
 
     Args:
         _data: The dataframe
-        _nested: When there is _nesteded df, count as 1.
+        nested: When there is _nesteded df, count as 1.
 
     Returns:
         The number of columns in _data
     """
-    if not _nested:
+    if not nested:
         return _data.shape[1]
-    cols = set()
-    for col in _data.columns:
-        cols.add(col.split("$", 1)[0] if isinstance(col, str) else col)
-    return len(cols)
+
+    return len(regcall(colnames, _data, nested=nested))
 
 
 @register_verb(context=Context.EVAL)
-def diag(
-    x: Any = 1,
-    nrow: IntType = None,
-    ncol: IntType = None,
-) -> DataFrame:
+def diag(x=1, nrow=None, ncol=None):
     """Extract, construct a diagonal dataframe or replace the diagnal of
     a dataframe.
 
-    When used with DataFrameGroupBy data, groups are ignored
+    When used with TibbleGrouped data, groups are ignored
 
     Args:
         x: a matrix, vector or scalar
@@ -177,30 +168,30 @@ def diag(
         nmax = nmax // len(x)
         x = x * nmax
 
-    x = Array(x)
-    ret = DataFrame(numpy.diag(x), dtype=x.dtype)
+    x = np.array(x)
+    ret = DataFrame(np.diag(x), dtype=x.dtype)
     return ret.iloc[:nrow, :ncol]
 
 
 @diag.register(DataFrame)
 def _(
-    x: DataFrame,
-    nrow: Any = None,
-    ncol: IntType = None,
-) -> Union[DataFrame, numpy.ndarray]:
+    x,
+    nrow=None,
+    ncol=None,
+):
     """Diag when x is a dataframe"""
     if nrow is not None and ncol is not None:
         raise ValueError("Extra arguments received for diag.")
 
     x = x.copy()
     if nrow is not None:
-        numpy.fill_diagonal(x.values, nrow)
+        np.fill_diagonal(x.values, nrow)
         return x
-    return numpy.diag(x)
+    return np.diag(x)
 
 
 @register_verb(DataFrame)
-def t(_data: DataFrame, copy: bool = False) -> DataFrame:
+def t(_data, copy=False):
     """Get the transposed dataframe
 
     Args:
@@ -213,112 +204,90 @@ def t(_data: DataFrame, copy: bool = False) -> DataFrame:
     return _data.transpose(copy=copy)
 
 
-@register_verb(DataFrame)
-def names(
-    x: DataFrame, new: Sequence[str] = None, _nested: bool = True
-) -> Union[List[str], DataFrame]:
-    """Get the column names of a dataframe"""
-    return colnames(x, new, _nested, __calling_env=CallingEnvs.REGULAR)
-
-
-@names.register(dict)
-def _(
-    x: Mapping[str, Any], new: Iterable[str] = None, _nested: bool = True
-) -> Union[List[str], Mapping[str, Any]]:
-    """Get the keys of a dict
-    dict is like a list in R, mimic `names(<list>)` in R.
-    """
-    if new is None:
-        return list(x)
-    return dict(zip(new, x.values()))
-
-
 @register_verb(context=Context.EVAL)
-def setdiff(x: Any, y: Any) -> List[Any]:
+def setdiff(x, y):
     """Diff of two iterables"""
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    return [elem for elem in x if elem not in y]
+    x = ensure_nparray(x)
+    y = ensure_nparray(y)
+    return np.array([elem for elem in x if elem not in frozenset(y)])
 
 
 @register_verb(context=Context.EVAL)
-def intersect(x: Any, y: Any) -> List[Any]:
+def intersect(x, y):
     """Intersect of two iterables"""
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    return [elem for elem in x if elem in y]
+    # order not kept
+    # return np.intersect1d(x, y)
+    x = pd.unique(ensure_nparray(x))
+    y = ensure_nparray(y)
+    return np.array([elem for elem in x if elem in frozenset(y)])
 
 
 @register_verb(context=Context.EVAL)
-def union(x: Any, y: Any) -> List[Any]:
+def union(x, y):
     """Union of two iterables"""
-    if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-
-    return list(x) + setdiff(y, x, __calling_env=CallingEnvs.REGULAR)
+    # order not kept
+    # return np.union1d(x, y)
+    out = np.concatenate([ensure_nparray(x), ensure_nparray(y)])
+    return pd.unique(out)
 
 
 @register_verb(context=Context.EVAL)
-def setequal(x: Any, y: Any) -> List[Any]:
-    """Check set equality for two iterables (order doesn't matter)"""
+def unique(x):
+    """Union of two iterables"""
+    # order not kept
+    # return np.unique(x)
     if is_scalar(x):
-        x = [x]
-    if is_scalar(y):
-        y = [y]
-    x = sorted(x)
-    y = sorted(y)
-    return x == y
+        return x
+    return pd.unique(x)
+
+
+@unique.register(SeriesGroupBy)
+def _(x):
+    return x.apply(pd.unique).explode().astype(x.obj.dtype)
+
+
+@register_verb(context=Context.EVAL)
+def setequal(x, y, equal_na=True):
+    """Check set equality for two iterables (order doesn't matter)"""
+    return np.array_equal(
+        np.sort(ensure_nparray(x)),
+        np.sort(ensure_nparray(y)),
+        equal_nan=equal_na,
+    )
 
 
 @register_verb(
-    (list, tuple, numpy.ndarray, Series, Categorical),
+    (np.ndarray, list, tuple, Series, Categorical),
     context=Context.EVAL,
 )
-def append(x: Any, values: Any, after: int = -1, base0_: bool = None) -> List:
+def append(x, values, after=-1):
     """Add elements to a vector.
 
     Args:
         x: the vector the values are to be appended to.
         values: to be included in the modified vector.
         after: a subscript, after which the values are to be appended.
-        base0_: Whether after is 0-based.
-            if not given, will use `get_option("index.base.0")`.
-            When it's 1-based, after=0 will append to the beginning,
-            -1 will append to the end.
-            When 0-based, after=None will append to the beginning,
-            -1 to the end
 
     Returns:
         A vector containing the values in ‘x’ with the elements of
         ‘values’ appended after the specified element of ‘x’.
     """
-    # if is_scalar(x):
-    #     x = [x]
-    if is_scalar(values):
-        values = [values]
-    x = list(x)
-    values = list(values)
-
-    base0_ = get_option("index.base.0", base0_)
-    # 0 is not allowed with 1-base
-    if base0_ and after is None:
-        return values + x
-    pos = position_after(after, len(x), base0_)
-    return x[:pos] + values + x[pos:]
+    x = ensure_nparray(x)
+    if after is None:
+        after = 0
+    elif after < 0:
+        after += len(x) + 1
+    else:
+        after += 1
+    return np.insert(x, after, values)
 
 
-@register_verb((list, tuple, numpy.ndarray, Series, Categorical))
+@register_verb((list, tuple, np.ndarray, Series, Categorical))
 def duplicated(
-    x: Iterable[Any],
-    incomparables: Sequence[Any] = None,
-    from_last: bool = False,
-) -> numpy.ndarray:
+    x,
+    incomparables=None,
+    from_last=False,
+):
     """Determine Duplicate Elements
 
     Args:
@@ -347,15 +316,15 @@ def duplicated(
             out_append(False)
     if from_last:
         out = list(reversed(out))
-    return Array(out, dtype=bool)
+    return np.array(out, dtype=bool)
 
 
 @duplicated.register(DataFrame)
 def _(
-    x: DataFrame,
-    incomparables: Iterable[Any] = None,
-    from_last: bool = False,
-) -> numpy.ndarray:
+    x,
+    incomparables=None,
+    from_last=False,
+):
     """Check if rows in a data frame are duplicated
 
     `incomparables` not working here
@@ -365,9 +334,7 @@ def _(
 
 
 @register_verb(DataFrame)
-def max_col(
-    df: DataFrame, ties_method: str = "random", base0_: bool = None
-) -> Iterable[int]:
+def max_col(df, ties_method="random"):
     """Find the maximum position for each row of a matrix
 
     Args:
@@ -376,8 +343,6 @@ def max_col(
             - "random": use a random index
             - "first" use the first index
             - "last" use the last index
-        base0_: Whether the returned indices are 0-based
-            If not provided, will use `get_option("which_base_0")`
 
     Returns:
         The indices of max values for each row
@@ -385,22 +350,21 @@ def max_col(
     ties_method = arg_match(
         ties_method, "ties_method", ["random", "first", "last"]
     )
-    base = int(not get_option("which_base_0", base0_))
 
     def which_max_with_ties(ser: Series):
         """Find index with max if ties happen"""
-        indices = numpy.flatnonzero(ser == max(ser)) + base
+        indices = np.flatnonzero(ser == max(ser))
         if len(indices) == 1 or ties_method == "first":
             return indices[0]
         if ties_method == "random":
-            return numpy.random.choice(indices)
+            return np.random.choice(indices)
         return indices[-1]
 
-    return df.apply(which_max_with_ties, axis=1).to_numpy()
+    return df.apply(which_max_with_ties, axis=1).values
 
 
 @register_verb(DataFrame)
-def complete_cases(_data: DataFrame) -> Iterable[bool]:
+def complete_cases(_data):
     """Return a logical vector indicating values of rows are complete.
 
     Args:
@@ -414,9 +378,7 @@ def complete_cases(_data: DataFrame) -> Iterable[bool]:
 
 
 @register_verb(DataFrame)
-def proportions(
-    x: DataFrame, margin: Union[int, tuple, list] = None
-) -> DataFrame:
+def proportions(x, margin=None):
     """Returns conditional proportions given `margins` (alias: prop_table)
 
     Args:
@@ -432,36 +394,31 @@ def proportions(
     from . import sum_
 
     if margin is None:
-        sumall = x.to_numpy().sum()
+        sumall = x.values.sum()
         return x.applymap(lambda elem: elem / sumall, na_action="ignore")
 
     if margin == 1:
         index = x.index
-        out = t(
-            proportions(
-                rename_with(
-                    t(x, __calling_env=CallingEnvs.REGULAR),
-                    str,
-                    __calling_env=CallingEnvs.REGULAR,
-                ),
+        out = regcall(
+            t,
+            regcall(
+                proportions,
+                regcall(rename_with, regcall(t, x), str),
                 2,
-                __calling_env=CallingEnvs.REGULAR,
-            ),
-            __calling_env=CallingEnvs.REGULAR,
+            )
         )
         out.index = index
         return out
 
     if margin == 2:
-        return mutate(
+        return regcall(
+            mutate,
             x,
             across(
-
                 everything(__calling_env=CallingEnvs.PIPING),
-                lambda col: col / sum_(col, __calling_env=CallingEnvs.REGULAR),
+                lambda col: col / sum_.__origfunc__(col),
                 __calling_env=CallingEnvs.PIPING,
             ),
-            __calling_env=CallingEnvs.REGULAR,
         )
 
     return x.applymap(lambda elem: 1, na_action="ignore")
@@ -470,14 +427,49 @@ def proportions(
 prop_table = proportions
 
 
-@proportions.register((list, tuple, numpy.ndarray, Series))
-def _(
-    x: ArrayLikeType, margin: Union[int, tuple, list] = None
-) -> ArrayLikeType:
+@proportions.register((list, tuple, np.ndarray, Series))
+def _(x, margin=None):
     """proportions for vectors"""
-    from . import sum_
+    x = ensure_nparray(x)
+    return x / np.sum(x)
 
-    if isinstance(x, (list, tuple)):
-        x = Array(x)
 
-    return x / sum_(x, __calling_env=CallingEnvs.REGULAR)
+# actually from R::utils
+@register_verb((DataFrame, Series, list, tuple, np.ndarray))
+def head(_data, n=6):
+    """Get the first n rows of the dataframe or a vector
+
+    This function will ignore the grouping structure.
+
+    Args:
+        n: The number of rows/elements to return
+
+    Returns:
+        The dataframe with first n rows or a vector with first n elements
+    """
+    if isinstance(_data, DataFrame):
+        return _data.head(n)
+    return _data[:n]
+
+
+@register_verb((DataFrame, Series, list, tuple, np.ndarray))
+def tail(_data, n=6):
+    """Get the last n rows of the dataframe or a vector
+
+    This function will ignore the grouping structure.
+
+    Args:
+        n: The number of rows/elements to return
+
+    Returns:
+        The dataframe with last n rows or a vector with last n elements
+        Note that the index is dropped.
+    """
+    if isinstance(_data, DataFrame):
+        return _data.tail(n).reset_index(drop=True)
+
+    out = _data[-n:]
+    try:
+        return out.reset_index(drop=True)
+    except AttributeError:
+        return out
