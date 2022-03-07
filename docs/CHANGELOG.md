@@ -3,6 +3,7 @@
 ### General
 - Adopt `pipda` 0.5.7
 - Reimplement the split-apply-combine rule to solve all performance issues
+- Drop support for pandas v1.2, require pandas v1.3+
 - Remove all `base0_` options and all indices are now 0-based, except `base.seq()`, ranks and their variants
 - Remove messy type annotations for now, will add them back in the future
 - Move implementation of data type display for frames in terminal and notebook to `pdtypes` package
