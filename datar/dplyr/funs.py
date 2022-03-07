@@ -148,22 +148,7 @@ def _(x, y, rtol=1e-05, atol=1e-08, equal_nan=False):
     return out
 
 
-@func_factory("agg", {"x", "order_by"})
-def nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
-    """Get the nth element of x
-
-    See https://dplyr.tidyverse.org/reference/nth.html
-
-    Args:
-        x: A collection of elements
-        n: The order of the elements.
-        order_by: An optional vector used to determine the order
-        default: A default value to use if the position does not exist
-            in the input.
-
-    Returns:
-        A single element of x at `n'th`
-    """
+def _nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
     if not isinstance(n, int):
         raise TypeError("`nth` expects `n` to be an integer")
 
@@ -181,18 +166,36 @@ def nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
 
 
 @func_factory("agg", {"x", "order_by"})
+def nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
+    """Get the nth element of x
+
+    See https://dplyr.tidyverse.org/reference/nth.html
+
+    Args:
+        x: A collection of elements
+        n: The order of the elements.
+        order_by: An optional vector used to determine the order
+        default: A default value to use if the position does not exist
+            in the input.
+
+    Returns:
+        A single element of x at `n'th`
+    """
+    return _nth(
+        x, n, order_by=order_by, default=default, __args_raw=__args_raw
+    )
+
+
+@func_factory("agg", {"x", "order_by"})
 def first(
     x,
     order_by=np.nan,
     default=np.nan,
+    __args_raw=None,
 ):
     """Get the first element of x"""
-    return nth.dispatched(
-        x,
-        0,
-        order_by=order_by,
-        default=default,
-        __args_raw={"order_by": order_by},
+    return _nth(
+        x, 0, order_by=order_by, default=default, __args_raw=__args_raw
     )
 
 
@@ -201,12 +204,9 @@ def last(
     x,
     order_by=np.nan,
     default=np.nan,
+    __args_raw=None,
 ):
     """Get the last element of x"""
-    return nth.dispatched(
-        x,
-        -1,
-        order_by=order_by,
-        default=default,
-        __args_raw={"order_by": order_by},
+    return _nth(
+        x, -1, order_by=order_by, default=default, __args_raw=__args_raw
     )

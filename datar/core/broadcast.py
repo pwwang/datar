@@ -28,7 +28,7 @@ from functools import singledispatch
 from typing import TYPE_CHECKING, Any, Tuple, Union
 
 import numpy as np
-from pandas import Categorical, DataFrame, Series, CategoricalIndex
+from pandas import Categorical, DataFrame, Series, CategoricalIndex, Index
 from pandas.core.generic import NDFrame
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
 from pandas.api.types import is_list_like
@@ -37,7 +37,7 @@ from .tibble import Tibble, TibbleGrouped, TibbleRowwise
 from .utils import name_of, regcall
 
 if TYPE_CHECKING:
-    from pandas import Index, Grouper
+    from pandas import Grouper
 
 BroadcastingBaseType = Union[NDFrame, SeriesGroupBy]
 GroupedType = Union[GroupBy, TibbleGrouped]
@@ -427,7 +427,29 @@ def broadcast_to(
     # make np.tile([[3, 4]], 2) to be [[3, 4], [3, 4]],
     # instead of [[3, 4, 3, 4]]
     repeats = (grouper.ngroups,) + (1,) * (np.ndim(value) - 1)
-    return Series(np.tile(value, repeats).tolist(), index=idx).reindex(index)
+    # Can't do reindex for this case:
+    # >>> df = tibble(a=[1, 1, 2, 2, 3, 3], _index=[1, 1, 2, 2, 3, 3])
+    # >>> df["b"] = [4, 5]  # error
+    out = Series(np.tile(value, repeats).tolist(), index=idx)
+    if out.index.is_unique:
+        return out.reindex(index)
+
+    # recode index
+    index_dict = out.index.to_frame().groupby(out.index).grouper.indices
+    new_idx = Index(range(out.size))
+    new_index = np.ones(out.size, dtype=int)
+
+    for ix, rowids in index_dict.items():
+        np.place(new_index, index == ix, rowids)
+
+    out.index = new_idx
+    out = out.reindex(new_index)
+    new_idx = np.ones(out.size, dtype=int)
+    for ix, rowids in index_dict.items():
+        new_idx[np.isin(new_index, rowids)] = ix
+
+    out.index = new_idx
+    return out
 
 
 @broadcast_to.register(Categorical)

@@ -27,7 +27,8 @@ def test_quantile():
 
     gf = df.group_by('g')
     out = quantile(gf.x, probs=0.5)
-    assert_iterable_equal(out.obj, [1, 2.5, 2.5])
+    assert_iterable_equal(out, [1, 2.5])
+    assert_iterable_equal(out.index, [1, 2])
 
 
 def test_sd():

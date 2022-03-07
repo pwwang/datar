@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
+from pandas.api.types import is_scalar
 from pandas.core.groupby import SeriesGroupBy, GroupBy
 
 from ..core.factory import func_factory, verb_factory
@@ -21,6 +22,7 @@ SINGLE_ARG_SIGNATURE = inspect.signature(lambda x: None)
 
 def _check_all_numeric(x, fun_name):
     from .testing import is_numeric
+
     if x.apply(lambda x: regcall(is_numeric, x)).all():
         return
 
@@ -404,7 +406,9 @@ def signif(x: Series, digits: Series = 6) -> Series:
         The rounded values for each element in x
     """
     ndigits = digits - x.abs().transform("log10").transform("ceil")
-    return Series(np.vectorize(np.round)(x, ndigits.astype(int)), index=x.index)
+    return Series(
+        np.vectorize(np.round)(x, ndigits.astype(int)), index=x.index
+    )
 
 
 @func_factory("transform", {"x", "base"})
@@ -813,12 +817,12 @@ def row_medians(
     return x.median(numeric_only=True, axis=1, skipna=na_rm)
 
 
-@func_factory("transform", "x")
+@func_factory("agg", "x")
 def quantile(
     x: Series,
     probs=(0.0, 0.25, 0.5, 0.75, 1.0),
     na_rm: bool = True,
-    interpolation: str = "linear",
+    interpolation: str = "linear",  # Use method for numpy 1.22+
 ):
     """produces sample quantiles corresponding to the given probabilities.
 
@@ -843,20 +847,19 @@ def quantile(
     return x.quantile(q=probs, interpolation=interpolation)
 
 
-quantile.register(
-    (TibbleGrouped, GroupBy),
-    "quantile",
-    pre=(
-        lambda x, probs=(
-            0.0,
-            0.25,
-            0.5,
-            0.75,
-            1.0,
-        ), na_rm=True, interpolation="linear": _warn_na_rm("quantile", na_rm)
-        or (x, (), dict(q=probs, interpolation=interpolation))
-    ),
-)
+@quantile.register(SeriesGroupBy, meta=False)
+def _(
+    x: Series,
+    probs=(0.0, 0.25, 0.5, 0.75, 1.0),
+    na_rm: bool = True,
+    interpolation: str = "linear",  # Use method for numpy 1.22+
+):
+    _warn_na_rm("quantile", na_rm)
+    out = x.quantile(q=probs, interpolation=interpolation)
+    if not is_scalar(probs):
+        out = out.droplevel(-1)
+
+    return out
 
 
 @func_factory("agg", "x")

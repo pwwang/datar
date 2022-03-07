@@ -274,7 +274,6 @@ class TibbleGrouped(Tibble):
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
         grouped = self._datar["grouped"]
-
         value = broadcast_to(value, self.index, grouped.grouper)
 
         if isinstance(key, str) and isinstance(value, DataFrame):
