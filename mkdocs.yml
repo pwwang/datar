@@ -36,8 +36,8 @@ nav:
     - 'Reference maps':
         'ALL': 'reference-maps/ALL.md'
         'base': 'reference-maps/base.md'
-        'stats': 'reference-maps/stats.md'
-        'utils': 'reference-maps/utils.md'
+        # 'stats': 'reference-maps/stats.md'
+        # 'utils': 'reference-maps/utils.md'
         'dplyr': 'reference-maps/dplyr.md'
         'tibble': 'reference-maps/tibble.md'
         'tidyr': 'reference-maps/tidyr.md'
