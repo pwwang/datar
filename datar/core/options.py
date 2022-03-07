@@ -4,6 +4,7 @@ from typing import Any, Generator, Mapping, Union, Callable
 from contextlib import contextmanager
 
 from diot import Diot
+from pipda import options as pipda_options
 
 
 _key_transform = lambda key: key.replace("_", ".")
@@ -13,21 +14,51 @@ _dict_transform_back = lambda dic: {
 
 OPTIONS = Diot(
     # Whether use 0-based numbers when index is involved, acts similar like R
-    # Otherwise, like python
-    index_base_0=False,
-    # Whether which, which_min, which_max is 0-based
-    which_base_0=True,
     dplyr_summarise_inform=True,
     # whether warn about importing functions that override builtin ones.
     warn_builtin_names=True,
-    add_option=True,
+    #
+    enable_pdtypes=False,
+    # add_option=True,
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform,
+    # Warn about failure to get ast node
+    warn_astnode_failure=True,
+    # All piping mode:
+    # - Assume all verbs are using PIPING_VERB env
+    # - Assume all data functions are using PIPING env
+    # - Assume all non-data functions are using PIPING verbs
+    # This is useful when source code is not available.
+    assume_all_piping=False,
 )
+
+
+def enable_pdtypes_callback(enable: bool) -> None:  # pragma: no cover
+    from .utils import logger
+
+    try:
+        import pdtypes
+    except ImportError:
+        pdtypes = None
+
+    if enable and pdtypes is None:
+        logger.warning(
+            "Package `pdtypes` not installed for `options(enable_pdtypes=True)`"
+        )
+    elif not enable and pdtypes is not None:
+        pdtypes.unpatch()
+
 
 OPTION_CALLBACKS = Diot(
     # allow 'a.b' to access 'a_b'
-    diot_transform=_key_transform
+    diot_transform=_key_transform,
+    enable_pdtypes=enable_pdtypes_callback,
+    warn_astnode_failure=lambda val: setattr(
+        pipda_options, "warn_astnode_failure", val
+    ),
+    assume_all_piping=lambda val: setattr(
+        pipda_options, "assume_all_piping", val
+    ),
 )
 
 

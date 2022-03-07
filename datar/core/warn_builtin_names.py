@@ -8,7 +8,8 @@ WARNED = set()
 
 def warn_builtin_names(**names: Callable) -> Callable[[str], Any]:
     """Generate __getattr__ function to warn the builtin names"""
-    from .utils import logger, get_option
+    from .utils import logger
+    from .options import get_option
 
     # Enables tempoarory warn on or off
     warn = True
@@ -47,7 +48,11 @@ def warn_builtin_names(**names: Callable) -> Callable[[str], Any]:
         if name == "__path__" or name not in names:
             raise AttributeError
 
-        if warn and name not in WARNED and get_option("warn.builtin.names"):
+        if (
+            warn
+            and name not in WARNED
+            and get_option("warn.builtin.names", True)
+        ):
             node = Source.executing(sys._getframe(1)).node
             if not node:
                 WARNED.add(name)

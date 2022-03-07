@@ -1,18 +1,11 @@
 """Functions from tidyr"""
 
-from typing import Iterable
-
-from pipda import register_func
-
-from ..core.types import NumericType
-from ..core.contexts import Context
+from ..core.factory import func_factory
 from ..base import seq
 
 
-@register_func(None, context=Context.EVAL)
-def full_seq(
-    x: Iterable[NumericType], period: NumericType, tol: float = 1e-6
-) -> Iterable[NumericType]:
+@func_factory("apply", "x")
+def full_seq(x, period, tol=1e-6):
     """Create the full sequence of values in a vector
 
     Args:
@@ -24,13 +17,13 @@ def full_seq(
     Returns:
         The full sequence
     """
-    minx = min(x)  # na not counted
-    maxx = max(x)
 
-    if any(
-        (elem - minx) % period > tol and period - ((elem - minx) % period) > tol
-        for elem in x
-    ):
+    minx = x.min()  # na not counted
+    maxx = x.max()
+
+    if (
+        ((x - minx) % period > tol) & (period - ((x - minx) % period) > tol)
+    ).any():
         raise ValueError("`x` is not a regular sequence.")
 
     if period - ((maxx - minx) % period) <= tol:

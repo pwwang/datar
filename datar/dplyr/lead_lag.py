@@ -2,25 +2,42 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/lead-lag.R
 """
-from typing import Iterable, Any
-
-from pandas import Series, Categorical
-from pandas.core.dtypes.common import is_categorical_dtype
+import numpy as np
+from pandas import Series
+from pandas.api.types import is_scalar
 from pipda import register_func
 
-from ..core.types import NumericType, is_scalar
 from ..core.contexts import Context
-from ..base import NA
+from ..core.factory import dispatching
 from .order_by import with_order
 
 
+@dispatching(kind="transform", qualname="datar.dplyr.lead/lag")
+def _shift(x, n, default=None, order_by=None):
+    if not isinstance(n, int):
+        raise ValueError("`lead-lag` expect an integer for `n`.")
+
+    if not is_scalar(default) and len(default) > 1:
+        raise ValueError("`lead-lag` Expect scalar or length-1 `default`.")
+
+    if not is_scalar(default):
+        default = default[0]
+
+    newx = x
+    if not isinstance(x, Series):
+        newx = Series(x)
+
+    if order_by is not None:
+        newx = newx.reset_index(drop=True)
+        out = with_order(order_by, Series.shift, newx, n, fill_value=default)
+    else:
+        out = newx.shift(n, fill_value=default)
+
+    return out
+
+
 @register_func(None, context=Context.EVAL)
-def lead(
-    series: Iterable[Any],
-    n: bool = 1,
-    default: Any = NA,
-    order_by: Iterable[NumericType] = None,
-) -> Series:
+def lead(x, n=1, default=np.nan, order_by=None):
     """Find next values in a vector
 
     Args:
@@ -33,69 +50,13 @@ def lead(
     Returns:
         Lead or lag values with default values filled to series.
     """
-    if n == 0:  # ignore other arguments
-        return series
-
-    if order_by is not None:
-        return with_order(order_by, lead, series, n=n, default=default)
-
-    series, cats, default = _lead_lag_prepare(series, n, default)
-    index = series.index
-
-    ret = default * len(series)
-    ret[:-n] = series.values[n:]
-
-    if cats is not None:
-        ret = Categorical(ret, categories=cats)
-    return Series(ret, index=index)
+    return _shift(x, n=-n, default=default, order_by=order_by)
 
 
 @register_func(None, context=Context.EVAL)
-def lag(
-    series: Iterable[Any],
-    n: bool = 1,
-    default: Any = NA,
-    order_by: Iterable[NumericType] = None,
-) -> Series:
+def lag(x, n=1, default=np.nan, order_by=None):
     """Find previous values in a vector
 
     See lead()
     """
-    if n == 0:  # ignore other arguments
-        return series
-
-    if order_by is not None:
-        return with_order(order_by, lag, series, n=n, default=default)
-
-    series, cats, default = _lead_lag_prepare(series, n, default)
-    index = series.index
-
-    ret = default * len(series)
-    ret[n:] = series.values[:-n]
-
-    if cats is not None:
-        ret = Categorical(ret, categories=cats)
-    return Series(ret, index=index)
-
-
-def _lead_lag_prepare(data: Iterable[Any], n: int, default: Any):
-    """Prepare and check arguments for lead-lag"""
-    cats = None
-    if is_categorical_dtype(data):
-        if isinstance(data, Series):
-            cats = data.cat.categories
-        else:
-            cats = data.categories
-
-    if not isinstance(n, int) or n < 0:
-        raise ValueError("`lead-lag` expect a non-negative integer for `n`.")
-
-    if is_scalar(default):
-        default = [default]
-    if len(default) != 1:
-        raise ValueError("`lead-lag` Expect scalar or length-1 `default`.")
-
-    if not isinstance(data, Series):
-        data = Series(data)
-
-    return data, cats, default
+    return _shift(x, n=n, default=default, order_by=order_by)

@@ -33,6 +33,10 @@ from .arithmetic import (
     log2,
     log10,
     log1p,
+    std,
+    sd,
+    weighted_mean,
+    quantile,
 )
 from .bessel import bessel_i, bessel_j, bessel_k, bessel_y
 from .casting import as_double, as_float, as_int, as_integer, as_numeric
@@ -60,6 +64,7 @@ from .funs import (
     make_unique,
     make_names,
     rank,
+    outer,
 )
 from .logical import (
     FALSE,
@@ -86,7 +91,7 @@ from .seq import (
     seq_along,
     seq_len,
     sort,
-    unique,
+    # unique,
     match,
 )
 from .special import (
@@ -102,6 +107,7 @@ from .special import (
     psigamma,
     trigamma,
 )
+from .stats import rnorm, rpois, runif
 from .string import (
     as_character,
     as_str,
@@ -132,6 +138,7 @@ from .string import (
 from .table import table, tabulate
 from .testing import (
     is_atomic,
+    is_scalar,
     is_double,
     is_element,
     is_float,
@@ -175,12 +182,16 @@ from .verbs import (
     rownames,
     setdiff,
     setequal,
+    unique,
     t,
     union,
     max_col,
     complete_cases,
+    head,
+    tail,
 )
 from .which import which, which_max, which_min
+
 
 __all__ = [name for name in locals() if not name.startswith("_")]
 

@@ -32,7 +32,6 @@ def load_data(name: str) -> pandas.DataFrame:
         HERE / metadata["source"],
         index_col=0 if metadata["index"] else False,
     )
-    data.__dfname__ = name
     return data
 
 

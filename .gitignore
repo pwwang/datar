@@ -119,3 +119,4 @@ docs/*/*.nbconvert.ipynb
 
 # For quick test
 /_t.py
+/_t.ipynb

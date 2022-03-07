@@ -1,9 +1,7 @@
 
 |Module|Description|Reference|
 |-|-|-|
-|`base`|APIs ported from `r-base`|[:octicons-cross-reference-16:][5]|
-|`stats`|APIs ported from `r-stats`|[:octicons-cross-reference-16:][7]|
-|`utils`|APIs ported from `r-utils`|[:octicons-cross-reference-16:][8]|
+|`base`|APIs ported from `r-base/r-stats/r-utils`|[:octicons-cross-reference-16:][5]|
 |#|#|#|
 |`dplyr`|APIs ported from `tidyverse/dplyr`|[:octicons-cross-reference-16:][2]|
 |`tidyr`|APIs ported from `tidyverse/tidyr`|[:octicons-cross-reference-16:][4]|
@@ -20,6 +18,4 @@
 [4]: ../tidyr
 [5]: ../base
 [6]: ../datar
-[7]: ../stats
-[8]: ../utils
 [9]: ../forcats

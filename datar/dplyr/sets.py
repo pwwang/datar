@@ -3,20 +3,20 @@
 https://github.com/tidyverse/dplyr/blob/master/R/sets.r
 """
 
-import pandas
+import pandas as pd
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy
-from ..core.utils import reconstruct_tibble
+from ..core.tibble import TibbleGrouped, reconstruct_tibble
+from ..core.utils import regcall
 
 from ..base.verbs import intersect, union, setdiff, setequal
 from .bind import bind_rows
+from .group_by import ungroup
 
 
-def _check_xy(x: DataFrame, y: DataFrame) -> None:
+def _check_xy(x, y):
     """Check the dimension and columns of x and y for set operations"""
     if x.shape[1] != y.shape[1]:
         raise ValueError(
@@ -24,13 +24,9 @@ def _check_xy(x: DataFrame, y: DataFrame) -> None:
             f"- different number of columns: {x.shape[1]} vs {y.shape[1]}"
         )
 
-    in_y_not_x = setdiff(
-        y.columns, x.columns, __calling_env=CallingEnvs.REGULAR
-    )
-    in_x_not_y = setdiff(
-        x.columns, y.columns, __calling_env=CallingEnvs.REGULAR
-    )
-    if in_y_not_x or in_x_not_y:
+    in_y_not_x = regcall(setdiff, y.columns, x.columns)
+    in_x_not_y = regcall(setdiff, x.columns, y.columns)
+    if in_y_not_x.size > 0 or in_x_not_y.size > 0:
         msg = ["not compatible:"]
         if in_y_not_x:
             msg.append(f"- Cols in `y` but not `x`: {in_y_not_x}.")
@@ -53,24 +49,27 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     _check_xy(x, y)
     from .distinct import distinct
 
-    return distinct(
-        pandas.merge(x, y, how="inner"), __calling_env=CallingEnvs.REGULAR
-    )
+    out = regcall(distinct, pd.merge(x, regcall(ungroup, y), how="inner"))
+    if isinstance(y, TibbleGrouped):
+        return reconstruct_tibble(y, out)
+    return out
 
 
-@intersect.register(DataFrameGroupBy, context=Context.EVAL)
-def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
-    out = intersect.dispatch(DataFrame)(x, y)
-    return reconstruct_tibble(x, out, keep_rowwise=True)
+@intersect.register(TibbleGrouped, context=Context.EVAL)
+def _(x, y):
+    newx = regcall(ungroup, x)
+    newy = regcall(ungroup, y)
+    out = intersect.dispatch(DataFrame)(newx, newy)
+    return reconstruct_tibble(x, out)
 
 
 @union.register(DataFrame, context=Context.EVAL)
-def _(x: DataFrame, y: DataFrame) -> DataFrame:
-    """Union of two dataframes
+def _(x, y):
+    """Union of two dataframes, ignoring grouping structure and indxes
 
     Args:
-        _data, data2, *datas: Dataframes to perform operations
-        on: The columns to the dataframes to perform operations on
+        x: and
+        y: Dataframes to perform operations
 
     Returns:
         The dataframe of union of input dataframes
@@ -78,19 +77,24 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     _check_xy(x, y)
     from .distinct import distinct
 
-    return distinct(
-        pandas.merge(x, y, how="outer"), __calling_env=CallingEnvs.REGULAR
+    out = regcall(distinct, pd.merge(x, regcall(ungroup, y), how="outer"))
+    out.reset_index(drop=True, inplace=True)
+    if isinstance(y, TibbleGrouped):
+        return reconstruct_tibble(y, out)
+    return out
+
+
+@union.register(TibbleGrouped, context=Context.EVAL)
+def _(x, y):
+    out = union.dispatch(DataFrame)(
+        regcall(ungroup, x),
+        regcall(ungroup, y),
     )
-
-
-@union.register(DataFrameGroupBy, context=Context.EVAL)
-def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
-    out = union.dispatch(DataFrame)(x, y)
-    return reconstruct_tibble(x, out, keep_rowwise=True)
+    return reconstruct_tibble(x, out)
 
 
 @setdiff.register(DataFrame, context=Context.EVAL)
-def _(x: DataFrame, y: DataFrame) -> DataFrame:
+def _(x, y):
     """Set diff of two dataframes
 
     Args:
@@ -102,26 +106,29 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     """
     _check_xy(x, y)
     indicator = "__datar_setdiff__"
-    out = pandas.merge(x, y, how="left", indicator=indicator)
+    out = pd.merge(x, regcall(ungroup, y), how="left", indicator=indicator)
 
     from .distinct import distinct
 
-    return distinct(
+    out = regcall(
+        distinct,
         out[out[indicator] == "left_only"]
         .drop(columns=[indicator])
         .reset_index(drop=True),
-        __calling_env=CallingEnvs.REGULAR,
     )
+    if isinstance(y, TibbleGrouped):
+        return reconstruct_tibble(y, out)
+    return out
 
 
-@setdiff.register(DataFrameGroupBy, context=Context.EVAL)
-def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
-    out = setdiff.dispatch(DataFrame)(x, y)
-    return reconstruct_tibble(x, out, keep_rowwise=True)
+@setdiff.register(TibbleGrouped, context=Context.EVAL)
+def _(x, y):
+    out = setdiff.dispatch(DataFrame)(regcall(ungroup, x), regcall(ungroup, y))
+    return reconstruct_tibble(x, out)
 
 
 @register_verb(DataFrame, context=Context.EVAL)
-def union_all(x: DataFrame, y: DataFrame) -> DataFrame:
+def union_all(x, y):
     """Union of all rows of two dataframes
 
     Args:
@@ -132,26 +139,31 @@ def union_all(x: DataFrame, y: DataFrame) -> DataFrame:
         The dataframe of union of all rows of input dataframes
     """
     _check_xy(x, y)
-    return bind_rows(x, y, __calling_env=CallingEnvs.REGULAR)
+    out = regcall(bind_rows, x, regcall(ungroup, y))
+    if isinstance(y, TibbleGrouped):
+        return reconstruct_tibble(y, out)
+    return out
 
 
-@union_all.register(DataFrameGroupBy, context=Context.EVAL)
-def _(x: DataFrameGroupBy, y: DataFrame) -> DataFrameGroupBy:
-    out = union_all.dispatch(DataFrame)(x, y)
-    return reconstruct_tibble(x, out, keep_rowwise=True)
+@union_all.register(TibbleGrouped, context=Context.EVAL)
+def _(x, y):
+    out = union_all.dispatch(DataFrame)(regcall(ungroup, x), regcall(ungroup, y))
+    return reconstruct_tibble(x, out)
 
 
 @setequal.register(DataFrame, context=Context.EVAL)
-def _(x: DataFrame, y: DataFrame) -> bool:
-    """Check if two dataframes equal
+def _(x, y):
+    """Check if two dataframes equal, grouping structures are ignored.
 
     Args:
-        _data: The first dataframe
-        data2: The second dataframe
+        x: The first dataframe
+        y: The second dataframe
 
     Returns:
         True if they equal else False
     """
+    x = regcall(ungroup, x)
+    y = regcall(ungroup, y)
     _check_xy(x, y)
 
     x = x.sort_values(by=x.columns.to_list()).reset_index(drop=True)

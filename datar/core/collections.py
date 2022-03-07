@@ -1,17 +1,21 @@
 """Provide Collection and related classes to mimic `c` from `r-base`"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Union
+from typing import Any, List, Sequence, Union
 
-import pandas
-from pipda import evaluate_expr
+import numpy as np
+import pandas as pd
+from pandas._typing import AnyArrayLike
+from pandas.api.types import (
+    is_array_like,
+    is_scalar,
+    is_integer,
+    is_integer_dtype,
+)
+from pipda import evaluate_expr, Expression
 from pipda.context import ContextAnnoType
 
-from .utils import get_option
-from .types import is_iterable, is_scalar, is_scalar_int
-from .exceptions import ColumnNotExistingError
 
-PoolType = Union[Iterable, int]
 UNMATCHED = object()
 
 
@@ -19,16 +23,17 @@ class CollectionBase(ABC):
     """Abstract class for collections"""
 
     def __init__(
-        self, *args: Any, pool: PoolType = None, base0: bool = None
+        self,
+        *args: Any,
+        pool: Union[int, AnyArrayLike] = None,
     ) -> None:
         self.elems = args
-        self.base0 = base0
         self.pool = pool
         self.unmatched = set()
         self.error = None
         try:
-            self.expand(pool=pool, base0=self.base0)
-        except (ValueError, ColumnNotExistingError) as exc:
+            self.expand(pool=pool)
+        except (ValueError, KeyError) as exc:
             self.error = exc
 
     def _pipda_eval(self, data: Any, context: ContextAnnoType) -> Any:
@@ -39,7 +44,8 @@ class CollectionBase(ABC):
 
     @abstractmethod
     def expand(
-        self, pool: PoolType = None, base0: bool = None
+        self,
+        pool: Union[int, AnyArrayLike] = None,
     ) -> "CollectionBase":
         """Expand the collection"""
 
@@ -47,36 +53,18 @@ class CollectionBase(ABC):
 class Collection(CollectionBase, list):
     """Mimic the c function in R
 
-    All elements will be flattened.
-    This is also the entry point to adopt 1-baed and 0-based indexing, and
-    convert them into 0-based finally
+    All elements will be flattened, indiced will be ignored.
 
-    The Inverted, Negated and slice objects will be expanded immediately. This
-    means there is no chance to apply `base0_` that is received later on. So
-    the original elements are stored in `self.elems` to wait for a second
-    evaluation with the correct `base0_`.
+    The Inverted, Negated and slice objects will be expanded immediately.
 
     Args:
         *args: The elements
-        base0: Whether the index is 0-based or not. Should be an integer
-            indicating the range or a list, not a generator.
         pool: The pool used to expand slice
     """
-    def _get_base0(self, base0: bool) -> bool:
-        """Get base0 if specified, otherwise self.base0"""
-        if base0 is None:
-            base0 = self.base0
-        self.base0 = get_option("index.base.0", base0)
-        return self.base0
-
-    def _get_pool(self, pool: PoolType) -> PoolType:
-        """Get pool if specified, otherwise self.pool"""
-        if pool is not None:
-            self.pool = pool
-        return self.pool
 
     def expand(
-        self, pool: PoolType = None, base0: bool = None
+        self,
+        pool: Union[int, AnyArrayLike] = None,
     ) -> CollectionBase:
         """Expand the elements of this collection
 
@@ -87,11 +75,12 @@ class Collection(CollectionBase, list):
         - a Negated object
         - an Inverted object
         - a slice object
-
-        If `base0` is passed, then it is used, otherwise use `self.base0`
         """
-        base0 = self._get_base0(base0)
-        pool = self._get_pool(pool)
+        if pool is not None:
+            self.pool = pool
+        else:
+            pool = self.pool
+
         self.unmatched.clear()
         self.error = None
 
@@ -99,7 +88,7 @@ class Collection(CollectionBase, list):
             elems = [
                 elem
                 for elem in self.elems
-                if not is_scalar(elem) or not pandas.isnull(elem)
+                if not is_scalar(elem) or not pd.isnull(elem)
             ]
         else:
             elems = self.elems  # type: ignore
@@ -115,7 +104,6 @@ class Collection(CollectionBase, list):
                 Inverted(
                     Collection(*(elem.elems for elem in elems)),
                     pool=pool,
-                    base0=base0,
                 ),
             )
             return self
@@ -123,7 +111,7 @@ class Collection(CollectionBase, list):
         if any(inverts):
             raise ValueError(
                 "Cannot mix Inverted and non-Inverted elements "
-                "in a collection.."
+                "in a collection."
             )
 
         expanded = []
@@ -131,17 +119,17 @@ class Collection(CollectionBase, list):
         expanded_extend = expanded.extend
         for elem in elems:
             if isinstance(elem, slice):
-                elem = Slice(elem, pool=pool, base0=base0)
+                elem = Slice(elem, pool=pool)
 
             if isinstance(elem, CollectionBase):
-                expanded_extend(elem.expand(pool, base0))
+                expanded_extend(elem.expand(pool))
                 self.unmatched.update(elem.unmatched)
-            elif is_scalar(elem):
+            elif is_scalar(elem) or isinstance(elem, Expression):
                 elem = self._index_from_pool(elem)
                 if elem is not UNMATCHED:
                     expanded_append(elem)
             else:  # iterable
-                exp = Collection(*elem, pool=pool, base0=base0)
+                exp = Collection(*elem, pool=pool)
                 self.unmatched.update(exp.unmatched)
                 expanded_extend(exp)
         list.__init__(self, expanded)
@@ -149,37 +137,39 @@ class Collection(CollectionBase, list):
 
     def _is_index(self, elem: Any) -> bool:
         """Check if an element is an index or not"""
-        if self.pool is None or not is_scalar_int(elem):
-            return False
-        if is_scalar_int(self.pool):
+        if is_integer(self.pool):
             return True
+
+        if self.pool is None or not is_integer(elem):
+            return False
+
         # iterable
         # If an empty pool is given, assuming integer elem is index
         # Otherwise if pool is a list of integers, then elem should match
         # the pool
-        if len(self.pool) == 0 or not is_scalar_int(self.pool[0]):
+        pool = np.array(self.pool)
+        if len(pool) == 0 or not is_integer_dtype(pool):
             return True
         return False
 
-    def _index_from_pool(self, elem: Any, base0: bool = None) -> Any:
+    def _index_from_pool(self, elem: Any) -> Any:
         """Try to pull the index of the element from the pool"""
         if self.pool is None:
             # Return the element itself if pool is not specified
             # Then element is supposed to be a literal
             return elem
 
-        if base0 is None:
-            base0 = self.base0
-
         if self._is_index(elem):
             # elem is treated as an index if it is not an element of the pool
-            if not base0 and elem == 0:
-                raise ValueError("Index 0 given for 1-based indexing.")
+            pool = (
+                len(self.pool)
+                if isinstance(self.pool, Sequence) or is_array_like(self.pool)
+                else self.pool
+            )
+            out = elem if elem >= 0 else elem + pool
 
-            pool = len(self.pool) if is_iterable(self.pool) else self.pool
-            out = elem - int(not base0) if elem >= 0 else elem + pool
             # then the index should be 0 ~ len-1
-            if not 0 <= out < pool:
+            if not (0 <= out < pool):
                 self.unmatched.add(elem)
                 return UNMATCHED
 
@@ -200,10 +190,10 @@ class Collection(CollectionBase, list):
         return list.__repr__(self)
 
     def __neg__(self):
-        return Negated(self, pool=self.pool, base0=self.base0)
+        return Negated(self, pool=self.pool)
 
     def __invert__(self):
-        return Inverted(self, pool=self.pool, base0=self.base0)
+        return Inverted(self, pool=self.pool)
 
 
 class Negated(Collection):
@@ -212,15 +202,18 @@ class Negated(Collection):
     def __repr__(self) -> str:
         return f"Negated({self.elems})"
 
-    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
+    def expand(
+        self,
+        pool: Union[int, AnyArrayLike] = None,
+    ) -> None:
         """Expand the object"""
-        super().expand(pool, base0)
+        super().expand(pool)
         # self is now 0-based indexes
 
-        if pool is not None:
+        if self.pool is not None:
             elems = [
-                self._index_from_pool(-elem - int(not base0), base0=True)
-                for elem in reversed(self)
+                self._index_from_pool(-elem if elem != 0 else -len(self))
+                for elem in self
             ]
             # for elem in reversed(self):
             #     # If matched, it's sure an index.
@@ -240,13 +233,16 @@ class Inverted(Collection):
     def __repr__(self) -> str:
         return f"Inverted({self.elems})"
 
-    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
+    def expand(
+        self,
+        pool: Union[int, AnyArrayLike] = None,
+    ) -> None:
         """Expand the object"""
         if pool is None:
             raise ValueError("Inverted object needs `pool` to expand.")
 
-        super().expand(pool, base0)  # 0-based indexes
-        pool = range(pool) if is_scalar_int(pool) else range(len(pool))
+        super().expand(pool)  # 0-based indexes
+        pool = range(pool) if is_integer(pool) else range(len(pool))
 
         list.__init__(self, [elem for elem in pool if elem not in self])
         return self
@@ -256,12 +252,13 @@ class Intersect(Collection):
     """Intersect of two collections, designed for `&` operator"""
 
     def __init__(
-        self, *args: Any, pool: PoolType = None, base0: bool = None
+        self,
+        *args: Any,
+        pool: Union[int, AnyArrayLike] = None,
     ) -> None:
         if len(args) != 2:
             raise ValueError("Intersect can only accept two collections.")
         self.elems = args
-        self.base0 = base0
         self.pool = pool
         self.unmatched = set()
         self.error = None
@@ -270,10 +267,13 @@ class Intersect(Collection):
     def __repr__(self) -> str:
         return f"Intersect({self.elems})"
 
-    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
+    def expand(
+        self,
+        pool: Union[int, AnyArrayLike] = None,
+    ) -> None:
         """Expand the object"""
-        left = Collection(self.elems[0], pool=pool, base0=base0)
-        right = Collection(self.elems[1], pool=pool, base0=base0)
+        left = Collection(self.elems[0], pool=pool)
+        right = frozenset(Collection(self.elems[1], pool=pool))
         list.__init__(self, [elem for elem in left if elem in right])
         return self
 
@@ -288,31 +288,41 @@ class Slice(Collection):
     """
 
     def __init__(
-        self, *args: Any, pool: PoolType = None, base0: bool = None
+        self,
+        *args: Any,
+        pool: Union[int, AnyArrayLike] = None,
     ) -> None:
         if len(args) != 1 or not isinstance(args[0], slice):
-            raise ValueError("Slice should wrap one and only one slice object.")
+            raise ValueError(
+                "Slice should wrap one and only one slice object."
+            )
         self.slc = args[0]
-        super().__init__(*args, pool=pool, base0=base0)
+        super().__init__(*args, pool=pool)
 
     def __repr__(self) -> str:
         return f"Slice({self.elems})"
 
-    def expand(self, pool: PoolType = None, base0: bool = None) -> None:
-        base0 = self._get_base0(base0)
-        pool = self._get_pool(pool)
+    def expand(
+        self,
+        pool: Union[int, AnyArrayLike] = None,
+    ) -> None:
+        if pool is not None:
+            self.pool = pool
+        else:
+            pool = self.pool
+
         self.unmatched.clear()
         self.error = None
 
         if pool is None:
-            expanded = self._expand_no_pool(base0)
+            expanded = self._expand_no_pool()
         else:
-            expanded = self._expand_pool(pool, base0)
+            expanded = self._expand_pool(pool)
 
         list.__init__(self, expanded)
         return self
 
-    def _expand_no_pool(self, base0: bool) -> List[Any]:
+    def _expand_no_pool(self) -> List[Any]:
         """Expand slice literally
 
         Without pool or length, `[:3]` will expand to `0,1,2`,
@@ -326,12 +336,18 @@ class Slice(Collection):
                 "`pool` is required when start/stop of slice are not indexes."
             )
 
+        inclusive = step in (1, -1)
+
         if start is None:
-            start = int(not base0)
+            start = 0
         if stop is None:
-            stop = int(not base0)
+            stop = 0
         if step is None:
+            inclusive = False
             step = 1 if stop >= start else -1
+
+        if inclusive:
+            stop += step
 
         out = []
         out_append = out.append
@@ -339,39 +355,39 @@ class Slice(Collection):
         while (i < stop) if step > 0 else (i > stop):
             out_append(i)
             i += step
-        if not base0:  # include stop
-            out_append(stop)
+
         return out
 
-    def _expand_pool(self, pool: PoolType, base0: bool) -> List[Any]:
+    def _expand_pool(
+        self,
+        pool: Union[int, AnyArrayLike],
+    ) -> List[Any]:
         """Slice with pool given; try to match the range with the elements
         in the pool"""
         start, stop, step = self.slc.start, self.slc.stop, self.slc.step
-        base = int(not base0)
 
         if start is None:
             start = 0
-        elif not is_scalar_int(start):
-            if is_scalar_int(pool) or start not in pool:
-                raise ColumnNotExistingError(
-                    f"Column `{start}` does not exist."
-                )
+        elif not is_integer(start):
+            if is_integer(pool) or start not in pool:
+                raise KeyError(start)
             start = self._index_from_pool(start)
-        else:
-            start -= base
 
-        len_pool = pool if is_scalar_int(pool) else len(pool)
+        len_pool = pool if is_integer(pool) else len(pool)
         if stop is None:
             stop = len_pool
-        elif not is_scalar_int(stop):
-            if is_scalar_int(pool) or stop not in pool:
-                raise ColumnNotExistingError(f"Column `{stop}` does not exist.")
-            stop = self._index_from_pool(stop) + 1
-        # else:
-        #     stop += base
+        elif not is_integer(stop):
+            if is_integer(pool) or stop not in pool:
+                raise KeyError(stop)
+            stop = self._index_from_pool(stop)
 
-        if step == 0:
-            stop -= 1
+        if step in (1, -1):
+            if stop == 0 and step == -1:
+                stop = None
+            else:
+                stop += step
+
+        if step is None:
             step = 1 if stop >= start else -1
 
         return list(range(*slice(start, stop, step).indices(len_pool)))

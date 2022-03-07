@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.5.6"
+version = "0.6.0"
 description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
 readme = "README.md"
@@ -10,15 +10,17 @@ repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with pandas
-pipda = "^0.4.5"
+pipda = "^0.5.7"
 diot = "^0.1.1"
 # pipda already requires the following
 # executing = "*"
 # varname = "*"
-pandas = "^1.2"
+pandas = "^1.3"
+toml = "^0.10.2"
+pdtypes = { version = "^0.0.4", optional = true }
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
-python-slugify = {version = "^5.0.2", optional = true}
+python-slugify = {version = "^6", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
@@ -37,9 +39,12 @@ show_error_codes = true
 strict_optional = false
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
+addopts = "-vv --tb=short -n auto --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
+# addopts = "-vv --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
-    "error"
+    # # python3.10: The distutils package is deprecated for varname
+    # # uncomment this until varname 0.8.2 is released
+    # "error"
 ]
 console_output_style = "progress"
 junit_family = "xunit1"

@@ -3,23 +3,15 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/across.R
 """
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, List, Mapping, Tuple, Union
 
-import numpy
-from pandas import DataFrame, Series
+from pandas.api.types import is_scalar
 from pipda import register_func, evaluate_expr
 from pipda.function import Function
-from pipda.utils import functype, CallingEnvs
-from pipda.context import ContextBase
+from pipda.utils import functype
 
-from ..core.utils import (
-    df_setitem,
-    length_of,
-    recycle_df,
-    to_df,
-    vars_select,
-    get_option,
-)
+from ..core.broadcast import add_to_tibble
+from ..core.tibble import Tibble
+from ..core.utils import vars_select, regcall
 from ..core.middlewares import CurColumn
 from ..core.contexts import Context
 from .tidyselect import everything
@@ -30,26 +22,25 @@ class Across:
 
     def __init__(
         self,
-        data: DataFrame,
-        cols: Iterable[str] = None,
-        fns: Union[Callable, Iterable[Callable], Mapping[str, Callable]] = None,
-        names: str = None,
-        base0: bool = None,
-        args: Tuple[Any] = None,
-        kwargs: Mapping[str, Any] = None,
-    ) -> None:
-        cols = everything(data) if cols is None else cols
-        if not isinstance(cols, (list, tuple)):
+        data,
+        cols=None,
+        fns=None,
+        names=None,
+        args=None,
+        kwargs=None,
+    ):
+        cols = regcall(everything, data) if cols is None else cols
+        if is_scalar(cols):
             cols = [cols]
-        cols = data.columns[vars_select(data.columns, cols, base0=base0)]
-        base0 = get_option("index.base.0", base0)
 
-        fns_list = []  # type: List[str, Union[int, Callable]]
+        cols = data.columns[vars_select(data.columns, cols)]
+
+        fns_list = []
         if callable(fns):
             fns_list.append({"fn": fns})
         elif isinstance(fns, (list, tuple)):
             fns_list.extend(
-                {"fn": fn, "_fn": i + int(not base0), "_fn1": i + 1, "_fn0": i}
+                {"fn": fn, "_fn": i, "_fn1": i + 1, "_fn0": i}
                 for i, fn in enumerate(fns)
             )
         elif isinstance(fns, dict):
@@ -69,16 +60,16 @@ class Across:
         self.args = args or ()
         self.kwargs = kwargs or {}
 
-    def evaluate(
-        self, context: Union[Context, ContextBase] = None
-    ) -> DataFrame:
+    def evaluate(self, context=None):
         """Evaluate object with context"""
         if isinstance(context, Context):
             context = context.value
 
         if not self.fns:
             self.fns = [{"fn": lambda x: x}]
+
         ret = None
+        # Instead of df.apply(), we can recycle groupby values and more
         for column in self.cols:
             for fn_info in self.fns:
                 render_data = fn_info.copy()
@@ -101,26 +92,22 @@ class Across:
                     )
                 else:
                     # use fn's own context
-                    value = fn(
+                    value = regcall(
+                        fn,
                         self.data[column],
                         *args,
                         **kwargs,
-                        __calling_env=CallingEnvs.PIPING,
                     )
+
                     # fast evaluation tried, if failed:
                     # will this happen? it fails when first argument
                     # cannot be evaluated
                     if isinstance(value, Function):  # pragma: no cover
                         value = value._pipda_eval(self.data, context)
 
-                if ret is None:
-                    ret = to_df(value, name)
-                elif length_of(ret) == 1:
-                    ret, value = recycle_df(ret, value)
-                    ret = df_setitem(ret, name, value)
-                else:
-                    ret = df_setitem(ret, name, value)
-        return DataFrame() if ret is None else ret
+                ret = add_to_tibble(ret, name, value, broadcast_tbl=True)
+
+        return Tibble() if ret is None else ret
 
 
 class IfCross(Across, ABC):
@@ -128,10 +115,13 @@ class IfCross(Across, ABC):
 
     @staticmethod
     @abstractmethod
-    def aggregate(values: Series) -> bool:
+    def aggregate(values):
         """How to aggregation by rows"""
 
-    def evaluate(self, context: ContextBase = None) -> DataFrame:
+    def evaluate(
+        self,
+        context=None,
+    ):
         """Evaluate the object with context"""
         # Fill NA first and then do and/or
         # Since NA | True -> False for pandas
@@ -147,7 +137,7 @@ class IfAny(IfCross):
     """For calls from dplyr's if_any"""
 
     @staticmethod
-    def aggregate(values: Series) -> bool:
+    def aggregate(values):
         """How to aggregation by rows"""
         return values.fillna(False).astype(bool).any()
 
@@ -156,22 +146,20 @@ class IfAll(IfCross):
     """For calls from dplyr's if_all"""
 
     @staticmethod
-    def aggregate(values: Series) -> bool:
+    def aggregate(values):
         """How to aggregation by rows"""
         return values.fillna(False).astype(bool).all()
 
 
-@register_func(
-    context=Context.PENDING, verb_arg_only=True, summarise_prefers_input=True
-)
+@register_func(context=Context.PENDING, verb_arg_only=True)
 def across(
-    _data: DataFrame,
-    *args: Any,
-    _names: str = None,
-    _fn_context: Union[Context, ContextBase] = Context.EVAL,
-    base0_: bool = None,
-    **kwargs: Any,
-) -> DataFrame:
+    _data,
+    *args,
+    _names=None,
+    _fn_context=Context.EVAL,
+    _context=None,
+    **kwargs,
+):
     """Apply the same transformation to multiple columns
 
     The original API:
@@ -190,9 +178,6 @@ def across(
             single function case and `{_col}_{_fn}` for the case where
             a list is used for _fns. In such a case, `{_fn}` is 0-based.
             To use 1-based index, use `{_fn1}`
-        base0_: Indicating whether the columns are 0-based if selected
-            by indexes. if not provided, will use
-            `datar.base.get_option('index.base.0')`.
         _fn_context: Defines the context to evaluate the arguments for functions
             if they are plain functions.
             Note that registered functions will use its own context
@@ -201,6 +186,8 @@ def across(
     Returns:
         A dataframe with one column for each column and each function.
     """
+    _data = _context.meta.get("input_data", _data)
+
     if not args:
         args = (None, None)
     elif len(args) == 1:
@@ -208,52 +195,52 @@ def across(
     _cols, _fns, *args = args
     _cols = evaluate_expr(_cols, _data, Context.SELECT)
 
-    return Across(_data, _cols, _fns, _names, base0_, args, kwargs).evaluate(
-        _fn_context
-    )
+    return Across(
+        _data,
+        _cols,
+        _fns,
+        _names,
+        args,
+        kwargs,
+    ).evaluate(_fn_context)
 
 
 @register_func(context=Context.SELECT, verb_arg_only=True)
 def c_across(
-    _data: DataFrame,
-    _cols: Iterable[str] = None,
-    base0_: bool = None,
-) -> Series:
+    _data,
+    _cols=None,
+    _context=None,
+):
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
         _data: The dataframe
         _cols: The columns
-        base0_: Indicating whether the columns are 0-based if selected
-            by indexes. if not provided, will use
-            `datar.base.get_option('index.base.0')`.
 
     Returns:
         A series
     """
+    _data = _context.meta.get("input_data", _data)
+
     if not _cols:
-        _cols = everything(_data)
+        _cols = regcall(everything, _data)
 
-    _cols = vars_select(_data.columns.tolist(), _cols, base0=base0_)
-
-    series = [_data.iloc[:, col] for col in _cols]
-    return numpy.concatenate(series)
+    _cols = vars_select(_data.columns, _cols)
+    return _data.iloc[:, _cols]
 
 
 @register_func(
     context=None,
     extra_contexts={"args": Context.SELECT},
     verb_arg_only=True,
-    summarise_prefers_input=True,
 )
 def if_any(
-    _data: DataFrame,
-    *args: Any,
-    _names: str = None,
-    _context: ContextBase = None,
-    base0_: bool = None,
-    **kwargs: Any,
-) -> Iterable[bool]:
+    _data,
+    *args,
+    _names=None,
+    _context=None,
+    **kwargs,
+):
     """Apply the same predicate function to a selection of columns and combine
     the results True if any element is True.
 
@@ -265,28 +252,32 @@ def if_any(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
+    _data = _context.meta.get("input_data", _data)
 
-    return IfAny(_data, _cols, _fns, _names, base0_, args, kwargs).evaluate(
-        _context
-    )
+    return IfAny(
+        _data,
+        _cols,
+        _fns,
+        _names,
+        args,
+        kwargs,
+    ).evaluate(_context)
 
 
 @register_func(
     context=None,
     extra_contexts={"args": Context.SELECT},
     verb_arg_only=True,
-    summarise_prefers_input=True,
 )
 def if_all(
-    _data: DataFrame,
+    _data,
     # _cols: Iterable[str] = None,
     # _fns: Union[Mapping[str, Callable]] = None,
-    *args: Any,
-    _names: str = None,
-    _context: ContextBase = None,
-    base0_: bool = None,
-    **kwargs: Any,
-) -> Iterable[bool]:
+    *args,
+    _names=None,
+    _context=None,
+    **kwargs,
+):
     """Apply the same predicate function to a selection of columns and combine
     the results True if all elements are True.
 
@@ -298,7 +289,13 @@ def if_all(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
+    _data = _context.meta.get("input_data", _data)
 
-    return IfAll(_data, _cols, _fns, _names, base0_, args, kwargs).evaluate(
-        _context
-    )
+    return IfAll(
+        _data,
+        _cols,
+        _fns,
+        _names,
+        args,
+        kwargs,
+    ).evaluate(_context)

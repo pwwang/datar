@@ -3,18 +3,19 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/filter.R
 """
 from typing import Iterable
+import operator
 
-import numpy
-from pandas import DataFrame, RangeIndex
+import numpy as np
+from pandas import DataFrame, Series
 from pipda import register_verb
-from pipda.expression import Expression
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
-from ..core.types import is_scalar, is_null, BoolOrIter
-from ..core.utils import copy_attrs, reconstruct_tibble, Array
-from .group_data import group_data, group_vars
+from ..core.utils import logger, regcall
+from ..core.tibble import Tibble, TibbleGrouped, reconstruct_tibble
+from ..core.broadcast import broadcast_to
+from ..core.operator import _binop
+
+from .group_by import ungroup
 
 
 @register_verb(DataFrame, context=Context.EVAL)
@@ -22,130 +23,45 @@ def filter(
     _data: DataFrame,
     *conditions: Iterable[bool],
     _preserve: bool = False,
-    _drop_index: bool = None,
-) -> DataFrame:
+) -> Tibble:
     """Subset a data frame, retaining all rows that satisfy your conditions
 
     Args:
         *conditions: Expressions that return logical values
-        _preserve: Relevant when the .data input is grouped.
-            If _preserve = FALSE (the default), the grouping structure
-            is recalculated based on the resulting data, otherwise
-            the grouping is kept as is.
-        _drop_index: Whether drop the index or not.
-            When it is None and the index of _data is a RangeIndex, then
-            the index is dropped.
+        _preserve: Just for compatibility with `dplyr`'s `filter`.
+            It's always `False` here.
 
     Returns:
         The subset dataframe
     """
+    if _preserve:
+        logger.warning("`filter()` doesn't support `_preserve` argument yet.")
+
     if _data.shape[0] == 0 or not conditions:
-        return _data
+        return _data.copy()
 
-    condition = None
+    condition = np.array(True)
     for cond in conditions:
-        cond = _sanitize_condition(cond, _data.shape[0])
-        condition = (
-            cond if condition is None else numpy.logical_and(condition, cond)
-        )
+        condition = _binop(operator.and_, condition, cond)
 
-    out = _data.loc[condition, :]
-    if _drop_index is None:
-        _drop_index = isinstance(_data.index, RangeIndex)
+    grouper = None
+    if isinstance(_data, TibbleGrouped):
+        grouper = _data._datar["grouped"].grouper
 
-    if _drop_index:
-        out = out.reset_index(drop=True)
-    copy_attrs(out, _data)
-    return out
+    condition = broadcast_to(condition, _data.index, grouper)
+    if isinstance(condition, np.bool_):
+        condition = bool(condition)
 
+    if condition is True:
+        return _data.copy()
+    if condition is False:
+        return _data.take([])
 
-@filter.register(DataFrameGroupBy, context=Context.PENDING)
-def _(
-    _data: DataFrameGroupBy,
-    *conditions: Expression,
-    _preserve: bool = False,
-    _drop_index: bool = None,  # TODO?
-) -> DataFrameGroupBy:
-    """Filter on DataFrameGroupBy object"""
-    if _data.shape[0] > 0:
-        out = _data._datar_apply(
-            filter,
-            *conditions,
-            _drop_index=False,
-            __calling_env=CallingEnvs.REGULAR,
-        ).sort_index()
-    else:
-        out = _data.copy()
+    if isinstance(condition, Series):
+        condition = condition.values
 
-    out = reconstruct_tibble(_data, out)
-    gdata = _filter_groups(out, _data)
+    out = regcall(ungroup, _data)[condition]
+    if isinstance(_data, TibbleGrouped):
+        out.reset_index(drop=True, inplace=True)
 
-    if not _preserve and _data.attrs["_group_drop"]:
-        out.attrs["_group_data"] = gdata[
-            gdata["_rows"].map(len) > 0
-        ].reset_index(drop=True)
-
-    return out
-
-
-@filter.register(DataFrameRowwise, context=Context.EVAL)
-def _(
-    _data: DataFrameRowwise,
-    *conditions: Expression,
-    _preserve: bool = False,
-    _drop_index: bool = None,
-) -> DataFrameGroupBy:
-    """Filter on DataFrameGroupBy object"""
-    out = filter.dispatch(DataFrame)(
-        _data, *conditions, _preserve=_preserve, _drop_index=_drop_index
-    )
-    return reconstruct_tibble(_data, out, keep_rowwise=True)
-
-
-def _filter_groups(
-    new: DataFrameGroupBy,
-    old: DataFrameGroupBy,
-    sort_rows: bool = True,
-) -> DataFrame:
-    """Filter non-existing rows in groupdata"""
-    gdata = (
-        group_data(new, __calling_env=CallingEnvs.REGULAR)
-        .set_index(group_vars(new, __calling_env=CallingEnvs.REGULAR))["_rows"]
-        .to_dict()
-    )
-    new_gdata = group_data(old, __calling_env=CallingEnvs.REGULAR).copy()
-    for row in new_gdata.iterrows():
-        ser = row[1]
-        key = tuple(ser[:-1])
-        if len(key) == 1:
-            key = key[0]
-        ser[-1] = gdata.get(key, [])
-        new_gdata.loc[row[0], :] = ser
-
-    if sort_rows:
-        # GH69
-        # The order changes when top row number filtered
-        new_gdata = new_gdata.sort_values(
-            ["_rows"],
-            # keep empty rows at last
-            key=lambda rowss: Array(
-                [new.shape[0] if len(rows) == 0 else rows[0] for rows in rowss],
-                dtype=int,
-            ),
-        ).reset_index(drop=True)
-
-    new.attrs["_group_data"] = new_gdata
-    return new_gdata
-
-
-def _sanitize_condition(cond: BoolOrIter, length: int) -> numpy.ndarray:
-    """Handle single condition"""
-    if is_scalar(cond):
-        out = Array([cond] * length)
-    elif isinstance(cond, numpy.ndarray):
-        out = cond
-    else:
-        out = Array(cond)
-    out[is_null(out)] = False
-
-    return out.astype(bool)
+    return reconstruct_tibble(_data, out)

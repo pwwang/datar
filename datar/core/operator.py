@@ -1,16 +1,28 @@
 """Operators for datar"""
-from typing import Any, Tuple
-from functools import partial
 import operator
+from typing import Any, Callable, Sequence
+from functools import partial
 
-import numpy
-from pandas import Series
+from pandas.core.series import Series
+from pandas.core.groupby import SeriesGroupBy, DataFrameGroupBy
 from pipda import register_operator, Operator
 
-from .utils import length_of, recycle_value
+from ..core.broadcast import broadcast2
 from .collections import Collection, Inverted, Negated, Intersect
-from .exceptions import DataUnrecyclable
-from .types import BoolOrIter
+
+
+def _binop(op, left, right, fill_false=False):
+    left, right, grouper, is_rowwise = broadcast2(left, right)
+    if fill_false:
+        left = Series(left).fillna(False).values
+        right = Series(right).fillna(False).values
+
+    out = op(left, right)
+    if grouper:
+        out = out.groupby(grouper)
+        if is_rowwise:
+            out.is_rowwise = True
+    return out
 
 
 @register_operator
@@ -20,27 +32,34 @@ class DatarOperator(Operator):
     def _arithmetize1(self, operand: Any, op: str) -> Any:
         """Operator for single operand"""
         op_func = getattr(operator, op)
-        # Data length might be changed after evaluation
-        # operand = recycle_value(operand, self.data.shape[0])
+        if isinstance(operand, (DataFrameGroupBy, SeriesGroupBy)):
+            out = op_func(operand.obj).groupby(operand.grouper)
+            if getattr(operand, "is_rowwise", False):
+                out.is_rowwise = True
+            return out
+
         return op_func(operand)
 
     def _arithmetize2(self, left: Any, right: Any, op: str) -> Any:
         """Operator for paired operands"""
         op_func = getattr(operator, op)
-        left, right = _recycle_left_right(left, right)
-        return op_func(left, right)
+        return _binop(op_func, left, right)
 
     def _op_invert(self, operand: Any) -> Any:
         """Interpretation for ~x"""
-        if isinstance(operand, (slice, str, list, tuple)):
+        if isinstance(operand, (slice, Sequence)):
             return Inverted(operand)
         return self._arithmetize1(operand, "invert")
 
     def _op_neg(self, operand: Any) -> Any:
         """Interpretation for -x"""
-        if isinstance(operand, (slice, list)):
+        if isinstance(operand, (slice, Sequence)):
             return Negated(operand)
         return self._arithmetize1(operand, "neg")
+
+    def _op_pos(self, operand: Any) -> Any:
+        """Interpretation for -x"""
+        return self._arithmetize1(operand, "pos")
 
     def _op_and_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
@@ -54,14 +73,11 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(left, list):
+        if isinstance(left, Sequence) or isinstance(right, Sequence):
             # induce an intersect with Collection
             return Intersect(left, right)
 
-        left, right = _recycle_left_right(left, right)
-        left = Series(left).fillna(False)
-        right = Series(right).fillna(False)
-        return left & right
+        return _binop(operator.and_, left, right, fill_false=True)
 
     def _op_or_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
@@ -75,37 +91,30 @@ class DatarOperator(Operator):
         Returns:
             The intersect of the columns
         """
-        if isinstance(left, list):
+        if isinstance(left, Sequence) or isinstance(right, Sequence):
+            # or union?
             return Collection(left, right)
 
-        left, right = _recycle_left_right(left, right)
-        left = Series(left).fillna(False)
-        right = Series(right).fillna(False)
-        return left | right
+        return _binop(operator.or_, left, right, fill_false=True)
 
-    def _op_ne(self, left: Any, right: Any) -> BoolOrIter:
-        """Interpret for left != right"""
-        out = self._op_eq(left, right)
-        if isinstance(out, (numpy.ndarray, Series)):
-            neout = ~out
-            # neout[pandas.isna(out)] = numpy.nan
-            return neout
-        # out is always a numpy.ndarray
-        return not out  # pragma: no cover
+    # def _op_eq(
+    #     self, left: Any, right: Any
+    # ) -> Union[bool, Sequence[bool], SeriesGroupBy]:
+    #     """Do left == right"""
+    #     left, right = broadcast2(left, right)
+    #     return left == right
 
-    def __getattr__(self, name: str) -> Any:
-        """Other operators"""
-        if name.startswith('_op_'):
-            attr = partial(self._arithmetize2, op=name[4:])
-            attr.__qualname__ = self._arithmetize2.__qualname__
-            return attr
-        return super().__getattr__(name)
+    # def _op_ne(
+    #     self, left: Any, right: Any
+    # ) -> Union[bool, Sequence[bool], SeriesGroupBy]:
+    #     """Interpret for left != right"""
+    #     left, right = broadcast2(left, right)
+    #     return left != right
 
+    def _find_op_func(self, opname: str) -> Callable:
+        """Find the function for the operator"""
+        full_op_name = f"_op_{opname}"
+        if full_op_name in dir(self):
+            return getattr(self, full_op_name)
 
-def _recycle_left_right(left: Any, right: Any) -> Tuple:
-    """Recycle left right operands to each other"""
-    try:
-        left = recycle_value(left, length_of(right))
-    except DataUnrecyclable:
-        right = recycle_value(right, length_of(left))
-    return left, right
+        return partial(self._arithmetize2, op=opname)

@@ -2,15 +2,16 @@
 
 from typing import Union
 
-import pandas
+import pandas as pd
 from pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, reconstruct_tibble
+from ..core.utils import vars_select, regcall
+from ..core.tibble import reconstruct_tibble
 
 from ..base import setdiff
+from ..dplyr import ungroup
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -20,8 +21,7 @@ def unite(
     *columns: Union[str, int],
     sep: str = "_",
     remove: bool = True,
-    na_rm: bool = False,
-    base0_: bool = None,
+    na_rm: bool = True,
 ) -> DataFrame:
     """Unite multiple columns into one by pasting strings together
 
@@ -33,8 +33,6 @@ def unite(
         remove: If True, remove input columns from output data frame.
         na_rm: If True, missing values will be remove prior to uniting
             each value.
-        base0_: Whether `columns` is 0-based when given by index
-            If not provided, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         The dataframe with selected columns united
@@ -43,13 +41,13 @@ def unite(
     if not columns:
         columns = all_columns
     else:
-        columns = all_columns[vars_select(all_columns, *columns, base0=base0_)]
+        columns = all_columns[vars_select(all_columns, *columns)]
 
-    out = data.copy()
+    out = regcall(ungroup, data)
 
     def unite_cols(row):
         if na_rm:
-            row = [elem for elem in row if not pandas.isnull(elem)]
+            row = [elem for elem in row if not pd.isnull(elem)]
         return sep.join(str(elem) for elem in row)
 
     out[col] = out[columns].agg(unite_cols, axis=1)
@@ -64,12 +62,8 @@ def unite(
     out = out[relocated_cols]
 
     if remove:
-        cols_to_remove = setdiff(
-            columns,
-            [col],
-            __calling_env=CallingEnvs.REGULAR
-        )
+        cols_to_remove = regcall(setdiff, columns, [col])
         if len(cols_to_remove) > 0:
-            out.drop(columns=cols_to_remove, inplace=True)
+            out = out.drop(columns=cols_to_remove)
 
     return reconstruct_tibble(data, out)

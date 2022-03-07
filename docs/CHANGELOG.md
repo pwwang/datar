@@ -1,6 +1,42 @@
+## 0.6.0
+
+### General
+- Adopt `pipda` 0.5.7
+- Reimplement the split-apply-combine rule to solve all performance issues
+- Drop support for pandas v1.2, require pandas v1.3+
+- Remove all `base0_` options and all indices are now 0-based, except `base.seq()`, ranks and their variants
+- Remove messy type annotations for now, will add them back in the future
+- Move implementation of data type display for frames in terminal and notebook to `pdtypes` package
+- Change all arguments end with "_" to arguments start with it to avoid confusion
+- Move module `datar.stats` to `datar.base.stats`
+- Default all `na_rm` arguments to `True`
+- Rename all `ptype` arguments for `tidyr` verbs into `dtypes`
+
+### Details
+- Introduct new API to register function `datar.core.factory.func_factory()`
+- Aliase `register_verb` and `register_func` as `verb_factory` and `context_func_factory` in `datar.core.factory`
+- Expose `options`, `options_context`, `add_option` and `get_option` in `datar/__init__.py` and remove them from `datar.base`
+- Attach `pipda.options` to `datar.options`
+- Move `head` and `tail` from `datar.utils` to `datar.base`
+- Remove redundant `unique` implentation from `datar.base.seq`
+- Add `datar.core.factory.func_factory()` for developers to register function that works with different types of data (`NDFrame`, `GropuBy`, etc)
+- Not ensure NAs after NA for `base.cumxxx()` families any more
+- Remove `set_names` from `datar.stats`, use `names(df, <new names>)` from `datar.base` instead
+- Optimize `intersect`, `union`, `setdiff`, `append` from `datar.base`
+- Keep grouping variables for `intersect`, `union`, `setdiff` and `union_all` when `y` is a grouped df, even when `x` is not
+- Remove `drop_index` from `datar.datar`, use `datar.tibble.remove_rownames/remove_index/drop_index` instead
+- Add `assert_tibble_equal()` in `datar.testing` to test whether 2 tibbles are equal
+- `rep()` now works with frames
+- `c_across()` now returns a rowwise df to work with functions that apply to df on `axis=1`
+- `datar.dplyr.order_by()` now only works like it does in `r-dplyr` and only in side a verb
+- `datar.dplyr.group_by()` detauls `_sort` to `False` for speed
+- Only raise error for duplicated column names when selected by column name instead of index
+- `base.scale()` returns a series rather than a frame when works with a series
+- Other fixes and optimizations
+
 ## 0.5.6
 
-- 🐛 Hotfix for types registered for `base.proportions` (#77)
+- 🐛 Hotfix for types registered for base.proportions (#77)
 - 👽️ Fix for pandas 1.4
 
 ## 0.5.5

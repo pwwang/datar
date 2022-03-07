@@ -3,25 +3,22 @@
 The huge difference:
 R's factors support NAs in levels but Categorical cannot have NAs in categories.
 """
-
-from typing import Any, Iterable
-
-from pandas import Categorical
+import numpy as np
+from pandas import Categorical, Series
+from pandas.api.types import is_categorical_dtype, is_scalar
 from pipda import register_func
 
 from ..core.contexts import Context
-from ..core.types import (
-    is_scalar,
-    is_categorical as is_categorical_,
-    ArrayLikeType,
-)
-from ..core.utils import categorized
 
-from .na import NA
+
+def _ensure_categorical(x):
+    if is_categorical_dtype(x) and isinstance(x, Series):
+        return x.values
+    return x
 
 
 @register_func(None, context=Context.EVAL)
-def droplevels(x: Categorical) -> Categorical:
+def droplevels(x):
     """drop unused levels from a factor
 
     Args:
@@ -30,11 +27,11 @@ def droplevels(x: Categorical) -> Categorical:
     Returns:
         The categorical data with unused categories dropped.
     """
-    return categorized(x).remove_unused_categories()
+    return _ensure_categorical(x).remove_unused_categories()
 
 
 @register_func(None, context=Context.EVAL)
-def levels(x: Any) -> ArrayLikeType:
+def levels(x):
     """Get levels from a factor
 
     Args:
@@ -44,14 +41,14 @@ def levels(x: Any) -> ArrayLikeType:
         levels of the categorical
         None if x is not an categorical/factor
     """
-    if not is_categorical_(x):
+    if not is_categorical_dtype(x):
         return None
 
-    return categorized(x).categories.values.copy()
+    return _ensure_categorical(x).categories.values.copy()
 
 
 @register_func(None, context=Context.EVAL)
-def nlevels(x: Any) -> int:
+def nlevels(x) -> int:
     """Get the number of levels of a factor
 
     Args:
@@ -65,21 +62,15 @@ def nlevels(x: Any) -> int:
 
 
 @register_func(None, context=Context.EVAL)
-def is_ordered(x: Any) -> bool:
+def is_ordered(x) -> bool:
     """Check if a factor is ordered"""
-    if not is_categorical_(x):
+    if not is_categorical_dtype(x):
         return False
 
-    return categorized(x).ordered
+    return _ensure_categorical(x).ordered
 
 
-def factor(
-    x: Iterable[Any] = None,
-
-    levels: Iterable[Any] = None,
-    exclude: Any = NA,
-    ordered: bool = False,
-) -> Categorical:
+def factor(x=None, levels=None, exclude=np.nan, ordered=False):
     """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
     are also used for factors).
 
@@ -104,7 +95,7 @@ def factor(
     if is_scalar(x):
         x = [x]
 
-    if is_categorical_(x):
+    if is_categorical_dtype(x):
         x = x.to_numpy()
 
     ret = Categorical(x, categories=levels, ordered=ordered)
@@ -117,11 +108,7 @@ def factor(
     return ret.remove_categories(exclude)
 
 
-def ordered(
-    x: Iterable[Any] = None,
-
-    levels: Iterable[Any] = None,
-) -> Categorical:
+def ordered(x=None, levels=None):
     """Create an ordered factor
 
     Args:
@@ -134,7 +121,7 @@ def ordered(
 
 
 @register_func(None, context=Context.EVAL)
-def as_factor(x: Iterable) -> Categorical:
+def as_factor(x):
     """Convert an iterable into a pandas.Categorical object
 
     Args:
@@ -150,7 +137,7 @@ as_categorical = as_factor
 
 
 @register_func(None, context=Context.EVAL)
-def is_categorical(x: Any) -> bool:
+def is_categorical(x):
     """Check if x is categorical data
 
     Alias `is_factor`
@@ -161,7 +148,7 @@ def is_categorical(x: Any) -> bool:
     Returns:
         True if `x` is categorical else False
     """
-    return is_categorical_(x)
+    return is_categorical_dtype(x)
 
 
 is_factor = is_categorical

@@ -41,27 +41,28 @@ Traceback (most recent call last):
 - Stick with the regular calling:
 
     ```python
+    >>> df = tibble("a")
     >>> source = "df2 = mutate(df, A=f.a.str.upper())"
     >>> exec(source)  # you still get a warning, but the code works
-    /home/pwwang/miniconda3/lib/python3.9/site-packages/pipda/utils.py:161: UserWarning: Failed to fet
-    ch the node calling the function, call it with the original function.
+    pipda/utils.py:163: UserWarning: Failed to fetch the node calling the
+    function, call it with the original function.
     warnings.warn(
     >>> df2
-            a        A
-    <object> <object>
+             a        A
+      <object> <object>
     0        a        A
     ```
 
 - Stick with the piping calling:
 
     ```python
-    >>> from pipda import options
-    >>> options.assume_all_piping = True
+    >>> from datar import options
+    >>> options(assume_all_piping=True)
     >>> source = "df2 = df >> mutate(A=f.a.str.upper())"
     >>> exec(source)  # no warnings, we know we don't need the AST node anymore
     >>> df2
-            a        A
-    <object> <object>
+             a        A
+      <object> <object>
     0        a        A
     ```
 

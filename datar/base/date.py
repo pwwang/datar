@@ -1,45 +1,57 @@
 """Date time functions"""
-
 import datetime
 import functools
-from typing import TYPE_CHECKING, Any, Iterable, List, Union
 
-import numpy
-import pandas
-from pandas import DataFrame, Series
-from pipda import register_func
+import numpy as np
+import pandas as pd
+# from pandas import Series
+from pandas.api.types import is_scalar, is_integer
 
-from ..core.contexts import Context
-from ..core.types import IntType, is_scalar, is_scalar_int
-from .na import NA
-
-if TYPE_CHECKING:
-    from pandas import DatetimeIndex, Timestamp
+from ..core.factory import func_factory
 
 
 @functools.singledispatch
 def _as_date_dummy(
-    x: Any,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[IntType, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     """Convert a dummy object to date"""
     raise ValueError(f"Unable to convert to date with type: {type(x)!r}")
 
 
+@_as_date_dummy.register(np.datetime64)
+def _(
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
+    return _as_date_dummy(
+        pd.to_datetime(x),
+        format=format,
+        try_formats=try_formats,
+        optional=optional,
+        tz=tz,
+        origin=origin,
+    )
+
+
 @_as_date_dummy.register(datetime.date)
 def _(
-    x: datetime.date,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[int, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
-    if is_scalar_int(tz):
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
+    if is_scalar(tz) and is_integer(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return x + tz
@@ -47,14 +59,14 @@ def _(
 
 @_as_date_dummy.register(datetime.datetime)
 def _(
-    x: datetime.datetime,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[IntType, datetime.timedelta] = 0,
-    origin: Any = None,
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
 ):
-    if is_scalar_int(tz):
+    if is_scalar(tz) and is_integer(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     return (x + tz).date()
@@ -63,13 +75,13 @@ def _(
 @_as_date_dummy.register(str)
 def _(
     x: str,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[IntType, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
-    if is_scalar_int(tz):
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
+    if is_scalar(tz) and is_integer(tz):
         tz = datetime.timedelta(hours=int(tz))
 
     try_formats = try_formats or [
@@ -90,41 +102,24 @@ def _(
             continue
 
     if optional:
-        return NA
+        return np.nan
 
-    raise ValueError("character string is not in a standard unambiguous format")
-
-
-@_as_date_dummy.register(Series)
-def _(
-    x: Series,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[IntType, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
-    return _as_date_dummy(
-        x.values[0],
-        format=format,
-        try_formats=try_formats,
-        optional=optional,
-        tz=tz,
-        origin=origin,
+    raise ValueError(
+        "character string is not in a standard unambiguous format"
     )
 
 
 @_as_date_dummy.register(int)
-@_as_date_dummy.register(numpy.integer)
+@_as_date_dummy.register(np.integer)
 def _(
-    x: IntType,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[IntType, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> datetime.date:
-    if isinstance(tz, (int, numpy.integer)):
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
+    if isinstance(tz, (int, np.integer)):
         tz = datetime.timedelta(hours=int(tz))
 
     if isinstance(origin, str):
@@ -137,15 +132,21 @@ def _(
     return dt
 
 
-@register_func(None, context=Context.EVAL)
+_as_date_dummy = np.vectorize(
+    _as_date_dummy,
+    excluded={"format", "try_formats", "optional", "origin", "tz"}
+)
+
+
+@func_factory("transform", "x")
 def as_date(
-    x: DataFrame,
-    format: str = None,
-    try_formats: List[str] = None,
-    optional: bool = False,
-    tz: Union[IntType, datetime.timedelta] = 0,
-    origin: Any = None,
-) -> Union[Series, "Timestamp", "DatetimeIndex"]:
+    x,
+    format=None,
+    try_formats=None,
+    optional=False,
+    tz=0,
+    origin=None,
+):
     """Convert an object to a datetime.date object
 
     See: https://rdrr.io/r/base/as.Date.html
@@ -153,7 +154,7 @@ def as_date(
     Args:
         x: Object that can be converted into a datetime.date object
         format:  If not specified, it will try try_formats one by one on
-            the first non-NA element, and give an error if none works.
+            the first non-np.nan element, and give an error if none works.
             Otherwise, the processing is via strptime
         try_formats: vector of format strings to try if format is not specified.
             Default formats to try:
@@ -161,7 +162,7 @@ def as_date(
             "%Y/%m/%d"
             "%Y-%m-%d %H:%M:%S"
             "%Y/%m/%d %H:%M:%S"
-        optional: indicating to return NA (instead of signalling an error)
+        optional: indicating to return np.nan (instead of signalling an error)
             if the format guessing does not succeed.
         origin: a datetime.date/datetime object, or something which can be
             coerced by as_date(origin, ...) to such an object.
@@ -171,37 +172,34 @@ def as_date(
     Returns:
         The datetime.date object
     """
-    if not isinstance(x, Series):
-        x = Series([x]) if is_scalar(x) else Series(x)
-
-    out = x.transform(
-        _as_date_dummy,
-        format=format,
-        try_formats=try_formats,
-        optional=optional,
-        tz=tz,
-        origin=origin,
+    return pd.to_datetime(
+        _as_date_dummy(
+            x,
+            format=format,
+            try_formats=try_formats,
+            optional=optional,
+            origin=origin,
+            tz=tz,
+        ).tolist()
     )
-    return pandas.to_datetime(out)
 
 
-@register_func(None, context=Context.EVAL)
-def as_pd_date(
-    arg: Union[int, str, float, datetime.datetime, Iterable],
-    *args: Any,
-    **kwargs: Any,
-) -> Union[Series, "Timestamp", "DatetimeIndex"]:
-    """Alias of pandas.to_datetime(), but registered as a function
+as_pd_date = func_factory(
+    "transform",
+    "arg",
+    name="as_pd_date",
+    doc="""Alias of pandas.to_datetime(), but registered as a function
     so that it can be used in verbs.
 
     See https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html
 
     Args:
-        arg: The argument to be converted to datetime
+        x: The argument to be converted to datetime
         *args: and
         **kwargs: Other arguments passing to `pandas.to_datetime()`
 
     Returns:
         Converted datetime
-    """
-    return pandas.to_datetime(arg, *args, **kwargs)
+    """,
+    func=pd.to_datetime,
+)

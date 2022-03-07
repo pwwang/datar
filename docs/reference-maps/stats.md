@@ -30,12 +30,11 @@
 |[`quantile()`][4]|produces sample quantiles corresponding to the given probabilities.||
 |[`sd()`][5]|Computes the standard deviation of the values||
 |[`weighted_mean()`][6]|Computes the weighted mean of the values||
-|[`set_names()`][7]|sets the names on an object and returns the object (`setNames`).||
 
-[1]: ../../api/datar.stats.funs/#datar.stats.funs.rnorm
-[2]: ../../api/datar.stats.funs/#datar.stats.funs.rpois
-[3]: ../../api/datar.stats.funs/#datar.stats.funs.runif
-[4]: ../../api/datar.stats.funs/#datar.stats.funs.quantile
-[5]: ../../api/datar.stats.funs/#datar.stats.funs.sd
-[6]: ../../api/datar.stats.funs/#datar.stats.funs.weighted_mean
-[7]: ../../api/datar.stats.verbs/#datar.stats.verbs.set_names
+
+[1]: ../../api/datar.base.stats/#datar.base.stats.rnorm
+[2]: ../../api/datar.base.stats/#datar.base.stats.rpois
+[3]: ../../api/datar.base.stats/#datar.base.stats.runif
+[4]: ../../api/datar.base.stats/#datar.base.stats.quantile
+[5]: ../../api/datar.base.stats/#datar.base.stats.sd
+[6]: ../../api/datar.base.stats/#datar.base.stats.weighted_mean

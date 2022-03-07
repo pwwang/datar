@@ -2,16 +2,14 @@
 import itertools
 
 from pandas import Categorical
-from pipda.utils import CallingEnvs
 
-from ..core.types import ForcatsType
-
+from ..core.utils import regcall
 from ..base import factor, paste, levels, expandgrid, intersect
 from .utils import check_factor
 from .lvls import lvls_union
 
 
-def fct_c(*fs: ForcatsType) -> Categorical:
+def fct_c(*fs) -> Categorical:
     """Concatenate factors, combining levels
 
     This is a useful way of patching together factors from multiple sources
@@ -32,7 +30,7 @@ def fct_c(*fs: ForcatsType) -> Categorical:
 
 
 def fct_cross(
-    *fs: ForcatsType,
+    *fs,
     sep: str = ":",
     keep_empty: bool = False,
 ) -> Categorical:
@@ -53,21 +51,17 @@ def fct_cross(
         return factor()
 
     fs = [check_factor(fct) for fct in fs]
-    newf = paste(*fs, sep=sep, __calling_env=CallingEnvs.REGULAR)
+    newf = regcall(paste, *fs, sep=sep)
 
-    old_levels = (levels(fct, __calling_env=CallingEnvs.REGULAR) for fct in fs)
-    grid = expandgrid(*old_levels, __calling_env=CallingEnvs.REGULAR)
-    new_levels = paste(
+    old_levels = (regcall(levels, fct) for fct in fs)
+    grid = regcall(expandgrid, *old_levels)
+    new_levels = regcall(
+        paste,
         *(grid[col] for col in grid),
         sep=sep,
-        __calling_env=CallingEnvs.REGULAR,
     )
 
     if not keep_empty:
-        new_levels = intersect(
-            new_levels,
-            newf,
-            __calling_env=CallingEnvs.REGULAR,
-        )
+        new_levels = regcall(intersect, new_levels, newf)
 
     return factor(newf, levels=new_levels)

@@ -1,58 +1,63 @@
 """Checking an iterable against itself or another one"""
-from typing import Iterable
 
-import numpy
-from pipda import register_func
+import numpy as np
 
-from ..core.utils import get_option
-from ..core.contexts import Context
+from ..core.factory import func_factory
 
+from .arithmetic import SINGLE_ARG_SIGNATURE
 
-@register_func(None, context=Context.EVAL)
-def which(x: Iterable[bool], base0_: bool = None) -> Iterable[int]:
-    """Convert a bool iterable to indexes
+which = func_factory(
+    "transform",
+    "x",
+    name="which",
+    qualname="datar.base.which",
+    func=np.flatnonzero,
+    doc="""Convert a bool iterable to indexes
 
     Args:
         x: An iterable of bools.
             Note that non-bool values will be converted into
-        base0_: Whether the returned indexes are 0-based.
-            Controlled by `get_option('which.base.0')` if not provided
 
     Returns:
         The indexes
-    """
-    return numpy.flatnonzero(x) + int(not get_option("which.base.0", base0_))
+    """,
+    signature=SINGLE_ARG_SIGNATURE,
+)
 
-
-@register_func(None)
-def which_min(x: Iterable, base0_: bool = None) -> int:
-    """R's `which.min()`
+which_min = func_factory(
+    "agg",
+    "x",
+    name="which_min",
+    qualname="datar.base.which_min",
+    func=np.argmin,
+    doc="""R's `which.min()`
 
     Get the index of the element with the maximum value
 
     Args:
         x: The iterable
-        base0_: Whether the index to return is 0-based or not.
-            Controlled by `get_option('which.base.0')` if not provided
 
     Returns:
         The index of the element with the maximum value
-    """
-    return numpy.argmin(x) + int(not get_option("which.base.0", base0_))
+    """,
+    signature=SINGLE_ARG_SIGNATURE,
+)
 
-
-@register_func(None)
-def which_max(x: Iterable, base0_: bool = True) -> int:
-    """R's `which.max()`
+which_max = func_factory(
+    "agg",
+    "x",
+    name="which_max",
+    qualname="datar.base.which_max",
+    func=np.argmax,
+    doc="""R's `which.max()`
 
     Get the index of the element with the minimum value
 
     Args:
         x: The iterable
-        base0_: Whether the index to return is 0-based or not
-            Not that this is not controlled by `get_option('index.base.0')`
 
     Returns:
         The index of the element with the minimum value
-    """
-    return numpy.argmax(x) + int(not get_option("which.base.0", base0_))
+    """,
+    signature=SINGLE_ARG_SIGNATURE,
+)

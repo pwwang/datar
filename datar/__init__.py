@@ -1,17 +1,39 @@
-"""Load operator, provide f and __version__"""
-from typing import Mapping
+# register operator
+from collections import namedtuple as _namedtuple
 
 from .core import operator as _
-from .core import _frame_format_patch
-from .core.defaults import f
+from .core import f, options_context, options, add_option, get_option, logger
 
-__all__ = ('f', 'get_versions')
-__version__ = "0.5.6"
+__all__ = (
+    "f",
+    "options",
+    "get_versions",
+    "options_context",
+    "add_option",
+    "get_option",
+    "logger",
+)
+
+options(enable_pdtypes=True)
+
+_VersionsTuple = _namedtuple(
+    "_VersionsTuple",
+    [
+        "python",
+        "datar",
+        "numpy",
+        "pandas",
+        "pipda",
+        "executing",
+        "varname",
+    ],
+)
+
+__all__ = ("f", "get_versions")
+__version__ = "0.6.0"
 
 
-def get_versions(
-    prnt: bool = True
-) -> Mapping[str, str]:  # pragma: no cover
+def get_versions(prnt: bool = True) -> _VersionsTuple:
     """Print or return related versions which help for bug reporting.
 
     Args:
@@ -27,9 +49,8 @@ def get_versions(
     import pipda
     import executing
     import varname
-    from diot import Diot
 
-    out = Diot(
+    out = _VersionsTuple(
         python=sys.version,
         datar=__version__,
         numpy=numpy.__version__,
@@ -41,8 +62,9 @@ def get_versions(
     if not prnt:
         return out
 
-    keylen = max(map(len, out))
-    for key, ver in out.items():
+    keylen = max(map(len, out._fields))
+    for key in out._fields:
+        ver = getattr(out, key)
         verlines = ver.splitlines()
         print(f"{key.ljust(keylen)}: {verlines.pop(0)}")
         for verline in verlines:

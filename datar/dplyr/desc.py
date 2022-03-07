@@ -1,14 +1,13 @@
 """Provides desc"""
-from typing import Any, Iterable
-from pandas import Series, Categorical
-from pipda import register_func
+import numpy as np
+from pandas import Categorical, Series
 
-from ..core.contexts import Context
-from ..base import NA
+from ..core.tibble import SeriesCategorical
+from ..core.factory import func_factory
 
 
-@register_func(None, context=Context.EVAL)
-def desc(x: Iterable[Any]) -> Series:
+@func_factory("transform", "x")
+def desc(x):
     """Transform a vector into a format that will be sorted in descending order
 
     This is useful within arrange().
@@ -22,11 +21,20 @@ def desc(x: Iterable[Any]) -> Series:
     Returns:
         The descending order of x
     """
-    x = Series(x)
     try:
-        return -x
-    except TypeError:
-        cat = Categorical(x)
-        code = Series(cat.codes).astype(float)
-        code[code == -1.0] = NA
-        return -code
+        out = -x
+    except (ValueError, TypeError):
+        cat = Categorical(x.values)
+        out = desc.dispatched(
+            Series(cat, index=x.index)
+        )
+    out.name = None
+    return out
+
+
+@desc.register(SeriesCategorical)
+def _(x):
+    cat = x.values
+    code = cat.codes.astype(float)
+    code[code == -1.0] = np.nan
+    return Series(-code, index=x.index)

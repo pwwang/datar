@@ -81,7 +81,7 @@ There are a couple of ways to disable:
 1. Use option: `warn.builtin.names`
 
 ```python
->>> from datar.base import options
+>>> from datar import options
 >>> options(warn_builtin_names=False)
 >>> from datar.all import * # ok
 >>> options(warn_builtin_names=True)

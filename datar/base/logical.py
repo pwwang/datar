@@ -1,11 +1,8 @@
 """Logical/Boolean functions"""
-from typing import Any
-
-import numpy
-from pandas.core.dtypes.common import is_bool_dtype
+import numpy as np
+from pandas.api.types import is_scalar, is_bool_dtype
 from pipda import register_func
 
-from ..core.types import BoolOrIter, is_scalar
 from ..core.contexts import Context
 
 from .testing import _register_type_testing
@@ -16,7 +13,7 @@ FALSE = False
 
 
 @register_func(None, context=Context.EVAL)
-def as_logical(x: Any) -> BoolOrIter:
+def as_logical(x, na=None):
     """Convert an object or elements of an iterable into bool
 
     Args:
@@ -27,7 +24,7 @@ def as_logical(x: Any) -> BoolOrIter:
         When x is iterable, convert elements of it into bools
         Otherwise, convert x to bool.
     """
-    return _as_type(x, bool)
+    return _as_type(x, bool, na=na)
 
 
 as_bool = as_logical
@@ -35,23 +32,23 @@ as_bool = as_logical
 
 is_logical = _register_type_testing(
     "is_logical",
-    scalar_types=(bool, numpy.bool_),
+    scalar_types=(bool, np.bool_),
     dtype_checker=is_bool_dtype,
     doc="""Test if a value is booleans
 
-Args:
-    x: The value to be checked
+    Args:
+        x: The value to be checked
 
-Returns:
-    True if the value is an boolean or booleans; False otherwise.
-""",
+    Returns:
+        True if the value is an boolean or booleans; False otherwise.
+    """,
 )
 
 is_bool = is_logical
 
 
 @register_func(None, context=Context.EVAL)
-def is_true(x: Any) -> bool:
+def is_true(x):
     """Check if a value is a scalar True, like `isTRUE()` in `R`.
 
     If the value is non-scalar, will return False
@@ -70,7 +67,7 @@ def is_true(x: Any) -> bool:
 
 
 @register_func(None, context=Context.EVAL)
-def is_false(x: Any) -> bool:
+def is_false(x):
     """Check if a value is a scalar False, like `isFALSE()` in `R`.
 
     If the value is non-scalar, will return False

@@ -2,26 +2,21 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/group-by.r
 """
 
-from typing import Any, Mapping, Union
+from typing import Any, Union
 
-from pandas import DataFrame
+from pandas.core.frame import DataFrame
+from pandas.core.groupby import GroupBy
 from pipda import register_verb
-from pipda.symbolic import DirectRefAttr, DirectRefItem
-from pipda.expression import Expression
-from pipda.utils import CallingEnvs
 
-from ..core.grouped import DataFrameGroupBy, DataFrameRowwise
+from ..core.exceptions import NameNonUniqueError
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
-from ..core.defaults import f
 from ..core.utils import (
-    copy_attrs,
-    name_mutatable_args,
-    check_column_uniqueness,
-    reconstruct_tibble,
+    regcall,
     vars_select,
 )
-from ..core.exceptions import ColumnNotExistingError
 from ..base import setdiff, union
+from ..tibble import as_tibble
 
 from .group_data import group_vars
 
@@ -29,20 +24,18 @@ from .group_data import group_vars
 @register_verb(DataFrame, context=Context.PENDING)
 def group_by(
     _data: DataFrame,
-    *cols: Any,
+    *args: Any,
     _add: bool = False,  # not working, since _data is not grouped
     _drop: bool = None,
+    _sort: bool = False,
+    _dropna: bool = False,
     **kwargs: Any,
-) -> DataFrameGroupBy:
+) -> TibbleGrouped:
     """Takes an existing tbl and converts it into a grouped tbl where
     operations are performed "by group"
 
-    See https://dplyr.tidyverse.org/reference/group_by.html
-
-    Note that this does not return `pandas.DataFrameGroupBy` object but a
-    `datar.core.grouped.DataFrameGroupBy` object, which is a subclass of
-    `DataFrame`. This way, it will be easier to implement the APIs that related
-    to grouped data.
+    See https://dplyr.tidyverse.org/reference/group_by.html and
+    https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html
 
     Args:
         _data: The dataframe
@@ -51,35 +44,70 @@ def group_by(
         _drop: Drop groups formed by factor levels that don't appear in the
             data? The default is True except when `_data` has been previously
             grouped with `_drop=False`.
-        *cols: variables or computations to group by.
-            Note that columns here cannot be selected by indexes. As they are
-            treated as computations to be added as new columns.
-            So no `base0_` argument is supported.
+        sort_: Sort group keys.
+        dropna_: If True, and if group keys contain NA values, NA values
+            together with row/column will be dropped. If False, NA values
+            will also be treated as the key in groups.
+        *args: variables or computations to group by.
         **kwargs: Extra variables to group the dataframe
 
     Return:
-        A `datar.core.grouped.DataFrameGroupBy` object
+        A `TibbleGrouped` object
     """
-    if not cols and not kwargs:
-        return reconstruct_tibble(_data, _data)
+    from .mutate import mutate
+
+    _data = regcall(mutate, _data, *args, **kwargs)
+    _data.reset_index(drop=True, inplace=True)
 
     if _drop is None:
         _drop = group_by_drop_default(_data)
 
-    groups = _group_by_prepare(_data, *cols, **kwargs, _add=_add)
-    out = DataFrameGroupBy(
-        groups["data"],
-        _group_vars=groups["group_names"],
-        _group_drop=_drop,
+    new_cols = _data._datar["mutated_cols"]
+    if len(new_cols) == 0:
+        return _data
+
+    return _data.group_by(new_cols, drop=_drop, sort=_sort, dropna=_dropna)
+
+
+@group_by.register(TibbleGrouped, context=Context.PENDING)
+def _(
+    _data: TibbleGrouped,
+    *args: Any,
+    _add: bool = False,
+    _drop: bool = None,
+    _sort: bool = False,
+    _dropna: bool = False,
+    **kwargs: Any,
+) -> TibbleGrouped:
+    """Group a grouped data frame"""
+    from .mutate import mutate
+
+    if _drop is None:
+        _drop = group_by_drop_default(_data)
+
+    _data = regcall(mutate, _data, *args, **kwargs)
+    new_cols = _data._datar["mutated_cols"]
+    gvars = regcall(
+        union,
+        regcall(group_vars, _data),
+        new_cols,
+    ) if _add else new_cols
+
+    return regcall(
+        group_by,
+        Tibble(_data, copy=False),
+        *gvars,
+        _drop=_drop,
+        _sort=_sort,
+        _dropna=_dropna,
     )
-    copy_attrs(out, _data)
-    return out
 
 
 @register_verb(DataFrame, context=Context.SELECT)
 def rowwise(
-    _data: DataFrame, *cols: Union[str, int], base0_: bool = None
-) -> DataFrameRowwise:
+    _data: DataFrame,
+    *cols: Union[str, int],
+) -> TibbleRowwise:
     """Compute on a data frame a row-at-a-time
 
     See https://dplyr.tidyverse.org/reference/rowwise.html
@@ -89,51 +117,46 @@ def rowwise(
         *cols:  Variables to be preserved when calling summarise().
             This is typically a set of variables whose combination
             uniquely identify each row.
-        base0_: Whether indexes are 0-based if columns are selected by indexes.
-            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A row-wise data frame
     """
-    check_column_uniqueness(_data)
-    idxes = vars_select(_data.columns, *cols, base0=base0_)
-    if len(idxes) == 0:
-        return DataFrameRowwise(_data)
-    return DataFrameRowwise(_data, _group_vars=_data.columns[idxes].tolist())
+    if not _data.columns.is_unique:
+        raise NameNonUniqueError(
+            "Cann't rowwise a data frame with duplicated names."
+        )
+    idxes = vars_select(_data.columns, *cols)
+    gvars = _data.columns[idxes]
+    return regcall(as_tibble, _data.reset_index(drop=True)).rowwise(gvars)
 
 
-@rowwise.register(DataFrameGroupBy, context=Context.SELECT)
+@rowwise.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    _data: DataFrameGroupBy, *cols: str, base0_: bool = None
-) -> DataFrameRowwise:
+    _data: TibbleGrouped,
+    *cols: Union[str, int],
+) -> TibbleRowwise:
     # grouped dataframe's columns are unique already
     if cols:
         raise ValueError(
             "Can't re-group when creating rowwise data. "
             "Either first `ungroup()` or call `rowwise()` without arguments."
         )
-    # copy_attrs?
-    return DataFrameRowwise(
-        _data,
-        _group_vars=group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-    )
+
+    cols = _data.group_vars
+    return regcall(rowwise, _data._datar["grouped"].obj, *cols)
 
 
-@rowwise.register(DataFrameRowwise, context=Context.SELECT)
-def _(
-    _data: DataFrameRowwise, *cols: str, base0_: bool = None
-) -> DataFrameRowwise:
-    idxes = vars_select(_data.columns, *cols, base0=base0_)
-    if len(idxes) == 0:
-        # copy_attrs?
-        return DataFrameRowwise(_data)
-    # copy_attrs?
-    return DataFrameRowwise(_data, _group_vars=_data.columns[idxes].to_list())
+@rowwise.register(TibbleRowwise, context=Context.SELECT)
+def _(_data: TibbleRowwise, *cols: Union[str, int]) -> TibbleRowwise:
+    idxes = vars_select(_data.columns, *cols)
+    gvars = _data.columns[idxes]
+    return _data.rowwise(gvars)
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(context=Context.SELECT)
 def ungroup(
-    x: DataFrame, *cols: Union[str, int], base0_: bool = None
+    x: Any,
+    *cols: Union[str, int],
 ) -> DataFrame:
     """Ungroup a grouped data
 
@@ -142,8 +165,6 @@ def ungroup(
     Args:
         x: The data frame
         *cols: Variables to remove from the grouping variables.
-        base0_: If columns are selected with indexes, whether they are 0-based.
-            If not given, will use `datar.base.get_option('index.base.0')`
 
     Returns:
         A data frame with selected columns removed from the grouping variables.
@@ -153,104 +174,49 @@ def ungroup(
     return x
 
 
-@ungroup.register(DataFrameGroupBy, context=Context.SELECT)
+@ungroup.register(TibbleGrouped, context=Context.SELECT)
 def _(
-    x: DataFrameGroupBy, *cols: Union[str, int], base0_: bool = None
-) -> DataFrame:
+    x: TibbleGrouped,
+    *cols: Union[str, int],
+) -> Union[Tibble, TibbleGrouped]:
+    obj = x._datar["grouped"].obj
     if not cols:
-        return DataFrame(x, index=x.index)
-    old_groups = group_vars(x, __calling_env=CallingEnvs.REGULAR)
-    to_remove = vars_select(x.columns, *cols, base0=base0_)
-    new_groups = setdiff(
-        old_groups, x.columns[to_remove], __calling_env=CallingEnvs.REGULAR
+        return Tibble(obj)
+
+    old_groups = regcall(group_vars, x)
+    to_remove = vars_select(obj.columns, *cols)
+    new_groups = regcall(
+        setdiff,
+        old_groups,
+        obj.columns[to_remove],
     )
 
-    return group_by(x, *new_groups, __calling_env=CallingEnvs.REGULAR)
+    return regcall(group_by, obj, *new_groups)
 
 
-@ungroup.register(DataFrameRowwise, context=Context.SELECT)
+@ungroup.register(TibbleRowwise, context=Context.SELECT)
 def _(
-    x: DataFrameRowwise, *cols: Union[str, int], base0_: bool = None
+    x: TibbleRowwise,
+    *cols: Union[str, int],
 ) -> DataFrame:
     if cols:
         raise ValueError("`*cols` is not empty.")
-    return DataFrame(x)
+    return Tibble(x)
 
 
-def _group_by_prepare(
-    _data: DataFrame, *args: Any, _add: bool = False, **kwargs: Any
-) -> Mapping[str, Any]:
-    """Prepare for group by"""
-    computed_columns = _add_computed_columns(
-        _data, *args, _fn="group_by", **kwargs
-    )
-
-    out = computed_columns["data"]
-    group_names = computed_columns["added_names"]
-    if _add:
-        group_names = union(
-            group_vars(_data, __calling_env=CallingEnvs.REGULAR),
-            group_names,
-            __calling_env=CallingEnvs.REGULAR,
-        )
-
-    # checked in _add_computed_columns
-    # unknown = setdiff(group_names, out.columns)
-    # if unknown:
-    #     raise ValueError(
-    #         "Must group by variables found in `_data`.",
-    #         f"Column `{unknown}` not found."
-    #     )
-
-    return {"data": out, "group_names": group_names}
+@ungroup.register(GroupBy, context=Context.SELECT)
+def _(
+    x: GroupBy,
+    *cols: Union[str, int],
+) -> DataFrame:
+    if cols:
+        raise ValueError("`*cols` is not empty.")
+    return x.obj
 
 
-def _add_computed_columns(
-    _data: DataFrame, *args: Any, _fn: str = "group_by", **kwargs: Any
-) -> Mapping[str, Any]:
-    """Add mutated columns if necessary"""
-    from .mutate import _mutate_cols
-
-    # support direct strings
-    args = [f[arg] if isinstance(arg, str) else arg for arg in args]
-    named = name_mutatable_args(*args, **kwargs)
-    if any(
-        isinstance(val, Expression)
-        and not isinstance(val, (DirectRefAttr, DirectRefItem))
-        for val in named.values()
-    ):
-        context = Context.EVAL.value
-        try:
-            cols, nonexists = _mutate_cols(
-                ungroup(_data, __calling_env=CallingEnvs.REGULAR),
-                context,
-                *args,
-                **kwargs,
-            )
-        except Exception as exc:
-            raise ValueError(
-                f"Problem adding computed columns in `{_fn}()`."
-            ) from exc
-
-        out = _data.copy()
-        col_names = cols.columns.tolist()
-        out[col_names] = cols
-    else:
-        out = _data
-        col_names = list(named)
-        nonexists = setdiff(
-            col_names, out.columns, __calling_env=CallingEnvs.REGULAR
-        )
-
-    if nonexists:
-        raise ColumnNotExistingError(
-            "Must group by variables found in `_data`. "
-            f"Columns {nonexists} are not found."
-        )
-
-    return {"data": out, "added_names": col_names}
-
-
-def group_by_drop_default(_tbl) -> bool:
+def group_by_drop_default(_tbl: DataFrame) -> bool:
     """Get the groupby _drop attribute of dataframe"""
-    return _tbl.attrs.get("_group_drop", True)
+    grouped = getattr(_tbl, "_datar", {}).get("grouped", None)
+    if not grouped:
+        return True
+    return grouped.observed

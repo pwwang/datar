@@ -27,5 +27,5 @@
 |[`head()`][1]|Get the head of the object||
 |[`tail()`][2]|Get the tail of the object||
 
-[1]: ../../api/datar.utils.verbs/#datar.utils.verbs.head
-[2]: ../../api/datar.utils.verbs/#datar.utils.verbs.tail
+[1]: ../../api/datar.base.verbs/#datar.base.verbs.head
+[2]: ../../api/datar.base.verbs/#datar.base.verbs.tail
