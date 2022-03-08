@@ -90,7 +90,7 @@ prod.register(
     (TibbleGrouped, GroupBy),
     "prod",
     pre=lambda x, na_rm=True: _warn_na_rm(
-        "sum", na_rm, "Use f.x.prod(min_count=...) to control NA produces."
+        "prod", na_rm, "Use f.x.prod(min_count=...) to control NA produces."
     )
     or (x, (), {}),
 )

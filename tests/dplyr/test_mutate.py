@@ -145,11 +145,11 @@ def test_handles_data_frame_columns():
     assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
 
     res = mutate(group_by(df, f.a), new_col=tibble(x=f.a))
-    assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
+    assert_iterable_equal(res["new_col"].x.obj, [1, 2, 3])
 
     rf = rowwise(df, f.a)
     res = mutate(rf, new_col=tibble(x=f.a))
-    assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
+    assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]) >> rowwise())
 
 
 def test_unnamed_data_frames_are_automatically_unspliced():

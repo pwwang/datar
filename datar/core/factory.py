@@ -81,7 +81,7 @@ def _preprocess_args(sign: "Signature", data_args, args, kwargs):
             bound.arguments[arg] = args_df
         elif arg == "__args_raw":
             bound.arguments[arg] = args_raw
-        elif arg in args_df:
+        elif arg in args_df or args_df.columns.str.startswith(f"{arg}$").any():
             bound.arguments[arg] = args_df[arg]
         elif sign.parameters[arg].kind == sign.parameters[arg].VAR_POSITIONAL:
             star_args = bound.arguments[arg]
@@ -345,7 +345,6 @@ def func_factory(
 
     def _pipda_func(__x, *args, **kwargs):
         bound = _preprocess_args(sign, data_args, (__x, *args), kwargs)
-
         out = dispatched(*bound.args, **bound.kwargs)
         if (
             kind == "transform"

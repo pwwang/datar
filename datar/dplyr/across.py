@@ -10,7 +10,7 @@ from pipda.function import Function
 from pipda.utils import functype
 
 from ..core.broadcast import add_to_tibble
-from ..core.tibble import Tibble
+from ..core.tibble import Tibble, reconstruct_tibble
 from ..core.utils import vars_select, regcall
 from ..core.middlewares import CurColumn
 from ..core.contexts import Context
@@ -226,7 +226,7 @@ def c_across(
         _cols = regcall(everything, _data)
 
     _cols = vars_select(_data.columns, _cols)
-    return _data.iloc[:, _cols]
+    return reconstruct_tibble(_data, _data.iloc[:, _cols])
 
 
 @register_func(

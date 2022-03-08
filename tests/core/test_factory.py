@@ -47,7 +47,7 @@ def test_transform_default():
     x = DataFrame({"a": [3, 4]})
     out = double(x)
     assert isinstance(out, DataFrame)
-    assert_iterable_equal(out["x$a"], [6, 8])
+    assert_iterable_equal(out.a, [6, 8])
 
     # default on seriesgroupby
     x = Series([1, 2, 1, 2]).groupby([1, 1, 2, 2])
@@ -60,7 +60,7 @@ def test_transform_default():
     x = tibble(x=[1, 2, 1, 2], g=[1, 1, 2, 2]).group_by("g")
     out = double(x)
     # grouping variables not included
-    assert_iterable_equal(out.x, [2, 4, 2, 4])
+    assert_iterable_equal(out.x.obj, [2, 4, 2, 4])
 
     x = tibble(x=[1, 2, 1, 2], g=[1, 1, 2, 2]).rowwise("g")
     out = double(x)
