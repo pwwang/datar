@@ -1,3 +1,8 @@
+## 0.6.1
+
+- 🐛 Fix `rep(df, n)` producing a nested df
+- 🐛 Fix `TibbleGrouped.__getitem__()` not keeping grouping structures
+
 ## 0.6.0
 
 ### General
