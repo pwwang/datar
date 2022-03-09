@@ -12,7 +12,7 @@ from pipda import evaluate_expr
 
 from .collections import Collection
 from .contexts import Context
-from .utils import name_of, regcall
+from .utils import apply_dtypes, name_of, regcall
 from .names import repair_names
 
 
@@ -86,19 +86,7 @@ class Tibble(DataFrame):
         if _dtypes is True:
             return out.convert_dtypes()
 
-        if not isinstance(_dtypes, dict):
-            dtypes = zip(out.columns, [_dtypes] * out.shape[1])
-        else:
-            dtypes = _dtypes.items()
-
-        for column, dtype in dtypes:
-            if column in out:
-                out[column] = out[column].astype(dtype)
-            else:
-                for col in out:
-                    if col.startswith(f"{column}$"):
-                        out[col] = out[col].astype(dtype)
-
+        apply_dtypes(out, _dtypes)
         return out
 
     @classmethod
@@ -160,7 +148,7 @@ class Tibble(DataFrame):
             else:
                 for col in value.columns:
                     colname = f"{key}${col}"
-                    super().__setitem__(colname, value[col])
+                    super().__setitem__(colname, value[col].copy())
 
         else:
             super().__setitem__(key, value)
@@ -268,7 +256,8 @@ class TibbleGrouped(Tibble):
         result = super().__getitem__(key)
         if isinstance(result, Series):
             return self._datar["grouped"][key]
-
+        if isinstance(result, DataFrame):
+            return TibbleGrouped(result, copy=False, meta=self._datar)
         return result  # pragma: no cover
 
     def __setitem__(self, key, value):
@@ -403,7 +392,8 @@ class TibbleRowwise(TibbleGrouped):
         result = super().__getitem__(key)
         if isinstance(result, SeriesGroupBy):
             result.is_rowwise = True
-
+        elif isinstance(result, DataFrame):
+            return reconstruct_tibble(self, result)
         return result
 
     def copy(self, deep: bool = True) -> "TibbleRowwise":

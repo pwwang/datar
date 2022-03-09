@@ -684,11 +684,10 @@ def _(value: SeriesGroupBy, name: str) -> Tibble:
 @init_tibble_from.register(DataFrameGroupBy)
 def _(value: Union[DataFrame, DataFrameGroupBy], name: str) -> Tibble:
     from ..tibble import as_tibble
-
     result = regcall(as_tibble, value)
+
     if name:
-        if result is value:
-            result = value.copy()
+        result = result.copy()
         result.columns = [f"{name}${col}" for col in result.columns]
     return result
 
