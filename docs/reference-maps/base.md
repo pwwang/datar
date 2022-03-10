@@ -11,7 +11,7 @@
 
 ## Reference of `datar.base`
 
-See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) for APIs ported from `r-utils`
+See [here](../stats) for APIs ported from `r-stats` and [here](../utils) for APIs ported from `r-utils`
 
 <u>**Legend:**</u>
 
