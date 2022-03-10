@@ -14,8 +14,15 @@ from .collections import Collection, Inverted, Negated, Intersect
 def _binop(op, left, right, fill_false=False):
     left, right, grouper, is_rowwise = broadcast2(left, right)
     if fill_false:
-        left = Series(left).fillna(False).values
-        right = Series(right).fillna(False).values
+        if isinstance(left, Series):
+            left = left.fillna(False)
+        else:
+            left = Series(left).fillna(False).values
+
+        if isinstance(right, Series):
+            right = right.fillna(False)
+        else:
+            right = Series(right).fillna(False).values
 
     out = op(left, right)
     if grouper:
