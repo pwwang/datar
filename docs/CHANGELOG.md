@@ -1,3 +1,9 @@
+## 0.6.2
+
+- 🚑 Fix #87 boolean operator losing index
+- 📝 [doc] Update/Fix doc for case_when (#87)
+- 📝 [doc] Fix links in reference map
+
 ## 0.6.1
 
 - 🐛 Fix `rep(df, n)` producing a nested df
