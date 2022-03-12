@@ -62,6 +62,8 @@ nav:
         'add_row': 'notebooks/add_row.ipynb'
         'arrange': 'notebooks/arrange.ipynb'
         'base': 'notebooks/base.ipynb'
+        'base-arithmetic': 'notebooks/base-arithmetic.ipynb'
+        'base-funs': 'notebooks/base-funs.ipynb'
         'between': 'notebooks/between.ipynb'
         'bind': 'notebooks/bind.ipynb'
         'case_when': 'notebooks/case_when.ipynb'

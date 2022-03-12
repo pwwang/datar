@@ -1,3 +1,12 @@
+## 0.6.2
+
+- 🚑 Fix #87 boolean operator losing index
+- 🚑 Fix false alarm from `rename()`/`relocate()` for missing grouping variables (#89)
+- ✨ Add `base.diff()`
+- 📝 [doc] Update/Fix doc for case_when (#87)
+- 📝 [doc] Fix links in reference map
+- 📝 [doc] Update docs for `dplyr.base`
+
 ## 0.6.1
 
 - 🐛 Fix `rep(df, n)` producing a nested df

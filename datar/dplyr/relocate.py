@@ -52,6 +52,7 @@ def relocate(
         *args,
         **kwargs,
         _group_vars=gvars,
+        _missing_gvars_inform=False,
     )
 
     to_move = list(to_move)
@@ -65,6 +66,7 @@ def relocate(
                 all_columns,
                 _before,
                 _group_vars=[],
+                _missing_gvars_inform=False,
             )[0]
         )
         if where not in to_move:
@@ -76,6 +78,7 @@ def relocate(
                 all_columns,
                 _after,
                 _group_vars=[],
+                _missing_gvars_inform=False,
             )[0]
         )
         if where not in to_move:

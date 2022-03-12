@@ -668,7 +668,9 @@ def init_tibble_from(value, name: str) -> Tibble:
 
 @init_tibble_from.register(Series)
 def _(value: Series, name: str) -> Tibble:
-    name = name or value.name
+    # Deprecate warning, None will be used as series name in the future
+    # So use 0 as default here
+    name = name or value.name or 0
     return Tibble(value.to_frame(name=name), copy=False)
 
 

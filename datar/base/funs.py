@@ -12,6 +12,7 @@ from pipda import register_func
 
 from ..core.middlewares import WithDataEnv
 from ..core.contexts import Context
+from ..core.factory import func_factory
 from ..core.tibble import Tibble
 from ..core.utils import arg_match, name_of
 from ..core.names import repair_names
@@ -64,6 +65,38 @@ def cut(
         precision=precision,
         ordered=ordered_result,
     )
+
+
+@func_factory("agg", "x")
+def diff(x, lag: int = 1, differences: int = 1):
+    """Calculates suitably lagged and iterated differences.
+
+    If the data is a vector of length n and differences = 1, then the computed
+    result is equal to the successive differences
+    `x[lag:] – x[:-lag]`.
+
+    Examples:
+        >>> rv = [52, 21, 10, 11, 19]
+        >>> data = diff(rv)
+        >>> # -31 -11 1 8
+        >>> # rv[1:] - rv[:-1]
+        >>> # rv[1:]  [21, 10, 11, 19]
+        >>> # rv[:-1] [52, 21, 10, 11]
+
+    Args:
+        x: The data
+        lag: The lag to use. Could be negative.
+            It always calculates `x[lag:] - x[:-lag]` even when `lag` is negative
+        differences: The order of the difference
+
+    Returns:
+        An array of `x[lag:] – x[:-lag]`.
+        If `differences > 1`, the rule applies `differences` times on `x`
+    """
+    x = x.values
+    for _ in range(differences):
+        x = x[lag:] - x[:-lag]
+    return x
 
 
 @register_func(None, context=Context.EVAL)

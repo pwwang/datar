@@ -11,7 +11,7 @@
 
 ## Reference of `datar.base`
 
-See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) for APIs ported from `r-utils`
+See [here](../stats) for APIs ported from `r-stats` and [here](../utils) for APIs ported from `r-utils`
 
 <u>**Legend:**</u>
 
@@ -43,29 +43,40 @@ See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) f
 ### Arithmetic functions
 |API|Description|Notebook example|
 |---|---|---:|
-|[`mean()`][8]|Calculate the mean of the values|[:material-notebook:][4]|
-|[`median()`][9]|Calculate the median of the values|[:material-notebook:][4]|
-|[`min()`][10]|Calculate the min of the values|[:material-notebook:][4]|
-|[`max()`][11]|Calculate the max of the values|[:material-notebook:][4]|
-|[`pmin()`][12]|Calculate the min of the values rowwisely|[:material-notebook:][4]|
-|[`pmax()`][13]|Calculate the max of the values rowwisely|[:material-notebook:][4]|
-|[`sum()`][14]|Calculate the sum of the values|[:material-notebook:][4]|
-|[`abs()`][15]|Calculate the absolute values of the values|[:material-notebook:][4]|
-|[`round()`][16]|Round the numbers|[:material-notebook:][4]|
-|[`var()`][17]|Calculate the variance of the values|[:material-notebook:][4]|
-|[`ceiling()`][18]|Get the ceiling integers of the numbers|[:material-notebook:][4]|
-|[`floor()`][19]|Get the floor integers of the numbers|[:material-notebook:][4]|
-|[`sqrt()`][20]|Get the square root of the numbers|[:material-notebook:][4]|
-|[`cov()`][21]|Calculate the covariance of the values|[:material-notebook:][4]|
-|[`prod()`][117]|Calculate Product of the input||
-|[`sign()`][118]|Get the signs of the corresponding elements of x||
-|[`signif()`][125]|Rounds the values in its first argument to the specified number of significant digits||
-|[`trunc()`][119]|Get the integers truncated for each element in x||
-|[`exp()`][120]|Calculates the power of natural number||
-|[`log()`][121]|Computes logarithms, by default natural logarithm||
-|[`log2()`][122]|Computes logarithms with base 2||
-|[`log10()`][123]|Computes logarithms with base 10||
-|[`log1p()`][124]|Computes log(1+x)||
+|[`mean()`][8]|Calculate the mean of the values|[:material-notebook:][151]|
+|[`median()`][9]|Calculate the median of the values|[:material-notebook:][151]|
+|[`min()`][10]|Calculate the min of the values|[:material-notebook:][151]|
+|[`max()`][11]|Calculate the max of the values|[:material-notebook:][151]|
+|[`pmin()`][12]|Calculate the min of the values rowwisely|[:material-notebook:][151]|
+|[`pmax()`][13]|Calculate the max of the values rowwisely|[:material-notebook:][151]|
+|[`sum()`][14]|Calculate the sum of the values|[:material-notebook:][151]|
+|[`abs()`][15]|Calculate the absolute values of the values|[:material-notebook:][151]|
+|[`round()`][16]|Round the numbers|[:material-notebook:][151]|
+|[`var()`][17]|Calculate the variance of the values|[:material-notebook:][151]|
+|[`ceiling()`][18]|Get the ceiling integers of the numbers|[:material-notebook:][151]|
+|[`floor()`][19]|Get the floor integers of the numbers|[:material-notebook:][151]|
+|[`sqrt()`][20]|Get the square root of the numbers|[:material-notebook:][151]|
+|[`cov()`][21]|Calculate the covariance of the values|[:material-notebook:][151]|
+|[`prod()`][117]|Calculate Product of the input|[:material-notebook:][151]|
+|[`sign()`][118]|Get the signs of the corresponding elements of x|[:material-notebook:][151]|
+|[`signif()`][125]|Rounds the values in its first argument to the specified number of significant digits|[:material-notebook:][151]|
+|[`trunc()`][119]|Get the integers truncated for each element in x|[:material-notebook:][151]|
+|[`exp()`][120]|Calculates the power of natural number|[:material-notebook:][151]|
+|[`log()`][121]|Computes logarithms, by default natural logarithm|[:material-notebook:][151]|
+|[`log2()`][122]|Computes logarithms with base 2|[:material-notebook:][151]|
+|[`log10()`][123]|Computes logarithms with base 10|[:material-notebook:][151]|
+|[`log1p()`][124]|Computes log(1+x)|[:material-notebook:][151]|
+|[`quantile()`][152]|Produces sample quantiles corresponding to the given probabilities.|[:material-notebook:][151]|
+|[`sd()`, `std()`][153]|Computes the standard deviation of the values|[:material-notebook:][151]|
+|[`weighted_mean()`][154]|Computes the weighted mean of the values|[:material-notebook:][151]|
+|[`col_sums()`][155]|Computes column sums of a dataframe|[:material-notebook:][151]|
+|[`row_sums()`][156]|Computes row sums of a dataframe|[:material-notebook:][151]|
+|[`col_means()`][157]|Computes column means of a dataframe|[:material-notebook:][151]|
+|[`row_means()`][158]|Computes row means of a dataframe|[:material-notebook:][151]|
+|[`col_sds()`][159]|Computes column sds of a dataframe|[:material-notebook:][151]|
+|[`row_sds()`][160]|Computes row sds of a dataframe|[:material-notebook:][151]|
+|[`col_medians()`][161]|Computes column medians of a dataframe|[:material-notebook:][151]|
+|[`row_medians()`][162]|Computes row medians of a dataframe|[:material-notebook:][151]|
 
 ### Bessel functions
 
@@ -179,7 +190,7 @@ See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) f
 |[`sample`][64]|Sample the elements from sequence|[:material-notebook:][4]|
 |[`length`][65]|Get the length of data|[:material-notebook:][4]|
 |[`match`][129]|match returns a vector of the positions of (first) matches of its first argument in its second.||
-|[`rank`][143]|Returns the sample ranks of the values in a vector.||
+|[`rank`][143]|Returns the sample ranks of the values in a vector.|[:material-notebook:][163]|
 |[`order`][144]|Returns a permutation which rearranges its first argument into ascending or descending order||
 |[`sort`][145]|Sorting or Ordering Vectors||
 
@@ -240,7 +251,7 @@ See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) f
 |[`is_integer`][93] [`is_int`][93]|Test if data is integer|[:material-notebook:][4]|
 |[`is_numeric`][94]|Test if data is numeric|[:material-notebook:][4]|
 |[`is_atomic`][95]|Test is data is atomic|[:material-notebook:][4]|
-|[`is_element`][96] [`is_in`][96]|Test if value is an element of an array (R's `%in`)|[:material-notebook:][4]|
+|[`is_element, `is_in`][96]|Test if value is an element of an array (R's `%in`)|[:material-notebook:][4]|
 
 ### Trigonometric and hyper bolic functions
 
@@ -274,16 +285,18 @@ See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) f
 
 |API|Description|Notebook example|
 |---|---|---:|
-|[`cut`][113]|Convert Numeric to Factor|[:material-notebook:][4]|
-|[`identity`][114]|Identity Function|[:material-notebook:][4]|
-|[`expandgrid`][115]|Create a Data Frame from All Combinations of Factor Variables|[:material-notebook:][4]|
+|[`cut`][113]|Convert Numeric to Factor|[:material-notebook:][163]|
+|[`diff`][164]|Returns suitably lagged and iterated differences.|[:material-notebook:][163]|
+|[`identity`][114]|Identity Function|[:material-notebook:][163]|
+|[`expandgrid`][115]|Create a Data Frame from All Combinations of Factor Variables|[:material-notebook:][163]|
+|[`outer`][165]|Compute the outer product of two vectors.|[:material-notebook:][163]|
 |[`max_col`][136]|Find the maximum position for each row of a matrix||
 |[`append`][147]|Add elements to a vector.||
 |[`complete_cases`][137]|Get a bool array indicating whether the values of rows are complete in a data frame.||
 |[`proportions`][147], [`prop_table`][147]|Returns conditional proportions given `margins`||
-|[`make_names`][137]|Make names available as columns and can be accessed by `df.<name>`||
-|[`make_unique`][138]|Make the names unique, alias of `make_names(names, unique=True)`||
-|[**`data_context`**][116]|Mimic R's `with`|[:material-notebook:][4]|
+|[`make_names`][137]|Make names available as columns and can be accessed by `df.<name>`|[:material-notebook:][163]|
+|[`make_unique`][138]|Make the names unique, alias of `make_names(names, unique=True)`|[:material-notebook:][163]|
+|[**`data_context`**][116]|Mimic R's `with`|[:material-notebook:][163]|
 
 
 [1]: ../../api/datar.base.which/#datar.dplyr.which.which
@@ -436,3 +449,18 @@ See [here](../stats.md) for APIs ported from `r-stats` and [here](../utils.md) f
 [148]: ../../api/datar.base.verbs/#datar.base.verbs.proportions
 [149]: ../../api/datar.base.string/#datar.base.string.trimws
 [150]: ../../api/datar.base.date/#datar.base.date.as_pd_date
+[151]: ../../notebooks/base-arithmetic
+[152]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.quantile
+[153]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.sd
+[154]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.weighted_mean
+[155]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.col_sums
+[156]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.row_sums
+[157]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.col_means
+[158]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.row_means
+[159]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.col_sds
+[160]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.row_sds
+[161]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.col_medians
+[162]: ../../api/datar.base.arithmetic/#datar.base.arithmetic.row_medians
+[163]: ../../notebooks/base-funs
+[164]: ../../api/datar.base.funs/#datar.base.funs.diff
+[165]: ../../api/datar.base.funs/#datar.base.funs.outer

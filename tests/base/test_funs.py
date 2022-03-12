@@ -11,9 +11,10 @@ from datar.base.funs import (
     make_unique,
     data_context,
     expandgrid,
+    diff,
     rank,
 )
-from datar.base import table, pi, paste0, rnorm
+from datar.base import table, pi, paste0, rnorm, cumsum, seq
 from ..conftest import assert_iterable_equal
 
 
@@ -63,6 +64,14 @@ def test_cut():
     aaa = [1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 7]
     ct = cut(aaa, 3, precision=3, ordered_result=True)
     assert str(ct[0]) == "(0.994, 3.0]"
+
+
+def test_diff():
+    x = cumsum(cumsum(seq(1, 10)))
+    assert_iterable_equal(diff(x, lag=2), x[2:] - x[:-2])
+    assert_iterable_equal(diff(x, lag=2), seq(3, 10)**2)
+
+    assert_iterable_equal(diff(diff(x)), diff(x, differences=2))
 
 
 def test_identity():

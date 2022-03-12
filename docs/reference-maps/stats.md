@@ -27,14 +27,8 @@
 |[`rnorm()`][1]|Generates random deviates for the normal distribution||
 |[`rpois()`][2]|Generates random deviates for the Poisson distribution||
 |[`runif()`][3]|Generates random deviates for the uniform distribution||
-|[`quantile()`][4]|produces sample quantiles corresponding to the given probabilities.||
-|[`sd()`][5]|Computes the standard deviation of the values||
-|[`weighted_mean()`][6]|Computes the weighted mean of the values||
 
 
 [1]: ../../api/datar.base.stats/#datar.base.stats.rnorm
 [2]: ../../api/datar.base.stats/#datar.base.stats.rpois
 [3]: ../../api/datar.base.stats/#datar.base.stats.runif
-[4]: ../../api/datar.base.stats/#datar.base.stats.quantile
-[5]: ../../api/datar.base.stats/#datar.base.stats.sd
-[6]: ../../api/datar.base.stats/#datar.base.stats.weighted_mean

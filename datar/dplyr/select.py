@@ -66,6 +66,7 @@ def _eval_select(
     _all_columns: Index,
     *args: Any,
     _group_vars: Sequence[str],
+    _missing_gvars_inform: bool = True,
     **kwargs: Any,
 ) -> Tuple[Sequence[int], Mapping[str, str]]:
     """Evaluate selections to get locations
@@ -79,9 +80,10 @@ def _eval_select(
         *kwargs.values(),
     )
 
-    missing = regcall(setdiff, _group_vars, _all_columns[selected_idx])
-    if len(missing) > 0:
-        logger.info("Adding missing grouping variables: %s", missing)
+    if _missing_gvars_inform:
+        missing = regcall(setdiff, _group_vars, _all_columns[selected_idx])
+        if len(missing) > 0:
+            logger.info("Adding missing grouping variables: %s", missing)
 
     selected_idx = regcall(
         union,
