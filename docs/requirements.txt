@@ -5,6 +5,7 @@ pymdown-extensions
 mkapi-fix
 mkdocs-jupyter
 ipykernel
+ipython_genutils
 # to compile readme.ipynb
 plotnine
 klib
