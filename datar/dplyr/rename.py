@@ -29,6 +29,7 @@ def rename(_data, **kwargs):
     selected, new_names = _eval_select(
         all_columns,
         _group_vars=gvars,
+        _missing_gvars_inform=False,
         **kwargs,
     )
 
