@@ -1,8 +1,10 @@
 ## 0.6.2
 
 - 🚑 Fix #87 boolean operator losing index
+- ✨ Add `base.diff()`
 - 📝 [doc] Update/Fix doc for case_when (#87)
 - 📝 [doc] Fix links in reference map
+- 📝 [doc] Update docs for `dplyr.base`
 
 ## 0.6.1
 
