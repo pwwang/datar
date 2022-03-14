@@ -8,6 +8,7 @@ import itertools
 import numpy as np
 import pandas
 from pandas.api.types import is_scalar
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
 from ..core.middlewares import WithDataEnv
@@ -67,7 +68,7 @@ def cut(
     )
 
 
-@func_factory("agg", "x")
+@func_factory("apply", "x")
 def diff(x, lag: int = 1, differences: int = 1):
     """Calculates suitably lagged and iterated differences.
 
@@ -97,6 +98,13 @@ def diff(x, lag: int = 1, differences: int = 1):
     for _ in range(differences):
         x = x[lag:] - x[:-lag]
     return x
+
+
+diff.register(
+    SeriesGroupBy,
+    func=None,
+    post=lambda out, x, lag=1, differences=1: out.explode().astype(x.obj.dtype)
+)
 
 
 @register_func(None, context=Context.EVAL)
