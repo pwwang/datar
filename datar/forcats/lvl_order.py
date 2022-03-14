@@ -4,6 +4,7 @@ from typing import Any, Callable, Iterable, Sequence
 import pandas as pd
 from pandas import Categorical, DataFrame, Series
 from pandas.api.types import is_scalar
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func, register_verb
 from pipda.utils import CallingEnvs, functype
 
@@ -93,11 +94,19 @@ def fct_inorder(_f, ordered: bool = None) -> Categorical:
     Returns:
         The factor with levels reordered
     """
-    _f = check_factor(_f)
-    dups = regcall(duplicated, _f)
-    idx = regcall(as_integer, _f)[~dups]
-    idx = idx[~pd.isnull(_f[~dups])]
-    return regcall(lvls_reorder, _f, idx, ordered=ordered)
+    is_sgb = isinstance(_f, SeriesGroupBy)
+    _f1 = _f.obj if is_sgb else _f
+
+    _f1 = check_factor(_f1)
+    dups = regcall(duplicated, _f1)
+    idx = regcall(as_integer, _f1)[~dups]
+    idx = idx[~pd.isnull(_f1[~dups])]
+    out = regcall(lvls_reorder, _f1, idx, ordered=ordered)
+
+    if not is_sgb:
+        return out
+
+    return Series(out, _f.obj.index).groupby(_f.grouper)
 
 
 as_factor = fct_inorder
