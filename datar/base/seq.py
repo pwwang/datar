@@ -91,7 +91,23 @@ def c(*elems):
     Returns:
         A collection of elements
     """
-    return Collection(*elems)
+    if not any(isinstance(elem, SeriesGroupBy) for elem in elems):
+        return Collection(*elems)
+
+    from ..tibble import tibble
+
+    values = []
+    for elem in elems:
+        if isinstance(elem, SeriesGroupBy):
+            values.append(elem.agg(list))
+        elif is_scalar(elem):
+            values.append(elem)
+        else:
+            values.extend(elem)
+
+    df = tibble(*values)
+    out = df.agg(lambda row: Collection(*row), axis=1)
+    return out.explode()
 
 
 @func_factory("apply", "x")

@@ -289,3 +289,14 @@ def test_order():
     x = Series([1, 2, 3, 4]).groupby([1, 1, 2, 2])
     out = order(x)
     assert_iterable_equal(out.obj, [0, 1, 0, 1])
+
+
+def test_c():
+    assert_iterable_equal(c(1, 2, 3), [1, 2, 3])
+    assert_iterable_equal(c(1, 2, 3, 4), [1, 2, 3, 4])
+    assert_iterable_equal(c(1, c(2, 3), 4, 5), [1, 2, 3, 4, 5])
+
+    x = Series([1, 2, 3, 4]).groupby([1, 1, 2, 2])
+    out = c(7, [8, 9], x)
+    assert_iterable_equal(out, [7, 8, 9, 1, 2, 7, 8, 9, 3, 4])
+    assert_iterable_equal(out.index, [1, 1, 1, 1, 1, 2, 2, 2, 2, 2])
