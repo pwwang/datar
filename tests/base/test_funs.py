@@ -1,6 +1,6 @@
 import pytest  # noqa
 
-from pandas import Interval, DataFrame
+from pandas import Interval, DataFrame, Series
 from pandas.testing import assert_frame_equal
 from datar import f
 from datar.base.funs import (
@@ -72,6 +72,13 @@ def test_diff():
     assert_iterable_equal(diff(x, lag=2), seq(3, 10)**2)
 
     assert_iterable_equal(diff(diff(x)), diff(x, differences=2))
+
+    assert_iterable_equal(diff(x, differences=40), [])
+
+    x = Series([1, 2, 3, 4, 5]).groupby([1, 2, 2, 3, 3])
+    out = diff(x)
+    assert_iterable_equal(out.obj, [1, 1])
+    assert out.grouper.ngroups == 3
 
 
 def test_identity():

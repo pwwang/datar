@@ -8,7 +8,7 @@ from pipda import register_func
 
 from ..core.tibble import Tibble, TibbleGrouped
 from ..core.middlewares import CurColumn
-from ..core.utils import regcall
+from ..core.utils import dict_get, regcall
 from ..base import setdiff
 
 from .group_data import group_data, group_keys
@@ -26,7 +26,17 @@ def n(_data, _context=None):
 @n.register(TibbleGrouped)
 def _(_data, _context=None):
     _data = _context.meta.get("input_data", _data)
-    return _data._datar["grouped"].grouper.size()
+    grouped = _data._datar["grouped"]
+
+    out = grouped.grouper.size().to_frame().reset_index()
+    out = out.groupby(
+        grouped.grouper.names,
+        sort=grouped.sort,
+        observed=grouped.observed,
+        dropna=grouped.dropna,
+    )[0]
+
+    return out
 
 
 @register_func(DataFrame, verb_arg_only=True)
@@ -43,7 +53,7 @@ def _(_data, _context=None):
     grouped = _data._datar["grouped"]
     return Series(
         [
-            grouped.obj.loc[grouped.grouper.groups[key], :]
+            grouped.obj.loc[dict_get(grouped.grouper.groups, key), :]
             for key in grouped.grouper.result_index
         ],
         name="cur_data_all",

@@ -3,20 +3,26 @@
 https://github.com/tidyverse/dplyr/blob/master/R/slice.R
 """
 import builtins
-from typing import Any, Iterable, Union
+from typing import TYPE_CHECKING, Any, Iterable, Mapping, Union
 
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
+from pandas.api.types import is_integer
+from pandas.core.groupby import SeriesGroupBy
 
 # from pandas.api.types import is_integer
 from pipda import register_verb, Expression
 
+from datar.core.collections import Collection
+
 from ..core.broadcast import _ungroup
 from ..core.contexts import Context
-from ..core.collections import Collection
-from ..core.utils import logger, regcall
+from ..core.utils import dict_get, logger, regcall
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
+
+if TYPE_CHECKING:
+    from pandas import Index
 
 
 @register_verb(DataFrame, context=Context.SELECT)
@@ -71,27 +77,11 @@ def _(
         logger.warning("`slice()` doesn't support `_preserve` argument yet.")
 
     grouped = _data._datar["grouped"]
-    gsizes = grouped.grouper.size()
-    indices = [
-        grouped.grouper.indices[key].take(
-            _sanitize_rows(rows, gsizes.loc[key])
-        )
-        for key in grouped.grouper.result_index
-        # grouped.grouper.indices[key] gets empty [] when it's an empty group
-        if grouped.grouper.indices[key].size > 0
-    ]
-    if indices:
-        indices = np.concatenate(
-            [
-                grouped.grouper.indices[key].take(
-                    _sanitize_rows(rows, gsizes.loc[key])
-                )
-                for key in grouped.grouper.result_index
-                # grouped.grouper.indices[key] gets empty []
-                # when it's an empty group
-                if grouped.grouper.indices[key].size > 0
-            ]
-        )
+    indices = _sanitize_rows(
+        rows,
+        grouped.grouper.indices,
+        grouped.grouper.result_index,
+    )
 
     return _data.take(indices)
 
@@ -345,21 +335,38 @@ def _n_from_prop(
     return min(n, total)
 
 
-def _sanitize_rows(rows: Iterable, nrow: int) -> np.ndarray:
+def _sanitize_rows(
+    rows: Iterable,
+    indices: Union[int, Mapping] = None,
+    result_index: "Index" = None,
+) -> np.ndarray:
     """Sanitize rows passed to slice"""
-    rows = Collection(*rows, pool=nrow)
-    if rows.error:
-        raise rows.error from None
+    from ..base import c
 
-    # invalid_type_rows = [
-    #     row
-    #     for row in rows.unmatched
-    #     if not is_integer(row) or pd.isnull(row)
-    # ]
-    # if invalid_type_rows:
-    #     raise TypeError(
-    #         "`slice()` expressions should return indices, got "
-    #         f"{type(invalid_type_rows[0])}"
-    #     )
+    if is_integer(indices):
+        rows = Collection(*rows, pool=indices)
+        if rows.error:
+            raise rows.error from None
+        return np.array(rows, dtype=int)
 
-    return np.array(rows, dtype=int)
+    out = []
+    if any(isinstance(row, SeriesGroupBy) for row in rows):
+        rows = c(*rows)
+        for key in result_index:
+            idx = dict_get(indices, key)
+            if idx.size == 0:
+                continue
+
+            gidx = dict_get(rows.grouper.indices, key)
+            out.extend(idx.take(rows.obj.take(gidx)))
+    else:
+        for key in result_index:
+            idx = dict_get(indices, key)
+            if idx.size == 0:
+                continue
+            grows = Collection(*rows, pool=idx.size)
+            if grows.error:
+                raise grows.error from None
+            out.extend(idx.take(grows))
+
+    return np.array(out, dtype=int)

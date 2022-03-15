@@ -1,9 +1,11 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-slice.r
+from pandas import Categorical, Series
 from pandas.testing import assert_frame_equal
 import pytest
 from datar import f
 from datar.datasets import mtcars
+from datar.testing import assert_tibble_equal
 from datar.tibble import tibble, as_tibble
 from datar.base import nrow, c, NA, rep, seq, dim, names
 from datar.dplyr import (
@@ -27,6 +29,8 @@ from datar.dplyr import (
 )
 from datar.core.tibble import TibbleRowwise
 from datar.dplyr.dslice import _n_from_prop
+
+from ..conftest import assert_iterable_equal
 
 
 def test_empty_slice_returns_input():
@@ -72,13 +76,28 @@ def test_slice_works_with_grouped_data():
 
     res = slice(g, ~f[:2])
     exp = filter(g, row_number() >= 3)
-    assert res.equals(exp)
+    assert_tibble_equal(res, exp)
 
     g = group_by(tibble(x=c(1, 1, 2, 2, 2)), f.x)
     # out = group_keys(slice(g, 3, _preserve=True))
     # assert out.x.tolist() == [1, 2]
     out = group_keys(slice(g, 2, _preserve=False))
     assert out.x.tolist() == [2]
+
+    gf = tibble(x=f[1:4]) >> group_by(
+        g=Categorical([1, 1, 2], categories=[1, 2, 3]),
+        _drop=False,
+    )
+    with pytest.raises(TypeError):
+        gf >> slice("a")
+    with pytest.raises(ValueError):
+        gf >> slice(~f[:2], 1)
+
+    out = gf >> slice(0)
+    assert out.shape[0] == 2
+
+    out = gf >> slice(Series([1, 0, 0]).groupby(gf._datar["grouped"].grouper.result_index))
+    assert_iterable_equal(out.x.obj, [2, 3])
 
 
 def test_slice_gives_correct_rows():
@@ -154,13 +173,13 @@ def test_slice_accepts_star_args():
     out2 = slice(mtcars, [1, 2])
     assert out1.equals(out2)
 
-    out3 = slice(mtcars, 1, n())
-    out4 = slice(mtcars, c(1, nrow(mtcars)))
+    out3 = slice(mtcars, 0, n() - 1)
+    out4 = slice(mtcars, c(0, nrow(mtcars) - 1))
     assert out3.equals(out4)
 
     g = mtcars >> group_by(f.cyl)
-    out5 = slice(g, 0, n())
-    out6 = slice(g, c(0, n()))
+    out5 = slice(g, 0, n() - 1)
+    out6 = slice(g, c(0, n() - 1))
     assert out5.equals(out6)
 
 
@@ -271,10 +290,7 @@ def test_arguments_to_sample_are_passed_along():
     out = df >> slice_sample(n=1, weight_by=f.wt)
     assert out.x.tolist() == [1]
 
-    out = (
-        df
-        >> slice_sample(n=2, weight_by=f.wt, replace=True)
-    )
+    out = df >> slice_sample(n=2, weight_by=f.wt, replace=True)
     assert out.x.tolist() == [1, 1]
 
 
@@ -423,7 +439,7 @@ def test_slice_head_tail_on_grouped_data():
 
 def test_slice_family_on_rowwise_df():
     df = tibble(x=f[1:6]) >> rowwise()
-    out = df >> slice_head(prop=.1)
+    out = df >> slice_head(prop=0.1)
     assert out.shape[0] == 0
 
     out = df >> slice([0, 1, 2])
@@ -457,13 +473,13 @@ def test_preserve_prop_not_support(caplog):
     assert "_preserve" in caplog.text
 
     with pytest.raises(ValueError):
-        df >> slice_min(f.x, prop=.5)
+        df >> slice_min(f.x, prop=0.5)
 
     with pytest.raises(ValueError):
-        df >> slice_max(f.x, prop=.5)
+        df >> slice_max(f.x, prop=0.5)
 
     with pytest.raises(ValueError):
-        df >> slice_sample(f.x, prop=.5)
+        df >> slice_sample(f.x, prop=0.5)
 
 
 def test_wrong_indices():

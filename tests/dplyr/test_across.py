@@ -55,7 +55,7 @@ def test_not_selecting_grouping_var():
     df = tibble(g=1, x=1)
     out = df >> group_by(f.g) >> summarise(x=across(everything()))
     expected = tibble(x=1)
-    assert out["x"].equals(expected)
+    assert_frame_equal(out["x"], expected)
 
 
 def test_names_output():

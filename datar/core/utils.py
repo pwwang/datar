@@ -6,6 +6,7 @@ import textwrap
 from functools import singledispatch
 
 import numpy as np
+import pandas as pd
 from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
 from pandas.core.groupby import SeriesGroupBy
@@ -155,3 +156,18 @@ def apply_dtypes(df: DataFrame, dtypes) -> None:
             for col in df:
                 if col.startswith(f"{column}$"):
                     df[col] = df[col].astype(dtype)
+
+
+def dict_get(d, key, default=sys):
+    """Get value from dict in case nan is in the key"""
+    try:
+        return d[key]
+    except KeyError:
+        if pd.isnull(key):
+            for k, v in d.items():
+                if pd.isnull(k):
+                    return v
+
+        if default is sys:
+            raise
+        return default

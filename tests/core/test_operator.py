@@ -76,8 +76,11 @@ def test_and_or():
     out = df >> select(c(f.x, f.y) & c(f.y, f.z))
     assert out.columns.tolist() == ["y"]
 
-    out = df >> mutate(a = f.x & f.y)
-    assert out.a.tolist() == [0]
+    out = df >> mutate(a=f.x & f.y)
+    assert out.a.tolist() == [True]
+
+    out = df >> mutate(a=True & f.y)
+    assert out.a.tolist() == [True]
 
     out = df >> select(c(f.x, f.y) | c(f.y, f.z))
     assert out.columns.tolist() == ["x", "y", "z"]
