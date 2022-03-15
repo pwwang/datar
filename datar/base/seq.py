@@ -1,5 +1,5 @@
 import numpy as np
-from pandas import Series
+from pandas import DataFrame, Series
 from pandas.api.types import is_scalar
 from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import register_func
@@ -278,10 +278,18 @@ def c(*elems):
             values.extend(elem)
 
     df = tibble(*values)
+    # pandas 1.3.0 expand list into columns after aggregation
+    # pandas 1.3.2 has this fixed
+    # https://github.com/pandas-dev/pandas/issues/42727
     out = df.agg(
         lambda row: Collection(*row),
         axis=1,
-    ).explode().convert_dtypes()
+    )
+    if isinstance(out, DataFrame):
+        # pandas < 1.3.2
+        out = Series(out.values.tolist(), index=out.index, dtype=object)
+
+    out = out.explode().convert_dtypes()
     grouping = out.index
     out = out.reset_index(drop=True).groupby(grouping)
     return out
