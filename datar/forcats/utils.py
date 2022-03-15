@@ -2,9 +2,12 @@
 import numpy as np
 from pandas import Categorical, Series, Index
 from pandas.api.types import is_scalar, is_categorical_dtype
+from pandas.core.groupby import SeriesGroupBy
+
 
 ForcatsRegType = (
     Series,
+    SeriesGroupBy,
     Categorical,
     Index,
     list,

@@ -1,3 +1,18 @@
+## 0.6.3
+
+- ✨ Allow `base.c()` to handle groupby data
+- 🚑 Allow `base.diff()` to work with groupby data
+- ✨ Allow `forcats.fct_inorder()` to work with groupby data
+- ✨ Allow `base.rep()`'s arguments `length` and `each` to work with grouped data
+- ✨ Allow `base.c()` to work with grouped data
+- 🐛 Force `&/|` operators to return boolean data
+- 🚑 Fix `base.diff()` not keep empty groups
+- 🐛 Fix recycling non-ordered grouped data
+- 🩹 Fix `dplyr.count()/tally()`'s warning about the new name
+- 🚑 Make `dplyr.n()` return groupoed data
+- 🐛 Make `dplyr.slice()` work better with rows/indices from grouped data
+- ✨ Add `datar.attrgetter()`, `datar.pd_str()`, `datar.pd_cat()` and `datar.pd_dt()`
+
 ## 0.6.2
 
 - 🚑 Fix #87 boolean operator losing index

@@ -183,7 +183,6 @@ def _tally_n(wt):
     # If it's Expression, will return a Function object
     # Otherwise, sum of wt
     return Function(sum_, (wt, ), {"na_rm": True}, dataarg=False)
-    # return sum_(wt, na_rm=True, __calling_env=CallingEnvs.PIPING)
 
 
 def _check_name(name, invars):
@@ -194,7 +193,8 @@ def _check_name(name, invars):
         if name != "n":
             logger.warning(
                 "Storing counts in `%s`, as `n` already present in input. "
-                'Use `name="new_name" to pick a new name.`'
+                'Use `name="new_name" to pick a new name.`',
+                name,
             )
     elif not isinstance(name, str):
         raise ValueError("`name` must be a single string.")

@@ -20,10 +20,26 @@
 |[**bold**]()|API that is unique in `datar`|
 |[_italic_]()|Working in process|
 
-### Constants
+### Verbs
 
 |API|Description|Notebook example|
 |---|---|---:|
-|[**`get()`**][1]|Extract values from data frames|[:material-notebook:][2]|
-|[**`flatten()`**][3]|Flatten values of data frames|[:material-notebook:][2]|
-|[**`itemgetter()`**][3]|Turn `a[f.x]` to a valid verb argument with `itemgetter(a, f.x)`|[:material-notebook:][2]|
+|[**`get()`**][2]|Extract values from data frames|[:material-notebook:][1]|
+|[**`flatten()`**][2]|Flatten values of data frames|[:material-notebook:][1]|
+
+### Functions
+|[**`itemgetter()`**][3]|Turn `a[f.x]` to a valid verb argument with `itemgetter(a, f.x)`|[:material-notebook:][1]|
+|[**`attrgetter()`**][4]|`f.x.<attr>` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+|[**`pd_str()`**][4]|`f.x.str` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+|[**`pd_cat()`**][4]|`f.x.cat` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+|[**`pd_dt()`**][4]|`f.x.dt` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+
+
+[1]: ../../notebooks/datar
+[2]: ../../api/datar.datar.verbs/#datar.datar.verbs.get
+[3]: ../../api/datar.datar.verbs/#datar.datar.verbs.flatten
+[4]: ../../api/datar.datar.funcs/#datar.datar.funcs.itemgetter
+[5]: ../../api/datar.datar.funcs/#datar.datar.funcs.attrgetter
+[6]: ../../api/datar.datar.funcs/#datar.datar.funcs.pd_str
+[7]: ../../api/datar.datar.funcs/#datar.datar.funcs.pd_cat
+[8]: ../../api/datar.datar.funcs/#datar.datar.funcs.pd_dt

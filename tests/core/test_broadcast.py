@@ -320,6 +320,10 @@ def test_broadcast_to_groupby_ndframe():
     out = broadcast_to(df, df.index, df._datar["grouped"].grouper)
     assert_frame_equal(df, out)
 
+    nn = df.x.grouper.size().to_frame("size").reset_index().groupby("x")
+    out = broadcast_to(nn, df.index, df._datar["grouped"].grouper)
+    assert_iterable_equal(out["size"], [3] * 6)
+
 
 def test_broadcast2():
     # types: scalar/arrays, DattaFrame/Series, GroupBy, TibbleGrouped

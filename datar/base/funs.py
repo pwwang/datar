@@ -6,8 +6,9 @@ registered by `register_verb` and should be placed in `./verbs.py`
 import itertools
 
 import numpy as np
-import pandas
+import pandas as pd
 from pandas.api.types import is_scalar
+from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
 
 from ..core.middlewares import WithDataEnv
@@ -56,7 +57,7 @@ def cut(
     if labels is None:
         ordered_result = True
 
-    return pandas.cut(
+    return pd.cut(
         x,
         breaks,
         labels=labels,
@@ -67,7 +68,7 @@ def cut(
     )
 
 
-@func_factory("agg", "x")
+@func_factory("apply", "x")
 def diff(x, lag: int = 1, differences: int = 1):
     """Calculates suitably lagged and iterated differences.
 
@@ -94,9 +95,27 @@ def diff(x, lag: int = 1, differences: int = 1):
         If `differences > 1`, the rule applies `differences` times on `x`
     """
     x = x.values
+    if lag * differences >= x.size:
+        return np.array([], dtype=x.dtype)
+
     for _ in range(differences):
         x = x[lag:] - x[:-lag]
     return x
+
+
+def _diff_sgb_post(out, x, lag=1, differences=1):
+    """Post process diff on SeriesGroupBy object"""
+    non_na_out = out[out.transform(len) > 0]
+    non_na_out = non_na_out.explode()
+    grouping = pd.Categorical(non_na_out.index, categories=out.index.unique())
+    return (
+        non_na_out.explode()
+        .reset_index(drop=True)
+        .groupby(grouping, observed=False)
+    )
+
+
+diff.register(SeriesGroupBy, func=None, post=_diff_sgb_post)
 
 
 @register_func(None, context=Context.EVAL)

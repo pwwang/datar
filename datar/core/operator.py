@@ -11,18 +11,18 @@ from ..core.broadcast import broadcast2
 from .collections import Collection, Inverted, Negated, Intersect
 
 
-def _binop(op, left, right, fill_false=False):
+def _binop(op, left, right, boolean=False):
     left, right, grouper, is_rowwise = broadcast2(left, right)
-    if fill_false:
+    if boolean:
         if isinstance(left, Series):
-            left = left.fillna(False)
+            left = left.fillna(False).astype(bool)
         else:
-            left = Series(left).fillna(False).values
+            left = Series(left).fillna(False).astype(bool).values
 
         if isinstance(right, Series):
-            right = right.fillna(False)
+            right = right.fillna(False).astype(bool)
         else:
-            right = Series(right).fillna(False).values
+            right = Series(right).fillna(False).astype(bool).values
 
     out = op(left, right)
     if grouper:
@@ -56,6 +56,7 @@ class DatarOperator(Operator):
         """Interpretation for ~x"""
         if isinstance(operand, (slice, Sequence)):
             return Inverted(operand)
+
         return self._arithmetize1(operand, "invert")
 
     def _op_neg(self, operand: Any) -> Any:
@@ -84,7 +85,7 @@ class DatarOperator(Operator):
             # induce an intersect with Collection
             return Intersect(left, right)
 
-        return _binop(operator.and_, left, right, fill_false=True)
+        return _binop(operator.and_, left, right, boolean=True)
 
     def _op_or_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
@@ -102,7 +103,7 @@ class DatarOperator(Operator):
             # or union?
             return Collection(left, right)
 
-        return _binop(operator.or_, left, right, fill_false=True)
+        return _binop(operator.or_, left, right, boolean=True)
 
     # def _op_eq(
     #     self, left: Any, right: Any

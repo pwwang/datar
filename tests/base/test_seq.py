@@ -8,7 +8,6 @@ from datar.base.seq import (
     seq_along,
     sample,
     sort,
-    rep,
     rev,
     length,
     lengths,
@@ -153,32 +152,6 @@ def test_seq_derives():
     assert_iterable_equal(seq(to=2), [1, 2])
 
 
-@pytest.mark.parametrize(
-    "x, times, length, each, expected",
-    [
-        (range(4), 2, None, 1, [0, 1, 2, 3] * 2),
-        (range(4), 1, None, 2, [0, 0, 1, 1, 2, 2, 3, 3]),
-        (range(4), [2] * 4, None, 1, [0, 0, 1, 1, 2, 2, 3, 3]),
-        (range(4), [2, 1] * 2, None, 1, [0, 0, 1, 2, 2, 3]),
-        (range(4), 1, 4, 2, [0, 0, 1, 1]),
-        (range(4), 1, 10, 2, [0, 0, 1, 1, 2, 2, 3, 3, 0, 0]),
-        (range(4), 3, None, 2, [0, 0, 1, 1, 2, 2, 3, 3] * 3),
-        (1, 7, None, 1, [1, 1, 1, 1, 1, 1, 1]),
-    ],
-)
-def test_rep(x, times, length, each, expected):
-    assert_iterable_equal(
-        rep(x, times=times, length=length, each=each), expected
-    )
-
-
-def test_rep_error():
-    with pytest.raises(ValueError):
-        rep(c(1, 2, 3), c(1, 2))
-    with pytest.raises(ValueError):
-        rep(c(1, 2, 3), c(1, 2, 3), each=2)
-
-
 def test_sample():
     x = sample(range(1, 13))
     assert set(x) == set(range(1, 13))
@@ -289,3 +262,13 @@ def test_order():
     x = Series([1, 2, 3, 4]).groupby([1, 1, 2, 2])
     out = order(x)
     assert_iterable_equal(out.obj, [0, 1, 0, 1])
+
+
+def test_c():
+    assert_iterable_equal(c(1, 2, 3), [1, 2, 3])
+    assert_iterable_equal(c(1, 2, 3, 4), [1, 2, 3, 4])
+    assert_iterable_equal(c(1, c(2, 3), 4, 5), [1, 2, 3, 4, 5])
+
+    x = Series([1, 2, 3, 4]).groupby([1, 1, 2, 2])
+    out = c(7, [8, 9], x)
+    assert_iterable_equal(out.obj, [7, 8, 9, 1, 2, 7, 8, 9, 3, 4])

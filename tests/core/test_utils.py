@@ -87,3 +87,13 @@ def test_arg_match():
 #     df = tibble(x=[])
 #     out = recycle_value(df, 1)
 #     assert_frame_equal(out, tibble(x=NA))
+
+
+def test_dict_get():
+    d = {'a': 1, 'b': 2, np.nan: 3}
+    assert dict_get(d, 'a') == 1
+    assert dict_get(d, 'b') == 2
+    assert dict_get(d, float("nan")) == 3
+    assert dict_get(d, 'c', None) is None
+    with pytest.raises(KeyError):
+        dict_get(d, 'c')

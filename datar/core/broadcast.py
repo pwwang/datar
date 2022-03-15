@@ -34,7 +34,7 @@ from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy, GroupBy
 from pandas.api.types import is_list_like
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
-from .utils import name_of, regcall
+from .utils import name_of, regcall, dict_get
 
 if TYPE_CHECKING:
     from pandas import Grouper
@@ -65,7 +65,7 @@ def _regroup(x: GroupBy, new_sizes: Union[int, np.ndarray]) -> GroupBy:
     return x.obj.take(indices).groupby(grouped.grouper)
 
 
-def _agg_result_compatible(index: "Index", grouper: "Grouper") -> bool:
+def _agg_result_compatible(index: Index, grouper: "Grouper") -> bool:
     """Check index of an aggregated result is compatible with a grouper"""
     if index.names != grouper.names:
         return False
@@ -102,7 +102,27 @@ def _grouper_compatible(grouper1: "Grouper", grouper2: "Grouper") -> bool:
     # also check the size
     size1 = grouper1.size()
     size2 = grouper2.size()
+    size2 = size2.reindex(size1.index).values
+    size1 = size1.values
     return ((size1 == 1) | (size2 == 1) | (size1 == size2)).all()
+
+
+def _realign_indexes(value: GroupBy, grouper: "Grouper"):
+    """Realign indexes of a value to a grouper"""
+    v_new_indices = []
+    g_indices = []
+    for key in value.grouper.result_index:
+        v_ind = dict_get(value.grouper.indices, key)
+        g_ind = dict_get(grouper.indices, key)
+        if v_ind.size == 1 and g_ind.size > 1:
+            v_new_indices.extend(v_ind.repeat(g_ind.size))
+        else:
+            v_new_indices.extend(v_ind)
+        g_indices.extend(g_ind)
+
+    value = value.obj.take(v_new_indices)
+    sorted_indices = np.argsort(g_indices)
+    return value.take(sorted_indices).values
 
 
 @singledispatch
@@ -210,7 +230,6 @@ def _(
     name = name or name_of(value) or str(value)
 
     if isinstance(base, GroupBy):
-
         if not _grouper_compatible(value.grouper, base.grouper):
             raise ValueError(f"`{name}` has an incompatible grouper.")
 
@@ -360,7 +379,7 @@ def _(
 @singledispatch
 def broadcast_to(
     value,
-    index: "Index",
+    index: Index,
     grouper: "Grouper" = None,
 ) -> Series:
     """Broastcast value to expected dimension, the result is a series with
@@ -455,7 +474,7 @@ def broadcast_to(
 @broadcast_to.register(Categorical)
 def _(
     value: Categorical,
-    index: "Index",
+    index: Index,
     grouper: "Grouper" = None,
 ) -> Series:
     """Broadcast categorical data"""
@@ -487,7 +506,7 @@ def _(
 @broadcast_to.register(NDFrame)
 def _(
     value: NDFrame,
-    index: "Index",
+    index: Index,
     grouper: "Grouper" = None,
 ) -> Union[Tibble, Series]:
     """Broadcast series/dataframe"""
@@ -546,7 +565,7 @@ def _(
 @broadcast_to.register(GroupBy)
 def _(
     value: GroupBy,
-    index: "Index",
+    index: Index,
     grouper: "Grouper" = None,
 ) -> Union[Series, Tibble]:
     """Broadcast pandas grouped object"""
@@ -557,15 +576,26 @@ def _(
 
     # Compatibility has been checked in _broadcast_base
     if isinstance(value, SeriesGroupBy):
-        return Series(value.obj, index=index, name=value.obj.name)
+        if np.array_equal(grouper.group_info[0], value.grouper.group_info[0]):
+            return Series(value.obj.values, index=index, name=value.obj.name)
 
-    return Tibble(value.obj, index=index)
+        # broadcast size-one groups and
+        # realign the index
+        revalue = _realign_indexes(value, grouper)
+        return Series(revalue, index=index, name=value.obj.name)
+
+    if np.array_equal(grouper.group_info[0], value.grouper.group_info[0]):
+        return Tibble(value.obj.values, index=index, columns=value.obj.columns)
+
+    # realign the index
+    revalue = _realign_indexes(value, grouper)
+    return Tibble(revalue, index=index, columns=value.obj.columns)
 
 
 @broadcast_to.register(TibbleGrouped)
 def _(
     value: TibbleGrouped,
-    index: "Index",
+    index: Index,
     grouper: "Grouper" = None,
 ) -> Tibble:
     """Broadcast TibbleGrouped object"""
@@ -577,7 +607,7 @@ def _(
 
 
 @singledispatch
-def _get_index_grouper(value) -> Tuple["Index", "Grouper"]:
+def _get_index_grouper(value) -> Tuple[Index, "Grouper"]:
     return None, None
 
 

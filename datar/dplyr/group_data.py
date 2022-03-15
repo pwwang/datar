@@ -7,7 +7,7 @@ from pipda import register_verb
 from pipda.utils import CallingEnvs
 
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
-from ..core.utils import regcall
+from ..core.utils import dict_get, regcall
 
 
 @register_verb(DataFrame)
@@ -86,7 +86,7 @@ def _(_data: GroupBy) -> List[List[int]]:
     """Get row indices for each group"""
     grouper = _data.grouper
     return [
-        list(grouper.indices[group_key])
+        list(dict_get(grouper.indices, group_key))
         for group_key in grouper.result_index
     ]
 

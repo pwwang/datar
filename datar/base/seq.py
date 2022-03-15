@@ -1,14 +1,14 @@
 import numpy as np
-from pandas import Series
-from pandas.api.types import is_scalar, is_integer
+from pandas import DataFrame, Series
+from pandas.api.types import is_scalar
 from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import register_func
 
-from ..core.utils import ensure_nparray, logger, regcall
+from ..core.utils import logger, regcall
 from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
-from ..core.tibble import TibbleGrouped, reconstruct_tibble
+from ..core.tibble import TibbleGrouped
 
 
 @register_func(None, context=Context.EVAL)
@@ -78,77 +78,6 @@ def seq(
         length_out = (to - from_ + 1.1 * by) // by
 
     return np.array([from_ + n * by for n in range(int(length_out))])
-
-
-@register_func(None, context=Context.UNSET)
-def c(*elems):
-    """Mimic R's concatenation. Named one is not supported yet
-    All elements passed in will be flattened.
-
-    Args:
-        *elems: The elements
-
-    Returns:
-        A collection of elements
-    """
-    return Collection(*elems)
-
-
-@func_factory("apply", "x")
-def rep(
-    x,
-    times=1,
-    length=None,
-    each=1
-):
-    """replicates the values in x
-
-    Args:
-        x: a vector or scaler
-        times: number of times to repeat each element if of length len(x),
-            or to repeat the whole vector if of length 1
-        length: non-negative integer. The desired length of the output vector
-        each: non-negative integer. Each element of x is repeated each times.
-
-    Returns:
-        A list of repeated elements in x.
-    """
-    x = ensure_nparray(x)
-    if not is_scalar(times):
-        if len(times) != len(x):
-            raise ValueError(
-                "Invalid times argument, expect length "
-                f"{len(times)}, got {len(x)}"
-            )
-        if each != 1:
-            raise ValueError(
-                "Unexpected each argument when times is an iterable."
-            )
-
-    if is_integer(times) and is_scalar(times):
-        x = np.tile(x.repeat(each), times)
-    else:
-        x = x.repeat(times)
-    if length is None:
-        return x
-
-    repeats = length // len(x) + 1
-    x = np.tile(x, repeats)
-    return x[:length]
-
-
-rep.register(
-    SeriesGroupBy,
-    func=None,
-    post=lambda out, x, *args, **kwargs: out.explode().astype(x.obj.dtype)
-)
-
-
-rep.register(
-    TibbleGrouped,
-    func=None,
-    post=lambda out, x, *args, **kwargs: reconstruct_tibble(x, out)
-)
 
 
 @func_factory("agg", "x")
@@ -321,3 +250,46 @@ def match(x, table, nomatch=-1):
         return Series(match_dummy(x, table), index=x.index)
 
     return match_dummy(x, table)
+
+
+@register_func(None, context=Context.UNSET)
+def c(*elems):
+    """Mimic R's concatenation. Named one is not supported yet
+    All elements passed in will be flattened.
+
+    Args:
+        *elems: The elements
+
+    Returns:
+        A collection of elements
+    """
+    if not any(isinstance(elem, SeriesGroupBy) for elem in elems):
+        return Collection(*elems)
+
+    from ..tibble import tibble
+
+    values = []
+    for elem in elems:
+        if isinstance(elem, SeriesGroupBy):
+            values.append(elem.agg(list))
+        elif is_scalar(elem):
+            values.append(elem)
+        else:
+            values.extend(elem)
+
+    df = tibble(*values)
+    # pandas 1.3.0 expand list into columns after aggregation
+    # pandas 1.3.2 has this fixed
+    # https://github.com/pandas-dev/pandas/issues/42727
+    out = df.agg(
+        lambda row: Collection(*row),
+        axis=1,
+    )
+    if isinstance(out, DataFrame):
+        # pandas < 1.3.2
+        out = Series(out.values.tolist(), index=out.index, dtype=object)
+
+    out = out.explode().convert_dtypes()
+    grouping = out.index
+    out = out.reset_index(drop=True).groupby(grouping)
+    return out

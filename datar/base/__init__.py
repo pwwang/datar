@@ -80,12 +80,12 @@ from .logical import (
 from .na import NA, NaN, any_na, is_na, Inf, is_finite, is_infinite, is_nan
 from .null import NULL, as_null, is_null
 from .random import set_seed
+from .rep import rep
 from .seq import (
     c,
     length,
     lengths,
     order,
-    rep,
     rev,
     sample,
     seq,
