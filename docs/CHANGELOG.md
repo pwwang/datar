@@ -5,6 +5,7 @@
 - ✨ Allow `forcats.fct_inorder()` to work with groupby data
 - ✨ Allow `base.rep()`'s arguments `length` and `each` to work with grouped data
 - ✨ Allow `base.c()` to work with grouped data
+- ✨ Allow `base.paste()`/`base.paste0()` to work with grouped data
 - 🐛 Force `&/|` operators to return boolean data
 - 🚑 Fix `base.diff()` not keep empty groups
 - 🐛 Fix recycling non-ordered grouped data
