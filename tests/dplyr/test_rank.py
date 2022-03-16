@@ -1,5 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rank.r
+import numpy as np
 import pytest
 
 from datar import f
@@ -29,16 +30,16 @@ def ntile_h(x, n):
 def test_ntile_ignores_number_of_nas():
     x = c(1, 2, 3, NA, NA)
     out = ntile(x, 3)
-    assert_iterable_equal(out, [0, 1, 2, NA, NA])
+    assert_iterable_equal(out, [1, 2, 3, NA, NA])
 
     out = ntile_h(x, 3)
-    assert_iterable_equal(out, [0, 1, 2, NA, NA])
+    assert_iterable_equal(out, [1, 2, 3, NA, NA])
 
     x1 = c(1, 1, 1, NA, NA, NA)
     out = ntile(x1, n=1)
-    assert_iterable_equal(out, [0, 0, 0, NA, NA, NA])
+    assert_iterable_equal(out, [1, 1, 1, NA, NA, NA])
     out = ntile_h(x1, 1)
-    assert_iterable_equal(out, [0, 0, 0, NA, NA, NA])
+    assert_iterable_equal(out, [1, 1, 1, NA, NA, NA])
 
 
 def test_ntile_always_returns_an_integer():
@@ -107,20 +108,20 @@ def test_lead_lag_inside_mutates_handles_expressions_as_value_for_default():
 
 def test_ntile_puts_large_groups_first():
 
-    assert_iterable_equal(ntile(range(1), n=5), [0])
-    assert_iterable_equal(ntile(range(2), n=5), list(range(2)))
-    assert_iterable_equal(ntile(range(3), n=5), list(range(3)))
-    assert_iterable_equal(ntile(range(4), n=5), list(range(4)))
-    assert_iterable_equal(ntile(range(5), n=5), list(range(5)))
-    assert_iterable_equal(ntile(range(6), n=5), c(0, range(5)))
-    assert_iterable_equal(ntile(range(1), n=7), [0])
-    assert_iterable_equal(ntile(range(2), n=7), list(range(2)))
-    assert_iterable_equal(ntile(range(3), n=7), list(range(3)))
-    assert_iterable_equal(ntile(range(4), n=7), list(range(4)))
-    assert_iterable_equal(ntile(range(5), n=7), list(range(5)))
-    assert_iterable_equal(ntile(range(6), n=7), list(range(6)))
-    assert_iterable_equal(ntile(range(7), n=7), list(range(7)))
-    assert_iterable_equal(ntile(range(8), n=7), c(0, range(7)))
+    assert_iterable_equal(ntile(range(1), n=5), [1])
+    assert_iterable_equal(ntile(range(2), n=5), np.arange(2) + 1)
+    assert_iterable_equal(ntile(range(3), n=5), np.arange(3) + 1)
+    assert_iterable_equal(ntile(range(4), n=5), np.arange(4) + 1)
+    assert_iterable_equal(ntile(range(5), n=5), np.arange(5) + 1)
+    assert_iterable_equal(ntile(range(6), n=5), c(1, np.arange(5) + 1))
+    assert_iterable_equal(ntile(range(1), n=7), [1])
+    assert_iterable_equal(ntile(range(2), n=7), np.arange(2) + 1)
+    assert_iterable_equal(ntile(range(3), n=7), np.arange(3) + 1)
+    assert_iterable_equal(ntile(range(4), n=7), np.arange(4) + 1)
+    assert_iterable_equal(ntile(range(5), n=7), np.arange(5) + 1)
+    assert_iterable_equal(ntile(range(6), n=7), np.arange(6) + 1)
+    assert_iterable_equal(ntile(range(7), n=7), np.arange(7) + 1)
+    assert_iterable_equal(ntile(range(8), n=7), c(1, np.arange(7) + 1))
 
 
 def test_plain_arrays():
@@ -129,9 +130,9 @@ def test_plain_arrays():
     out = row_number([1, 1, 2])
     assert_iterable_equal(out, [1, 2, 3])
     out = ntile(1, 1)
-    assert_iterable_equal(out, [0])
+    assert_iterable_equal(out, [1])
     out = ntile((i for i in range(1)), 1)
-    assert_iterable_equal(out, [0])
+    assert_iterable_equal(out, [1])
     out = cume_dist(1)
     assert_iterable_equal(out, [1])
     out = cume_dist([])
@@ -155,11 +156,11 @@ def test_row_number_with_groups():
 def test_ntile_with_groups():
     df = tibble(x=f[1:9], y=[1] * 4 + [2] * 4)
     out = ntile(df.x, 2)
-    assert out.tolist() == [0, 0, 0, 0, 1, 1, 1, 1]
+    assert out.tolist() == [1, 1, 1, 1, 2, 2, 2, 2]
 
     df = df.groupby("y")
     out = ntile(df.x, 2)
-    assert out.tolist() == [0, 0, 1, 1, 0, 0, 1, 1]
+    assert out.tolist() == [1, 1, 2, 2, 1, 1, 2, 2]
 
 
 def test_min_rank_with_groups():

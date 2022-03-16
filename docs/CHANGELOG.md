@@ -11,6 +11,7 @@
 - 🩹 Fix `dplyr.count()/tally()`'s warning about the new name
 - 🚑 Make `dplyr.n()` return groupoed data
 - 🐛 Make `dplyr.slice()` work better with rows/indices from grouped data
+- 🩹 Make `dplyr.ntile()` labels 1-based
 - ✨ Add `datar.attrgetter()`, `datar.pd_str()`, `datar.pd_cat()` and `datar.pd_dt()`
 
 ## 0.6.2
