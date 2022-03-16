@@ -135,7 +135,15 @@ def test_paste():
     assert_iterable_equal(out, [])
 
     out = paste0([], ["a"])
-    assert_iterable_equal(out, ["NAa"])
+    assert_iterable_equal(out, ["a"])
+
+    df = tibble(x=[1, 2, 3], y=[4, 5, 5])
+    out = paste(df)
+    assert_iterable_equal(out, ["1 4", "2 5", "3 5"])
+
+    gf = df.group_by("y")
+    out = paste0(gf, collapse="|")
+    assert_iterable_equal(out, ['14', '25|35'])
 
 
 def test_sprintf():

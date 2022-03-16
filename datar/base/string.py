@@ -4,12 +4,13 @@ import re
 import numpy as np
 import pandas as pd
 from pandas import Series
+from pandas.core.base import PandasObject
 from pandas.core.groupby import SeriesGroupBy
 from pandas.api.types import is_string_dtype, is_scalar
 from pipda import register_func
 
 
-from ..core.tibble import TibbleRowwise
+from ..core.tibble import TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
 from ..core.factory import func_factory, dispatching
 from ..core.utils import (
@@ -21,7 +22,6 @@ from ..core.utils import (
 from .casting import _as_type
 from .testing import _register_type_testing
 from .logical import as_logical
-from .seq import lengths
 
 
 def _recycle_value(value, size, name=None):
@@ -396,6 +396,9 @@ def _nchar_scalar(x, retn, allow_na, keep_na, na_len):
 
 
 # paste and paste0 --------------------
+_is_empty = lambda x: (
+    (is_scalar(x) and not x) or (not is_scalar(x) and len(x) == 0)
+)
 
 
 @register_func(None, context=Context.EVAL)
@@ -411,24 +414,35 @@ def paste(*args, sep=" ", collapse=None):
         A single string if collapse is given, otherwise an array of strings.
     """
     if len(args) == 1 and isinstance(args[0], TibbleRowwise):
-        return args[0].apply(
-            lambda row: paste(*row, sep=sep, collapse=collapse), axis=1
+        out = args[0].apply(
+            lambda row: row.astype(str).str.cat(sep=sep), axis=1
+        )
+        return collapse.join(out) if collapse else out
+
+    from ..tibble import tibble
+
+    if all(_is_empty(arg) for arg in args):
+        df = tibble(*args, _name_repair="minimal")
+    else:
+        df = tibble(
+            *("" if _is_empty(arg) else arg for arg in args),
+            _name_repair="minimal",
         )
 
-    maxlen = max(regcall(lengths, args))
-    args = zip(
-        *(
-            _recycle_value(arg, maxlen, f"{i}th value")
-            for i, arg in enumerate(args)
-        )
-    )
+    if not isinstance(df, TibbleGrouped):
+        out = df.apply(lambda col: col.astype(str).str.cat(sep=sep), axis=1)
+        if collapse:
+            return collapse.join(out)
+        if any(isinstance(x, PandasObject) for x in args):
+            return out
+        return np.array(out, dtype=object)
 
-    args = [as_character(arg, _na="NA") for arg in args]
-    out = [sep.join(arg) for arg in args]
-    if collapse is not None:
-        return collapse.join(out)
-
-    return np.array(out, dtype=object)
+    out = df.apply(
+        lambda row: row.astype(str).str.cat(sep=sep), axis=1
+    ).groupby(df._datar["grouped"].grouper)
+    if collapse:
+        out = out.agg(lambda x: x.str.cat(sep=collapse))
+    return out
 
 
 @register_func(None, context=Context.EVAL)

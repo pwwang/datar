@@ -181,7 +181,7 @@ def test_rank_functions_deal_correctly_with_na():
     assert res.min_rank[[0, 1, 3, 4]].tolist() == c(2, 4, 2, 1)
     assert res.dense_rank[[0, 1, 3, 4]].tolist() == c(2, 3, 2, 1)
     assert res.cume_dist[[0, 1, 3, 4]].tolist() == c(0.75, 1.0, 0.75, 0.25)
-    assert res.ntile[[0, 1, 3, 4]].tolist() == c(0, 1, 0, 0)
+    assert res.ntile[[0, 1, 3, 4]].tolist() == c(1, 2, 1, 1)
     assert res.row_number[[0, 1, 3, 4]].tolist() == c(2, 4, 3, 1)
 
     data = tibble(x=rep(c(1, 2, NA, 1, 0, NA), 2), g=rep([1, 2], each=6))
@@ -224,7 +224,7 @@ def test_rank_functions_deal_correctly_with_na():
     )
     assert (
         res.ntile.obj[[0, 1, 3, 4, 6, 7, 9, 10]].tolist()
-        == rep(c(0, 1, 0, 0), 2).tolist()
+        == rep(c(1, 2, 1, 1), 2).tolist()
     )
     assert (
         res.row_number.obj[[0, 1, 3, 4, 6, 7, 9, 10]].tolist()

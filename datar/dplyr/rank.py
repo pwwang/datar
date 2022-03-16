@@ -43,13 +43,13 @@ def ntile(
     """A rough rank, which breaks the input vector into `n` buckets.
 
     Note:
-        The output tiles are 0-based.
+        The output tiles are 1-based.
         The result is slightly different from dplyr's ntile.
         >>> ntile(c(1,2,NA,1,0,NA), 2) # dplyr
         >>> # 1 2 NA 2 1 NA
         >>> ntile([1,2,NA,1,0,NA], n=2) # datar
-        >>> # [0, 1, NA, 0, 0, NA]
-        >>> # Categories (2, int64): [0 < 1]
+        >>> # [1, 2, NA, 1, 1, NA]
+        >>> # Categories (2, int64): [1 < 2]
     """
     if isinstance(x, int) and n is None:
         n = x

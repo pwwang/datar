@@ -123,7 +123,7 @@ def _(x, n):
         return Categorical([np.nan] * x.size)
 
     n = min(n, x.size)
-    return pd.cut(x, n, labels=range(n))
+    return pd.cut(x, n, labels=np.arange(n) + 1)
 
 
 @_ntile.register(GroupBy)
@@ -132,7 +132,7 @@ def _(x, n):
         lambda grup: pd.cut(
             grup,
             min(n, len(grup)),
-            labels=range(min(n, len(grup))),
+            labels=np.arange(min(n, len(grup))) + 1,
         )
     )
 
