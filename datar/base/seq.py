@@ -285,7 +285,7 @@ def c(*elems):
         lambda row: Collection(*row),
         axis=1,
     )
-    if isinstance(out, DataFrame):
+    if isinstance(out, DataFrame):  # pragma: no cover
         # pandas < 1.3.2
         out = Series(out.values.tolist(), index=out.index, dtype=object)
 

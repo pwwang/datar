@@ -15,38 +15,12 @@ from ..core.contexts import Context
 from ..core.factory import func_factory, dispatching
 from ..core.utils import (
     arg_match,
-    ensure_nparray,
     logger,
     regcall,
 )
 from .casting import _as_type
 from .testing import _register_type_testing
 from .logical import as_logical
-
-
-def _recycle_value(value, size, name=None):
-    """Recycle a value based on a dataframe
-    Args:
-        value: The value to be recycled
-        size: The size to recycle to
-    Returns:
-        The recycled value
-    """
-    name = name or "value"
-    value = ensure_nparray(value)
-
-    if value.size > 0 and size % value.size != 0:
-        raise ValueError(
-            f"Cannot recycle {name} (size={value.size}) to size {size}."
-        )
-
-    if value.size == size == 0:
-        return np.array([], dtype=object)
-
-    if value.size == 0:
-        value = np.array([np.nan], dtype=object)
-
-    return value.repeat(size // value.size)
 
 
 @register_func(None, context=Context.EVAL)
