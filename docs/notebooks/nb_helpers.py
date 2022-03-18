@@ -10,7 +10,7 @@ InteractiveShell.ast_node_interactivity = "all"
 
 BINDER_URL = (
     'https://mybinder.org/v2/gh/pwwang/datar/'
-    '93d069f3ca36711fc811c61dcf60e9fc3d1460a5?filepath=docs%2Fnotebooks%2F'
+    'dev?filepath=docs%2Fnotebooks%2F'
 )
 
 def nb_header(*funcs, book=None):
