@@ -4,4 +4,6 @@ channels:
 dependencies:
 - python=3.9
 - pip:
+  - pdtypes
+  - datar
   - -r docs/requirements.txt
