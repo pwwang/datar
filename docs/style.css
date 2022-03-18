@@ -1,6 +1,7 @@
 
 .md-main__inner.md-grid {
     max-width: 80%;
+    margin-left: 32px;
 }
 
 .md-typeset .admonition, .md-typeset details {
@@ -23,11 +24,11 @@
     line-height: 1;
 }
 .mkapi-node {
-    background-color: #f0f6fa;
-    border-top: 3px solid #559bc9;
+    background-color: #f4faff;
+    border-top: 3px solid #151922;
 }
 .mkapi-node .mkapi-object-container {
-    background-color: #b4d4e9;
+    background-color: #d1d4d6;
     padding: .12em .4em;
 }
 .mkapi-node .mkapi-object-container .mkapi-object.code {
@@ -79,7 +80,7 @@
     padding-right: 2px;
 }
 .mkapi-node .mkapi-code * {
-    font-size: .65rem;
+    font-size: .6rem;
 }
 .mkapi-node a.mkapi-docs-link {
     font-size: .6rem;
@@ -119,4 +120,9 @@
 
 .mkapi-object-body.module.top * {
     font-size: .75rem !important;
+}
+
+.mkapi-section-body.examples pre code {
+    font-size: .65rem !important;
+    overflow: auto;
 }
