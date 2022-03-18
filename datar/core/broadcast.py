@@ -525,7 +525,10 @@ def _(
         if isinstance(value, DataFrame) and value.index.size == 0:
             value.index = index
 
-        if not value.index.equals(index):
+        # if not value.index.equals(index):
+        if not value.index.equals(index) and frozenset(
+            value.index
+        ) != frozenset(index):
             raise ValueError("Value has incompatible index.")
 
         if isinstance(value, Series):
@@ -716,6 +719,7 @@ def _(value: SeriesGroupBy, name: str) -> Tibble:
 @init_tibble_from.register(DataFrameGroupBy)
 def _(value: Union[DataFrame, DataFrameGroupBy], name: str) -> Tibble:
     from ..tibble import as_tibble
+
     result = regcall(as_tibble, value)
 
     if name:

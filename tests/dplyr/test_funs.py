@@ -91,8 +91,11 @@ def test_lead_lag_return_x_if_n_eqs_0():
 
 
 def test_lead_lag_return_all_nas_if_n_eqs_lenx():
-    assert lead([1, 2], 2).fillna(0).tolist() == [0.0, 0.0]
-    assert lag([1, 2], 2).fillna(0).tolist() == [0.0, 0.0]
+    out = lead([1, 2], 2)
+    assert_iterable_equal(out, [NA, NA])
+
+    out = lag([1, 2], 2)
+    assert_iterable_equal(out, [NA, NA])
 
 
 def test_cumany_cumall_handle_nas_consistently():
