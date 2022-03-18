@@ -47,10 +47,8 @@ Reference map of `r-tidyverse-tidyr` can be found [here][1].
 |---|---|---:|
 |[`extract()`][22]|Extract a character column into multiple columns using regular expression groups|[:material-notebook:][23]|
 |[`separate()`][30]|Separate a character column into multiple columns with a regular expression or numeric locations|[:material-notebook:][31]|
-|[`separate_rows()`][34]|
-Separate a collapsed column into multiple rows|[:material-notebook:][35]|
-|[`unite()`][36]|
-Unite multiple columns into one by pasting strings together|[:material-notebook:][37]|
+|[`separate_rows()`][34]|Separate a collapsed column into multiple rows|[:material-notebook:][35]|
+|[`unite()`][36]|Unite multiple columns into one by pasting strings together|[:material-notebook:][37]|
 
 ### Missing values
 
