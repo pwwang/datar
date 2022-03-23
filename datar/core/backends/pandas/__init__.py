@@ -19,6 +19,7 @@ if BACKEND == "pandas":
         merge,
         notnull,
         pivot_table,
+        read_csv,
         to_datetime,
         unique,
     )
@@ -42,6 +43,7 @@ elif BACKEND == "modin":  # pragma: no cover
         merge,
         notnull,
         pivot_table,
+        read_csv,
         to_datetime,
         unique,
     )
