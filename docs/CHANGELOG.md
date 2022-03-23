@@ -1,3 +1,27 @@
+## 0.6.4
+
+### Breaking changes
+
+- 🩹 Make `base.ntile()` labels 1-based (#92)
+
+### Fixes
+
+- 🐛 Fix `order_by` argument for `dplyr.lead-lag`
+
+### Enhancements
+
+- 🚑 Allow `base.paste/paste0()` to work with grouped data
+- 🩹 Change dtypes of `base.letters/LETTERS/month_abb/month_name`
+
+### Housekeeping
+
+- 📝 Update and fix reference maps
+- 📝 Add `environment.yml` for binder to work
+- 📝 Update styles for docs
+- 📝 Update styles for API doc in notebooks
+- 📝 Update README for new description about the project and add examples from StackOverflow
+
+
 ## 0.6.3
 
 - ✨ Allow `base.c()` to handle groupby data
