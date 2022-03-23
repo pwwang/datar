@@ -2,8 +2,8 @@
 
 from typing import Any, Iterable
 
-from pandas import DataFrame, Series
-from pandas.api.types import is_number, is_scalar
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_number, is_scalar
 from pipda import register_verb
 
 from ..core.broadcast import broadcast_to

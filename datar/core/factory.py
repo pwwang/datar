@@ -3,10 +3,10 @@ from collections import namedtuple
 from functools import singledispatch
 from typing import TYPE_CHECKING, Sequence
 
-from pandas import DataFrame, Series
-from pandas.api.types import is_categorical_dtype, is_scalar
-from pandas.core.base import PandasObject
-from pandas.core.groupby import SeriesGroupBy
+from .backends.pandas import DataFrame, Series
+from .backends.pandas.api.types import is_categorical_dtype, is_scalar
+from .backends.pandas.core.base import PandasObject
+from .backends.pandas.core.groupby import SeriesGroupBy
 from pipda import register_func, register_verb
 
 from .contexts import Context

@@ -38,11 +38,10 @@ jobs:
           python -m pip install flake8
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -v
+          poetry install -E pdtypes -v
           pip install wcwidth
           pip install scipy
           pip install python-slugify
-          pip install pdtypes
           # reinstall pandas to specific version
           pip install -U $PANDAS
         env:
@@ -62,13 +61,54 @@ jobs:
         if: ${{ always() }}
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: matrix.python-version == 3.8 && matrix.pandas == 'pandas'
+        if: matrix.python-version == 3.9 && matrix.pandas == 'pandas'
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: cov.xml
 
+  build-modin:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # can't build numpy for 3.10 in CI
+        # python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9]
+        modin: [
+          modin==0.10.2,
+          modin # lastest
+        ]
+        exclude:
+          - python-version: 3.7
+            modin: modin==0.10.2
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python # Set Python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8
+          python -m pip install poetry
+          poetry config virtualenvs.create false
+          poetry install -E modin -E pdtypes -v
+          pip install wcwidth
+          pip install scipy
+          pip install python-slugify
+          # reinstall modin to specific version
+          pip install -U $MODIN
+        env:
+          MODIN: ${{ matrix.modin }}
+      - name: Show versions
+        run: python -c 'import datar; datar.get_versions()'
+      - name: Test with pytest
+        run: pytest tests/ --backend modin --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+
   deploy:
-    needs: build
+    needs: [build, build-modin]
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
     strategy:

@@ -1,8 +1,8 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/master/tests/testthat/test-nest.R
 import pytest
-from pandas.api.types import is_categorical_dtype
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.api.types import is_categorical_dtype
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.tibble import TibbleGrouped, TibbleRowwise
 from ..conftest import assert_iterable_equal

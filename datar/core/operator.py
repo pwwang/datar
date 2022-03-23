@@ -3,9 +3,10 @@ import operator
 from typing import Any, Callable, Sequence
 from functools import partial
 
-from pandas.core.series import Series
-from pandas.core.groupby import SeriesGroupBy, DataFrameGroupBy
 from pipda import register_operator, Operator
+
+from .backends.pandas import Series
+from .backends.pandas.core.groupby import SeriesGroupBy, DataFrameGroupBy
 
 from ..core.broadcast import broadcast2
 from .collections import Collection, Inverted, Negated, Intersect

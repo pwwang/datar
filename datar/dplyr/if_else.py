@@ -4,10 +4,11 @@ https://github.com/tidyverse/dplyr/blob/master/R/if_else.R
 https://github.com/tidyverse/dplyr/blob/master/R/case_when.R
 """
 import numpy as np
-import pandas as pd
-from pandas import Series
-from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Series
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble

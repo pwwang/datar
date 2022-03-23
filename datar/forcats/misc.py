@@ -2,9 +2,9 @@
 from typing import Any, Iterable
 
 import numpy as np
-import pandas as pd
-from pandas import Categorical, DataFrame
-from pandas.api.types import is_scalar
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, DataFrame
+from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 

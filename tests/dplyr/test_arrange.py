@@ -1,8 +1,8 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-arrange.r
 
 import pytest
-from pandas import Series
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas import Series
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.tibble import tibble
 from datar.base import NA, rep, c

@@ -5,7 +5,7 @@ https://github.com/tidyverse/tidyr/blob/HEAD/R/fill.R
 
 from typing import Union
 
-from pandas import DataFrame
+from ..core.backends.pandas import DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs
 

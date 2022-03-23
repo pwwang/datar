@@ -1,4 +1,4 @@
-from pandas import Series
+from datar.core.backends.pandas import Series
 import pytest
 import numpy as np
 from datar.core import f

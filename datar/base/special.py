@@ -3,7 +3,8 @@
 from pipda import register_func
 
 import numpy as np
-from pandas.api.types import is_scalar
+
+from ..core.backends.pandas.api.types import is_scalar
 from ..core.contexts import Context
 from .bessel import _get_special_func_from_scipy
 

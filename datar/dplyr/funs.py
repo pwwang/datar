@@ -1,9 +1,10 @@
 """Functions from R-dplyr"""
 import numpy as np
-import pandas as pd
-from pandas import Series
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Series
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.factory import func_factory
 

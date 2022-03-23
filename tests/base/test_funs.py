@@ -1,7 +1,7 @@
 import pytest  # noqa
 
-from pandas import Interval, DataFrame, Series
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas import Interval, DataFrame, Series
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.base.funs import (
     cut,

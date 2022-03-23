@@ -2,9 +2,10 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/pull.R
 """
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
 from pipda import register_verb
+
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.tibble import Tibble, TibbleGrouped
 from ..core.contexts import Context

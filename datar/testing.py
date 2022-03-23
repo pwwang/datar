@@ -1,5 +1,5 @@
-from pandas.core.frame import DataFrame
-from pandas.testing import assert_frame_equal, assert_index_equal
+from .core.backends.pandas import DataFrame
+from .core.backends.pandas.testing import assert_frame_equal, assert_index_equal
 
 from .core.tibble import TibbleGrouped
 

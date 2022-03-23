@@ -1,12 +1,11 @@
 """Provide Collection and related classes to mimic `c` from `r-base`"""
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Sequence, Union
+from typing import TYPE_CHECKING, Any, List, Sequence, Union
 
 import numpy as np
-import pandas as pd
-from pandas._typing import AnyArrayLike
-from pandas.api.types import (
+from .backends import pandas as pd
+from .backends.pandas.api.types import (
     is_array_like,
     is_scalar,
     is_integer,
@@ -14,6 +13,9 @@ from pandas.api.types import (
 )
 from pipda import evaluate_expr, Expression
 from pipda.context import ContextAnnoType
+
+if TYPE_CHECKING:
+    from pandas._typing import AnyArrayLike
 
 
 UNMATCHED = object()
@@ -25,7 +27,7 @@ class CollectionBase(ABC):
     def __init__(
         self,
         *args: Any,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         self.elems = args
         self.pool = pool
@@ -45,7 +47,7 @@ class CollectionBase(ABC):
     @abstractmethod
     def expand(
         self,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> "CollectionBase":
         """Expand the collection"""
 
@@ -64,7 +66,7 @@ class Collection(CollectionBase, list):
 
     def expand(
         self,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> CollectionBase:
         """Expand the elements of this collection
 
@@ -204,7 +206,7 @@ class Negated(Collection):
 
     def expand(
         self,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         """Expand the object"""
         super().expand(pool)
@@ -235,7 +237,7 @@ class Inverted(Collection):
 
     def expand(
         self,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         """Expand the object"""
         if pool is None:
@@ -254,7 +256,7 @@ class Intersect(Collection):
     def __init__(
         self,
         *args: Any,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         if len(args) != 2:
             raise ValueError("Intersect can only accept two collections.")
@@ -269,7 +271,7 @@ class Intersect(Collection):
 
     def expand(
         self,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         """Expand the object"""
         left = Collection(self.elems[0], pool=pool)
@@ -290,7 +292,7 @@ class Slice(Collection):
     def __init__(
         self,
         *args: Any,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         if len(args) != 1 or not isinstance(args[0], slice):
             raise ValueError(
@@ -304,7 +306,7 @@ class Slice(Collection):
 
     def expand(
         self,
-        pool: Union[int, AnyArrayLike] = None,
+        pool: Union[int, "AnyArrayLike"] = None,
     ) -> None:
         if pool is not None:
             self.pool = pool
@@ -360,7 +362,7 @@ class Slice(Collection):
 
     def _expand_pool(
         self,
-        pool: Union[int, AnyArrayLike],
+        pool: Union[int, "AnyArrayLike"],
     ) -> List[Any]:
         """Slice with pool given; try to match the range with the elements
         in the pool"""

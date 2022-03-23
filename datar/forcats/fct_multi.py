@@ -1,7 +1,7 @@
 """Provides functions for multiple factors"""
 import itertools
 
-from pandas import Categorical
+from ..core.backends.pandas import Categorical
 
 from ..core.utils import regcall
 from ..base import factor, paste, levels, expandgrid, intersect

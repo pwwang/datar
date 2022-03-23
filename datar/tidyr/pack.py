@@ -4,8 +4,8 @@ https://github.com/tidyverse/tidyr/blob/master/R/pack.R
 """
 from typing import Iterable, Set, Union, Callable
 
-from pandas import DataFrame
-from pandas.api.types import is_scalar
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.utils import vars_select, regcall

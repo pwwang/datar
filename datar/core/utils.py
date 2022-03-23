@@ -6,11 +6,12 @@ import textwrap
 from functools import singledispatch
 
 import numpy as np
-import pandas as pd
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy
 from pipda.utils import CallingEnvs
+
+from .backends import pandas as pd
+from .backends.pandas import DataFrame, Series
+from .backends.pandas.api.types import is_scalar
+from .backends.pandas.core.groupby import SeriesGroupBy
 
 
 # logger

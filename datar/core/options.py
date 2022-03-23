@@ -30,6 +30,8 @@ OPTIONS = Diot(
     # - Assume all non-data functions are using PIPING verbs
     # This is useful when source code is not available.
     assume_all_piping=False,
+    # The backend for datar
+    backend="pandas",  # or "modin"
 )
 
 

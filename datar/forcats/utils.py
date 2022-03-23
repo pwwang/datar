@@ -1,8 +1,8 @@
 """Utilities for forcats"""
 import numpy as np
-from pandas import Categorical, Series, Index
-from pandas.api.types import is_scalar, is_categorical_dtype
-from pandas.core.groupby import SeriesGroupBy
+from ..core.backends.pandas import Categorical, Series, Index
+from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 
 ForcatsRegType = (

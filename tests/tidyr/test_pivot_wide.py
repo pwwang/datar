@@ -2,7 +2,7 @@
 # https://github.com/tidyverse/tidyr/blob/HEAD/tests/testthat/test-pivot-wide.R
 import pytest
 from datar.all import *
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from ..conftest import assert_iterable_equal
 
 def test_can_pivot_all_cols_to_wide():

@@ -44,10 +44,7 @@ def test_counts_NA_even_when_not_in_levels():
     assert_iterable_equal(out.n, c(2, 1))
     # and doesn't change levels
     # only for pandas 1.3+
-    vers = get_versions(False)
-    pandas_ver = tuple(int(v) for v in vers.pandas.split('.'))
-    if pandas_ver[0] > 1 and pandas_ver[1] > 2:
-        assert_iterable_equal(levels(out.f), levels(f))
+    assert_iterable_equal(levels(out.f), levels(f))
 
 
 def test_returns_marginal_table():

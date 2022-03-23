@@ -1,7 +1,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-bind.R
 import pytest
 
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.datar import get
 from datar.base import (

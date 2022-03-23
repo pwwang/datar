@@ -21,6 +21,11 @@ pdtypes = { version = "^0.0.4", optional = true }
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
 python-slugify = {version = "^6", optional = true}
+modin = {version = "^0.10.2", optional = true}
+
+[tool.poetry.extras]
+pdtypes = ["pdtypes"]
+modin = ["modin"]
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

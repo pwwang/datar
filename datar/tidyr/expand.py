@@ -6,10 +6,10 @@ https://github.com/tidyverse/tidyr/blob/HEAD/R/expand.R
 from typing import Any, Callable, Iterable, Mapping, Union
 
 import numpy as np
-import pandas as pd
+from ..core.backends import pandas as pd
 from numpy import product
-from pandas import DataFrame, Series, Categorical
-from pandas.api.types import is_scalar, is_categorical_dtype
+from ..core.backends.pandas import DataFrame, Series, Categorical
+from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
 from pipda import register_func, register_verb
 
 from ..core.contexts import Context

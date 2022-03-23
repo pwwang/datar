@@ -1,6 +1,6 @@
 """Lower-level APIs to manipulate the factors"""
 from typing import Iterable, List
-from pandas import Categorical
+from ..core.backends.pandas import Categorical
 from pipda import register_verb
 
 from ..core.utils import regcall

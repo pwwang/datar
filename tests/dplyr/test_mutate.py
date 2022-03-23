@@ -1,11 +1,11 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-mutate.r
-from pandas import Series
+from datar.core.backends.pandas import Series
 import pytest
 from datar import f
 from datar.datar import itemgetter
 from datar.datasets import iris, mtcars
-from pandas.core.frame import DataFrame
+from datar.core.backends.pandas import DataFrame
 from datar.core.tibble import TibbleRowwise, TibbleGrouped
 from datar.testing import assert_tibble_equal
 from datar.tibble import tibble

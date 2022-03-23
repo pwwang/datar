@@ -2,9 +2,10 @@
 
 See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
-from pandas import DataFrame
 from pipda import register_verb
 from pipda.function import Function
+
+from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.utils import logger, regcall

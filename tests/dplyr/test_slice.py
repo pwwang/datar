@@ -1,7 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-slice.r
-from pandas import Categorical, Series
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas import Categorical, Series
+from datar.core.backends.pandas.testing import assert_frame_equal
 import pytest
 from datar import f
 from datar.datasets import mtcars

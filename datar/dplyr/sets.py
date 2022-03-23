@@ -2,10 +2,10 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/sets.r
 """
-
-import pandas as pd
-from pandas import DataFrame
 from pipda import register_verb
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, reconstruct_tibble

@@ -6,10 +6,11 @@ registered by `register_verb` and should be placed in `./verbs.py`
 import itertools
 
 import numpy as np
-import pandas as pd
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.middlewares import WithDataEnv
 from ..core.contexts import Context

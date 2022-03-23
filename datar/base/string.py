@@ -2,13 +2,13 @@
 import re
 
 import numpy as np
-import pandas as pd
-from pandas import Series
-from pandas.core.base import PandasObject
-from pandas.core.groupby import SeriesGroupBy
-from pandas.api.types import is_string_dtype, is_scalar
 from pipda import register_func
 
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Series
+from ..core.backends.pandas.core.base import PandasObject
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
+from ..core.backends.pandas.api.types import is_string_dtype, is_scalar
 
 from ..core.tibble import TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context

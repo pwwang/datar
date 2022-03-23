@@ -1,7 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-relocate.R
 import pytest
-from pandas.api.types import is_string_dtype, is_numeric_dtype
+from datar.core.backends.pandas.api.types import is_string_dtype, is_numeric_dtype
 from datar import f
 from datar.core.tibble import TibbleGrouped
 from datar.testing import assert_tibble_equal

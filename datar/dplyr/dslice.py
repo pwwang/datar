@@ -6,12 +6,12 @@ import builtins
 from typing import TYPE_CHECKING, Any, Iterable, Mapping, Union
 
 import numpy as np
-import pandas as pd
-from pandas import DataFrame
-from pandas.api.types import is_integer
-from pandas.core.groupby import SeriesGroupBy
 
-# from pandas.api.types import is_integer
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.api.types import is_integer
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
+
 from pipda import register_verb, Expression
 
 from datar.core.collections import Collection
@@ -22,7 +22,7 @@ from ..core.utils import dict_get, logger, regcall
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 
 if TYPE_CHECKING:
-    from pandas import Index
+    from ..core.backends.pandas import Index
 
 
 @register_verb(DataFrame, context=Context.SELECT)

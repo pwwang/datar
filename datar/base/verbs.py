@@ -1,11 +1,12 @@
 """Function from R-base that can be used as verbs"""
 import numpy as np
-import pandas as pd
-from pandas import Categorical, DataFrame, Series, Index
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy
 from pipda import register_verb
 from pipda.utils import CallingEnvs
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, DataFrame, Series, Index
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.contexts import Context
 from ..core.utils import (

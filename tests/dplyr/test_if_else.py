@@ -6,7 +6,7 @@ import pytest
 
 import pandas
 import numpy as np
-from pandas import Series
+from datar.core.backends.pandas import Series
 from datar import f
 from datar.base import NA, c
 from datar.datar import get

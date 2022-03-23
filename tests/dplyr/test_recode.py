@@ -2,7 +2,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-recode.R
 import pytest
 import numpy
-from pandas import Series
+from datar.core.backends.pandas import Series
 from datar.all import *
 from datar.dplyr.recode import NA_integer_, NA_character_
 from ..conftest import assert_iterable_equal

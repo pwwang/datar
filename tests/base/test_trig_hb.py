@@ -1,6 +1,5 @@
 import pytest
 
-from pandas.api.types import is_scalar
 from datar.base import NA
 from datar.base.trig_hb import (
     acos,

@@ -3,10 +3,9 @@ import datetime
 import functools
 
 import numpy as np
-import pandas as pd
-# from pandas import Series
-from pandas.api.types import is_scalar, is_integer
 
+from ..core.backends import pandas as pd
+from ..core.backends.pandas.api.types import is_scalar, is_integer
 from ..core.factory import func_factory
 
 
