@@ -103,7 +103,7 @@ jobs:
         env:
           MODIN: ${{ matrix.modin }}
       - name: Show versions
-        run: python -c 'import datar; datar.get_versions()'
+        run: python -c 'import datar; datar.options(backend="modin"); datar.get_versions()'
       - name: Test with pytest
         run: pytest tests/ --backend modin --junitxml=junit/test-results-${{ matrix.python-version }}.xml
 
