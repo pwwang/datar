@@ -9,9 +9,22 @@ theme:
     palette:
         primary: black
     name: 'material'
-    # font:
-    #   text: 'Ubuntu'
-    #   code: 'Ubuntu Mono'
+    font:
+      text:
+        - FreightSans
+        - "Helvetica Neue"
+        - Helvetica
+        - Arial
+        - sans-serif
+      code:
+        - IBMPlexMono
+        - SFMono-Regular
+        - Menlo
+        - Monaco
+        - Consolas
+        - "Liberation Mono"
+        - "Courier New"
+        - monospace
     features:
         - navigation.top
 markdown_extensions:

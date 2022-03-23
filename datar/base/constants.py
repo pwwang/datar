@@ -7,8 +7,8 @@ import numpy as np
 
 pi = math.pi
 
-letters = np.array(list(ascii_letters[:26]), dtype=object)
-LETTERS = np.array(list(ascii_letters[26:]), dtype=object)
+letters = np.array(list(ascii_letters[:26]), dtype='<U1')
+LETTERS = np.array(list(ascii_letters[26:]), dtype='<U1')
 
 month_abb = np.array(
     [
@@ -25,7 +25,7 @@ month_abb = np.array(
         "Nov",
         "Dec",
     ],
-    dtype=object,
+    dtype='<U1',
 )
 month_name = np.array(
     [
@@ -42,5 +42,5 @@ month_name = np.array(
         "November",
         "December",
     ],
-    dtype=object,
+    dtype='<U1',
 )

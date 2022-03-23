@@ -4,37 +4,57 @@ from contextlib import contextmanager
 from IPython.display import display, Markdown, HTML
 from IPython.core.interactiveshell import InteractiveShell
 import pardoc
-from varname.helpers import debug
+from varname.helpers import debug  # noqa
+from datar import options
+
+_ = options(warn_builtin_names=False)
 
 InteractiveShell.ast_node_interactivity = "all"
 
 BINDER_URL = (
-    'https://mybinder.org/v2/gh/pwwang/datar/'
-    '93d069f3ca36711fc811c61dcf60e9fc3d1460a5?filepath=docs%2Fnotebooks%2F'
+    "https://mybinder.org/v2/gh/pwwang/datar/"
+    "dev?filepath=docs%2Fnotebooks%2F"
 )
+
 
 def nb_header(*funcs, book=None):
     """Print the header of a notebooks, mostly the docs"""
     if book is None:
         book = funcs[0].__name__
-    display(HTML(
-        '<div style="text-align: right; text-style: italic">Try this notebook '
-        f'on <a target="_blank" href="{BINDER_URL}{book}.ipynb">'
-        'binder</a>.</div>'
-    ))
+    display(
+        HTML(
+            '<div style="text-align: right; text-style: italic">'
+            'Try this notebook on '
+            f'<a target="_blank" href="{BINDER_URL}{book}.ipynb">'
+            "binder</a>.</div>"
+        )
+    )
 
     for func in funcs:
         try:
-            formatted = pardoc.google_parser.format(
-                func.__doc__,
-                to='markdown',
-                heading=5,
-                indent_base='&emsp;&emsp;'
-            )
-        except:
+            parsed = pardoc.google_parser.parse(func.__doc__)
+            try:
+                del parsed["Examples"]
+            except KeyError:
+                pass
+        except Exception:
             formatted = func.__doc__
-        display(Markdown(f'{"#"*3} # {func.__name__}  '))
+        else:
+            formatted = pardoc.google_parser.format(
+                parsed,
+                to="markdown",
+                heading=5,
+                indent_base="&emsp;&emsp;",
+            )
+
+        display(Markdown(
+            f'{"#"*3} '
+            '<div style="background-color: #EEE; padding: 5px 0 8px 0">'
+            f'★ {func.__name__}'
+            '</div>')
+        )
         display(Markdown(formatted))
+
 
 @contextmanager
 def try_catch():

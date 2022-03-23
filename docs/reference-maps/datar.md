@@ -28,11 +28,12 @@
 |[**`flatten()`**][2]|Flatten values of data frames|[:material-notebook:][1]|
 
 ### Functions
+
 |[**`itemgetter()`**][3]|Turn `a[f.x]` to a valid verb argument with `itemgetter(a, f.x)`|[:material-notebook:][1]|
 |[**`attrgetter()`**][4]|`f.x.<attr>` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
-|[**`pd_str()`**][4]|`f.x.str` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
-|[**`pd_cat()`**][4]|`f.x.cat` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
-|[**`pd_dt()`**][4]|`f.x.dt` but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+|[**`pd_str()`**][4]|`str` accessor but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+|[**`pd_cat()`**][4]|`cat` accessor but works with `SeriesGroupBy` object|[:material-notebook:][1]|
+|[**`pd_dt()`**][4]|`dt` accessor but works with `SeriesGroupBy` object|[:material-notebook:][1]|
 
 
 [1]: ../../notebooks/datar

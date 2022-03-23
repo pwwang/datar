@@ -28,12 +28,12 @@ def _shift(x, n, default=None, order_by=None):
         newx = Series(x)
 
     if order_by is not None:
-        newx = newx.reset_index(drop=True)
+        # newx = newx.reset_index(drop=True)
         out = with_order(order_by, Series.shift, newx, n, fill_value=default)
     else:
         out = newx.shift(n, fill_value=default)
 
-    return out
+    return out if isinstance(x, Series) else out.values
 
 
 @register_func(None, context=Context.EVAL)
