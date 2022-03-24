@@ -129,6 +129,8 @@ def pivot_wider(
 
     # hold NAs in values_from columns, so that they won't be filled
     # by values_fill
+    if values_from and ret is _data:
+        ret = _data.copy()
     for col in values_from:
         ret[col].fillna(NA_integer_, inplace=True)
 
