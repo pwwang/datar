@@ -3,8 +3,9 @@
 See souce https://github.com/tidyverse/dplyr/blob/master/R/context.R
 """
 import numpy as np
-from pandas import DataFrame, Series
 from pipda import register_func
+
+from ..core.backends.pandas import DataFrame, Series
 
 from ..core.tibble import Tibble, TibbleGrouped
 from ..core.middlewares import CurColumn

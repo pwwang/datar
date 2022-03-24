@@ -1,8 +1,8 @@
 """Logical/Boolean functions"""
 import numpy as np
-from pandas.api.types import is_scalar, is_bool_dtype
 from pipda import register_func
 
+from ..core.backends.pandas.api.types import is_scalar, is_bool_dtype
 from ..core.contexts import Context
 
 from .testing import _register_type_testing

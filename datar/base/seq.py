@@ -1,8 +1,9 @@
 import numpy as np
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import register_func
+
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
 from ..core.utils import logger, regcall
 from ..core.factory import func_factory

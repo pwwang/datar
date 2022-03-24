@@ -1,6 +1,7 @@
 """Provides desc"""
 import numpy as np
-from pandas import Categorical, Series
+
+from ..core.backends.pandas import Categorical, Series
 
 from ..core.tibble import SeriesCategorical
 from ..core.factory import func_factory

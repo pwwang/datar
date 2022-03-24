@@ -5,8 +5,9 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/mutate.R
 
 from contextlib import suppress
 
-from pandas import DataFrame
 from pipda import register_verb, evaluate_expr, ReferenceAttr, ReferenceItem
+
+from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context, ContextEvalRefCounts
 from ..core.utils import arg_match, name_of, regcall

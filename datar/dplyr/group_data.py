@@ -1,10 +1,11 @@
 """Grouping metadata"""
-
 from typing import List, Sequence, Union
-from pandas import DataFrame
-from pandas.core.groupby import GroupBy
+
 from pipda import register_verb
 from pipda.utils import CallingEnvs
+
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.core.groupby import GroupBy
 
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.utils import dict_get, regcall

@@ -1,9 +1,9 @@
 """Cumulative functions"""
 import numpy as np
-from pandas.core.groupby import GroupBy
 
-from datar.core.tibble import TibbleGrouped
+from ..core.backends.pandas.core.groupby import GroupBy
 
+from ..core.tibble import TibbleGrouped
 from ..core.factory import func_factory
 from .arithmetic import SINGLE_ARG_SIGNATURE
 

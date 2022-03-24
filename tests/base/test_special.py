@@ -1,6 +1,6 @@
 import pytest
 
-from pandas.api.types import is_scalar
+from datar.core.backends.pandas.api.types import is_scalar
 from datar.base.special import (
     beta,
     choose,

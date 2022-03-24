@@ -4,9 +4,10 @@ The huge difference:
 R's factors support NAs in levels but Categorical cannot have NAs in categories.
 """
 import numpy as np
-from pandas import Categorical, Series
-from pandas.api.types import is_categorical_dtype, is_scalar
 from pipda import register_func
+
+from ..core.backends.pandas import Categorical, Series
+from ..core.backends.pandas.api.types import is_categorical_dtype, is_scalar
 
 from ..core.contexts import Context
 

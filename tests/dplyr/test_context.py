@@ -2,7 +2,7 @@
 import pytest
 
 import numpy as np
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.base import (
     c,

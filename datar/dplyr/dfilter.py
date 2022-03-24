@@ -6,8 +6,9 @@ from typing import Iterable
 import operator
 
 import numpy as np
-from pandas import DataFrame, Series
 from pipda import register_verb
+
+from ..core.backends.pandas import DataFrame, Series
 
 from ..core.contexts import Context
 from ..core.utils import logger, regcall

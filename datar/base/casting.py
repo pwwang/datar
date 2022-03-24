@@ -1,9 +1,11 @@
 """Cast values between types"""
 import numpy as np
-import pandas as pd
-from pandas.api.types import is_scalar, is_categorical_dtype
-from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
+
+from ..core.backends import pandas as pd
+
+from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.contexts import Context
 

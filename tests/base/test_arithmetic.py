@@ -1,9 +1,9 @@
 import pytest
 
 import numpy as np
-from pandas import Series
-from pandas.testing import assert_frame_equal
-from pandas.testing import assert_series_equal
+from datar.core.backends.pandas import Series
+from datar.core.backends.pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_series_equal
 from datar import f
 from datar.base import NA
 

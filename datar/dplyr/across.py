@@ -4,10 +4,11 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/across.R
 """
 from abc import ABC, abstractmethod
 
-from pandas.api.types import is_scalar
 from pipda import register_func, evaluate_expr
 from pipda.function import Function
 from pipda.utils import functype
+
+from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.broadcast import add_to_tibble
 from ..core.tibble import Tibble, reconstruct_tibble

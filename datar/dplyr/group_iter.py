@@ -4,10 +4,11 @@ https://github.com/tidyverse/dplyr/blob/master/R/group_split.R
 https://github.com/tidyverse/dplyr/blob/master/R/group_map.R
 https://github.com/tidyverse/dplyr/blob/master/R/group_trim.R
 """
-import pandas as pd
-from pandas import DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, TibbleRowwise, reconstruct_tibble

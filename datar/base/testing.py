@@ -11,15 +11,16 @@
 import builtins
 
 import numpy as np
-from pandas import Series
-from pandas.api.types import (
+from pipda import register_func
+
+from ..core.backends.pandas import Series
+from ..core.backends.pandas.api.types import (
     is_scalar as is_scalar_pd,
     is_integer_dtype,
     is_float_dtype,
     is_numeric_dtype,
 )
-from pandas.core.groupby import GroupBy, SeriesGroupBy
-from pipda import register_func
+from ..core.backends.pandas.core.groupby import GroupBy, SeriesGroupBy
 
 from ..core.tibble import TibbleGrouped
 from ..core.contexts import Context

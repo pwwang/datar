@@ -1,10 +1,11 @@
 """Provides functions to add or remove levels"""
 from typing import Any, Iterable, List
 
-import pandas as pd
-from pandas import Categorical
-from pandas.api.types import is_scalar
 from pipda import register_verb
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical
+from ..core.backends.pandas.api.types import is_scalar
 
 from ..base import levels, union, table, intersect, setdiff
 from ..core.contexts import Context

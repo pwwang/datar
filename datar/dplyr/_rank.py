@@ -2,11 +2,12 @@ from types import GeneratorType
 from functools import singledispatch
 
 import numpy as np
-import pandas as pd
-from pandas import Categorical, DataFrame, Series
-from pandas.api.types import is_scalar
-from pandas.core.groupby import GroupBy, SeriesGroupBy
-from pandas.core.generic import NDFrame
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import GroupBy, SeriesGroupBy
+from ..core.backends.pandas.core.generic import NDFrame
 
 from ..core.tibble import TibbleGrouped
 

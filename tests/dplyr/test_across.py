@@ -4,7 +4,7 @@ import numpy
 from pipda import register_func
 import pytest
 
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.tibble import tibble
 from datar.base import (

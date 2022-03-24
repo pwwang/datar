@@ -1,7 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/master/tests/testthat/test-chop.R
 import pytest  # noqa
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 
 # chop --------------------------------------------------------------------

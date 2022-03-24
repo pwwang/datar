@@ -6,8 +6,8 @@ import re
 from typing import Mapping, Callable, Union
 
 import pandas
-from pandas import DataFrame
-from pandas.api.types import is_categorical_dtype, is_scalar
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.api.types import is_categorical_dtype, is_scalar
 from pipda import register_verb
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX

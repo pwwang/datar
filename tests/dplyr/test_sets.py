@@ -3,7 +3,7 @@
 
 import pytest
 import numpy
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.tibble import TibbleGrouped
 

@@ -2,8 +2,9 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/arrange.R
 """
-from pandas import DataFrame
 from pipda import register_verb
+
+from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.utils import regcall

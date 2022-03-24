@@ -1,7 +1,7 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-group-by.r
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-rowwise.r
 
-from pandas import Series
+from datar.core.backends.pandas import Series
 import pytest
 
 import numpy

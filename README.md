@@ -17,11 +17,14 @@ A Grammar of Data Manipulation in python
 
 ```shell
 pip install -U datar
-```
-or
-```shell
-conda install -c conda-forge datar
-# mamba install -c conda-forge datar
+
+# install pdtypes support
+pip install -U datar[pdtypes]
+
+# install dependencies for modin as backend
+pip install -U datar[modin]
+# you may also need to install dependencies for modin engines
+# pip install -U modin[ray]
 ```
 
 ## Example usage

@@ -2,9 +2,10 @@
 
 See source https://github.com/tidyverse/dplyr/blob/master/R/distinct.R
 """
-from pandas import DataFrame
-from pandas.core.groupby import GroupBy
 from pipda import register_verb
+
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.core.groupby import GroupBy
 
 from ..core.contexts import Context
 from ..core.factory import func_factory

@@ -1,7 +1,7 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/HEAD/tests/testthat/test-extract.R
 import pytest
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 from ..conftest import assert_iterable_equal
 

@@ -5,7 +5,8 @@ import keyword
 from typing import Callable, List, Union, Iterable, Tuple
 
 import numpy
-from pandas.api.types import is_list_like
+
+from .backends.pandas.api.types import is_list_like
 
 from .exceptions import NameNonUniqueError
 

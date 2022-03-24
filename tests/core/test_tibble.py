@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from pandas import DataFrame
-from pandas.api.types import is_float_dtype, is_integer_dtype
-from pandas.core.groupby import SeriesGroupBy
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas import DataFrame
+from datar.core.backends.pandas.api.types import is_float_dtype, is_integer_dtype
+from datar.core.backends.pandas.core.groupby import SeriesGroupBy
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.core.exceptions import NameNonUniqueError
 from datar.core.tibble import Tibble, TibbleRowwise, TibbleGrouped

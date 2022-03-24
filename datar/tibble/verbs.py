@@ -1,6 +1,6 @@
 """Functions ported from tidyverse-tibble"""
-from pandas import DataFrame, Series, RangeIndex
-from pandas.api.types import is_scalar
+from ..core.backends.pandas import DataFrame, Series, RangeIndex
+from ..core.backends.pandas.api.types import is_scalar
 from pipda import Context, register_verb
 
 from ..core.utils import logger, regcall

@@ -1,6 +1,6 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-filter.r
-from pandas import Series
+from datar.core.backends.pandas import Series
 import pytest
 from datar import f
 from datar.datasets import iris, mtcars
@@ -24,7 +24,7 @@ from datar.dplyr import (
     everything,
 )
 from datar.base import c, rep, nrow, NA, min, re, is_element, letters
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from pipda import register_func
 
 

@@ -2,8 +2,8 @@
 
 from typing import Union
 
-import pandas as pd
-from pandas import DataFrame
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context

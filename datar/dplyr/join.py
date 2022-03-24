@@ -1,9 +1,9 @@
 """Mutating joins"""
-import pandas as pd
-from pandas import Categorical, DataFrame
-from pandas.api.types import is_scalar, is_categorical_dtype
 from pipda import register_verb
 
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, DataFrame
+from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble

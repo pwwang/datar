@@ -1,5 +1,5 @@
 import pytest
-from pandas import DataFrame
+from datar.core.backends.pandas import DataFrame
 from datar.base.verbs import (
     colnames,
     rownames,
