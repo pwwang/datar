@@ -38,6 +38,10 @@ def test_unnamed_dfs_are_flattened():
     out = crossing(df)
     assert_iterable_equal(out.x, df.x)
 
+    df = tibble(name=f[1:3], y=f[1:3])
+    out = expand(df, nesting(f.name, f.y))
+    assert_iterable_equal(out.name, df.name)
+
 
 def test_named_dfs_are_not_flattened():
     df = tibble(x=f[1:3], y=f[1:3])

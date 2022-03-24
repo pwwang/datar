@@ -6,11 +6,12 @@ https://github.com/tidyverse/tidyr/blob/HEAD/R/expand.R
 from typing import Any, Callable, Iterable, Mapping, Union
 
 import numpy as np
-from ..core.backends import pandas as pd
 from numpy import product
+from pipda import register_func, register_verb
+
+from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame, Series, Categorical
 from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
-from pipda import register_func, register_verb
 
 from ..core.contexts import Context
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
@@ -253,6 +254,9 @@ def _dots_cols(
             continue
 
         name = getattr(arg, "name", getattr(arg, "__name__", None))
+        if not isinstance(name, str):
+            # name is a Series
+            name = None
         name = name or f"{DEFAULT_COLUMN_PREFIX}{i}"
         out["__named__"][name] = False
         out[name] = [arg] if is_scalar(arg) else arg
