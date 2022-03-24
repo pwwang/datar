@@ -14,7 +14,7 @@ __all__ = (
 options(enable_pdtypes=True)
 
 __all__ = ("f", "get_versions")
-__version__ = "0.6.4"
+__version__ = "0.7.0"
 
 
 def get_versions(prnt: bool = True):

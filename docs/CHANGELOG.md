@@ -1,3 +1,9 @@
+## 0.7.0
+
+- ✨ Support `modin` as backend
+- ✨ Add `_return` argument for `datar.options()`
+- 🐛 Fix `tidyr.expand()` when `nesting(f.name)` as argument
+
 ## 0.6.4
 
 ### Breaking changes
