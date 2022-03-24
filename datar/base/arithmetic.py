@@ -4,10 +4,10 @@ import inspect
 from typing import TYPE_CHECKING, Union
 
 import numpy as np
-import pandas as pd
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy, GroupBy
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
 from ..core.factory import func_factory, verb_factory
 from ..core.tibble import Tibble, TibbleGrouped

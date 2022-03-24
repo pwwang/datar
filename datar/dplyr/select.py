@@ -4,8 +4,9 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/select.R
 """
 from typing import Any, Iterable, Mapping, Sequence, Tuple, Union
 
-from pandas import DataFrame, Index
 from pipda import register_verb
+
+from ..core.backends.pandas import DataFrame, Index
 
 from ..core.contexts import Context
 from ..core.tibble import Tibble, TibbleGrouped

@@ -4,10 +4,11 @@ import builtins
 from typing import Callable, List, Sequence, Union
 
 import numpy as np
-from pandas.api.types import is_scalar, is_bool
-from pandas.core.frame import DataFrame
 from pipda import register_func
 from pipda.utils import functype
+
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.api.types import is_scalar, is_bool
 
 from ..core.contexts import Context
 from ..core.utils import ensure_nparray, vars_select, regcall

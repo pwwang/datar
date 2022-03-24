@@ -4,9 +4,13 @@ https://github.com/tidyverse/dplyr/blob/master/R/recode.R
 """
 
 import numpy as np
-import pandas as pd
-from pandas import Categorical, Series
-from pandas.api.types import is_scalar, is_categorical_dtype, is_numeric_dtype
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, Series
+from ..core.backends.pandas.api.types import (
+    is_scalar,
+    is_categorical_dtype,
+    is_numeric_dtype,
+)
 
 from datar.core.tibble import SeriesCategorical
 
@@ -355,7 +359,7 @@ def recode_factor(
     recoded_levels = (
         recoded.categories
         if isinstance(recoded, Categorical)
-        else pd.unique(recoded[pd.notna(recoded)])
+        else pd.unique(recoded[pd.notnull(recoded)])
     )
     levels = regcall(intersect, all_levels, recoded_levels)
 

@@ -2,9 +2,9 @@
 
 from typing import List, Any, Union, Callable, Mapping
 
-import pandas as pd
-from pandas import DataFrame, Index
-from pandas.api.types import is_scalar
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame, Index
+from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context

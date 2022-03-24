@@ -3,9 +3,10 @@
 https://github.com/tidyverse/dplyr/blob/master/R/lead-lag.R
 """
 import numpy as np
-from pandas import Series
-from pandas.api.types import is_scalar
 from pipda import register_func
+
+from ..core.backends.pandas import Series
+from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.contexts import Context
 from ..core.factory import dispatching

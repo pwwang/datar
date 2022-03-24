@@ -1,7 +1,7 @@
 import pytest  # noqa
 
 import numpy as np
-from pandas.api.types import is_float_dtype
+from datar.core.backends.pandas.api.types import is_float_dtype
 from datar.base.casting import (
     as_double,
     as_integer,

@@ -1,8 +1,8 @@
 import pytest
 import datetime
 
-import pandas as pd
-from pandas import Timestamp
+from datar.core.backends import pandas as pd
+from datar.core.backends.pandas import Timestamp
 from datar.base.date import (
     as_date,
     as_pd_date,

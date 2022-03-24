@@ -1,6 +1,6 @@
 import pytest
 
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.core.utils import *
 from datar.all import factor, levels, NA, tibble, is_integer
 from ..conftest import assert_iterable_equal

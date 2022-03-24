@@ -1,6 +1,7 @@
 """Provides specific contexts for datar"""
-from collections import defaultdict
 from enum import Enum
+
+from collections import defaultdict
 from pipda.context import (
     ContextBase,
     ContextEval as ContextEvalPipda,
@@ -8,7 +9,8 @@ from pipda.context import (
     ContextPending,
     ContextSelect,
 )
-from pandas import DataFrame
+
+from .backends.pandas import DataFrame
 
 
 class ContextEval(ContextEvalPipda):

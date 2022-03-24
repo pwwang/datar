@@ -6,9 +6,9 @@ https://github.com/tidyverse/tidyr/blob/HEAD/R/separate.R
 import re
 from typing import Any, List, Tuple, Union
 
-import pandas as pd
-from pandas import DataFrame
-from pandas.api.types import is_scalar
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context

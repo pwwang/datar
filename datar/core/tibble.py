@@ -1,19 +1,20 @@
 from itertools import chain
-from typing import Callable, Mapping, Union, Sequence
+from typing import TYPE_CHECKING, Callable, Mapping, Union, Sequence
 
 import numpy as np
-from pandas._typing import Dtype
-from pandas.api.types import is_scalar
-from pandas.core.frame import DataFrame
-from pandas.core.indexes.base import Index
-from pandas.core.series import Series
-from pandas.core.groupby import SeriesGroupBy, GroupBy
 from pipda import evaluate_expr
+
+from .backends.pandas import DataFrame, Index, Series
+from .backends.pandas.api.types import is_scalar
+from .backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
 from .collections import Collection
 from .contexts import Context
 from .utils import apply_dtypes, name_of, regcall
 from .names import repair_names
+
+if TYPE_CHECKING:
+    from pandas._typing import Dtype
 
 
 class Tibble(DataFrame):
@@ -43,7 +44,7 @@ class Tibble(DataFrame):
         names: Sequence[str],
         data: Sequence,
         _name_repair: Union[str, Callable] = "check_unique",
-        _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
+        _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
     ) -> "Tibble":
         """Construct a tibble with name-value pairs
 

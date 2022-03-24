@@ -3,11 +3,11 @@ from functools import singledispatch
 from typing import Any, Iterable
 
 import numpy as np
-import pandas as pd
-from pandas import DataFrame
-from pandas.api.types import is_scalar
-from pandas.core.series import Series
 from pipda import register_verb
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.contexts import Context
 

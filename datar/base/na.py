@@ -1,7 +1,7 @@
 """NA related constants or functions"""
 import numpy as np
-import pandas as pd
 
+from ..core.backends import pandas as pd
 from ..core.defaults import NA_REPR
 from ..core.factory import func_factory
 

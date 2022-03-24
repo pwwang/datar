@@ -3,7 +3,7 @@ import functools
 from pathlib import Path
 from typing import List
 
-import pandas
+from ..core.backends import pandas as pd
 import toml
 
 HERE = Path(__file__).parent
@@ -17,7 +17,7 @@ def list_datasets():
 
 
 @functools.lru_cache()
-def load_data(name: str) -> pandas.DataFrame:
+def load_data(name: str) -> pd.DataFrame:
     """Load the specific dataset"""
     datasets = list_datasets()
     try:
@@ -28,7 +28,7 @@ def load_data(name: str) -> pandas.DataFrame:
             f"available: {list(datasets)}"
         ) from None
 
-    data = pandas.read_csv(
+    data = pd.read_csv(
         HERE / metadata["source"],
         index_col=0 if metadata["index"] else False,
     )

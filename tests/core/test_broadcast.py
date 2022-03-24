@@ -1,6 +1,6 @@
 import pytest
-from pandas import Categorical, DataFrame, Index, Series
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas import Categorical, DataFrame, Index, Series
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.base import factor
 from datar.core.tibble import TibbleGrouped, TibbleRowwise

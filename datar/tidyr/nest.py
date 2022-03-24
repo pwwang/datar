@@ -5,10 +5,10 @@ https://github.com/tidyverse/tidyr/blob/master/R/nest.R
 from typing import Callable, Mapping, Union, Iterable, List
 import re
 
-import pandas as pd
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
-from pandas.core.generic import NDFrame
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.generic import NDFrame
 from pipda import register_verb
 
 from ..core.utils import vars_select, regcall

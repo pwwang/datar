@@ -1,7 +1,8 @@
 """Functions related to complex numbers"""
 import numpy as np
-from pandas.api.types import is_complex_dtype
 from pipda import register_func
+
+from ..core.backends.pandas.api.types import is_complex_dtype
 
 from ..core.contexts import Context
 from ..core.factory import func_factory

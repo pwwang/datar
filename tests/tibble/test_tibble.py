@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from pandas import Series
+from datar.core.backends.pandas import Series
 from datar import f
 from datar.core.tibble import TibbleGrouped
 from datar.datasets import iris

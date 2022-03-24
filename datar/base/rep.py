@@ -1,11 +1,12 @@
 from functools import singledispatch
 
 import numpy as np
-import pandas as pd
-from pandas import DataFrame, Series, Categorical
-from pandas.api.types import is_scalar, is_integer
-from pandas.core.groupby import SeriesGroupBy
 from pipda import register_func
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame, Series, Categorical
+from ..core.backends.pandas.api.types import is_scalar, is_integer
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, reconstruct_tibble

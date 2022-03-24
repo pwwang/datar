@@ -2,9 +2,9 @@ import inspect
 import pytest
 
 import numpy as np
-from pandas import Categorical, DataFrame, Series
-from pandas.testing import assert_frame_equal
-from pandas.core.groupby import SeriesGroupBy
+from datar.core.backends.pandas import Categorical, DataFrame, Series
+from datar.core.backends.pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.core.groupby import SeriesGroupBy
 from datar.core.factory import func_factory
 from datar.core.tibble import (
     SeriesCategorical,

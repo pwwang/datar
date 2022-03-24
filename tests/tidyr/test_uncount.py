@@ -2,7 +2,7 @@
 # https://github.com/tidyverse/tidyr/blob/HEAD/tests/testthat/test-uncount.R
 import pytest
 from datar.all import *
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 
 def test_symbols_weights_are_dropped_in_output():
     df = tibble(x=1, w=1)

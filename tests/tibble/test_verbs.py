@@ -25,7 +25,7 @@ from datar.datasets import iris, mtcars
 from datar.dplyr import group_by, rowwise
 from datar.dplyr.group_data import group_vars
 from datar.tibble import *
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 
 from ..conftest import assert_iterable_equal
 

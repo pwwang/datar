@@ -1,8 +1,9 @@
 """Relocate columns"""
 from typing import Any, Union
 
-from pandas import DataFrame
 from pipda import register_verb
+
+from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.utils import regcall

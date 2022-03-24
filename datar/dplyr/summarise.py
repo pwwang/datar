@@ -3,8 +3,9 @@
 from itertools import chain
 from typing import Any, Tuple
 
-from pandas import DataFrame, Series
 from pipda import register_verb, evaluate_expr
+
+from ..core.backends.pandas import DataFrame, Series
 
 from ..core.exceptions import NameNonUniqueError
 from ..core.contexts import Context, ContextEvalRefCounts

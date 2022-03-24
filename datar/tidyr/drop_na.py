@@ -3,7 +3,7 @@
 https://github.com/tidyverse/tidyr/blob/HEAD/R/drop-na.R
 """
 
-from pandas import DataFrame
+from ..core.backends.pandas import DataFrame
 from pipda import register_verb
 
 from ..core.contexts import Context

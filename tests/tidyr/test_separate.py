@@ -3,7 +3,7 @@
 import pytest
 from datar.all import *
 from datar.core.tibble import TibbleGrouped
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 from ..conftest import assert_iterable_equal
 
 def test_missing_values_in_input_are_missing_in_output():

@@ -1,8 +1,8 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-join.r
 import pytest  # noqa
-from pandas import DataFrame
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas import DataFrame
+from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.core.tibble import TibbleGrouped
 from datar.tibble import tibble

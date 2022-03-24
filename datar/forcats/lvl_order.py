@@ -1,10 +1,11 @@
 """Provides forcats verbs to manipulate factor level orders"""
 from typing import Any, Callable, Iterable, Sequence
 
-import pandas as pd
-from pandas import Categorical, DataFrame, Series
-from pandas.api.types import is_scalar
-from pandas.core.groupby import SeriesGroupBy
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
+
 from pipda import register_func, register_verb
 from pipda.utils import CallingEnvs, functype
 

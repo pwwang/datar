@@ -1,12 +1,15 @@
-from typing import Any, Callable, Mapping, Union
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Union
 
 from pipda import register_func, register_verb, ReferenceAttr, ReferenceItem
-from pandas._typing import Dtype
-from pandas.api.types import is_scalar
-from pandas.core.groupby import DataFrameGroupBy
+
+from ..core.backends.pandas.api.types import is_scalar
+from ..core.backends.pandas.core.groupby import DataFrameGroupBy
 
 from ..core.tibble import Tibble, TibbleGrouped
 from ..core.contexts import Context
+
+if TYPE_CHECKING:
+    from pandas._typing import Dtype
 
 
 # Register as a function, so that
@@ -19,7 +22,7 @@ def tibble(
     *args,
     _name_repair: Union[str, Callable] = "check_unique",
     _rows: int = None,
-    _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
+    _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
     _drop_index: bool = False,
     _index=None,
     **kwargs,
@@ -64,7 +67,7 @@ def tibble(
 def tribble(
     *dummies: Any,
     _name_repair: Union[str, Callable] = "minimal",
-    _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
+    _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
 ) -> Tibble:
     """Create dataframe using an easier to read row-by-row layout
     Unlike original API that uses formula (`f.col`) to indicate the column
@@ -131,7 +134,7 @@ def tribble(
 def tibble_row(
     *args: Any,
     _name_repair: Union[str, Callable] = "check_unique",
-    _dtypes: Union[Dtype, Mapping[str, Dtype]] = None,
+    _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
     **kwargs: Any,
 ) -> Tibble:
     """Constructs a data frame that is guaranteed to occupy one row.

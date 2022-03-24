@@ -2,8 +2,8 @@
 from typing import Any, Callable, Iterable, List, Mapping
 
 import numpy as np
-import pandas as pd
-from pandas import Categorical, DataFrame
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import Categorical, DataFrame
 from pipda import register_verb
 from pipda.utils import CallingEnvs, functype
 

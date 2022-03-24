@@ -1,7 +1,8 @@
 """Basic functions"""
-from pandas import Series
-from pandas.core.groupby import SeriesGroupBy
 from pipda import evaluate_expr, register_func
+
+from ..core.backends.pandas import Series
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.factory import func_factory
 from ..core.contexts import Context

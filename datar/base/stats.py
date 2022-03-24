@@ -3,11 +3,11 @@ from typing import Mapping
 from functools import singledispatch
 
 import numpy as np
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
 
-from datar.core.tibble import TibbleGrouped, TibbleRowwise
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
 
+from ..core.tibble import TibbleGrouped, TibbleRowwise
 from ..core.factory import func_factory
 
 

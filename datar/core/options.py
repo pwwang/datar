@@ -30,6 +30,8 @@ OPTIONS = Diot(
     # - Assume all non-data functions are using PIPING verbs
     # This is useful when source code is not available.
     assume_all_piping=False,
+    # The backend for datar
+    backend="pandas",  # or "modin"
 )
 
 
@@ -64,6 +66,7 @@ OPTION_CALLBACKS = Diot(
 
 def options(
     *args: Union[str, Mapping[str, Any]],
+    _return: bool = None,
     **kwargs: Any,
 ) -> Mapping[str, Any]:
     """Allow the user to set and examine a variety of global options
@@ -71,8 +74,13 @@ def options(
     Args:
         *args: Names of options to return
         **kwargs: name-value pair to create/set an option
+        _return: Whether return the options.
+            If `None`, turned to `True` when option names provided in `args`.
+
+    Returns:
+        The options before updating if `_return` is `True`.
     """
-    if not args and not kwargs:
+    if not args and not kwargs and (_return is None or _return is True):
         return OPTIONS.copy()
 
     names = [arg.replace(".", "_") for arg in args if isinstance(arg, str)]
@@ -82,14 +90,19 @@ def options(
             pairs.update(_dict_transform_back(arg))
     pairs.update(_dict_transform_back(kwargs))
 
-    out = Diot(
-        {
-            name: value
-            for name, value in OPTIONS.items()
-            if name in names or name in pairs
-        },
-        diot_transform=_key_transform,
-    )
+    out = None
+    if _return is None:
+        _return = names
+
+    if _return:
+        out = Diot(
+            {
+                name: value
+                for name, value in OPTIONS.items()
+                if name in names or name in pairs
+            },
+            diot_transform=_key_transform,
+        )
 
     for key, val in pairs.items():
         oldval = OPTIONS[key]

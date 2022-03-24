@@ -1,4 +1,4 @@
-from pandas import Categorical
+from datar.core.backends.pandas import Categorical
 from datar import f
 from datar.base.date import as_date
 from datar.datar import (
@@ -12,7 +12,7 @@ from datar.datar import (
 )
 from datar.dplyr import group_by, mutate, summarise
 from datar.tibble import tibble
-from pandas.testing import assert_frame_equal
+from datar.core.backends.pandas.testing import assert_frame_equal
 
 from .conftest import assert_iterable_equal
 

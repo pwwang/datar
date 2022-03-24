@@ -21,7 +21,7 @@ from datar.dplyr import (
     contains,
     num_range,
 )
-from pandas.core.frame import DataFrame
+from datar.core.backends.pandas import DataFrame
 from pipda import register_verb
 
 from ..conftest import assert_iterable_equal

@@ -2,11 +2,15 @@
 
 See https://github.com/tidyverse/dplyr/blob/master/R/bind.r
 """
-
-import pandas as pd
-from pandas import DataFrame, Categorical
-from pandas.api.types import union_categoricals, is_categorical_dtype, is_scalar
 from pipda import register_verb
+
+from ..core.backends import pandas as pd
+from ..core.backends.pandas import DataFrame, Categorical
+from ..core.backends.pandas.api.types import (
+    union_categoricals,
+    is_categorical_dtype,
+    is_scalar,
+)
 
 from ..core.contexts import Context
 from ..core.utils import logger

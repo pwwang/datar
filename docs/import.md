@@ -137,4 +137,3 @@ Or you could even aliase it to `filter` by yourself:
 >>> filter
 <function filter at 0x7fc93396df80>
 ```
-

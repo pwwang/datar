@@ -7,8 +7,8 @@ from typing import Iterable
 
 import numpy
 import pandas
-from pandas import DataFrame, Series
-from pandas.api.types import is_scalar
+from ..core.backends.pandas import DataFrame, Series
+from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.utils import vars_select, apply_dtypes, regcall

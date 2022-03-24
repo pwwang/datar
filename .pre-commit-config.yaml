@@ -28,9 +28,16 @@ repos:
               if [[ $v1 == $v2 ]]; then exit 0; else exit 1; fi
         pass_filenames: false
         files: ^pyproject\.toml|datar/__init__\.py$
-    -   id: pytest
-        name: Run pytest
-        entry: pytest
+    -   id: pytest-pandas
+        name: Run pytest with pandas backend
+        entry: pytest --backend pandas
+        language: system
+        args: [tests/]
+        pass_filenames: false
+        files: ^tests/.+$|^datar/.+$
+    -   id: pytest-modin
+        name: Run pytest with modin backend
+        entry: pytest --backend modin
         language: system
         args: [tests/]
         pass_filenames: false
