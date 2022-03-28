@@ -13,7 +13,7 @@ A Grammar of Data Manipulation in python
 
 `datar` is an in-depth port of `tidyverse` packages, such as `dplyr`, `tidyr`, `forcats` and `tibble`, as well as some functions from `R` itself.
 
-## Installtion
+## Installation
 
 ```shell
 pip install -U datar
