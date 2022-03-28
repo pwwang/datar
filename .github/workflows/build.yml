@@ -61,7 +61,7 @@ jobs:
         if: ${{ always() }}
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: matrix.python-version == 3.9 && matrix.pandas == 'pandas'
+        if: matrix.python-version == 3.9 && matrix.pandas == 'pandas' && github.event_name != 'pull_request'
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: cov.xml
