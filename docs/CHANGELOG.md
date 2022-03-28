@@ -1,3 +1,11 @@
+## 0.7.1
+
+- 🐛 Fix settingwithcopywarning in tidyr.pivot_wider()
+- 📌 Pin deps for docs
+- 💚 Don't upload coverage in PR
+- 📝 Fix typos in docs (#99, #100) (Thanks to @pdwaggoner)
+
+
 ## 0.7.0
 
 - ✨ Support `modin` as backend
