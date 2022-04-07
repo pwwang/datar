@@ -447,16 +447,16 @@ def sprintf(fmt, *args):
 
     from ..tibble import tibble
     df = tibble(fmt, *args, _name_repair="minimal")
-    apply_func = lambda row: (
+    aggfunc = lambda row: (
         np.nan
         if pd.isnull(row.values[0])
         else row.values[0] % tuple(row.values[1:])
     )
     if isinstance(df, TibbleGrouped):
-        return Tibble(df, copy=False).apply(apply_func, axis=1).groupby(
+        return Tibble(df, copy=False).agg(aggfunc, axis=1).groupby(
             df._datar["grouped"].grouper
         )
-    return df.apply(apply_func, axis=1)
+    return df.agg(aggfunc, axis=1)
 
 
 # substr, substring ----------------------------------
