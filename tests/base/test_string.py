@@ -150,6 +150,9 @@ def test_sprintf():
     assert_iterable_equal(sprintf("%d", 1.1), ["1"])
     assert_iterable_equal(sprintf(["%d", "%.2f"], 1.1), ["1", "1.10"])
     assert_iterable_equal(sprintf(["%d", "%.2f"], 2.345), ["2", "2.35"])
+    assert_iterable_equal([sprintf(np.nan, 1.1)], [np.nan])
+    df = tibble(x=["%d", "%.2f"], y=[1.1, 2.345]).group_by("x")
+    assert_iterable_equal(sprintf(df.x, df.y).obj, ["1", "2.35"])
 
 
 def test_substr():

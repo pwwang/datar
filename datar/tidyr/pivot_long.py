@@ -31,12 +31,12 @@ def pivot_longer(
     names_prefix: str = None,
     names_sep: str = None,
     names_pattern: str = None,
-    names_dtypess=None,
+    names_dtypes=None,
     names_transform: Union[Callable, Mapping[str, Callable]] = None,
     names_repair="check_unique",
     values_to: str = "value",
     values_drop_na: bool = False,
-    values_dtypess=None,
+    values_dtypes=None,
     values_transform: Union[Callable, Mapping[str, Callable]] = None,
 ):
     """ "lengthens" data, increasing the number of rows and
@@ -86,8 +86,8 @@ def pivot_longer(
             or a single string (specifying a regular expression to split on).
         names_pattern: takes the same specification as extract(),
             a regular expression containing matching groups (()).
-        names_dtypess: and
-        values_dtypess: A list of column name-prototype pairs.
+        names_dtypes: and
+        values_dtypes: A list of column name-prototype pairs.
             A prototype (or dtypes for short) is a zero-length vector
             (like integer() or numeric()) that defines the type, class, and
             attributes of a vector. Use these arguments if you want to confirm
@@ -231,11 +231,11 @@ def pivot_longer(
         ret.dropna(subset=values_to, inplace=True)
 
     names_data = ret.loc[:, names_to]  # SettingwithCopyWarning
-    apply_dtypes(names_data, names_dtypess)
+    apply_dtypes(names_data, names_dtypes)
     ret[names_to] = names_data
 
     values_data = ret[values_to]
-    apply_dtypes(values_data, values_dtypess)
+    apply_dtypes(values_data, values_dtypes)
     ret[values_to] = values_data
 
     if names_transform:
