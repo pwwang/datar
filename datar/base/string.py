@@ -10,7 +10,7 @@ from ..core.backends.pandas.core.base import PandasObject
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 from ..core.backends.pandas.api.types import is_string_dtype, is_scalar
 
-from ..core.tibble import TibbleGrouped, TibbleRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
 from ..core.factory import func_factory, dispatching
 from ..core.utils import (
@@ -428,7 +428,7 @@ def paste0(*args, sep="", collapse=None):
 # sprintf ----------------------------------------------------------------
 
 
-@func_factory("transform", {"fmt"})
+@register_func(None, context=Context.EVAL)
 def sprintf(fmt, *args):
     """C-style String Formatting
 
@@ -440,8 +440,23 @@ def sprintf(fmt, *args):
         A scalar string if all fmt, *args are scalar strings, otherwise
         an array of formatted strings
     """
+    if is_scalar(fmt) and all(is_scalar(x) for x in args):
+        if pd.isnull(fmt):
+            return np.nan
+        return fmt % args
 
-    return fmt.transform(lambda x: np.nan if pd.isnull(x) else str(x) % args)
+    from ..tibble import tibble
+    df = tibble(fmt, *args, _name_repair="minimal")
+    apply_func = lambda row: (
+        np.nan
+        if pd.isnull(row.values[0])
+        else row.values[0] % tuple(row.values[1:])
+    )
+    if isinstance(df, TibbleGrouped):
+        return Tibble(df, copy=False).apply(apply_func, axis=1).groupby(
+            df._datar["grouped"].grouper
+        )
+    return df.apply(apply_func, axis=1)
 
 
 # substr, substring ----------------------------------
