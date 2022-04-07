@@ -1,3 +1,9 @@
+## 0.7.2
+
+- ✨ Allow tidyr.unite() to unite multiple columns into a list, instead of join them (#105)
+- 🩹 Typos in argument names of tidyr.pivot_longer() (#104)
+- 🐛 Fix base.sprintf() not working with Series (#102)
+
 ## 0.7.1
 
 - 🐛 Fix settingwithcopywarning in tidyr.pivot_wider()
