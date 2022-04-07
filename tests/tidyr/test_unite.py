@@ -61,3 +61,10 @@ def test_can_remove_missing_vars_on_request():
 #   expect_equal(vec_unite(df, c("x", "dbl")), c("x", "y", "z"))
 #   expect_equal(vec_unite(df, c("x", "chr")), c("x", "y", "z"))
 # })
+
+
+# GH#105
+def test_sep_none_does_not_join_strings():
+    df = tibble(x = "a", y = "b")
+    out = df >> unite('z', f[f.x:], sep = None)
+    assert_frame_equal(out, tibble(z = [["a", "b"]]))

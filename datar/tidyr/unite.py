@@ -3,14 +3,13 @@
 from typing import Union
 
 from ..core.backends import pandas as pd
-from ..core.backends.pandas import DataFrame
+from ..core.backends.pandas import DataFrame, Series
 from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import vars_select, regcall
 from ..core.tibble import reconstruct_tibble
 
-from ..base import setdiff
 from ..dplyr import ungroup
 
 
@@ -43,27 +42,27 @@ def unite(
     else:
         columns = all_columns[vars_select(all_columns, *columns)]
 
-    out = regcall(ungroup, data)
+    out = regcall(ungroup, data).copy()
 
-    def unite_cols(row):
+    united = Series(out[columns].values.tolist(), index=out.index)
+    if sep is not None:
         if na_rm:
-            row = [elem for elem in row if not pd.isnull(elem)]
-        return sep.join(str(elem) for elem in row)
+            united = united.transform(
+                lambda lst: [elem for elem in lst if pd.notnull(elem)]
+            )
 
-    out[col] = out[columns].agg(unite_cols, axis=1)
+        united = united.transform(lambda x: sep.join(str(elem) for elem in x))
+
     # get indexes to relocate
-    insert_at = min(data.columns.get_indexer_for(columns))
-    relocated_cols = (
-        data.columns[:insert_at]
-        .difference([col])
-        .union([col], sort=False)
-        .union(data.columns[insert_at:].difference([col]), sort=False)
-    )
-    out = out[relocated_cols]
+    unite_cols = out.columns.get_indexer_for(columns)
+    insert_at = int(unite_cols.min())
+    out.insert(insert_at, col, united, allow_duplicates=True)
 
     if remove:
-        cols_to_remove = regcall(setdiff, columns, [col])
-        if len(cols_to_remove) > 0:
-            out = out.drop(columns=cols_to_remove)
+        out_cols = [
+            i for i in range(out.shape[1])
+            if i <= insert_at and i - 1 not in unite_cols
+        ]
+        out = out.iloc[:, out_cols]
 
     return reconstruct_tibble(data, out)
