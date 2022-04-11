@@ -359,6 +359,10 @@ def func_factory(
     _pipda_func.__name__ = funcname
     _pipda_func.__qualname__ = qualname
     _pipda_func.__doc__ = doc or func.__doc__
+    try:
+        _pipda_func.__module__ = func.__module__
+    except AttributeError:
+        pass
     _pipda_func.dispatched = dispatched
     _pipda_func.register = _register_factory(dispatched, func)
     _pipda_func.__raw__ = func
