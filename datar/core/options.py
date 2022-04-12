@@ -1,38 +1,18 @@
 """Provide options"""
 
+from os import access, R_OK
 from typing import Any, Generator, Mapping, Union, Callable
 from contextlib import contextmanager
+from pathlib import Path
 
+import toml
 from diot import Diot
 from pipda import options as pipda_options
-
 
 _key_transform = lambda key: key.replace("_", ".")
 _dict_transform_back = lambda dic: {
     key.replace(".", "_"): val for key, val in dic.items()
 }
-
-OPTIONS = Diot(
-    # Whether use 0-based numbers when index is involved, acts similar like R
-    dplyr_summarise_inform=True,
-    # whether warn about importing functions that override builtin ones.
-    warn_builtin_names=True,
-    #
-    enable_pdtypes=False,
-    # add_option=True,
-    # allow 'a.b' to access 'a_b'
-    diot_transform=_key_transform,
-    # Warn about failure to get ast node
-    warn_astnode_failure=True,
-    # All piping mode:
-    # - Assume all verbs are using PIPING_VERB env
-    # - Assume all data functions are using PIPING env
-    # - Assume all non-data functions are using PIPING verbs
-    # This is useful when source code is not available.
-    assume_all_piping=False,
-    # The backend for datar
-    backend="pandas",  # or "modin"
-)
 
 
 def enable_pdtypes_callback(enable: bool) -> None:  # pragma: no cover
@@ -62,6 +42,54 @@ OPTION_CALLBACKS = Diot(
         pipda_options, "assume_all_piping", val
     ),
 )
+
+
+def _read_options(path: Path) -> dict:
+    """Read options from a file"""
+    if not path.is_file() or not access(path, R_OK):
+        return {}
+
+    with path.open("r") as fopt:
+        return toml.load(fopt)
+
+
+OPTION_FILE_HOME = Path("~/.datar.toml").expanduser()
+OPTION_FILE_CWD = Path("./.datar.toml").resolve()
+
+
+OPTIONS = Diot(
+    # Whether use 0-based numbers when index is involved, acts similar like R
+    dplyr_summarise_inform=True,
+    # What to do when there are conflicts importing names
+    # - `warn`: show warnings
+    # - `silent`: ignore the conflicts
+    # - `underscore_suffixed`: add suffix `_` to the conflicting names
+    #   (and don't do any warnings)
+    import_names_conflict="warn",
+    # Enable pdtypes
+    enable_pdtypes=True,
+    # add_option=True,
+    # allow 'a.b' to access 'a_b'
+    diot_transform=_key_transform,
+    # Warn about failure to get ast node
+    warn_astnode_failure=True,
+    # All piping mode:
+    # - Assume all verbs are using PIPING_VERB env
+    # - Assume all data functions are using PIPING env
+    # - Assume all non-data functions are using PIPING verbs
+    # This is useful when source code is not available.
+    assume_all_piping=False,
+    # The backend for datar
+    backend="pandas",  # or "modin"
+)
+OPTIONS.update(_read_options(OPTION_FILE_HOME))
+OPTIONS.update(_read_options(OPTION_FILE_CWD))
+
+
+def apply_init_callbacks():
+    """Apply the callbacks when options are initialized"""
+    for key in OPTION_CALLBACKS:
+        OPTION_CALLBACKS[key](OPTIONS[key])
 
 
 def options(

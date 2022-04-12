@@ -67,6 +67,7 @@ from .funs import (
     rank,
     outer,
 )
+from .glimpse import glimpse
 from .logical import (
     FALSE,
     TRUE,
@@ -193,22 +194,13 @@ from .verbs import (
 )
 from .which import which, which_max, which_min
 
+from ..core.import_names_conflict import (
+    handle_import_names_conflict as _handle_import_names_conflict
+)
 
-__all__ = [name for name in locals() if not name.startswith("_")]
+_conflict_names = {"min", "max", "sum", "abs", "round", "all", "any", "re"}
 
-_builtin_names = {
-    "min": min_,
-    "max": max_,
-    "sum": sum_,
-    "abs": abs_,
-    "round": round_,
-    "all": all_,
-    "any": any_,
-    "re": re_,
-}
-__all__.extend(_builtin_names)
+__all__, _getattr = _handle_import_names_conflict(locals(), _conflict_names)
 
-# warn when builtin names are imported directly
-from ..core.warn_builtin_names import warn_builtin_names
-
-__getattr__ = warn_builtin_names(**_builtin_names)
+if _getattr is not None:
+    __getattr__ = _getattr

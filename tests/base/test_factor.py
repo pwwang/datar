@@ -2,6 +2,7 @@ import pytest  # noqa
 
 import numpy as np
 from datar.core.backends.pandas import Series
+from datar.core.backends.pandas.core.groupby import SeriesGroupBy
 from datar.base.factor import (
     droplevels,
     factor,
@@ -13,7 +14,7 @@ from datar.base.factor import (
     ordered,
     # is_categorical,
 )
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_factor_equal, assert_iterable_equal
 
 
 def test_droplevels():
@@ -43,6 +44,13 @@ def test_factor():
     out = factor(out)
     assert_iterable_equal(out, [np.nan, 2, 3])
     assert_iterable_equal(levels(out), [2, 3])
+
+
+def test_factor_sgb():
+    x = Series([1, 2, 3]).groupby([1, 1, 3])
+    out = factor(x)
+    assert isinstance(out, SeriesGroupBy)
+    assert_factor_equal(out.obj.values, factor([1, 2, 3]))
 
 
 def test_as_facotr():

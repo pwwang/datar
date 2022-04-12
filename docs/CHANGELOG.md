@@ -1,3 +1,12 @@
+## 0.8.0
+
+- ✨ Support `base.glimpse()` (#107, machow/siuba#409)
+- 🐛 Register `base.factor()` and accept grouped data (#108)
+- ✨ Allow configuration file to save default options
+- 💥 Replace option `warn_builtin_names` with `imiport_names_conflict` (#73)
+- 🩹 Attach original `__module__` to `func_factory` registed functions
+- ⬆️ Bump `pipda` to `0.5.9`
+
 ## 0.7.2
 
 - ✨ Allow tidyr.unite() to unite multiple columns into a list, instead of join them (#105)

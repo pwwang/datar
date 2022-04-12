@@ -1,5 +1,6 @@
 from .core import operator as _
 from .core import f, options_context, options, add_option, get_option, logger
+from .core.options import apply_init_callbacks
 
 __all__ = (
     "f",
@@ -11,10 +12,10 @@ __all__ = (
     "logger",
 )
 
-options(enable_pdtypes=True)
-
 __all__ = ("f", "get_versions")
-__version__ = "0.7.2"
+__version__ = "0.8.0"
+
+apply_init_callbacks()
 
 
 def get_versions(prnt: bool = True):

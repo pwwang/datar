@@ -93,17 +93,13 @@ from .tidyselect import (
     where,
 )
 
-# make sure builtin names are included when
-# from datar.dplyr import *
-_builtin_names = {
-    "filter": filter_,
-    "slice": slice_,
-}
+from ..core.import_names_conflict import (
+    handle_import_names_conflict as _handle_import_names_conflict
+)
 
-__all__ = [var_ for var_ in locals() if not var_.startswith("_")]
-__all__.extend(_builtin_names)
+_conflict_names = {"filter", "slice"}
 
-# warn when builtin names are imported directly
-from ..core.warn_builtin_names import warn_builtin_names
+__all__, _getattr = _handle_import_names_conflict(locals(), _conflict_names)
 
-__getattr__ = warn_builtin_names(**_builtin_names)
+if _getattr is not None:
+    __getattr__ = _getattr

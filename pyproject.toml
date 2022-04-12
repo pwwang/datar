@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.7.2"
+version = "0.8.0"
 description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
 readme = "README.md"
@@ -10,7 +10,7 @@ repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with pandas
-pipda = "^0.5.7"
+pipda = "^0.5.9"
 diot = "^0.1.1"
 # pipda already requires the following
 # executing = "*"

@@ -285,6 +285,7 @@ See [here](../stats) for APIs ported from `r-stats` and [here](../utils) for API
 
 |API|Description|Notebook example|
 |---|---|---:|
+|[`glimpse()`][166]|Get a glimpse of your data||
 |[`cut()`][113]|Convert Numeric to Factor|[:material-notebook:][163]|
 |[`diff()`][164]|Returns suitably lagged and iterated differences.|[:material-notebook:][163]|
 |[`identity()`][114]|Identity Function|[:material-notebook:][163]|
@@ -464,3 +465,4 @@ See [here](../stats) for APIs ported from `r-stats` and [here](../utils) for API
 [163]: ../../notebooks/base-funs
 [164]: ../../api/datar.base.funs/#datar.base.funs.diff
 [165]: ../../api/datar.base.funs/#datar.base.funs.outer
+[166]: ../../api/datar.base.glimpse/#datar.base.glimpse.glimpse

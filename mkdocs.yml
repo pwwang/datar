@@ -60,6 +60,7 @@ nav:
     - 'Porting rules': 'porting_rules.md'
     - 'Import datar': 'import.md'
     - 'Backends': 'backends.md'
+    - 'Options': 'options.md'
     - 'The f-expression': 'f.md'
     - 'Caveats':
         'Indexing/Selection': 'caveats/indexing.md'
