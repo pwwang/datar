@@ -7,6 +7,7 @@ import numpy as np
 from pipda import register_func
 
 from ..core.backends.pandas import Categorical, Series
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 from ..core.backends.pandas.api.types import is_categorical_dtype, is_scalar
 
 from ..core.contexts import Context
@@ -71,6 +72,7 @@ def is_ordered(x) -> bool:
     return _ensure_categorical(x).ordered
 
 
+@register_func(None, context=Context.EVAL)
 def factor(x=None, levels=None, exclude=np.nan, ordered=False):
     """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
     are also used for factors).
@@ -87,6 +89,15 @@ def factor(x=None, levels=None, exclude=np.nan, ordered=False):
         ordered: logical flag to determine if the levels should be regarded
             as ordered (in the order given).
     """
+    if isinstance(x, SeriesGroupBy):
+        out = factor.__origfunc__(
+            x.obj,
+            levels=levels,
+            exclude=exclude,
+            ordered=ordered,
+        )
+        return Series(out, index=x.obj.index).groupby(x.grouper)
+
     if x is None:
         x = []
 
