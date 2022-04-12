@@ -4,7 +4,6 @@ from datar.core.options import (
     options_context,
     add_option,
     get_option,
-    OPTIONS,
 )
 
 
@@ -16,6 +15,7 @@ def reset_options():
 
 
 def test_options_empty_args_returns_full_options():
+    from datar.core.options import OPTIONS
     out = options()
     assert out == OPTIONS
 
