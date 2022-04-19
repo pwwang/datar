@@ -2,14 +2,16 @@
 
 from typing import Union
 
+from pipda import register_verb
+
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame, Series
-from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.utils import vars_select, regcall
 from ..core.tibble import reconstruct_tibble
 
+from ..base import setdiff
 from ..dplyr import ungroup
 
 
@@ -38,9 +40,11 @@ def unite(
     """
     all_columns = data.columns
     if not columns:
+        unite_idx = range(data.shape[1])
         columns = all_columns
     else:
-        columns = all_columns[vars_select(all_columns, *columns)]
+        unite_idx = vars_select(data, columns)
+        columns = all_columns[unite_idx]
 
     out = regcall(ungroup, data).copy()
 
@@ -54,15 +58,11 @@ def unite(
         united = united.transform(lambda x: sep.join(str(elem) for elem in x))
 
     # get indexes to relocate
-    unite_cols = out.columns.get_indexer_for(columns)
-    insert_at = int(unite_cols.min())
+    insert_at = int(min(unite_idx))
     out.insert(insert_at, col, united, allow_duplicates=True)
 
     if remove:
-        out_cols = [
-            i for i in range(out.shape[1])
-            if i <= insert_at and i - 1 not in unite_cols
-        ]
-        out = out.iloc[:, out_cols]
+        to_remove = [i if i < insert_at else i + 1 for i in unite_idx]
+        out = out.iloc[:, regcall(setdiff, range(out.shape[1]), to_remove)]
 
     return reconstruct_tibble(data, out)

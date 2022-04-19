@@ -1,3 +1,8 @@
+## 0.8.1
+
+- 🐛 Fix `month_abb` and `month_name` being truncated (#112)
+- 🐛 Fix `unite()` not keeping other columns (#111)
+
 ## 0.8.0
 
 - ✨ Support `base.glimpse()` (#107, machow/siuba#409)
