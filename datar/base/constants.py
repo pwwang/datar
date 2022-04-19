@@ -10,23 +10,7 @@ pi = math.pi
 letters = np.array(list(ascii_letters[:26]), dtype='<U1')
 LETTERS = np.array(list(ascii_letters[26:]), dtype='<U1')
 
-month_abb = np.array(
-    [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ],
-    dtype='<U1',
-)
+
 month_name = np.array(
     [
         "January",
@@ -42,5 +26,7 @@ month_name = np.array(
         "November",
         "December",
     ],
-    dtype='<U1',
+    dtype='<U9',
 )
+
+month_abb = np.array(month_name, dtype='<U3')
