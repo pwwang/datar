@@ -230,6 +230,27 @@ def test_match():
     out = match(x.x, [2, 4, 1, 0])
     assert out.is_rowwise
 
+    # GH #115
+    df = tibble(x=[1, 1, 2, 2], y=["a", "b", "b", "b"])
+    out = match(df.y, unique(df.y))
+    assert_iterable_equal(out, [0, 1, 1, 1])
+
+    gf = df.groupby("x")
+    out = match(gf.y, unique(gf.y))
+    assert_iterable_equal(out.obj, [0, 1, 0, 0])
+
+    out = match(["a", "b"], df.y)
+    assert_iterable_equal(out, [0, 1])
+
+    with pytest.raises(ValueError):
+        match(gf.y, df.y.groupby([1, 1, 1, 2]))
+
+    # treat as normal series
+    incompatible_y = unique(gf.y)
+    incompatible_y.loc[3] = "c"
+    out = match(gf.y, incompatible_y)
+    assert_iterable_equal(out.obj, [0, 1, 1, 1])
+
 
 def test_sort():
     assert sort(8)[0] == 8
