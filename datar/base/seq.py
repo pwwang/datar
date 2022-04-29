@@ -269,7 +269,9 @@ def match(x, table, nomatch=-1):
 
         out = (
             df
-            .agg(lambda row: match_dummy(*row), axis=1)
+            # not working for pandas 1.3.0
+            # .agg(lambda row: match_dummy(*row), axis=1)
+            .apply(lambda row: match_dummy(*row), axis=1)
             .explode()
             .astype(int)
             .groupby(x.grouper)
