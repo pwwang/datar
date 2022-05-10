@@ -29,21 +29,6 @@ def _str_formatter(x):
     return repr(x)
 
 
-def _is_notebook() -> bool:  # pragma: no cover
-    """Check if the current environment is notebook"""
-    try:
-        from IPython import get_ipython
-        shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True   # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
-    except (ImportError, NameError):
-        return False      # Probably standard Python interpreter
-
-
 class Glimpse:
     """Glimpse class
 
@@ -59,7 +44,7 @@ class Glimpse:
         self.colwidths = (0, 0)
 
     def __repr__(self) -> str:
-        return f"<Glimpse: {self.__hash__()}>"
+        return str(self)
 
     def __str__(self) -> str:
         self._calculate_output_widths()
@@ -162,14 +147,6 @@ class Glimpse:
             f"<td style=\"text-align: left\">{data_col}</td></tr>"
         )
 
-    def show(self):
-        """Show the glimpse view"""
-        if _is_notebook():  # pragma: no cover
-            from IPython.display import display, HTML
-            display(HTML(self._repr_html_()))
-        else:
-            print(self.__str__())
-
 
 @register_verb(DataFrame)
 def glimpse(x, width=None, formatter=formatter):
@@ -180,4 +157,4 @@ def glimpse(x, width=None, formatter=formatter):
         width: Width of output, defaults to the width of the console.
         formatter: A single-dispatch function to format a single element.
     """
-    Glimpse(x, width=width, formatter=formatter).show()
+    return Glimpse(x, width=width, formatter=formatter)

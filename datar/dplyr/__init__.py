@@ -18,6 +18,7 @@ from .count_tally import add_count, add_tally, count, tally
 from .desc import desc
 from .dfilter import filter as filter_
 from .distinct import distinct, n_distinct
+from .glimpse import glimpse
 from .dslice import slice as slice_
 from .dslice import slice_head, slice_max, slice_min, slice_sample, slice_tail
 from .funs import (
