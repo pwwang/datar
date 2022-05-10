@@ -58,14 +58,14 @@ toml = ["tomli"]
 
 [[package]]
 name = "diot"
-version = "0.1.5"
+version = "0.1.6"
 description = "Python dictionary with dot notation."
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-inflection = "<1.0.0"
+inflection = ">=0.5,<0.6"
 
 [[package]]
 name = "execnet"
@@ -247,7 +247,7 @@ diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
 name = "pytest"
-version = "7.1.1"
+version = "7.1.2"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
@@ -324,8 +324,27 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 six = ">=1.5"
 
 [[package]]
+name = "python-simpleconf"
+version = "0.5.2"
+description = "Simple configuration management with python."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+diot = ">=0.1,<0.2"
+rtoml = {version = ">=0.7,<0.8", optional = true, markers = "extra == \"toml\" or extra == \"all\""}
+
+[package.extras]
+env = ["python-dotenv (>=0.20,<0.21)"]
+all = ["python-dotenv (>=0.20,<0.21)", "pyyaml (>=6,<7)", "rtoml (>=0.7,<0.8)", "iniconfig (>=1.1.1,<2.0.0)"]
+yaml = ["pyyaml (>=6,<7)"]
+toml = ["rtoml (>=0.7,<0.8)"]
+ini = ["iniconfig (>=1.1.1,<2.0.0)"]
+
+[[package]]
 name = "python-slugify"
-version = "6.1.1"
+version = "6.1.2"
 description = "A Python slugify application that also handles Unicode"
 category = "main"
 optional = true
@@ -344,6 +363,14 @@ description = "World timezone definitions, modern and historical"
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "rtoml"
+version = "0.7.1"
+description = "A better TOML library for python implemented in rust."
+category = "main"
+optional = false
+python-versions = ">=3.7"
 
 [[package]]
 name = "scipy"
@@ -373,14 +400,6 @@ optional = true
 python-versions = "*"
 
 [[package]]
-name = "toml"
-version = "0.10.2"
-description = "Python Library for Tom's Obvious, Minimal Language"
-category = "main"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-
-[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -390,11 +409,11 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "typing-extensions"
-version = "4.1.1"
-description = "Backported and Experimental Type Hints for Python 3.6+"
+version = "4.2.0"
+description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [[package]]
 name = "varname"
@@ -435,8 +454,8 @@ pdtypes = ["pdtypes"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.7.1" # align with pandas
-content-hash = "2685eaab1359661e35598d54e1e765b7c44aa14f4bf4f9bcc5bfe245cca4d660"
+python-versions = "^3.7.1"  # required by modin 0.10.2
+content-hash = "4734cacbea11e22ce7752ba12850a80f65eb22e7f6722f556b9e5499d9f16a4e"
 
 [metadata.files]
 asttokens = [
@@ -499,8 +518,8 @@ coverage = [
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
 diot = [
-    {file = "diot-0.1.5-py3-none-any.whl", hash = "sha256:f5e90a405064c09873130240b0c3a2ba9a480e754611a74f93599f84ec0a28b9"},
-    {file = "diot-0.1.5.tar.gz", hash = "sha256:a8adc50e2d8e2a1d03ed017ecae98eb09a7ebb3bd0a5fbd44cbfb222e5a71bb4"},
+    {file = "diot-0.1.6-py3-none-any.whl", hash = "sha256:1e7f97bbc92cbbdd51d8c535885f5e2a71762b364c1b2410dfc84f3a4572d551"},
+    {file = "diot-0.1.6.tar.gz", hash = "sha256:1dcfc37dff406c96020d14350c05f920cb7446c3e5abf3477cf2ae0587f72066"},
 ]
 execnet = [
     {file = "execnet-1.9.0-py2.py3-none-any.whl", hash = "sha256:a295f7cc774947aac58dde7fdc85f4aa00c42adf5d8f5468fc630c1acf30a142"},
@@ -610,8 +629,8 @@ pyparsing = [
     {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
 ]
 pytest = [
-    {file = "pytest-7.1.1-py3-none-any.whl", hash = "sha256:92f723789a8fdd7180b6b06483874feca4c48a5c76968e03bb3e7f806a1869ea"},
-    {file = "pytest-7.1.1.tar.gz", hash = "sha256:841132caef6b1ad17a9afde46dc4f6cfa59a05f9555aae5151f73bdf2820ca63"},
+    {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
+    {file = "pytest-7.1.2.tar.gz", hash = "sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45"},
 ]
 pytest-cov = [
     {file = "pytest-cov-3.0.0.tar.gz", hash = "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"},
@@ -629,13 +648,44 @@ python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
+python-simpleconf = [
+    {file = "python-simpleconf-0.5.2.tar.gz", hash = "sha256:396688472bf0b0f7688bc74f3c5b5d527ad7cceed40cdf08e7c130a74fcf13bc"},
+    {file = "python_simpleconf-0.5.2-py3-none-any.whl", hash = "sha256:973014879329cc2ae87cad3a63f73319a16e471b7e3e1cb5ce5dea0ed4fca2cd"},
+]
 python-slugify = [
-    {file = "python-slugify-6.1.1.tar.gz", hash = "sha256:00003397f4e31414e922ce567b3a4da28cf1436a53d332c9aeeb51c7d8c469fd"},
-    {file = "python_slugify-6.1.1-py2.py3-none-any.whl", hash = "sha256:8c0016b2d74503eb64761821612d58fcfc729493634b1eb0575d8f5b4aa1fbcf"},
+    {file = "python-slugify-6.1.2.tar.gz", hash = "sha256:272d106cb31ab99b3496ba085e3fea0e9e76dcde967b5e9992500d1f785ce4e1"},
+    {file = "python_slugify-6.1.2-py2.py3-none-any.whl", hash = "sha256:7b2c274c308b62f4269a9ba701aa69a797e9bca41aeee5b3a9e79e36b6656927"},
 ]
 pytz = [
     {file = "pytz-2022.1-py2.py3-none-any.whl", hash = "sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c"},
     {file = "pytz-2022.1.tar.gz", hash = "sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7"},
+]
+rtoml = [
+    {file = "rtoml-0.7.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:fae1eee36fa08ab7590f492ee1ffbd94b18a07f4199515feb62e02d44eb61b81"},
+    {file = "rtoml-0.7.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e1d8404f91dc6addfa70ebbfdb1ee1d7392d580677f2f43370e79548710d1302"},
+    {file = "rtoml-0.7.1-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3fee9dc92056c3dcd870d6727ea7e4d05b46175d4054bacd52df8d366291237b"},
+    {file = "rtoml-0.7.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:b83c53a854097395554e1392f1041789e8925019d4b12848d29727d7fd9d2d5c"},
+    {file = "rtoml-0.7.1-cp310-cp310-win32.whl", hash = "sha256:d8c844fd0ac5b0b0cae121b46f6103fbcb15d4c786687a18cc5b0cc30f1f4007"},
+    {file = "rtoml-0.7.1-cp310-cp310-win_amd64.whl", hash = "sha256:177fd55dc5cd329f2fa41f3a6943fd3bc43c6e3b04ee6a46f8430414199a00f0"},
+    {file = "rtoml-0.7.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:3024de7114a23aac3cefef5286ff22f6686d0b167c6767d45ea3842e8ec91333"},
+    {file = "rtoml-0.7.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1c48819b034813007d48aa1fbceb478d9b6dc4f8f277036082e7e98a1d97dff4"},
+    {file = "rtoml-0.7.1-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:80cf3ea694407bbdd13cd3beeb2e8a8394168b0e3164ec509aa3f29e84162ec1"},
+    {file = "rtoml-0.7.1-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:19b7f0d16718086dfc2c8f244d0f7254788343fb5ecee2a871bdf45efd3e679b"},
+    {file = "rtoml-0.7.1-cp37-cp37m-win32.whl", hash = "sha256:b27afda8c18e65ad98b39a977ef37742410b3a126c2ce7eb9c1abe001da349e2"},
+    {file = "rtoml-0.7.1-cp37-cp37m-win_amd64.whl", hash = "sha256:866614518934a9e7ddf30f2a24922397c2aa0d7548dc100648c6bf4f82f9d2dd"},
+    {file = "rtoml-0.7.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:93600edc8d0be10b7f6532b580fa6ab31e7aa7673454a9e7569a116839fdf2d1"},
+    {file = "rtoml-0.7.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:454e02542492c4458981ce57235a892e37cc6bf99e06bf30ddbd4029a78e6395"},
+    {file = "rtoml-0.7.1-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:bf0c8f9b10f4da83a69cf249bc6b7d3ed7f1de6b4f84f548e8f2f9683eab9b8c"},
+    {file = "rtoml-0.7.1-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:b59aa478a4bbf5481feb8a00d08e7d38e8d25139b851463c0474284ed1fdac32"},
+    {file = "rtoml-0.7.1-cp38-cp38-win32.whl", hash = "sha256:3fac7e06d7b9bdbca5fc729799f7abdaaa002edc4b0cbbdb3fc93de4739804cb"},
+    {file = "rtoml-0.7.1-cp38-cp38-win_amd64.whl", hash = "sha256:81819b661f7429d468c305caf781e9aee715316a23898a0196cefc4a867a8483"},
+    {file = "rtoml-0.7.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:da9b6a3980a01102eb742b1e4efb45e35df0b34d0fcfa3ec19cc71cf2989ba0f"},
+    {file = "rtoml-0.7.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f9f8a5d671cbed209e7a6801921fdd78186334f8c58bb9618d5782f483bbeebf"},
+    {file = "rtoml-0.7.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e41a0d63d6392d33761a2e67db6a8a9246c4c6f38d2b93c2e762d765a1d50070"},
+    {file = "rtoml-0.7.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:2abd34db201796e6b49cf16677829c86c0543f2399c9bd392bd3499daedf8d32"},
+    {file = "rtoml-0.7.1-cp39-cp39-win32.whl", hash = "sha256:19508eb58d465e5faa0116e9cd6393aa944ac1bf4b3f035aacdc8325ae7c2b2f"},
+    {file = "rtoml-0.7.1-cp39-cp39-win_amd64.whl", hash = "sha256:4b765e4b940371df3668bd7f13be33f80fcd5c4e673f3eee9d74d637d6b34558"},
+    {file = "rtoml-0.7.1.tar.gz", hash = "sha256:b19f3f7e9961e262825570bd550cb120aa1e5305951648eb901b5307f58690c8"},
 ]
 scipy = [
     {file = "scipy-1.6.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a15a1f3fc0abff33e792d6049161b7795909b40b97c6cc2934ed54384017ab76"},
@@ -666,17 +716,13 @@ text-unidecode = [
     {file = "text-unidecode-1.3.tar.gz", hash = "sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93"},
     {file = "text_unidecode-1.3-py2.py3-none-any.whl", hash = "sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8"},
 ]
-toml = [
-    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
-    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
-]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-4.1.1-py3-none-any.whl", hash = "sha256:21c85e0fe4b9a155d0799430b0ad741cdce7e359660ccbd8b530613e8df88ce2"},
-    {file = "typing_extensions-4.1.1.tar.gz", hash = "sha256:1a9462dcc3347a79b1f1c0271fbe79e844580bb598bafa1ed208b94da3cdcd42"},
+    {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},
+    {file = "typing_extensions-4.2.0.tar.gz", hash = "sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376"},
 ]
 varname = [
     {file = "varname-0.8.3-py3-none-any.whl", hash = "sha256:f954e72127da2bf249e2ae3fae44fa6ee41e5fc87a65dca1bc5cdfdb74428ed0"},
