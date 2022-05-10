@@ -1,13 +1,12 @@
 """Provide options"""
 
-from os import access, R_OK
 from typing import Any, Generator, Mapping, Union, Callable
 from contextlib import contextmanager
 from pathlib import Path
 
-import toml
 from diot import Diot
 from pipda import options as pipda_options
+from simpleconf import Config
 
 _key_transform = lambda key: key.replace("_", ".")
 _dict_transform_back = lambda dic: {
@@ -44,19 +43,8 @@ OPTION_CALLBACKS = Diot(
 )
 
 
-def _read_options(path: Path) -> dict:
-    """Read options from a file"""
-    if not path.is_file() or not access(path, R_OK):
-        return {}
-
-    with path.open("r") as fopt:
-        return toml.load(fopt)
-
-
 OPTION_FILE_HOME = Path("~/.datar.toml").expanduser()
 OPTION_FILE_CWD = Path("./.datar.toml").resolve()
-
-
 OPTIONS = Diot(
     # Whether use 0-based numbers when index is involved, acts similar like R
     dplyr_summarise_inform=True,
@@ -70,7 +58,7 @@ OPTIONS = Diot(
     enable_pdtypes=True,
     # add_option=True,
     # allow 'a.b' to access 'a_b'
-    diot_transform=_key_transform,
+    # diot_transform=_key_transform,
     # Warn about failure to get ast node
     warn_astnode_failure=True,
     # All piping mode:
@@ -82,8 +70,15 @@ OPTIONS = Diot(
     # The backend for datar
     backend="pandas",  # or "modin"
 )
-OPTIONS.update(_read_options(OPTION_FILE_HOME))
-OPTIONS.update(_read_options(OPTION_FILE_CWD))
+OPTIONS = Diot(
+    Config.load(
+        OPTIONS,
+        OPTION_FILE_HOME,
+        OPTION_FILE_CWD,
+        ignore_nonexist=True,
+    ),
+    diot_transform=_key_transform,
+)
 
 
 def apply_init_callbacks():

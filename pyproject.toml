@@ -9,28 +9,29 @@ homepage = "https://github.com/pwwang/datar"
 repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
-python = "^3.7.1" # align with pandas
-pipda = "^0.5.9"
-diot = "^0.1.1"
+python = "^3.7"
+pipda = "^0.5"
+diot = "^0.1"
 # pipda already requires the following
 # executing = "*"
 # varname = "*"
 pandas = "^1.3"
-toml = "^0.10.2"
-pdtypes = { version = "^0.0.4", optional = true }
+# rtoml included
+python-simpleconf = {version = "^0.5", extras = ["toml"]}
+pdtypes = { version = "^0.0", optional = true }
 scipy = { version = "^1.6", optional = true }
 wcwidth = { version = "^0.2", optional = true }
 python-slugify = {version = "^6", optional = true}
-modin = {version = "^0.10.2", optional = true}
+modin = {version = "^0.10", optional = true}
 
 [tool.poetry.extras]
 pdtypes = ["pdtypes"]
 modin = ["modin"]
 
 [tool.poetry.dev-dependencies]
-pytest = "*"
-pytest-cov = "*"
-pytest-xdist = "^2.4.0"
+pytest = "^7"
+pytest-cov = "^3"
+pytest-xdist = "^2.4"
 
 [build-system]
 requires = ["poetry>=0.12"]
