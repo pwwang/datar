@@ -13,7 +13,7 @@ __all__ = (
 )
 
 __all__ = ("f", "get_versions")
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 apply_init_callbacks()
 
