@@ -67,7 +67,6 @@ from .funs import (
     rank,
     outer,
 )
-from .glimpse import glimpse
 from .logical import (
     FALSE,
     TRUE,

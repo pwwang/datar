@@ -5,7 +5,8 @@ from ..core.backends.pandas import DataFrame, Series
 from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
-from ..core.utils import logger, regcall
+from ..core.utils import ensure_nparray, logger, regcall
+from ..core.broadcast import _grouper_compatible
 from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
@@ -213,6 +214,20 @@ def match(x, table, nomatch=-1):
 
     See stackoverflow#4110059/pythonor-numpy-equivalent-of-match-in-r
 
+    Note that the returned vector is 0-based.
+    When `x` is grouped and table is a series from aggregated-like results, for
+    example, `unique(x)` then each group will match separately.
+
+    Examples:
+        >>> match([1, 2, 3], [2, 3, 4])
+        >>> # [-1, 0, 1]
+        >>> df = tibble(x=[1, 1, 2, 2], y=["a", "b", "b", "b"])
+        >>> match(df.y, unique(df.y))
+        >>> # [0, 1, 1, 1]
+        >>> gf = df >> group_by(f.x)
+        >>> match(gf.y, unique(gf.y))
+        >>> # [0, 1, 0, 0] (grouped)
+
     Args:
         x: The values to be matched
         table: The values to be matched against
@@ -229,23 +244,41 @@ def match(x, table, nomatch=-1):
         out[~np.isin(xx, tab)] = nomatch
         return out
 
-    if isinstance(x, SeriesGroupBy) and isinstance(table, SeriesGroupBy):
-        from ..tibble import tibble
-
-        df = tibble(x=x, y=table)
-        return df._datar["grouped"].apply(
-            lambda g: match_dummy(g.x, g.y)
-        ).explode().astype(int).groupby(x.grouper)
-
     if isinstance(x, SeriesGroupBy):
-        out = x.transform(match_dummy, tab=table).groupby(x.grouper)
+        # length of each group may differ
+        # table could be, for example, unique elements of each group in x
+        x1 = x.agg(tuple)
+        x1 = x1.groupby(x1.index)
+        df = x1.obj.to_frame()
+        if isinstance(table, SeriesGroupBy):
+            t1 = table.agg(tuple)
+            t1 = t1.groupby(t1.index)
+            if not _grouper_compatible(x1.grouper, t1.grouper):
+                raise ValueError("Grouping of x and table are not compatible")
+            df["table"] = t1.obj
+        elif isinstance(table, Series):
+            t1 = table.groupby(table.index)
+            t1 = t1.agg(tuple)
+            t1 = t1.groupby(t1.index)
+            if not _grouper_compatible(x1.grouper, t1.grouper):
+                df["table"] = [ensure_nparray(table)] * df.shape[0]
+            else:
+                df["table"] = t1.obj
+        else:
+            df["table"] = [ensure_nparray(table)] * df.shape[0]
+
+        out = (
+            df
+            # not working for pandas 1.3.0
+            # .agg(lambda row: match_dummy(*row), axis=1)
+            .apply(lambda row: match_dummy(*row), axis=1)
+            .explode()
+            .astype(int)
+            .groupby(x.grouper)
+        )
         if getattr(x, "is_rowwise", False):
             out.is_rowwise = True
         return out
-
-    # # really needed?
-    # if isinstance(table, SeriesGroupBy):
-    #     return table.apply(lambda e: match_dummy(x, e)).explode().astype(int)
 
     if isinstance(x, Series):
         return Series(match_dummy(x, table), index=x.index)

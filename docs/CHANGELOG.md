@@ -1,3 +1,12 @@
+## 0.8.2
+
+- ♻️ Move `glimpse` to `dplyr` (as `glimpse` is a `tidyverse-dplyr` [API](https://dplyr.tidyverse.org/reference/glimpse.html))
+- 🐛 Fix `glimpse()` output not rendering in qtconsole (#117)
+- 🐛 Fix `base.match()` for pandas 1.3.0
+- 🐛 Allow `base.match()` to work with grouping data (#115)
+- 📌 Use `rtoml` (`python-simpleconf`) instead of `toml` (See https://github.com/pwwang/toml-bench)
+- 📌 Update dependencies
+
 ## 0.8.1
 
 - 🐛 Fix `month_abb` and `month_name` being truncated (#112)

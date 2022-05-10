@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from ..core.backends import pandas as pd
-import toml
+import rtoml
 
 HERE = Path(__file__).parent
 
@@ -12,8 +12,8 @@ HERE = Path(__file__).parent
 @functools.lru_cache()
 def list_datasets():
     """Get the information of all datasets"""
-    with HERE.joinpath("metadata.toml") as fmd:
-        return toml.load(fmd)
+    with HERE.joinpath("metadata.toml").open() as fmd:
+        return rtoml.load(fmd)
 
 
 @functools.lru_cache()

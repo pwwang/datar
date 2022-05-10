@@ -6,7 +6,7 @@ import importlib
 from pathlib import Path
 from contextlib import contextmanager
 
-import toml
+import rtoml
 from datar.core import options
 
 
@@ -23,7 +23,7 @@ def clear_warns():
 
 def write_options(optfile, **opts):
     with optfile.open("w") as f:
-        toml.dump(opts, f)
+        rtoml.dump(opts, f)
 
 
 @contextmanager
