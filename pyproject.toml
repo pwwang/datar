@@ -11,8 +11,9 @@ repository = "https://github.com/pwwang/datar"
 [tool.poetry.dependencies]
 python = "^3.7.1"  # required by modin 0.10.2
 pipda = "^0.5"
-diot = "^0.1"
-# pipda already requires the following
+## included in python-simpleconf
+# diot = "^0.1"
+## included in pipda
 # executing = "*"
 # varname = "*"
 pandas = "^1.3"
