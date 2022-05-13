@@ -1,3 +1,8 @@
+## 0.8.3
+
+- ⬆️ Upgrade pipda to v0.6
+- ⬆️️ Upgrade thon-simpleconf to 5.5
+
 ## 0.8.2
 
 - ♻️ Move `glimpse` to `dplyr` (as `glimpse` is a `tidyverse-dplyr` [API](https://dplyr.tidyverse.org/reference/glimpse.html))
