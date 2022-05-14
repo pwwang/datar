@@ -354,7 +354,13 @@ def _nchar_scalar(x, retn, allow_na, keep_na, na_len):
         return np.nan if keep_na else na_len
 
     if retn == "width":
-        from wcwidth import wcswidth
+        try:
+            from wcwidth import wcswidth
+        except ImportError as imperr:  # pragma: no cover
+            raise ValueError(
+                "`nchar(x, type='width')` requires `wcwidth` package.\n"
+                "Try: pip install -U datar[wcwidth]"
+            ) from imperr
 
         return wcswidth(x)
     if retn == "chars":

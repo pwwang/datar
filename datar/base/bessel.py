@@ -11,7 +11,8 @@ def _get_special_func_from_scipy(name):
         from scipy import special
     except ImportError as imperr:  # pragma: no cover
         raise ValueError(
-            "Bessel functions require scipy to be installed."
+            "`bessel` family requires `scipy` package.\n"
+            "Try: pip install -U datar[scipy]"
         ) from imperr
 
     return getattr(special, name)

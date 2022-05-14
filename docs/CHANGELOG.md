@@ -1,6 +1,7 @@
 ## 0.8.4
 
 - ➖ Add optional deps to extras so they aren't installed by default
+- 🎨 Giva better message when optional packages not installed
 
 ## 0.8.3
 
