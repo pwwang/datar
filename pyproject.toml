@@ -28,6 +28,9 @@ modin = {version = "^0.10", optional = true}
 [tool.poetry.extras]
 pdtypes = ["pdtypes"]
 modin = ["modin"]
+scipy = ["scipy"]
+wcwidth = ["wcwidth"]
+slugify = ["python-slugify"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"

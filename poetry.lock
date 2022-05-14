@@ -449,11 +449,14 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [extras]
 modin = ["modin"]
 pdtypes = ["pdtypes"]
+scipy = ["scipy"]
+slugify = ["python-slugify"]
+wcwidth = ["wcwidth"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"  # required by modin 0.10.2
-content-hash = "305f1512d9a146cddce5682fcb28ad08e36d2b3bc68ea975ab7f1c6291639b06"
+content-hash = "4a4b33843b8e67403da9264321b0abcc4c6fcee163f4f8a3f30703865849b9fc"
 
 [metadata.files]
 asttokens = [
