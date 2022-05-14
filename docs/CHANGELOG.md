@@ -1,3 +1,7 @@
+## 0.8.4
+
+- ➖ Add optional deps to extras so they aren't installed by default
+
 ## 0.8.3
 
 - ⬆️ Upgrade pipda to v0.6
