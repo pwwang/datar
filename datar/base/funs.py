@@ -184,7 +184,14 @@ def make_names(names, unique=False):
     Returns:
         Converted names
     """
-    from slugify import slugify
+    try:
+        from slugify import slugify
+    except ImportError as imerr:  # pragma: no cover
+        raise ValueError(
+            "`make_names()` requires `python-slugify` package.\n"
+            "Try: pip install -U datar[slugify]"
+        ) from imerr
+
     from . import as_character
 
     if is_scalar(names):

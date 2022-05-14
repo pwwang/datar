@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.8.3"
+version = "0.8.4"
 description = "Port of dplyr and other related R packages in python, using pipda."
 authors = ["pwwang <pwwang@pwwang.com>"]
 readme = "README.md"
@@ -28,6 +28,9 @@ modin = {version = "^0.10", optional = true}
 [tool.poetry.extras]
 pdtypes = ["pdtypes"]
 modin = ["modin"]
+scipy = ["scipy"]
+wcwidth = ["wcwidth"]
+slugify = ["python-slugify"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"

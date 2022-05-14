@@ -38,10 +38,7 @@ jobs:
           python -m pip install flake8
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -E pdtypes -v
-          pip install wcwidth
-          pip install scipy
-          pip install python-slugify
+          poetry install -E pdtypes -E scipy -E wcwidth -E slugify -v
           # reinstall pandas to specific version
           pip install -U $PANDAS
         env:
@@ -94,10 +91,7 @@ jobs:
           python -m pip install flake8
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -E modin -E pdtypes -v
-          pip install wcwidth
-          pip install scipy
-          pip install python-slugify
+          poetry install -E modin -E pdtypes -E scipy -E wcwidth -E slugify -v
           # reinstall modin to specific version
           pip install -U $MODIN
         env:
