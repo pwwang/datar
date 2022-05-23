@@ -31,18 +31,20 @@ def _join(
         ret = pd.merge(newx, y, how="cross", copy=copy, suffixes=suffix)
 
     elif isinstance(by, dict):
+        left_on = list(by)
         right_on = list(by.values())
         ret = pd.merge(
             newx,
             y,
-            left_on=list(by.keys()),
+            left_on=left_on,
             right_on=right_on,
             how=how,
             copy=copy,
             suffixes=suffix,
         )
         if not keep:
-            ret.drop(columns=right_on, inplace=True)
+            to_drop = regcall(setdiff, right_on, left_on)
+            ret.drop(columns=to_drop, inplace=True)
 
     elif keep:
         if by is None:

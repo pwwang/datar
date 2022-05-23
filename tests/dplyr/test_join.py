@@ -332,3 +332,9 @@ def test_lose_group_when_by_renamed():
     df2 = tibble(x=[2, 3, 4], z=[5, 6, 7])
     out = df1 >> inner_join(df2, keep=True)
     assert not isinstance(out, TibbleGrouped)
+
+
+def test_columns_not_missing_after_join_by_same_columns_using_mapping_GH122():
+    df1 = tibble(x=[1, 2, 3], y=[3, 4, 5])
+    out = df1 >> left_join(df1, by={"x": "x", "y": "y"})
+    assert_frame_equal(out, df1)

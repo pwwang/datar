@@ -1,3 +1,7 @@
+## 0.8.5
+
+- 🐛 Fix columns missing after Join by same columns using mapping (#122)
+
 ## 0.8.4
 
 - ➖ Add optional deps to extras so they aren't installed by default
