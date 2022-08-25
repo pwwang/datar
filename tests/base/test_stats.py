@@ -16,6 +16,11 @@ def test_weighted_mean():
     with pytest.raises(ValueError):
         weighted_mean([1,2], [1,2,3])
 
+    df = tibble(g=[1, 1, 2, 2], x=[1, 2, 3, 4], w=[1, 3, 3, 3]).group_by('g')
+    assert weighted_mean(df.g.obj, w=None) == 1.5
+    assert_iterable_equal(weighted_mean(df.g), [1, 2])
+    assert_iterable_equal(weighted_mean(df.x, w=df.w), [1.75, 3.5])
+
 
 def test_quantile():
     df = tibble(x=[1, 2, 3], g=[1, 2, 2])

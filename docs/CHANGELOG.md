@@ -1,3 +1,9 @@
+## 0.8.6
+
+- 🐛 Fix weighted_mean not working for grouped data (#133)
+- ✅ Add tests for weighted_mean on grouped data
+- ⚡️ Optimize distinct on existing columns (#128)
+
 ## 0.8.5
 
 - 🐛 Fix columns missing after Join by same columns using mapping (#122)

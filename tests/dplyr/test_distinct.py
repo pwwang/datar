@@ -23,6 +23,7 @@ from datar.base import (
 )
 from datar.tibble import tibble
 from datar.datasets import iris
+from datar.testing import assert_frame_equal
 
 
 def test_single_column():
@@ -51,7 +52,7 @@ def test_keeps_only_specified_cols():
     df = tibble(x=c(1, 1, 1), y=c(1, 1, 1))
     expect = tibble(x=1)
     out = df >> distinct(f.x)
-    assert out.equals(expect)
+    assert_frame_equal(out, expect)
 
 
 def test_unless_keep_all_true():

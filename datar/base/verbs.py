@@ -234,7 +234,7 @@ def union(x, y):
 
 @register_verb(context=Context.EVAL)
 def unique(x):
-    """Union of two iterables"""
+    """Get unique elements from an iterable and keep their order"""
     # order not kept
     # return np.unique(x)
     if is_scalar(x):
