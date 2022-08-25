@@ -1,5 +1,6 @@
 """Arithmetic or math functions"""
 
+from functools import singledispatch
 import inspect
 from typing import TYPE_CHECKING, Union
 
@@ -883,18 +884,42 @@ std.register(
 sd = std
 
 
-@func_factory("transform", {"x", "w"})
-def weighted_mean(
-    x: Series, w: Series = 1, na_rm=True, __args_raw=None
-) -> Series:
-    """Calculate weighted mean"""
-    if __args_raw["w"] is not None and np.nansum(w) == 0:
+@singledispatch
+def _weighted_mean(
+    df: DataFrame,
+    has_w: bool = True,
+    na_rm: bool = True,
+) -> np.ndarray:
+    if not has_w:
+        return np.nanmean(df["x"]) if na_rm else np.mean(df["x"])
+
+    if np.nansum(df["w"]) == 0:
         return np.nan
 
     if na_rm:
-        na_mask = pd.isnull(x)
-        x = x[~na_mask.values]
-        w = w[~na_mask.values]
+        na_mask = pd.isnull(df["x"])
+        x = df["x"][~na_mask.values]
+        w = df["w"][~na_mask.values]
         return np.average(x, weights=w)
 
-    return np.average(x, weights=w)
+    return np.average(df["x"], weights=df["w"])
+
+
+@_weighted_mean.register(TibbleGrouped)
+def _(
+    df: TibbleGrouped,
+    has_w: bool = True,
+    na_rm: bool = True,
+) -> Series:
+    return df._datar["grouped"].apply(
+        lambda subdf: _weighted_mean(subdf, has_w, na_rm)
+    )
+
+
+@func_factory(None, {"x", "w"})
+def weighted_mean(
+    x: Series, w: Series = 1, na_rm=True, __args_raw=None, __args_frame=None,
+) -> Series:
+    """Calculate weighted mean"""
+    has_w = __args_raw["w"] is not None
+    return _weighted_mean(__args_frame, has_w, na_rm)
