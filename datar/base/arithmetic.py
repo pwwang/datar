@@ -900,6 +900,8 @@ def _weighted_mean(
         na_mask = pd.isnull(df["x"])
         x = df["x"][~na_mask.values]
         w = df["w"][~na_mask.values]
+        if w.size == 0:
+            return np.nan
         return np.average(x, weights=w)
 
     return np.average(df["x"], weights=df["w"])

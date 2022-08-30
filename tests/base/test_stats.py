@@ -13,6 +13,7 @@ def test_weighted_mean():
     assert weighted_mean([1, NA], [1, NA], na_rm=True) == 1
     assert np.isnan(weighted_mean([1, NA], [1, NA], na_rm=False))
     assert_iterable_equal([weighted_mean([1,2], [-1, 1])], [NA])
+    assert_iterable_equal([weighted_mean([NA], [1])], [NA])
     with pytest.raises(ValueError):
         weighted_mean([1,2], [1,2,3])
 
