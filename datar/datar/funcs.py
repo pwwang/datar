@@ -63,7 +63,12 @@ class _MethodAccessor:
         )
 
         try:
-            return out.groupby(self.accessor.sgb.grouper)
+            return out.groupby(
+                self.accessor.sgb.grouper,
+                observed=self.accessor.sgb.observed,
+                sort=self.accessor.sgb.sort,
+                dropna=self.accessor.sgb.dropna,
+            )
         except (AttributeError, ValueError, TypeError):  # pragma: no cover
             return out
 
@@ -96,7 +101,12 @@ class _Accessor:
         )
 
         try:
-            return out.groupby(self.sgb.grouper)
+            return out.groupby(
+                self.sgb.grouper,
+                observed=self.sgb.observed,
+                sort=self.sgb.sort,
+                dropna=self.sgb.dropna,
+            )
         except (AttributeError, ValueError, TypeError):  # pragma: no cover
             return out
 

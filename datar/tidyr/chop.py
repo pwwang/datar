@@ -67,7 +67,7 @@ def chop(
     )
     ungrouped = regcall(ungroup, data)
     if key_cols.size == 0:
-        grouped = ungrouped.groupby([1] * data.shape[0])
+        grouped = ungrouped.groupby([1] * data.shape[0], sort=False)
         out = grouped.agg(list).reset_index(drop=True)
     else:
         grouped = regcall(ungroup, data).groupby(

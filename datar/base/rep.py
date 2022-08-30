@@ -87,7 +87,12 @@ def _rep_dispatched(x, times, length, each):
         return (
             non_na_out.explode()
             .reset_index(drop=True)
-            .groupby(grouping, observed=False)
+            .groupby(
+                grouping,
+                observed=False,
+                sort=df._datar["grouped"].sort,
+                dropna=df._datar["grouped"].dropna,
+            )
         )
 
     return _rep(x, times, length, each)
@@ -121,7 +126,12 @@ def _(x, times, length, each):
         )
     ).explode().astype(x.obj.dtype)
     grouping = out.index
-    return out.reset_index(drop=True).groupby(grouping)
+    return out.reset_index(drop=True).groupby(
+        grouping,
+        observed=df._datar["grouped"].observed,
+        sort=df._datar["grouped"].sort,
+        dropna=df._datar["grouped"].dropna,
+    )
 
 
 @_rep_dispatched.register(DataFrame)

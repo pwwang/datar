@@ -487,7 +487,7 @@ def check_calc_levels(_f, w=None):
     else:
         cnt = (
             DataFrame({"w": w, "f": _f})
-            .groupby("f", observed=False)
+            .groupby("f", observed=False, sort=False, dropna=False)
             .agg("sum")
             .iloc[:, 0]
             .values

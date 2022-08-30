@@ -13,11 +13,8 @@ from ..core.backends.pandas.api.types import is_string_dtype, is_scalar
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
 from ..core.factory import func_factory, dispatching
-from ..core.utils import (
-    arg_match,
-    logger,
-    regcall,
-)
+from ..core.utils import arg_match, logger, regcall
+
 from .casting import _as_type
 from .testing import _register_type_testing
 from .logical import as_logical
@@ -417,9 +414,15 @@ def paste(*args, sep=" ", collapse=None):
             return out
         return np.array(out, dtype=object)
 
+    grouped = df._datar["grouped"]
     out = df.apply(
         lambda row: row.astype(str).str.cat(sep=sep), axis=1
-    ).groupby(df._datar["grouped"].grouper)
+    ).groupby(
+        grouped.grouper,
+        observed=grouped.observed,
+        sort=grouped.sort,
+        dropna=grouped.dropna,
+    )
     if collapse:
         out = out.agg(lambda x: x.str.cat(sep=collapse))
     return out
@@ -459,8 +462,12 @@ def sprintf(fmt, *args):
         else row.values[0] % tuple(row.values[1:])
     )
     if isinstance(df, TibbleGrouped):
+        grouped = df._datar["grouped"]
         return Tibble(df, copy=False).agg(aggfunc, axis=1).groupby(
-            df._datar["grouped"].grouper
+            grouped.grouper,
+            observed=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
         )
     return df.agg(aggfunc, axis=1)
 

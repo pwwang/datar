@@ -136,7 +136,12 @@ def is_element(x, elems):
         ).explode().astype(bool)
 
     if isinstance(x, SeriesGroupBy):
-        out = x.transform(np.isin, test_elements=elems).groupby(x.grouper)
+        out = x.transform(np.isin, test_elements=elems).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
         if getattr(x, "is_rowwise", False):
             out.is_rowwise = True
         return out

@@ -27,7 +27,12 @@ def _binop(op, left, right, boolean=False):
 
     out = op(left, right)
     if grouper:
-        out = out.groupby(grouper)
+        out = out.groupby(
+            grouper,
+            observed=all(g._observed for g in grouper.groupings),
+            sort=grouper._sort,
+            dropna=grouper.dropna,
+        )
         if is_rowwise:
             out.is_rowwise = True
     return out
@@ -41,7 +46,12 @@ class DatarOperator(Operator):
         """Operator for single operand"""
         op_func = getattr(operator, op)
         if isinstance(operand, (DataFrameGroupBy, SeriesGroupBy)):
-            out = op_func(operand.obj).groupby(operand.grouper)
+            out = op_func(operand.obj).groupby(
+                operand.grouper,
+                observed=operand.observed,
+                sort=operand.sort,
+                dropna=operand.dropna,
+            )
             if getattr(operand, "is_rowwise", False):
                 out.is_rowwise = True
             return out

@@ -77,7 +77,12 @@ def _regroup(x: GroupBy, new_sizes: Union[int, np.ndarray]) -> GroupBy:
         observed=x.observed,
         sort=x.sort,
     )
-    return x.obj.take(indices).groupby(grouped.grouper)
+    return x.obj.take(indices).groupby(
+        grouped.grouper,
+        observed=grouped.observed,
+        sort=grouped.sort,
+        dropna=grouped.dropna,
+    )
 
 
 def _agg_result_compatible(index: Index, grouper: "Grouper") -> bool:
@@ -456,6 +461,7 @@ def broadcast_to(
     # length of each group is checked in _broadcast_base
     # A better way to distribute the value to each group?
     # TODO: NA in grouper_index?
+    # See also https://github.com/pandas-dev/pandas/issues/35202
     idx = np.concatenate(
         [grouper.groups[gdata] for gdata in grouper.result_index]
     )

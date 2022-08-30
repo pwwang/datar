@@ -26,7 +26,6 @@ from ..dplyr import (
     distinct,
     bind_cols,
     group_vars,
-    group_by_drop_default,
     group_data,
     arrange,
     ungroup,
@@ -208,8 +207,14 @@ def _(
     if not data.group_vars:
         return out
 
+    grouped = data._datar["grouped"]
     return TibbleGrouped.from_groupby(
-        out.groupby(data.group_vars, observed=group_by_drop_default(data))
+        out.groupby(
+            data.group_vars,
+            observed=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
+        )
     )
 
 

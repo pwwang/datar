@@ -12,10 +12,10 @@ from ..core.backends.pandas.api.types import (
     is_numeric_dtype,
 )
 
-from datar.core.tibble import SeriesCategorical
-
-from ..core.factory import func_factory
 from ..core.utils import logger, regcall
+from ..core.factory import func_factory
+from ..core.tibble import SeriesCategorical
+
 from ..base import c, intersect
 from ..base.na import NA_integer_, NA_character_
 

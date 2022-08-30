@@ -228,7 +228,12 @@ def _atan2(args_frame, y, x):
 @_atan2.register(TibbleGrouped)
 def _atan2_grouped(args_frame, y, x):
     out = args_frame.agg(lambda row: np.arctan2(row.y, row.x), axis=1)
-    out = out.groupby(y.grouper)
+    out = out.groupby(
+        y.grouper,
+        observed=y.observed,
+        sort=y.sort,
+        dropna=y.dropna,
+    )
     if getattr(y, "is_rowwise", False):
         out.is_rowwise = True
     return out

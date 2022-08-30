@@ -128,7 +128,12 @@ order.register(
     func=None,
     post=(
         lambda out, x, decreasing=False, na_last=None:
-        out.explode().astype(int).groupby(x.grouper)
+        out.explode().astype(int).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
     ),
 )
 
@@ -248,18 +253,37 @@ def match(x, table, nomatch=-1):
         # length of each group may differ
         # table could be, for example, unique elements of each group in x
         x1 = x.agg(tuple)
-        x1 = x1.groupby(x1.index)
+        x1 = x1.groupby(
+            x1.index,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
         df = x1.obj.to_frame()
         if isinstance(table, SeriesGroupBy):
             t1 = table.agg(tuple)
-            t1 = t1.groupby(t1.index)
+            t1 = t1.groupby(
+                t1.index,
+                observed=table.observed,
+                sort=table.sort,
+                dropna=table.dropna,
+            )
             if not _grouper_compatible(x1.grouper, t1.grouper):
                 raise ValueError("Grouping of x and table are not compatible")
             df["table"] = t1.obj
         elif isinstance(table, Series):
-            t1 = table.groupby(table.index)
-            t1 = t1.agg(tuple)
-            t1 = t1.groupby(t1.index)
+            t1 = table.groupby(
+                table.index,
+                observed=True,
+                sort=False,
+                dropna=False,
+            ).agg(tuple)
+            t1 = t1.groupby(
+                t1.index,
+                observed=x1.observed,
+                sort=x1.sort,
+                dropna=x1.dropna,
+            )
             if not _grouper_compatible(x1.grouper, t1.grouper):
                 df["table"] = [ensure_nparray(table)] * df.shape[0]
             else:
@@ -274,7 +298,11 @@ def match(x, table, nomatch=-1):
             .apply(lambda row: match_dummy(*row), axis=1)
             .explode()
             .astype(int)
-            .groupby(x.grouper)
+        ).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
         )
         if getattr(x, "is_rowwise", False):
             out.is_rowwise = True
@@ -324,6 +352,6 @@ def c(*elems):
         out = Series(out.values.tolist(), index=out.index, dtype=object)
 
     out = out.explode().convert_dtypes()
-    grouping = out.index
-    out = out.reset_index(drop=True).groupby(grouping)
+    # TODO: check observed, sort and dropna?
+    out = out.reset_index(drop=True).groupby(out.index)
     return out

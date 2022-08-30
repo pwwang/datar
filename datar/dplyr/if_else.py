@@ -86,7 +86,12 @@ def _if_else_sgb(condition, true, false, missing=None):
         grouped.obj.iloc[:, 2],
         grouped.obj.iloc[:, 3],
     )
-    return out.groupby(condition.grouper)
+    return out.groupby(
+        condition.grouper,
+        observed=condition.observed,
+        sort=condition.sort,
+        dropna=condition.dropna,
+    )
 
 
 @register_func(None, context=Context.EVAL)

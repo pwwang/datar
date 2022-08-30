@@ -20,7 +20,12 @@ def _as_type(x, type_, na=None):
         return type_(x)  # type: ignore
 
     if isinstance(x, SeriesGroupBy):
-        out = x.transform(_as_type, type_, na).groupby(x.grouper)
+        out = x.transform(_as_type, type_, na).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
         if getattr(x, "is_rowwise", False):
             out.is_rowwise = True
         return out
@@ -97,9 +102,16 @@ def as_integer(
         Converted values according to the integer_dtype
     """
     if isinstance(x, SeriesGroupBy) and is_categorical_dtype(x.obj):
-        return x.obj.cat.codes.groupby(x.grouper)
+        return x.obj.cat.codes.groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
+
     if is_categorical_dtype(x):
         return _ensure_categorical(x).codes
+
     return _as_type(x, integer_dtype, na=np.nan if _keep_na else None)
 
 

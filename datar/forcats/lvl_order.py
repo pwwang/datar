@@ -107,7 +107,12 @@ def fct_inorder(_f, ordered: bool = None) -> Categorical:
     if not is_sgb:
         return out
 
-    return Series(out, _f.obj.index).groupby(_f.grouper)
+    return Series(out, _f.obj.index).groupby(
+        _f.grouper,
+        observed=_f.observed,
+        sort=_f.sort,
+        dropna=_f.dropna,
+    )
 
 
 as_factor = fct_inorder
@@ -237,7 +242,7 @@ def fct_reorder(
     # simulate tapply
     summary = (
         DataFrame({"f": _f, "x": _x})
-        .groupby("f", observed=False)
+        .groupby("f", observed=False, sort=False, dropna=False)
         .agg(lambda col: _fun(col, *args, **kwargs))
     )
 
@@ -290,7 +295,7 @@ def fct_reorder2(
     # simulate tapply
     summary = (
         DataFrame({"f": _f, "x": _x, "y": _y})
-        .groupby("f", observed=False)
+        .groupby("f", observed=False, sort=False, dropna=False)
         .apply(
             lambda row: _fun(
                 row.x.reset_index(drop=True),

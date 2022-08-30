@@ -198,7 +198,12 @@ def dispatching(func=None, kind=None, qualname=None, apply_type=None):
             kwargs,
         )
         if kind == "transform" and not metainfo.post:
-            out = out.groupby(__x.grouper)
+            out = out.groupby(
+                __x.grouper,
+                sort=__x.sort,
+                dropna=__x.dropna,
+                observed=__x.observed,
+            )
             if getattr(__x, "is_rowwise", False):
                 out.is_rowwise = True
         return out

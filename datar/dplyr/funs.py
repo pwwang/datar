@@ -75,7 +75,12 @@ def coalesce(x, *replace):
 @coalesce.register(SeriesGroupBy, meta=False)
 def _(x, *replace):
     out = coalesce.dispatched(x.obj, *(repl.obj for repl in replace))
-    out = out.groupby(x.grouper)
+    out = out.groupby(
+        x.grouper,
+        observed=x.observed,
+        sort=x.sort,
+        dropna=x.dropna,
+    )
     if getattr(x, "is_rowwise", False):
         out.is_rowwise = True
 
@@ -106,7 +111,12 @@ def na_if(x, y, __args_raw=None):
 @na_if.register(SeriesGroupBy, meta=False)
 def _(x, y, __args_raw=None):
     out = na_if.dispatched(x.obj, y.obj)
-    out = out.groupby(x.grouper)
+    out = out.groupby(
+        x.grouper,
+        observed=x.observed,
+        sort=x.sort,
+        dropna=x.dropna,
+    )
     if getattr(x, "is_rowwise", False):
         out.is_rowwise = True
 
@@ -142,7 +152,12 @@ def _(x, y, rtol=1e-05, atol=1e-08, equal_nan=False):
         near.dispatched(x.obj, y.obj, rtol, atol, equal_nan),
         index=x.obj.index,
     )
-    out = out.groupby(x.grouper)
+    out = out.groupby(
+        x.grouper,
+        observed=x.observed,
+        sort=x.sort,
+        dropna=x.dropna,
+    )
     if getattr(x, "is_rowwise", False):
         out.is_rowwise = True
 

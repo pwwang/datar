@@ -112,7 +112,7 @@ def _diff_sgb_post(out, x, lag=1, differences=1):
     return (
         non_na_out.explode()
         .reset_index(drop=True)
-        .groupby(grouping, observed=False)
+        .groupby(grouping, observed=False, sort=x.sort, dropna=x.dropna)
     )
 
 

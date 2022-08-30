@@ -96,7 +96,12 @@ def factor(x=None, levels=None, exclude=np.nan, ordered=False):
             exclude=exclude,
             ordered=ordered,
         )
-        return Series(out, index=x.obj.index).groupby(x.grouper)
+        return Series(out, index=x.obj.index).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
 
     if x is None:
         x = []

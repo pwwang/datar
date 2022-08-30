@@ -6,16 +6,14 @@ import builtins
 from typing import TYPE_CHECKING, Any, Iterable, Mapping, Union
 
 import numpy as np
+from pipda import register_verb, Expression
 
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_integer
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
-from pipda import register_verb, Expression
-
-from datar.core.collections import Collection
-
+from ..core.collections import Collection
 from ..core.broadcast import _ungroup
 from ..core.contexts import Context
 from ..core.utils import dict_get, logger, regcall
