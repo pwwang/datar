@@ -70,7 +70,12 @@ def chop(
         grouped = ungrouped.groupby([1] * data.shape[0])
         out = grouped.agg(list).reset_index(drop=True)
     else:
-        grouped = regcall(ungroup, data).groupby(list(key_cols))
+        grouped = regcall(ungroup, data).groupby(
+            list(key_cols),
+            dropna=False,
+            observed=True,
+            sort=False,
+        )
         out = grouped.agg(list).reset_index()
     return reconstruct_tibble(data, out)
 

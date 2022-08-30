@@ -106,6 +106,7 @@ def summarise(
                     list(gvars[:-1]),
                     observed=_data._datar["grouped"].observed,
                     sort=_data._datar["grouped"].sort,
+                    dropna=_data._datar["grouped"].dropna,
                 )
             )
 

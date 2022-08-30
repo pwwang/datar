@@ -71,7 +71,12 @@ def _regroup(x: GroupBy, new_sizes: Union[int, np.ndarray]) -> GroupBy:
     indices = np.arange(x.obj.shape[0]).repeat(repeats)
     gdata = x.grouper.groupings[0].obj
     gdata = gdata.take(indices)
-    grouped = gdata.groupby(x.grouper.names, dropna=x.grouper.dropna)
+    grouped = gdata.groupby(
+        x.grouper.names,
+        dropna=x.dropna,
+        observed=x.observed,
+        sort=x.sort,
+    )
     return x.obj.take(indices).groupby(grouped.grouper)
 
 
@@ -407,7 +412,7 @@ def broadcast_to(
         >>> broadcast_to([1, 2], Index([0, 0, 1, 1]))
         >>> # ValueError
         >>>
-        >>> # grouper: size()        # [1, 1]
+        >>> # grouper: size()        # [2, 2]
         >>> # grouper: result_index  # ['a', 'b']
         >>> broadcast_to([1, 2], Index([0, 0, 1, 1]), grouper)
         >>> # Series: [1, 2, 1, 2], index: [0, 0, 1, 1]
@@ -450,6 +455,7 @@ def broadcast_to(
     # broadcast value to each group
     # length of each group is checked in _broadcast_base
     # A better way to distribute the value to each group?
+    # TODO: NA in grouper_index?
     idx = np.concatenate(
         [grouper.groups[gdata] for gdata in grouper.result_index]
     )
