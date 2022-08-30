@@ -71,7 +71,7 @@ def _regroup(x: GroupBy, new_sizes: Union[int, np.ndarray]) -> GroupBy:
     indices = np.arange(x.obj.shape[0]).repeat(repeats)
     gdata = x.grouper.groupings[0].obj
     gdata = gdata.take(indices)
-    grouped = gdata.groupby(x.grouper.names)
+    grouped = gdata.groupby(x.grouper.names, dropna=x.grouper.dropna)
     return x.obj.take(indices).groupby(grouped.grouper)
 
 

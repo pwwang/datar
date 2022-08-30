@@ -45,8 +45,8 @@ def group_by(
         _drop: Drop groups formed by factor levels that don't appear in the
             data? The default is True except when `_data` has been previously
             grouped with `_drop=False`.
-        sort_: Sort group keys.
-        dropna_: If True, and if group keys contain NA values, NA values
+        _sort: Sort group keys.
+        _dropna: If True, and if group keys contain NA values, NA values
             together with row/column will be dropped. If False, NA values
             will also be treated as the key in groups.
         *args: variables or computations to group by.
