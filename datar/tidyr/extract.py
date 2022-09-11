@@ -12,13 +12,13 @@ from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import apply_dtypes, vars_select, regcall
+from ..core.utils import apply_dtypes, vars_select
 from ..core.tibble import reconstruct_tibble
 
 from ..dplyr import ungroup
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def extract(
     data: DataFrame,
     col: Union[str, int],
@@ -77,7 +77,7 @@ def extract(
             f"found {regex.groups}."
         )
 
-    undata = regcall(ungroup, data)
+    undata = ungroup(data, __ast_fallback="normal")
     out = undata[col].str.extract(regex)
     out = {
         outcol: (

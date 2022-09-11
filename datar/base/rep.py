@@ -154,7 +154,7 @@ def _(x, times, length, each):
     return reconstruct_tibble(x, out)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def rep(
     x,
     times=1,

@@ -44,7 +44,7 @@ from .backends.pandas.core.groupby import (
 from .backends.pandas.api.types import is_list_like
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
-from .utils import name_of, regcall, dict_get
+from .utils import name_of, dict_get
 
 if TYPE_CHECKING:
     from .backends.pandas import Grouper
@@ -742,7 +742,7 @@ def _(value: SeriesGroupBy, name: str) -> Tibble:
 def _(value: Union[DataFrame, DataFrameGroupBy], name: str) -> Tibble:
     from ..tibble import as_tibble
 
-    result = regcall(as_tibble, value)
+    result = as_tibble(value, __ast_fallback="normal")
 
     if name:
         result = result.copy()

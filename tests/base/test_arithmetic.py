@@ -5,7 +5,7 @@ from datar.core.backends.pandas import Series
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.core.backends.pandas.testing import assert_series_equal
 from datar import f
-from datar.base import NA
+from datar.base import NA, c
 
 # from datar.datar import drop_index
 from datar.tibble import tibble, tribble
@@ -131,7 +131,7 @@ def test_floor():
 
 
 def test_cov():
-    df = tibble(x=f[1:4], y=f[4:7])
+    df = tibble(x=c[1:4], y=c[4:7])
     out = df >> cov()
     assert_frame_equal(
         out.reset_index(drop=True), tibble(x=[1.0, 1.0], y=[1.0, 1.0])

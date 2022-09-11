@@ -7,7 +7,7 @@ from ..conftest import assert_iterable_equal
 
 # expand ----------------------------------------------------------------
 def test_expand_completes_all_values():
-    df = tibble(x=f[1:3], y=f[1:3])
+    df = tibble(x=c[1:3], y=c[1:3])
     out = expand(df, f.x, f.y)
     assert_frame_equal(
         out,
@@ -19,32 +19,32 @@ def test_expand_completes_all_values():
 
 
 def test_multiple_variables_in_one_arg_doesnot_expand():
-    df = tibble(x=f[1:3], y=f[1:3])
+    df = tibble(x=c[1:3], y=c[1:3])
     out = expand(df, c(f.x, f.y))
     assert nrow(out) == 2
 
 
 def test_nesting_doesnot_expand_values():
-    df = tibble(x=f[1:3], y=f[1:3])
+    df = tibble(x=c[1:3], y=c[1:3])
     out = expand(df, nesting(f.x, f.y))
     assert_frame_equal(out, df)
 
 
 def test_unnamed_dfs_are_flattened():
-    df = tibble(x=f[1:3], y=f[1:3])
+    df = tibble(x=c[1:3], y=c[1:3])
     out = expand(df, nesting(f.x, f.y))
     assert_iterable_equal(out.x, df.x)
 
     out = crossing(df)
     assert_iterable_equal(out.x, df.x)
 
-    df = tibble(name=f[1:3], y=f[1:3])
+    df = tibble(name=c[1:3], y=c[1:3])
     out = expand(df, nesting(f.name, f.y))
     assert_iterable_equal(out.name, df.name)
 
 
 def test_named_dfs_are_not_flattened():
-    df = tibble(x=f[1:3], y=f[1:3])
+    df = tibble(x=c[1:3], y=c[1:3])
     out = expand(df, x=nesting(f.x, f.y)) >> pull(f.x)
     assert_frame_equal(out, df)
 
@@ -93,7 +93,7 @@ def test_crossing_preserves_factor_levels():
 
 
 def test_null_inputs():
-    tb = tibble(x=f[1:6])
+    tb = tibble(x=c[1:6])
     out = expand(tb, f.x, y=NULL)
     assert_frame_equal(out, tb)
     out = nesting(x=tb.x, y=NULL)
@@ -112,7 +112,7 @@ def test_0len_input_gives_0len_output():
 
 
 def test_expand_crossing_expand_missing_factor_levels_nesting_doesnot():
-    tb = tibble(x=f[1:4], f=factor("a", levels=c("a", "b")))
+    tb = tibble(x=c[1:4], f=factor("a", levels=c("a", "b")))
     assert nrow(expand(tb, f.x, f.f)) == 6
     assert nrow(crossing(x=tb.x, f=tb.f)) == 6
     assert nrow(nesting(x=tb.x, f=tb.f)) == 3
@@ -194,7 +194,7 @@ def test_expand_grid():
     out = expand_grid(l1=letters, l2=LETTERS)
     assert dim(out) == (676, 2)
 
-    out = expand_grid(df=tibble(x=f[1:3], y=[2, 1]), z=[1, 2, 3])
+    out = expand_grid(df=tibble(x=c[1:3], y=[2, 1]), z=[1, 2, 3])
     assert_frame_equal(
         out,
         tibble(
@@ -216,7 +216,7 @@ def test_expand_grid():
 
 
 def test_expand_rowwise_df_drops_rowwise():
-    df = tibble(x=f[1:3], y=f[1:3])
+    df = tibble(x=c[1:3], y=c[1:3])
     rf = rowwise(df)
     out1 = df >> expand(f.x, f.y)
     out2 = rf >> expand(f.x, f.y)

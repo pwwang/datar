@@ -12,15 +12,15 @@ from ..core.backends.pandas.api.types import is_string_dtype, is_scalar
 
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
-from ..core.factory import func_factory, dispatching
-from ..core.utils import arg_match, logger, regcall
+from ..core.factory import func_factory
+from ..core.utils import arg_match, logger
 
 from .casting import _as_type
 from .testing import _register_type_testing
 from .logical import as_logical
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_character(
     x,
     str_dtype=str,
@@ -67,7 +67,7 @@ is_str = is_string = is_character
 
 
 # Grep family -----------------------------------
-@dispatching(kind="transform", qualname="datar.base.grep")
+# @dispatching(kind="transform", qualname="datar.base.grep")
 def _grep(
     x, pattern, ignore_case=False, value=False, fixed=False, invert=False
 ):
@@ -85,7 +85,7 @@ def _grep(
     return np.flatnonzero(matched)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def grep(
     pattern,
     x,
@@ -118,7 +118,7 @@ def grep(
     )
 
 
-@dispatching(kind="transform", qualname="datar.base.grepl")
+# @dispatching(kind="transform", qualname="datar.base.grepl")
 def _grepl(x, pattern, ignore_case, fixed, invert):
     pattern = _warn_more_pat_or_rep(pattern, "grepl")
     return _match(
@@ -130,7 +130,7 @@ def _grepl(x, pattern, ignore_case, fixed, invert):
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def grepl(
     pattern,
     x,
@@ -159,7 +159,7 @@ def grepl(
     )
 
 
-@dispatching(kind="transform", qualname="datar.base.sub")
+# @dispatching(kind="transform", qualname="datar.base.sub")
 def _sub(x, pattern, replacement, ignore_case, fixed):
     return _sub_(
         pattern=pattern,
@@ -170,7 +170,7 @@ def _sub(x, pattern, replacement, ignore_case, fixed):
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def sub(
     pattern,
     replacement,
@@ -200,7 +200,7 @@ def sub(
     )
 
 
-@dispatching(kind="transform", qualname="datar.base.gsub")
+# @dispatching(kind="transform", qualname="datar.base.gsub")
 def _gsub(x, pattern, replacement, ignore_case, fixed):
     return _sub_(
         pattern=pattern,
@@ -213,7 +213,7 @@ def _gsub(x, pattern, replacement, ignore_case, fixed):
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def gsub(
     pattern,
     replacement,
@@ -300,7 +300,7 @@ def _sub_(
 _sub_ = np.vectorize(_sub_, excluded={"pattern", "replacement"})
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def nchar(
     x,
     type="chars",
@@ -315,7 +315,7 @@ def nchar(
     )
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def nzchar(x, keep_na=False):
     """Find out if elements of a character vector are non-empty strings.
 
@@ -326,7 +326,7 @@ def nzchar(x, keep_na=False):
     Returns:
         A bool array to tell whether elements in x are non-empty strings
     """
-    x = regcall(as_character, x, _na=np.nan if keep_na else "")
+    x = as_character(x, _na=np.nan if keep_na else "")
     if not keep_na:
         return x.fillna(False).astype(bool)
     return as_logical(x, na=np.nan)
@@ -341,7 +341,7 @@ def _prepare_nchar(x, type, keep_na):
     if keep_na is None:
         keep_na = type != "width"
 
-    return regcall(as_character, x), keep_na
+    return as_character(x), keep_na
 
 
 @np.vectorize
@@ -378,7 +378,7 @@ _is_empty = lambda x: (
 )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def paste(*args, sep=" ", collapse=None):
     """Concatenate vectors after converting to character.
 
@@ -428,16 +428,16 @@ def paste(*args, sep=" ", collapse=None):
     return out
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def paste0(*args, sep="", collapse=None):
     """Paste with empty string as sep"""
-    return regcall(paste, *args, sep="", collapse=collapse)
+    return paste(*args, sep="", collapse=collapse)
 
 
 # sprintf ----------------------------------------------------------------
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def sprintf(fmt, *args):
     """C-style String Formatting
 
@@ -475,7 +475,7 @@ def sprintf(fmt, *args):
 # substr, substring ----------------------------------
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def substr(x, start, stop):
     """Extract substrings in strings.
 
@@ -487,11 +487,11 @@ def substr(x, start, stop):
     Returns:
         The substrings from `x`
     """
-    x = regcall(as_character, x)
+    x = as_character(x)
     return x.str[start:stop]
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def substring(x, first, last=1000000):
     """Extract substrings in strings.
 
@@ -503,14 +503,14 @@ def substring(x, first, last=1000000):
     Returns:
         The substrings from `x`
     """
-    x = regcall(as_character, x)
+    x = as_character(x)
     return x.str[first:last]
 
 
 # strsplit --------------------------------
 
 
-@func_factory("transform", {"x", "split"})
+@func_factory({"x", "split"}, "transform")
 def strsplit(x, split, fixed=False):
     """Split strings by separator
 
@@ -535,7 +535,7 @@ def strsplit(x, split, fixed=False):
 
 
 # startsWith, endsWith
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def startswith(x, prefix):
     """Determines if entries of x start with prefix
 
@@ -546,11 +546,11 @@ def startswith(x, prefix):
     Returns:
         A bool vector for each element in x if element startswith the prefix
     """
-    x = regcall(as_character, x)
+    x = as_character(x)
     return x.str.startswith(prefix)
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def endswith(x, suffix):
     """Determines if entries of x end with suffix
 
@@ -561,11 +561,11 @@ def endswith(x, suffix):
     Returns:
         A bool vector for each element in x if element endswith the suffix
     """
-    x = regcall(as_character, x)
+    x = as_character(x)
     return x.str.endswith(suffix)
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def strtoi(x, base=0):
     """Convert strings to integers according to the given base
 
@@ -580,7 +580,7 @@ def strtoi(x, base=0):
     return x.transform(int, base=base)
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def chartr(old, new, x):
     """Replace strings char by char
 
@@ -603,7 +603,7 @@ def chartr(old, new, x):
     return x
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def tolower(x):
     """Convert strings to lower case
 
@@ -613,11 +613,11 @@ def tolower(x):
     Returns:
         Converted strings
     """
-    x = regcall(as_character, x)
+    x = as_character(x)
     return x.str.lower()
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def toupper(x):
     """Convert strings to upper case
 
@@ -627,11 +627,11 @@ def toupper(x):
     Returns:
         Converted strings
     """
-    x = regcall(as_character, x)
+    x = as_character(x)
     return x.str.upper()
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def trimws(x, which="both", whitespace=r"[ \t\r\n]"):
     """Remove leading and/or trailing whitespace from character strings.
 
@@ -648,7 +648,7 @@ def trimws(x, which="both", whitespace=r"[ \t\r\n]"):
     """
     which = arg_match(which, "which", ["both", "left", "right"])
 
-    x = regcall(as_character, x)
+    x = as_character(x)
 
     if which == "both":
         expr = f"^{whitespace}|{whitespace}$"

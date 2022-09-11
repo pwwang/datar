@@ -168,7 +168,7 @@ def test_list_output_columns():
 def test_unnamed_tibbles_are_unpacked():
     df = tibble(x=[1, 2])
 
-    @register_func(None, context=Context.EVAL)
+    @register_func(context=Context.EVAL)
     def tibble_func(**kwargs):
         return tibble(**kwargs)
 
@@ -178,7 +178,7 @@ def test_unnamed_tibbles_are_unpacked():
 
 
 def test_named_tibbles_are_packed():
-    @register_func(None, context=Context.EVAL)
+    @register_func(context=Context.EVAL)
     def tibble_func(**kwargs):
         return tibble(**kwargs)
 
@@ -229,7 +229,7 @@ def test_groups_arg(caplog):
 def test_casts_data_frame_results_to_common_type():
     df = tibble(x=[1, 2], g=[1, 2]) >> group_by(f.g)
 
-    @register_func(None, context=Context.EVAL)
+    @register_func(context=Context.EVAL)
     def df_of_g(g):
         return g.apply(
             lambda x: tibble(y=1) if x.tolist() == [1] else tibble(y=1, z=2)

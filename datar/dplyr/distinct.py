@@ -3,20 +3,19 @@
 See source https://github.com/tidyverse/dplyr/blob/master/R/distinct.R
 """
 from pipda import register_verb
-from pipda.symbolic import Reference
+from pipda.reference import Reference
 
 from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.core.groupby import GroupBy
 
 from ..core.contexts import Context
 from ..core.factory import func_factory
-from ..core.utils import regcall
 from ..core.tibble import Tibble, TibbleGrouped, reconstruct_tibble
 from ..base import union, setdiff, intersect, unique
 from .mutate import mutate
 
 
-@register_verb(DataFrame, context=Context.PENDING)
+@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
 def distinct(_data, *args, _keep_all=False, **kwargs):
     """Select only unique/distinct rows from a data frame.
 
@@ -51,27 +50,35 @@ def distinct(_data, *args, _keep_all=False, **kwargs):
             subset = [expr._pipda_ref for expr in args]
             ucols = getattr(_data, "group_vars", [])
             ucols.extend(subset)
-            ucols = regcall(unique, ucols)
+            ucols = unique(ucols, __ast_fallback="normal")
             uniq = _data.drop_duplicates(subset=subset)[ucols]
         else:
             # keep_none_prefers_new_order
             uniq = (
-                regcall(
-                    mutate,
+                mutate(
                     _data,
                     *args,
                     **kwargs,
                     _keep="none",
+                    __ast_fallback="normal",
                 )
             ).drop_duplicates()
 
         if not _keep_all:
             # keep original order
             out = uniq[
-                regcall(
-                    union,
-                    regcall(intersect, _data.columns, uniq.columns),
-                    regcall(setdiff, uniq.columns, _data.columns),
+                union(
+                    intersect(
+                        _data.columns,
+                        uniq.columns,
+                        __ast_fallback="normal",
+                    ),
+                    setdiff(
+                        uniq.columns,
+                        _data.columns,
+                        __ast_fallback="normal",
+                    ),
+                    __ast_fallback="normal",
                 )
             ]
         else:

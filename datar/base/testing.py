@@ -37,7 +37,7 @@ def _register_type_testing(
 ):
     """Register type testing function"""
 
-    @func_factory("agg", "x", name=name, doc=doc)
+    @func_factory(kind="agg", name=name, doc=doc)
     def _testing(x, __args_raw=None):
         x = __args_raw["x"]  # x as a series, dtype has been compromised
         if is_scalar_pd(x):
@@ -159,8 +159,7 @@ is_in = is_element
 
 
 all = func_factory(
-    "agg",
-    "x",
+    kind="agg",
     func=builtins.all,
     doc="Check if all elements are true.",
     qualname="datar.base.all",
@@ -168,8 +167,7 @@ all = func_factory(
 )
 
 any = func_factory(
-    "agg",
-    "x",
+    kind="agg",
     func=builtins.any,
     doc="Check if any elements is true.",
     qualname="datar.base.any",

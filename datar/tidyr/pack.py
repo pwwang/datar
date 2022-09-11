@@ -8,7 +8,7 @@ from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select
 from ..core.tibble import reconstruct_tibble
 from ..core.contexts import Context
 from ..core.names import repair_names
@@ -58,12 +58,12 @@ def pack(
         for newcol, oldcol in columns:
             cols[f"{group}${newcol}"] = _data[oldcol]
 
-    asis = regcall(setdiff, _data.columns, list(usedcols))
-    out = regcall(bind_cols, _data[asis], DataFrame(cols))
+    asis = setdiff(_data.columns, list(usedcols), __ast_fallback="normal")
+    out = bind_cols(_data[asis], DataFrame(cols), __ast_fallback="normal")
     return reconstruct_tibble(_data, out)
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def unpack(
     data: DataFrame,
     cols,

@@ -12,12 +12,11 @@ from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
-from ..core.utils import regcall
 from ..tibble import tibble
 from .group_by import ungroup
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def if_else(condition, true, false, missing=None):
     """Where condition is TRUE, the matching value from true, where it's FALSE,
     the matching value from false, otherwise missing.
@@ -53,8 +52,7 @@ def if_else(condition, true, false, missing=None):
 
     newcond = newcond.astype(bool)
 
-    out = regcall(
-        case_when,  #
+    out = case_when(
         na_conds,  # 0
         missing,  # 1
         ~newcond,  # 2
@@ -79,8 +77,7 @@ def _if_else_sgb(condition, true, false, missing=None):
     df = tibble(condition, true, false, missing, _name_repair="minimal")
     # use obj so df.x won't get a SeriesGroupBy
     grouped = df._datar["grouped"]
-    out = regcall(
-        if_else,
+    out = if_else(
         grouped.obj.iloc[:, 0],
         grouped.obj.iloc[:, 1],
         grouped.obj.iloc[:, 2],
@@ -94,7 +91,7 @@ def _if_else_sgb(condition, true, false, missing=None):
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def case_when(*when_cases):
     """Vectorise multiple `if_else()` statements.
 
@@ -115,7 +112,7 @@ def case_when(*when_cases):
     )
     df = tibble(*when_cases, _name_repair="minimal")
 
-    ungrouped = regcall(ungroup, df)
+    ungrouped = ungroup(df, __ast_fallback="normal")
 
     value = Series(np.nan, index=ungrouped.index)
     for i in range(ungrouped.shape[1] - 1, 0, -2):

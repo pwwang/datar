@@ -12,17 +12,14 @@ from ..core.backends.pandas.core.groupby import GroupBy
 from ..core.exceptions import NameNonUniqueError
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.contexts import Context
-from ..core.utils import (
-    regcall,
-    vars_select,
-)
+from ..core.utils import vars_select
 from ..base import setdiff, union
 from ..tibble import as_tibble
 
 from .group_data import group_vars
 
 
-@register_verb(DataFrame, context=Context.PENDING)
+@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
 def group_by(
     _data: DataFrame,
     *args: Any,
@@ -57,7 +54,7 @@ def group_by(
     """
     from .mutate import mutate
 
-    _data = regcall(mutate, _data, *args, **kwargs)
+    _data = mutate(_data, *args, __ast_fallback="normal", **kwargs)
     _data.reset_index(drop=True, inplace=True)
 
     if _drop is None:
@@ -86,25 +83,25 @@ def _(
     if _drop is None:
         _drop = group_by_drop_default(_data)
 
-    _data = regcall(mutate, _data, *args, **kwargs)
+    _data = mutate(_data, *args, __ast_fallback="normal", **kwargs)
     new_cols = _data._datar["mutated_cols"]
-    gvars = regcall(
-        union,
-        regcall(group_vars, _data),
+    gvars = union(
+        group_vars(_data, __ast_fallback="normal"),
         new_cols,
+        __ast_fallback="normal",
     ) if _add else new_cols
 
-    return regcall(
-        group_by,
+    return group_by(
         Tibble(_data, copy=False),
         *gvars,
         _drop=_drop,
         _sort=_sort,
         _dropna=_dropna,
+        __ast_fallback="normal",
     )
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def rowwise(
     _data: DataFrame,
     *cols: Union[str, int],
@@ -128,7 +125,10 @@ def rowwise(
         )
     idxes = vars_select(_data.columns, *cols)
     gvars = _data.columns[idxes]
-    return regcall(as_tibble, _data.reset_index(drop=True)).rowwise(gvars)
+    return as_tibble(
+        _data.reset_index(drop=True),
+        __ast_fallback="normal",
+    ).rowwise(gvars)
 
 
 @rowwise.register(TibbleGrouped, context=Context.SELECT)
@@ -144,7 +144,7 @@ def _(
         )
 
     cols = _data.group_vars
-    return regcall(rowwise, _data._datar["grouped"].obj, *cols)
+    return rowwise(_data._datar["grouped"].obj, *cols, __ast_fallback="normal")
 
 
 @rowwise.register(TibbleRowwise, context=Context.SELECT)
@@ -154,7 +154,7 @@ def _(_data: TibbleRowwise, *cols: Union[str, int]) -> TibbleRowwise:
     return _data.rowwise(gvars)
 
 
-@register_verb(context=Context.SELECT)
+@register_verb(object, context=Context.SELECT, ast_fallback_arg=True)
 def ungroup(
     x: Any,
     *cols: Union[str, int],
@@ -184,15 +184,15 @@ def _(
     if not cols:
         return Tibble(obj)
 
-    old_groups = regcall(group_vars, x)
+    old_groups = group_vars(x, __ast_fallback="normal")
     to_remove = vars_select(obj.columns, *cols)
-    new_groups = regcall(
-        setdiff,
+    new_groups = setdiff(
         old_groups,
         obj.columns[to_remove],
+        __ast_fallback="normal",
     )
 
-    return regcall(group_by, obj, *new_groups)
+    return group_by(obj, *new_groups, __ast_Fallback="normal")
 
 
 @ungroup.register(TibbleRowwise, context=Context.SELECT)

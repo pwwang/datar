@@ -57,12 +57,12 @@ def test_can_unchop_multiple_cols():
     ))
 
 def test_unchopping_nothing_leaves_input_unchanged():
-    df = tibble(x = f[1:3], y = f[4:6])
+    df = tibble(x = c[1:3], y = c[4:6])
     assert_frame_equal(unchop(df, []), df)
 
 def test_unchopping_null_inputs_are_dropped():
     df = tibble(
-        x = f[1:5],
+        x = c[1:5],
         y = [NULL, [1,2], 4, NULL],
         z = [NULL, [1,2], NULL, 5]
     )

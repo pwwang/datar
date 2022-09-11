@@ -7,7 +7,7 @@ from ..core.contexts import Context
 NULL = None
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_null(*args, **kwargs):
     """Ignores arguments and returns NULL (None). R's `as.null()`
 
@@ -21,7 +21,7 @@ def as_null(*args, **kwargs):
     return NULL
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def is_null(x):
     """Check if x is exactly NULL (None), same as R's `is.null()`
 

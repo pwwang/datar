@@ -41,12 +41,12 @@ def test_unpack_preserves_grouping():
     assert out.columns.tolist() == ['g', 'y']
 
 def test_unpack_error_on_atomic_columns():
-    df = tibble(x=f[1:2])
+    df = tibble(x=c[1:2])
     with pytest.raises(ValueError, match="must be a data frame column"):
         df >> unpack(f.x)
 
 def test_df_cols_are_directly_unpacked():
-    df = tibble(x=f[1:3], y=tibble(a=f[1:3], b=f[3:1]))
+    df = tibble(x=c[1:3], y=tibble(a=c[1:3], b=c[3:1]))
     out = df >> unpack(f.y)
     assert out.columns.tolist() == ['x', 'a', 'b']
     exp = df >> pull(f.y)
@@ -55,7 +55,7 @@ def test_df_cols_are_directly_unpacked():
 def test_cannot_unpack_0col_dfs():
     # Since we only have fake packed data frame columns,
     # this gives nothing about the column, so it can't be unpacked
-    df = tibble(x=f[1:4], y=tibble(_rows=3))
+    df = tibble(x=c[1:4], y=tibble(_rows=3))
     # `y` doesn't even exist
     with pytest.raises(ValueError):
         df >> unpack(f.y)

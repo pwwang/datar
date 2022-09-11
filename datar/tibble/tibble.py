@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 # Otherwise sum(f.a) will do fast eval
 # Note that when use it as a argument of a verb
 # The expression is evaluated using the verb's data
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def tibble(
     *args,
     _name_repair: Union[str, Callable] = "check_unique",
@@ -130,7 +130,7 @@ def tribble(
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def tibble_row(
     *args: Any,
     _name_repair: Union[str, Callable] = "check_unique",
@@ -163,7 +163,7 @@ def tibble_row(
     return df
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
 def as_tibble(df: Any) -> Tibble:
     """Convert a pandas DataFrame object to Tibble object"""
     return Tibble(df, copy=False)

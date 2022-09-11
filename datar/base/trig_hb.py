@@ -20,9 +20,9 @@ def _register_trig_hb_func(name, doc, np_name=None):
         func = np_fun
 
     return func_factory(
-        "transform",
-        "x",
-        qualname=f"datar.base.{name}",
+        kind="transform",
+        qualname=name,
+        module="datar.base",
         name=name,
         doc=doc,
         func=func,
@@ -220,27 +220,8 @@ atanh = _register_trig_hb_func(
 )
 
 
-@singledispatch
-def _atan2(args_frame, y, x):
-    return np.arctan2(y, x)
-
-
-@_atan2.register(TibbleGrouped)
-def _atan2_grouped(args_frame, y, x):
-    out = args_frame.agg(lambda row: np.arctan2(row.y, row.x), axis=1)
-    out = out.groupby(
-        y.grouper,
-        observed=y.observed,
-        sort=y.sort,
-        dropna=y.dropna,
-    )
-    if getattr(y, "is_rowwise", False):
-        out.is_rowwise = True
-    return out
-
-
-@func_factory(None, {"y", "x"})
-def atan2(y, x, __args_frame=None):
+@func_factory({"y", "x"})
+def atan2(y, x):
     """Calculates the angle between the x-axis and the vector (0,0) -> (x,y)
 
     Args:
@@ -250,4 +231,4 @@ def atan2(y, x, __args_frame=None):
     Returns:
         The angle between x-axis and vector (0,0) -> (x,y)
     """
-    return _atan2(__args_frame, y, x)
+    return np.arctan2(y, x)

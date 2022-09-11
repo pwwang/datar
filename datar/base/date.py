@@ -137,7 +137,7 @@ _as_date_dummy = np.vectorize(
 )
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def as_date(
     x,
     format=None,
@@ -184,8 +184,7 @@ def as_date(
 
 
 as_pd_date = func_factory(
-    "transform",
-    "arg",
+    kind="transform",
     name="as_pd_date",
     doc="""Alias of pandas.to_datetime(), but registered as a function
     so that it can be used in verbs.

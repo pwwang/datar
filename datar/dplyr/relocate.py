@@ -6,7 +6,6 @@ from pipda import register_verb
 from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
-from ..core.utils import regcall
 from ..core.tibble import Tibble, TibbleGrouped
 from ..base import setdiff, union, intersect
 from ..tibble import as_tibble
@@ -14,7 +13,7 @@ from .group_data import group_vars
 from .select import _eval_select
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def relocate(
     _data: DataFrame,
     *args: Any,
@@ -44,8 +43,8 @@ def relocate(
         - Data frame attributes are preserved.
         - Groups are not affected
     """
-    gvars = regcall(group_vars, _data)
-    _data = regcall(as_tibble, _data.copy())
+    gvars = group_vars(_data, __ast_fallback="normal")
+    _data = as_tibble(_data.copy(), __ast_fallback="normal")
 
     all_columns = _data.columns
     to_move, new_names = _eval_select(
@@ -89,9 +88,17 @@ def relocate(
         if where not in to_move:
             to_move.append(where)
 
-    lhs = regcall(setdiff, range(where), to_move)
-    rhs = regcall(setdiff, range(where + 1, len(all_columns)), to_move)
-    pos = regcall(union, lhs, regcall(union, to_move, rhs))
+    lhs = setdiff(range(where), to_move, __ast_fallback="normal")
+    rhs = setdiff(
+        range(where + 1, len(all_columns)),
+        to_move,
+        __ast_fallback="normal",
+    )
+    pos = union(
+        lhs,
+        union(to_move, rhs, __ast_fallback="normal"),
+        __ast_fallback="normal",
+    )
 
     out = _data.iloc[:, pos]
     # out = out.copy()
@@ -99,7 +106,7 @@ def relocate(
         out.rename(columns=new_names, inplace=True)
         if (
             isinstance(out, TibbleGrouped)
-            and len(regcall(intersect, gvars, new_names)) > 0
+            and len(intersect(gvars, new_names, __ast_fallback="normal")) > 0
         ):
             out._datar["group_vars"] = [
                 new_names.get(gvar, gvar) for gvar in gvars

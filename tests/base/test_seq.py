@@ -192,7 +192,8 @@ def test_rev():
 def test_unique():
     a = [1, 2, 2, 3]
     assert_iterable_equal(unique(a), [1, 2, 3])
-    assert unique(3) == 3
+    out = unique(3)
+    assert out == 3
 
     x = Series([1, 1, 2, 2, 2, 1])
     out = unique(x)

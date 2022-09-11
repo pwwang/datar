@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from diot import Diot
-from pipda import options as pipda_options
 from simpleconf import Config
 
 _key_transform = lambda key: key.replace("_", ".")
@@ -34,12 +33,6 @@ OPTION_CALLBACKS = Diot(
     # allow 'a.b' to access 'a_b'
     diot_transform=_key_transform,
     enable_pdtypes=enable_pdtypes_callback,
-    warn_astnode_failure=lambda val: setattr(
-        pipda_options, "warn_astnode_failure", val
-    ),
-    assume_all_piping=lambda val: setattr(
-        pipda_options, "assume_all_piping", val
-    ),
 )
 
 
@@ -59,14 +52,6 @@ OPTIONS = Diot(
     # add_option=True,
     # allow 'a.b' to access 'a_b'
     # diot_transform=_key_transform,
-    # Warn about failure to get ast node
-    warn_astnode_failure=True,
-    # All piping mode:
-    # - Assume all verbs are using PIPING_VERB env
-    # - Assume all data functions are using PIPING env
-    # - Assume all non-data functions are using PIPING verbs
-    # This is useful when source code is not available.
-    assume_all_piping=False,
     # The backend for datar
     backend="pandas",  # or "modin"
 )

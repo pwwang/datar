@@ -38,7 +38,9 @@ def _(data: DataFrame, replace: Any) -> DataFrame:
 
 
 @register_verb(
-    (DataFrame, Series, np.ndarray, list, tuple, set), context=Context.EVAL
+    (DataFrame, Series, np.ndarray, list, tuple, set),
+    context=Context.EVAL,
+    ast_fallback_arg=True,
 )
 def replace_na(
     data: Iterable[Any],

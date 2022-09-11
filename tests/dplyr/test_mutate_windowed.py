@@ -119,10 +119,10 @@ def test_lead_lag_simple_hybrid_version_gives_correct_results():
         group_by(mtcars, f.cyl)
         >> mutate(disp_lag_2=lag(f.disp, 2), disp_lead_2=lead(f.disp, 2))
         >> summarise(
-            lag1=all(is_na(itemgetter(f.disp_lag_2, f[:2]))),
-            lag2=all(~is_na(itemgetter(f.disp_lag_2, f[-2:]))),
-            lead1=all(~is_na(itemgetter(f.disp_lead_2, f[:2]))),
-            lead2=all(is_na(itemgetter(f.disp_lead_2, f[-2:]))),
+            lag1=all(is_na(itemgetter(f.disp_lag_2, c[:2]))),
+            lag2=all(~is_na(itemgetter(f.disp_lag_2, c[-2:]))),
+            lead1=all(~is_na(itemgetter(f.disp_lead_2, c[:2]))),
+            lead2=all(is_na(itemgetter(f.disp_lead_2, c[-2:]))),
         )
     )
 

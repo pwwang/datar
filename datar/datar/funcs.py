@@ -7,7 +7,6 @@ from ..core.backends.pandas.core.groupby import SeriesGroupBy
 from ..core.factory import func_factory
 from ..core.contexts import Context
 from ..core.collections import Collection
-from ..core.utils import regcall
 
 
 @func_factory("apply", "x")
@@ -126,28 +125,28 @@ def _(x, attr):
     return _Accessor(x, attr)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def pd_str(x):
     """Pandas' str accessor for a Series (x.str)
 
     This is helpful when x is a SeriesGroupBy object
     """
-    return regcall(attrgetter, x, "str")
+    return attrgetter(x, "str")
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def pd_cat(x):
     """Pandas' cat accessor for a Series (x.cat)
 
     This is helpful when x is a SeriesGroupBy object
     """
-    return regcall(attrgetter, x, "cat")
+    return attrgetter(x, "cat")
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def pd_dt(x):
     """Pandas' dt accessor for a Series (x.dt)
 
     This is helpful when x is a SeriesGroupBy object
     """
-    return regcall(attrgetter, x, "dt")
+    return attrgetter(x, "dt")

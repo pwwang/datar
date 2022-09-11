@@ -23,7 +23,7 @@ from ..conftest import assert_iterable_equal
 
 
 def ntile_h(x, n):
-    out = tibble(x=x) >> mutate(y=ntile(x, n))
+    out = tibble(x=x) >> mutate(y=ntile(x, n=n))
     return out.y.tolist()
 
 
@@ -129,7 +129,7 @@ def test_plain_arrays():
     assert_iterable_equal(out, [1, 1, 3])
     out = row_number([1, 1, 2])
     assert_iterable_equal(out, [1, 2, 3])
-    out = ntile(1, 1)
+    out = ntile(1, n=1)
     assert_iterable_equal(out, [1])
     out = ntile((i for i in range(1)), 1)
     assert_iterable_equal(out, [1])
@@ -154,8 +154,8 @@ def test_row_number_with_groups():
 
 
 def test_ntile_with_groups():
-    df = tibble(x=f[1:9], y=[1] * 4 + [2] * 4)
-    out = ntile(df.x, 2)
+    df = tibble(x=c[1:9], y=[1] * 4 + [2] * 4)
+    out = ntile(df.x, n=2)
     assert out.tolist() == [1, 1, 1, 1, 2, 2, 2, 2]
 
     df = df.groupby("y")
@@ -164,7 +164,7 @@ def test_ntile_with_groups():
 
 
 def test_min_rank_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = min_rank(df.x)
     assert out.tolist() == [1, 1, 3, 3, 5, 5, 7, 7]
 
@@ -174,7 +174,7 @@ def test_min_rank_with_groups():
 
 
 def test_dense_rank_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = dense_rank(df.x)
     assert out.tolist() == [1, 1, 2, 2, 3, 3, 4, 4]
 
@@ -184,7 +184,7 @@ def test_dense_rank_with_groups():
 
 
 def test_percent_rank_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = percent_rank(df.x)
     assert_iterable_equal(
         out,
@@ -201,7 +201,7 @@ def test_percent_rank_with_groups():
 
 
 def test_cume_dist_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = cume_dist(df.x)
     assert_iterable_equal(
         out,

@@ -12,7 +12,7 @@ TRUE = True
 FALSE = False
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_logical(x, na=None):
     """Convert an object or elements of an iterable into bool
 
@@ -47,7 +47,7 @@ is_logical = _register_type_testing(
 is_bool = is_logical
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def is_true(x):
     """Check if a value is a scalar True, like `isTRUE()` in `R`.
 
@@ -66,7 +66,7 @@ def is_true(x):
     return bool(x)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def is_false(x):
     """Check if a value is a scalar False, like `isFALSE()` in `R`.
 

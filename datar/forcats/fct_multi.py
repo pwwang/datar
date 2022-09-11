@@ -3,7 +3,6 @@ import itertools
 
 from ..core.backends.pandas import Categorical
 
-from ..core.utils import regcall
 from ..base import factor, paste, levels, expandgrid, intersect
 from .utils import check_factor
 from .lvls import lvls_union
@@ -51,17 +50,13 @@ def fct_cross(
         return factor()
 
     fs = [check_factor(fct) for fct in fs]
-    newf = regcall(paste, *fs, sep=sep)
+    newf = paste(*fs, sep=sep)
 
-    old_levels = (regcall(levels, fct) for fct in fs)
-    grid = regcall(expandgrid, *old_levels)
-    new_levels = regcall(
-        paste,
-        *(grid[col] for col in grid),
-        sep=sep,
-    )
+    old_levels = (levels(fct) for fct in fs)
+    grid = expandgrid(*old_levels)
+    new_levels = paste(*(grid[col] for col in grid), sep=sep)
 
     if not keep_empty:
-        new_levels = regcall(intersect, new_levels, newf)
+        new_levels = intersect(new_levels, newf, __ast_fallback="normal")
 
     return factor(newf, levels=new_levels)

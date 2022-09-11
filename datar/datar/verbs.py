@@ -7,7 +7,6 @@ from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.contexts import Context
-from ..core.utils import regcall
 from ..dplyr import select, slice_
 
 
@@ -49,7 +48,7 @@ def get(
         return _data.iloc[rows, cols]
 
     if cols is not None:
-        _data = regcall(select, _data, cols)
+        _data = select(_data, cols, __ast_fallback="normal")
 
     if rows is not None:
         # slice only support integer index
@@ -59,7 +58,7 @@ def get(
             if not isinstance(rows[0], int):
                 rows = _data.index.get_indexer_for(rows)
 
-        _data = regcall(slice_, _data, rows)
+        _data = slice_(_data, rows, __ast_fallback="normal")
     return _data
 
 

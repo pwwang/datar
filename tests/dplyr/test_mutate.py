@@ -476,7 +476,7 @@ def test_complex_expression_as_value():
     out = dat >> mutate(
         # mulitple size not supported yet
         # login=sample(f[1 : ], size=n(), replace=True)
-        login=sample(f[1 : ], size=1, replace=True)
+        login=sample(c[1 : ], size=1, replace=True)
     )
     assert nrow(out) == 20
 

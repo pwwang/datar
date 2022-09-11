@@ -8,8 +8,7 @@ from ..core.factory import func_factory
 from .arithmetic import SINGLE_ARG_SIGNATURE
 
 cumsum = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Cumulative sum of elements.
 
     Args:
@@ -23,8 +22,7 @@ cumsum = func_factory(
 )
 
 cumprod = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Cumulative product of elements.
 
     Args:
@@ -38,7 +36,7 @@ cumprod = func_factory(
 )
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def cummin(x):
     """Cummulative min along elements in x
 
@@ -58,7 +56,7 @@ def cummin(x):
 cummin.register((TibbleGrouped, GroupBy), "cummin")
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def cummax(x):
     """Cummulative max along elements in x
 

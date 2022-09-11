@@ -12,7 +12,7 @@ from ..core.backends.pandas.api.types import (
     is_numeric_dtype,
 )
 
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from ..core.factory import func_factory
 from ..core.tibble import SeriesCategorical
 
@@ -361,7 +361,7 @@ def recode_factor(
         if isinstance(recoded, Categorical)
         else pd.unique(recoded[pd.notnull(recoded)])
     )
-    levels = regcall(intersect, all_levels, recoded_levels)
+    levels = intersect(all_levels, recoded_levels, __ast_fallback="normal")
 
     return Series(
         Categorical(recoded, categories=levels, ordered=_ordered),

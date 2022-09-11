@@ -67,7 +67,7 @@ def test_inv():
 
 def test_neg():
     df = tibble(x=1, y=2)
-    out = df >> select(-f[:1])
+    out = df >> select(-c[:1])
     assert out.columns.tolist() == ["y"]
 
 

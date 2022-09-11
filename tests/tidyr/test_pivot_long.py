@@ -7,7 +7,7 @@ from datar.core.backends.pandas.testing import assert_frame_equal
 from ..conftest import assert_iterable_equal
 
 def test_can_pivot_all_cols_to_long():
-    df = tibble(x=f[1:3], y=f[3:5])
+    df = tibble(x=c[1:3], y=c[3:5])
     pv = pivot_longer(df, f[f.x:])
 
     assert pv.columns.tolist() == ['name', 'value']
@@ -27,7 +27,7 @@ def test_values_interleaved_correctly():
         y=[10,20],
         z=[100,200]
     )
-    pv = pivot_longer(df, f[:4])
+    pv = pivot_longer(df, c[:4])
     # assert_iterable_equal(pv.value, [1,10,100,2,20,200])
     assert_iterable_equal(pv.value, [1,2, 10,20, 100,200])
 
@@ -40,7 +40,7 @@ def test_values_interleaved_correctly():
 # })
 
 def test_preserves_original_keys():
-    df = tibble(x=f[1:3], y=2, z=f[1:3])
+    df = tibble(x=c[1:3], y=2, z=c[1:3])
     pv = pivot_longer(df, f[f.y:])
 
     assert pv.columns.tolist() == ['x', 'name', 'value']
@@ -134,7 +134,7 @@ def test_can_pivot_duplicated_names_to_dot_value():
 
 def test_dot_value_can_be_any_position_in_names_to():
     samp = tibble(
-        i=f[1:5],
+        i=c[1:5],
         y_t1=rnorm(4),
         y_t2=rnorm(4),
         z_t1=rep(3,4),

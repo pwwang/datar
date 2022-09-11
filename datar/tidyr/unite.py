@@ -8,7 +8,7 @@ from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame, Series
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select
 from ..core.tibble import reconstruct_tibble
 
 from ..base import setdiff
@@ -46,7 +46,7 @@ def unite(
         unite_idx = vars_select(data, columns)
         columns = all_columns[unite_idx]
 
-    out = regcall(ungroup, data).copy()
+    out = ungroup(data, __ast_fallback="normal").copy()
 
     united = Series(out[columns].values.tolist(), index=out.index)
     if sep is not None:
@@ -63,6 +63,8 @@ def unite(
 
     if remove:
         to_remove = [i if i < insert_at else i + 1 for i in unite_idx]
-        out = out.iloc[:, regcall(setdiff, range(out.shape[1]), to_remove)]
+        out = out.iloc[
+            :, setdiff(range(out.shape[1]), to_remove, __ast_fallback="normal")
+        ]
 
     return reconstruct_tibble(data, out)

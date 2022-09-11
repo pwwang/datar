@@ -4,46 +4,50 @@ import builtins
 from typing import Callable, List, Sequence, Union
 
 import numpy as np
-from pipda import register_func
-from pipda.utils import functype
+from pipda import register_func, register_verb, Function, Verb
 
 from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_scalar, is_bool
 
 from ..core.contexts import Context
-from ..core.utils import ensure_nparray, vars_select, regcall
+from ..core.utils import ensure_nparray, vars_select, with_verb_ast_fallback_arg
 from ..base import setdiff, intersect
 from .group_by import ungroup
 from .group_data import group_vars
 
 
-@register_func(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL, dep=True)
 def where(_data: DataFrame, fn: Callable) -> List[str]:
     """Selects the variables for which a function returns True.
 
     Args:
         _data: The data piped in
         fn: A function that returns True or False.
-            Currently it has to be `register_func/register_cfunction
+            Currently it has to be `register_func/func_factory
             registered function purrr-like formula not supported yet.
 
     Returns:
         The matched columns
     """
-    columns = regcall(everything, _data)
-    _data = regcall(ungroup, _data)
-    pipda_type = functype(fn)
-    mask = [
-        fn(_data[col])
-        if pipda_type == "plain"
-        else regcall(fn, _data[col], __envdata=_data)
-        for col in columns
-    ]
+    columns = _data >> everything()
+    _data = ungroup(_data, __ast_fallback="normal")
+    mask = []
+    for col in columns:
+        if isinstance(fn, Function):
+            dat = fn(_data[col])
+            mask.append(dat)
+        elif isinstance(fn, Verb):
+            with with_verb_ast_fallback_arg(fn):
+                dat = fn(_data, _data[col], __ast_fallback="normal")
+            mask.append(dat)
+        else:
+            mask.append(fn(_data[col]))
+
     mask = [flag if is_bool(flag) else all(flag) for flag in mask]
     return np.array(columns)[mask].tolist()
 
 
-@register_func(DataFrame)
+@register_verb(DataFrame, dep=True)
 def everything(_data: DataFrame) -> List[str]:
     """Matches all columns.
 
@@ -54,15 +58,15 @@ def everything(_data: DataFrame) -> List[str]:
         All column names of _data
     """
     return list(
-        regcall(
-            setdiff,
+        setdiff(
             _data.columns,
-            regcall(group_vars, _data),
+            group_vars(_data, __ast_fallback="normal"),
+            __ast_fallback="normal",
         )
     )
 
 
-@register_func(context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def last_col(
     _data: DataFrame,
     offset: int = 0,
@@ -84,7 +88,7 @@ def last_col(
     return vars[-(offset + 1)]
 
 
-@register_func(context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def starts_with(
     _data: DataFrame,
     match: Union[str, Sequence[str]],
@@ -111,7 +115,7 @@ def starts_with(
     )
 
 
-@register_func(context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def ends_with(
     _data: DataFrame,
     match: Union[str, Sequence[str]],
@@ -138,7 +142,7 @@ def ends_with(
     )
 
 
-@register_func(context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def contains(
     _data: DataFrame,
     match: str,
@@ -165,7 +169,7 @@ def contains(
     )
 
 
-@register_func(context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def matches(
     _data: DataFrame,
     match: str,
@@ -192,7 +196,7 @@ def matches(
     )
 
 
-@register_func(context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL, dep=True)
 def all_of(
     _data: DataFrame,
     x: Sequence[Union[int, str]],
@@ -227,7 +231,7 @@ def all_of(
     return x.tolist()
 
 
-@register_func(context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def any_of(
     _data: DataFrame,
     x: Sequence[Union[int, str]],
@@ -255,15 +259,15 @@ def any_of(
     #         ...
     # do we need intersect?
     return list(
-        regcall(
-            intersect,
+        intersect(
             vars,
             ensure_nparray(vars)[x],
+            __ast_fallback="normal",
         )
     )
 
 
-@register_func(None)
+@register_func
 def num_range(
     prefix: str,
     range: Sequence[int],

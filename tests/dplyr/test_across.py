@@ -260,7 +260,7 @@ def test_empty_df():
 def test_mutate_cols_inside_func():
     df = tibble(x=2, y=4, z=8)
 
-    @register_func(None, context=None)
+    @register_func(context=None)
     def data_frame(**kwargs):
         return tibble(**kwargs)
 
@@ -273,7 +273,7 @@ def test_mutate_cols_inside_func():
 def test_summarise_cols_inside_func():
     df = tibble(x=2, y=4, z=8)
 
-    @register_func(None, context=None)
+    @register_func(context=None)
     def data_frame(**kwargs):
         return tibble(**kwargs)
 

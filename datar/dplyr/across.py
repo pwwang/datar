@@ -4,15 +4,14 @@ See source https://github.com/tidyverse/dplyr/blob/master/R/across.R
 """
 from abc import ABC, abstractmethod
 
-from pipda import register_func, evaluate_expr
-from pipda.function import Function
-from pipda.utils import functype
+from pipda import register_verb, evaluate_expr, Verb
 
+from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.broadcast import add_to_tibble
 from ..core.tibble import Tibble, reconstruct_tibble
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select, with_verb_ast_fallback_arg
 from ..core.middlewares import CurColumn
 from ..core.contexts import Context
 from .tidyselect import everything
@@ -30,7 +29,11 @@ class Across:
         args=None,
         kwargs=None,
     ):
-        cols = regcall(everything, data) if cols is None else cols
+        cols = (
+            data >> everything()
+            if cols is None
+            else cols
+        )
         if is_scalar(cols):
             cols = [cols]
 
@@ -85,26 +88,22 @@ class Across:
                 name = name_format.format(**render_data)
                 args = CurColumn.replace_args(self.args, column)
                 kwargs = CurColumn.replace_kwargs(self.kwargs, column)
-                if functype(fn) == "plain":
+
+                if isinstance(fn, Verb):
+                    with with_verb_ast_fallback_arg(fn):
+                        value = fn(
+                            self.data,
+                            self.data[column],
+                            *args,
+                            __ast_fallback="normal",
+                            **kwargs,
+                        )
+                else:
                     value = fn(
                         self.data[column],
                         *evaluate_expr(args, self.data, context),
                         **evaluate_expr(kwargs, self.data, context),
                     )
-                else:
-                    # use fn's own context
-                    value = regcall(
-                        fn,
-                        self.data[column],
-                        *args,
-                        **kwargs,
-                    )
-
-                    # fast evaluation tried, if failed:
-                    # will this happen? it fails when first argument
-                    # cannot be evaluated
-                    if isinstance(value, Function):  # pragma: no cover
-                        value = value._pipda_eval(self.data, context)
 
                 ret = add_to_tibble(ret, name, value, broadcast_tbl=True)
 
@@ -152,7 +151,12 @@ class IfAll(IfCross):
         return values.fillna(False).astype(bool).all()
 
 
-@register_func(context=Context.PENDING, verb_arg_only=True)
+@register_verb(
+    DataFrame,
+    context=Context.PENDING,
+    dep=True,
+    ast_fallback_arg=True,
+)
 def across(
     _data,
     *args,
@@ -205,7 +209,7 @@ def across(
     Returns:
         A dataframe with one column for each column and each function.
     """
-    _data = _context.meta.get("input_data", _data)
+    _data = getattr(_data, "_datar", {}).get("summarise_source", _data)
 
     if not args:
         args = (None, None)
@@ -224,7 +228,7 @@ def across(
     ).evaluate(_fn_context)
 
 
-@register_func(context=Context.SELECT, verb_arg_only=True)
+@register_verb(DataFrame, context=Context.SELECT, dep=True)
 def c_across(
     _data,
     _cols=None,
@@ -242,16 +246,17 @@ def c_across(
     _data = _context.meta.get("input_data", _data)
 
     if not _cols:
-        _cols = regcall(everything, _data)
+        _cols = _data >> everything()
 
     _cols = vars_select(_data.columns, _cols)
     return reconstruct_tibble(_data, _data.iloc[:, _cols])
 
 
-@register_func(
+@register_verb(
+    DataFrame,
     context=None,
     extra_contexts={"args": Context.SELECT},
-    verb_arg_only=True,
+    dep=True,
 )
 def if_any(
     _data,
@@ -283,10 +288,11 @@ def if_any(
     ).evaluate(_context)
 
 
-@register_func(
+@register_verb(
+    DataFrame,
     context=None,
     extra_contexts={"args": Context.SELECT},
-    verb_arg_only=True,
+    dep=True,
 )
 def if_all(
     _data,
@@ -308,7 +314,7 @@ def if_all(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
-    _data = _context.meta.get("input_data", _data)
+    _data = getattr(_data, "_datar", {}).get("summerise_source", _data)
 
     return IfAll(
         _data,

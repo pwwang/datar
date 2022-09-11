@@ -37,7 +37,7 @@ def _shift(x, n, default=None, order_by=None):
     return out if isinstance(x, Series) else out.values
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def lead(x, n=1, default=np.nan, order_by=None):
     """Find next values in a vector
 
@@ -54,7 +54,7 @@ def lead(x, n=1, default=np.nan, order_by=None):
     return _shift(x, n=-n, default=default, order_by=order_by)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def lag(x, n=1, default=np.nan, order_by=None):
     """Find previous values in a vector
 

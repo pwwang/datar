@@ -14,7 +14,7 @@ from ..conftest import assert_iterable_equal
 
 
 def test_mixed_numbering():
-    df = tibble(a=f[:5], b=seq(5), c=c(0, 1, 2, [3, 4]), d=c(f[:3], c(3, 4)))
+    df = tibble(a=c[:5], b=seq(5), c=c(0, 1, 2, [3, 4]), d=c(c[:3], c(3, 4)))
     exp = tibble(a=range(5), b=seq(5), c=f.a, d=f.a)
     assert_tibble_equal(df, exp)
 

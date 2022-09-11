@@ -77,8 +77,10 @@ def test_diag():
 
 def test_ncol():
     df = tibble(x=tibble(a=1, b=2))
-    assert ncol(df) == 1
-    assert ncol(df, nested=False) == 2
+    out = ncol(df)
+    assert out == 1
+    out = ncol(df, nested=False)
+    assert out == 2
 
 
 def test_t():

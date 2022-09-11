@@ -7,14 +7,13 @@ from typing import Union
 
 from ..core.backends.pandas import DataFrame
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select
 from ..core.tibble import TibbleGrouped, reconstruct_tibble
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def fill(
     _data: DataFrame,
     *columns: Union[str, int],
@@ -47,10 +46,10 @@ def fill(
             )
     else:
         colidx = vars_select(data.columns, *columns)
-        data.iloc[:, colidx] = regcall(
-            fill,
+        data.iloc[:, colidx] = fill(
             data.iloc[:, colidx],
             _direction=_direction,
+            __ast_fallback="normal",
         )
     return data
 
@@ -66,7 +65,7 @@ def _(
         fill,
         *columns,
         _direction=_direction,
-        __calling_env=CallingEnvs.REGULAR,
+        __ast_fallback="normal",
         # drop the index, pandas 1.4 and <1.4 act differently
     ).sort_index().reset_index(drop=True)
     return reconstruct_tibble(_data, out)

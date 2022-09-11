@@ -13,7 +13,7 @@ from pipda import register_verb
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
-from ..core.utils import logger, vars_select, apply_dtypes, regcall
+from ..core.utils import logger, vars_select, apply_dtypes
 
 from ..base import NA
 from ..dplyr import ungroup, mutate
@@ -21,7 +21,7 @@ from ..dplyr import ungroup, mutate
 from .chop import unchop
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def separate(
     data: DataFrame,
     col: Union[str, int],
@@ -115,7 +115,7 @@ def separate(
     apply_dtypes(separated, convert)
 
     out = data.drop(columns=[col]) if remove else data
-    out = regcall(mutate, out, separated)
+    out = mutate(out, separated, __ast_fallback="normal")
 
     return reconstruct_tibble(data, out)
 
@@ -141,7 +141,7 @@ def separate_rows(
     """
     all_columns = data.columns
     selected = all_columns[vars_select(all_columns, *columns)]
-    out = regcall(ungroup, data)
+    out = ungroup(data, __ast_fallback="normal")
     for sel in selected:  # TODO: apply together
         out[sel] = out[sel].apply(
             _separate_col,
@@ -153,12 +153,12 @@ def separate_rows(
             missing_warns=[],
         )
 
-    out = regcall(
-        unchop,  # TODO: use df.x.explode()
+    out = unchop(  # TODO: use df.x.explode()
         out,
         selected,
         keep_empty=True,
         dtypes=convert,
+        __ast_fallback="normal",
     )
 
     return reconstruct_tibble(

@@ -159,7 +159,7 @@ def test_true_true():
 
 
 def test_rowwise():
-    @register_func(None)
+    @register_func
     def grepl(a, b):
         return Series([x in y for x, y in zip(a.obj, b.obj)], index=a.obj.index)
 

@@ -12,7 +12,6 @@ from ..core.backends import pandas as pd
 from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
-from ..core.middlewares import WithDataEnv
 from ..core.contexts import Context
 from ..core.factory import func_factory
 from ..core.tibble import Tibble
@@ -20,7 +19,7 @@ from ..core.utils import arg_match, name_of
 from ..core.names import repair_names
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def cut(
     x,
     breaks,
@@ -69,7 +68,7 @@ def cut(
     )
 
 
-@func_factory("apply", "x")
+@func_factory(kind="apply")
 def diff(x, lag: int = 1, differences: int = 1):
     """Calculates suitably lagged and iterated differences.
 
@@ -119,7 +118,7 @@ def _diff_sgb_post(out, x, lag=1, differences=1):
 diff.register(SeriesGroupBy, func=None, post=_diff_sgb_post)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def identity(x):
     """Return whatever passed in
 
@@ -128,7 +127,7 @@ def identity(x):
     return x
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def expandgrid(*args, **kwargs):
     """Expand all combinations into a dataframe. R's `expand.grid()`"""
     iters = {}
@@ -143,7 +142,7 @@ def expandgrid(*args, **kwargs):
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def outer(x, y, fun="*"):
     """Compute the outer product of two vectors.
 
@@ -164,7 +163,7 @@ def outer(x, y, fun="*"):
     return Tibble([fun(xelem, y) for xelem in x])
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def make_names(names, unique=False):
     """Make names available as columns and can be accessed by `df.<name>`
 
@@ -204,7 +203,7 @@ def make_names(names, unique=False):
     return names
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def make_unique(names):
     """Make the names unique.
 
@@ -221,7 +220,7 @@ def make_unique(names):
     return make_names(names, unique=True)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def rank(
     x,
     na_last=True,
@@ -252,29 +251,3 @@ def rank(
     from ..dplyr.rank import _rank
 
     return _rank(x, na_last, method=ties_method)
-
-
-# ---------------------------------
-# Plain functions
-# ---------------------------------
-
-
-def data_context(data):
-    """Evaluate verbs, functions in the
-    possibly modifying (a copy of) the original data.
-
-    It mimic the `with` function in R, but you have to write it in a python way,
-    which is using the `with` statement. And you have to use it with `as`, since
-    we need the value returned by `__enter__`.
-
-    Args:
-        data: The data
-        func: A function that is registered by
-            `pipda.register_verb` or `pipda.register_func`.
-        *args: Arguments for func
-        **kwargs: Keyword arguments for func
-
-    Returns:
-        The original or modified data
-    """
-    return WithDataEnv(data)

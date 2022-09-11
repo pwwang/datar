@@ -1,7 +1,6 @@
 import pytest
 
 import numpy
-from datar import get_versions
 from datar.all import *
 from datar.forcats import as_factor
 from ..conftest import assert_iterable_equal, assert_factor_equal
@@ -83,7 +82,7 @@ def test_changes_levels_not_values():
     f1 = factor(c("a", "b"))
     f2 = factor(c("a", "b"), levels = c("b", "a"))
 
-    assert_factor_equal(lvls_reorder(f1, f[2:1]), f2)
+    assert_factor_equal(lvls_reorder(f1, c[2:1]), f2)
 
 
 def test_idx_must_be_numeric():
@@ -107,13 +106,13 @@ def test_can_change_ordered_status_of_output():
     f1 = factor(letters[:3])
     f2 = ordered(f1)
 
-    assert not is_ordered(lvls_reorder(f1, f[:3]))
-    assert not is_ordered(lvls_reorder(f1, f[:3], ordered = FALSE))
-    assert is_ordered(lvls_reorder(f1, f[:3], ordered = TRUE))
+    assert not is_ordered(lvls_reorder(f1, c[:3]))
+    assert not is_ordered(lvls_reorder(f1, c[:3], ordered = FALSE))
+    assert is_ordered(lvls_reorder(f1, c[:3], ordered = TRUE))
 
-    assert is_ordered(lvls_reorder(f2, f[:3]))
-    assert not is_ordered(lvls_reorder(f2, f[:3], ordered = FALSE))
-    assert is_ordered(lvls_reorder(f2, f[:3], ordered = TRUE))
+    assert is_ordered(lvls_reorder(f2, c[:3]))
+    assert not is_ordered(lvls_reorder(f2, c[:3], ordered = FALSE))
+    assert is_ordered(lvls_reorder(f2, c[:3], ordered = TRUE))
 
 
 # lvls_expand -------------------------------------------------------------

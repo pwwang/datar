@@ -10,13 +10,13 @@ from ..core.backends.pandas import DataFrame, Index
 
 from ..core.contexts import Context
 from ..core.tibble import Tibble, TibbleGrouped
-from ..core.utils import vars_select, logger, regcall
+from ..core.utils import vars_select, logger
 from ..core.collections import Inverted
 from ..base import setdiff, union, intersect
 from .group_data import group_vars
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def select(
     _data: DataFrame,
     *args: Union[str, Iterable, Inverted],
@@ -41,7 +41,7 @@ def select(
         The dataframe with select columns
     """
     all_columns = _data.columns
-    gvars = regcall(group_vars, _data)
+    gvars = group_vars(_data, __ast_fallback="normal")
     selected_idx, new_names = _eval_select(
         all_columns,
         *args,
@@ -54,7 +54,7 @@ def select(
         out.rename(columns=new_names, inplace=True)
         if (
             isinstance(out, TibbleGrouped)
-            and len(regcall(intersect, gvars, new_names)) > 0
+            and len(intersect(gvars, new_names, __ast_fallback="normal")) > 0
         ):
             out._datar["group_vars"] = [
                 new_names.get(gvar, gvar) for gvar in gvars
@@ -82,14 +82,18 @@ def _eval_select(
     )
 
     if _missing_gvars_inform:
-        missing = regcall(setdiff, _group_vars, _all_columns[selected_idx])
+        missing = setdiff(
+            _group_vars,
+            _all_columns[selected_idx],
+            __ast_fallback="normal",
+        )
         if len(missing) > 0:
             logger.info("Adding missing grouping variables: %s", missing)
 
-    selected_idx = regcall(
-        union,
+    selected_idx = union(
         _all_columns.get_indexer_for(_group_vars),
-        selected_idx
+        selected_idx,
+        __ast_fallback="normal",
     )
 
     if not kwargs:

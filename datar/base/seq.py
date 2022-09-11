@@ -5,15 +5,15 @@ from ..core.backends.pandas import DataFrame, Series
 from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
-from ..core.utils import ensure_nparray, logger, regcall
+from ..core.utils import ensure_nparray, logger
 from ..core.broadcast import _grouper_compatible
 from ..core.factory import func_factory
 from ..core.contexts import Context
-from ..core.collections import Collection
+from ..core.collections import Collection, register_subscr_func
 from ..core.tibble import TibbleGrouped
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def seq_along(along_with):
     """Generate sequences along an iterable
 
@@ -26,7 +26,7 @@ def seq_along(along_with):
     return np.arange(len(along_with)) + 1
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def seq_len(length_out):
     """Generate sequences with the length"""
     if isinstance(length_out, SeriesGroupBy):
@@ -43,7 +43,7 @@ def seq_len(length_out):
     return np.arange(length_out) + 1
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def seq(
     from_=None,
     to=None,
@@ -58,13 +58,13 @@ def seq(
     Note that this API is consistent with r-base's seq. 1-based and inclusive.
     """
     if along_with is not None:
-        return regcall(seq_along, along_with)
+        return seq_along(along_with)
 
     if not is_scalar(from_):
-        return regcall(seq_along, from_)
+        return seq_along(from_)
 
     if length_out is not None and from_ is None and to is None:
-        return regcall(seq_len, length_out)
+        return seq_len(length_out)
 
     if from_ is None:
         from_ = 1
@@ -82,7 +82,7 @@ def seq(
     return np.array([from_ + n * by for n in range(int(length_out))])
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def length(x):
     """Get length of elements"""
     return x.size
@@ -91,13 +91,13 @@ def length(x):
 length.register((TibbleGrouped, GroupBy), "count")
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def lengths(x):
     """Get Lengths of elementss of a vector"""
     return x.transform(lambda y: 1 if is_scalar(y) else len(y))
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def order(x: Series, decreasing=False, na_last=True):
     """Sorting or Ordering Vectors
 
@@ -138,7 +138,7 @@ order.register(
 )
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def rev(x, __args_raw=None):
     """Get reversed vector"""
     rawx = __args_raw["x"]
@@ -153,7 +153,7 @@ def rev(x, __args_raw=None):
     return rawx[::-1]
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def sample(
     x,
     size=None,
@@ -188,7 +188,7 @@ def sample(
     return np.random.choice(x, int(size), replace=replace, p=prob)
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def sort(
     x,
     decreasing=False,
@@ -212,7 +212,7 @@ def sort(
     return out
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def match(x, table, nomatch=-1):
     """match returns a vector of the positions of (first) matches of
     its first argument in its second.
@@ -314,7 +314,7 @@ def match(x, table, nomatch=-1):
     return match_dummy(x, table)
 
 
-@register_func(None, context=Context.UNSET)
+@register_subscr_func
 def c(*elems):
     """Mimic R's concatenation. Named one is not supported yet
     All elements passed in will be flattened.

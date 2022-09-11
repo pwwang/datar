@@ -106,7 +106,7 @@ def test_0len_conditions_and_values():
 def test_inside_mutate():
     out = (
         mtcars
-        >> get(f[:4])
+        >> get(c[:4])
         >> mutate(out=case_when(f.cyl == 4, 1, f["am"] == 1, 2, True, 0))
         >> pull(to="list")
     )

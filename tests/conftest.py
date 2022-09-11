@@ -26,7 +26,7 @@ def pytest_sessionstart(session):
 
     from datar.base import set_seed
 
-    options(warn_astnode_failure=False, import_names_conflict="silent")
+    options(import_names_conflict="silent")
     set_seed(8888)
 
 

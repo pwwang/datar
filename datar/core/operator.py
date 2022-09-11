@@ -4,6 +4,7 @@ from typing import Any, Callable, Sequence
 from functools import partial
 
 from pipda import register_operator, Operator
+from pipda.operator import OPERATORS
 
 from .backends.pandas import Series
 from .backends.pandas.core.groupby import SeriesGroupBy, DataFrameGroupBy
@@ -12,7 +13,7 @@ from ..core.broadcast import broadcast2
 from .collections import Collection, Inverted, Negated, Intersect
 
 
-def _binop(op, left, right, boolean=False):
+def _binop(opfunc, left, right, boolean=False):
     left, right, grouper, is_rowwise = broadcast2(left, right)
     if boolean:
         if isinstance(left, Series):
@@ -25,7 +26,7 @@ def _binop(op, left, right, boolean=False):
         else:
             right = Series(right).fillna(False).astype(bool).values
 
-    out = op(left, right)
+    out = opfunc(left, right)
     if grouper:
         out = out.groupby(
             grouper,
@@ -60,27 +61,31 @@ class DatarOperator(Operator):
 
     def _arithmetize2(self, left: Any, right: Any, op: str) -> Any:
         """Operator for paired operands"""
+        if OPERATORS[op][1]:
+            op_func = getattr(operator, op[1:])
+            return _binop(op_func, right, left)
+
         op_func = getattr(operator, op)
         return _binop(op_func, left, right)
 
-    def _op_invert(self, operand: Any) -> Any:
+    def invert(self, operand: Any) -> Any:
         """Interpretation for ~x"""
         if isinstance(operand, (slice, Sequence)):
             return Inverted(operand)
 
         return self._arithmetize1(operand, "invert")
 
-    def _op_neg(self, operand: Any) -> Any:
+    def neg(self, operand: Any) -> Any:
         """Interpretation for -x"""
         if isinstance(operand, (slice, Sequence)):
             return Negated(operand)
         return self._arithmetize1(operand, "neg")
 
-    def _op_pos(self, operand: Any) -> Any:
+    def pos(self, operand: Any) -> Any:
         """Interpretation for -x"""
         return self._arithmetize1(operand, "pos")
 
-    def _op_and_(self, left: Any, right: Any) -> Any:
+    def and_(self, left: Any, right: Any) -> Any:
         """Mimic the & operator in R.
 
         This has to have Expression objects to be involved to work
@@ -98,8 +103,8 @@ class DatarOperator(Operator):
 
         return _binop(operator.and_, left, right, boolean=True)
 
-    def _op_or_(self, left: Any, right: Any) -> Any:
-        """Mimic the & operator in R.
+    def or_(self, left: Any, right: Any) -> Any:
+        """Mimic the | operator in R.
 
         This has to have Expression objects to be involved to work
 
@@ -130,10 +135,13 @@ class DatarOperator(Operator):
     #     left, right = broadcast2(left, right)
     #     return left != right
 
-    def _find_op_func(self, opname: str) -> Callable:
-        """Find the function for the operator"""
-        full_op_name = f"_op_{opname}"
-        if full_op_name in dir(self):
-            return getattr(self, full_op_name)
+    # def _find_op_func(self, opname: str) -> Callable:
+    #     """Find the function for the operator"""
+    #     full_op_name = f"_op_{opname}"
+    #     if full_op_name in dir(self):
+    #         return getattr(self, full_op_name)
 
-        return partial(self._arithmetize2, op=opname)
+    #     return partial(self._arithmetize2, op=opname)
+
+    def __getattr__(self, name: str) -> Callable:
+        return partial(self._arithmetize2, op=name)

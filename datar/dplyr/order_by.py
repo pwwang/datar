@@ -2,8 +2,7 @@
 
 https://github.com/tidyverse/dplyr/blob/master/R/order-by.R
 """
-from pipda.function import FastEvalFunction, Function
-from pipda.utils import CallingEnvs
+from pipda.function import FunctionCall
 
 from ..base import order as order_fun
 
@@ -16,8 +15,8 @@ def order_by(order, call):
         of a verb. If you want to call it regularly, try `with_order()`
 
     Examples:
-        >>> df = tibble(x=f[1:6])
-        >>> df >> mutate(y=order_by(f[5:], cumsum(f.x)))
+        >>> df = tibble(x=c[1:6])
+        >>> df >> mutate(y=order_by(c[5:], cumsum(f.x)))
         >>> # df.y:
         >>> # 15, 14, 12, 9, 5
 
@@ -30,8 +29,8 @@ def order_by(order, call):
     """
     from ..datar import itemgetter
 
-    order = order_fun(order, __calling_env=CallingEnvs.PIPING)
-    if not isinstance(call, Function) or len(call._pipda_args) < 1:
+    order = order_fun(order)
+    if not isinstance(call, FunctionCall) or len(call._pipda_args) < 1:
         raise ValueError(
             "In `order_by()`: `call` must be a registered "
             f"function call with data, not `{type(call).__name__}`. \n"
@@ -39,9 +38,9 @@ def order_by(order, call):
             "of a verb. If you want to call it regularly, try `with_order()`"
         )
 
-    x = itemgetter(call._pipda_args[0], order, __calling_env=CallingEnvs.PIPING)
+    x = itemgetter(call._pipda_args[0], order)
     call._pipda_args = (x, *call._pipda_args[1:])
-    return FastEvalFunction(itemgetter, (call, order), {}, dataarg=False)
+    return FunctionCall(itemgetter, (call, order), {})
 
 
 def with_order(order, func, x, *args, **kwargs):
@@ -63,6 +62,7 @@ def with_order(order, func, x, *args, **kwargs):
     """
     expr = order_by(
         order,
-        FastEvalFunction(func, (x, *args), kwargs, dataarg=False)
+        # FastEvalFunction(func, (x, *args), kwargs, dataarg=False)
+        FunctionCall(func, (x, *args), kwargs),
     )
     return expr._pipda_fast_eval()

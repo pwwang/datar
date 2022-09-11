@@ -11,7 +11,7 @@ from ..core.utils import arg_match, vars_select
 from ..core.tibble import reconstruct_tibble
 
 
-@register_verb(DataFrame, context=Context.SELECT)
+@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
 def drop_na(
     _data: DataFrame,
     *columns: str,

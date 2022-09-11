@@ -17,7 +17,6 @@ from ..core.contexts import Context
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.tibble import TibbleGrouped, TibbleRowwise, reconstruct_tibble
 from ..core.names import repair_names
-from ..core.utils import regcall
 
 from ..base import NA, NULL, factor, levels
 from ..base.factor import _ensure_categorical
@@ -25,7 +24,7 @@ from ..tibble import tibble
 from ..dplyr import arrange, distinct, pull, ungroup
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def expand_grid(
     *args: Iterable[Any],
     _name_repair: Union[str, Callable] = "check_unique",
@@ -83,7 +82,7 @@ def expand_grid(
     return _flatten_nested(out, named, _name_repair)
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
 def expand(
     data: DataFrame,
     *args: Union[Series, DataFrame],
@@ -136,12 +135,12 @@ def _(
     """Expand on grouped data frame"""
 
     def apply_func(df):
-        return regcall(
-            expand,
+        return expand(
             df,
             *args,
             _name_repair=_name_repair,
             **kwargs,
+            __ast_fallback="normal",
         )
 
     out = data._datar["grouped"].apply(apply_func).droplevel(-1).reset_index()
@@ -156,16 +155,16 @@ def _(
     **kwargs: Union[Series, DataFrame],
 ) -> DataFrame:
     """Expand on rowwise dataframe"""
-    return regcall(
-        expand,
-        regcall(ungroup, data),
+    return expand(
+        ungroup(data, __ast_fallback="normal"),
         *args,
         _name_repair=_name_repair,
         **kwargs,
+        __ast_fallback="normal",
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def nesting(
     *args: Any,
     _name_repair: Union[str, Callable] = "check_unique",
@@ -202,7 +201,7 @@ def nesting(
     return _flatten_nested(out, named, _name_repair)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def crossing(
     *args: Any,
     _name_repair: Union[str, Callable] = "check_unique",
@@ -301,7 +300,7 @@ def _flatten_nested(
     if isinstance(x, DataFrame):
         names = repair_names(list(named), name_repair)
         named = dict(zip(names, named.values()))
-        x = {name: regcall(pull, x, name) for name in named}
+        x = {name: pull(x, name, __ast_fallback="normal",) for name in named}
 
     to_flatten = {
         key: isinstance(val, DataFrame) and not named[key]
@@ -343,7 +342,10 @@ def _sorted_unique(x: Iterable[Any]) -> Union[Categorical, np.ndarray]:
     #     return pd.unique(x)
 
     if isinstance(x, DataFrame):
-        return regcall(arrange, regcall(distinct, x))
+        return arrange(
+            distinct(x, __ast_fallback="normal"),
+            __ast_fallback="normal",
+        )
 
     # return np.sort(np.unique(x))
     # np.unique() will turn ['A', 'B', np.nan] to ['A', 'B', 'nan']

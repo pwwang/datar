@@ -1,6 +1,5 @@
 """Middlewares for datar"""
 from typing import Any, Mapping, Tuple
-from pipda.utils import DataEnv
 
 
 class CurColumn:
@@ -20,16 +19,3 @@ class CurColumn:
             key: column if isinstance(val, cls) else val
             for key, val in kwargs.items()
         }
-
-
-class WithDataEnv:
-    """Implements `with data` to mimic R's `with(data, ...)`"""
-
-    def __init__(self, data: Any) -> None:
-        self.data = DataEnv(data)
-
-    def __enter__(self) -> Any:
-        return self.data
-
-    def __exit__(self, *exc_info) -> None:
-        self.data.delete()

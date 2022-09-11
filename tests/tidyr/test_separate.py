@@ -145,7 +145,7 @@ def test_separate_on_group_vars():
 # separate_rows --------------------------------
 
 def test_can_handle_collapsed_rows():
-    df = tibble(x=f[1:4], y=c("a", "d,e,f", "g,h"))
+    df = tibble(x=c[1:4], y=c("a", "d,e,f", "g,h"))
     out = separate_rows(df, f.y)
     assert_iterable_equal(out.y, list("adefgh"))
 

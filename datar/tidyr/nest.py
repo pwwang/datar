@@ -11,7 +11,7 @@ from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.generic import NDFrame
 from pipda import register_verb
 
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select
 from ..core.broadcast import broadcast_to, init_tibble_from
 from ..core.tibble import (
     Tibble,
@@ -72,9 +72,9 @@ def nest(
         )
         colgroups[group] = dict(zip(newcols, old_cols))
 
-    asis = regcall(setdiff, _data.columns, list(usedcols))
+    asis = setdiff(_data.columns, list(usedcols), __ast_fallback="normal")
     keys = _data[asis]
-    u_keys = regcall(distinct, keys).reset_index(drop=True)
+    u_keys = distinct(keys, __ast_fallback="normal").reset_index(drop=True)
     nested = []
     for group, columns in colgroups.items():
         if _names_sep is None:  # names as is
@@ -95,7 +95,11 @@ def nest(
     if u_keys.shape[1] == 0:
         return out if isinstance(out, DataFrame) else out.to_frame()
 
-    return regcall(bind_cols, u_keys, broadcast_to(out, u_keys.index))
+    return bind_cols(
+        u_keys,
+        broadcast_to(out, u_keys.index),
+        __ast_fallback="normal",
+    )
 
 
 @nest.register(TibbleGrouped, context=Context.SELECT)
@@ -107,10 +111,16 @@ def _(
     """Nesting grouped dataframe"""
     if not cols:
         cols = {
-            "data": regcall(setdiff, _data.columns, regcall(group_vars, _data))
+            "data": setdiff(
+                _data.columns,
+                group_vars(_data, __ast_fallback="normal"),
+                __ast_fallback="normal",
+            )
         }
     out = nest.dispatch(DataFrame)(
-        regcall(ungroup, _data), **cols, _names_sep=_names_sep
+        ungroup(_data, __ast_fallback="normal"),
+        **cols,
+        _names_sep=_names_sep,
     )
     return reconstruct_tibble(_data, out)
 
@@ -164,24 +174,24 @@ def unnest(
     cols = vars_select(all_columns, cols)
     cols = all_columns[cols]
 
-    out = regcall(ungroup, data)
+    out = ungroup(data, __ast_fallback="normal")
 
     for col in cols:
         out[col] = _as_df(data[col])
 
-    out = regcall(
-        unchop,
+    out = unchop(
         out,
         cols,
         keep_empty=keep_empty,
         dtypes=dtypes,
+        __ast_fallback="normal",
     )
-    out = regcall(
-        unpack,
+    out = unpack(
         out,
         cols,
         names_sep=names_sep,
         names_repair=names_repair,
+        __ast_fallback="normal",
     )
     return reconstruct_tibble(data, out)
 
@@ -197,7 +207,7 @@ def _(
 ) -> TibbleGrouped:
     """Unnest rowwise dataframe"""
     out = unnest.dispatch(DataFrame)(
-        regcall(ungroup, data),
+        ungroup(data, __ast_fallback="normal"),
         *cols,
         keep_empty=keep_empty,
         dtypes=dtypes,
@@ -263,7 +273,7 @@ def _vec_split(x: NDFrame, by: NDFrame) -> DataFrame:
     if isinstance(by, Series):  # pragma: no cover, always a data frame?
         by = by.to_frame()
 
-    df = regcall(bind_cols, x, by)
+    df = bind_cols(x, by, __ast_fallback="normal")
     if df.shape[0] == 0:
         return Tibble(columns=["key", "val"])
     if by.shape[1] > 0:
@@ -271,8 +281,8 @@ def _vec_split(x: NDFrame, by: NDFrame) -> DataFrame:
             df = Tibble(df, copy=False)
         df = df.group_by(by.columns.tolist(), drop=True)
 
-    gdata = regcall(group_data, df)
-    gdata = regcall(arrange, gdata, gdata._rows)
+    gdata = group_data(df, __ast_fallback="normal")
+    gdata = arrange(gdata, gdata._rows, __ast_fallback="normal")
     out = Tibble(index=gdata.index)
     out["key"] = gdata[by.columns]
     out["val"] = [

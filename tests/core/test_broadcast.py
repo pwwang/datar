@@ -87,7 +87,7 @@ def test_broadcast_base_array_ndframe():
     base = _broadcast_base([1, 2, 3], df)
     assert base.a.tolist() == [1] * 3
 
-    df = tibble(a=f[:3])
+    df = tibble(a=c[:3])
     with pytest.raises(ValueError, match=r"`x` must be size \[1 3\], not 2\."):
         _broadcast_base([1, 2], df, "x")
 

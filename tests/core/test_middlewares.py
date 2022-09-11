@@ -1,7 +1,7 @@
 import pytest  # noqa
 
-from pipda.utils import NULL
-from datar.core.middlewares import CurColumn, WithDataEnv
+# from pipda.utils import NULL
+from datar.core.middlewares import CurColumn
 
 
 def test_curcolumn():
@@ -11,10 +11,10 @@ def test_curcolumn():
     assert out == {"kw": "cur"}
 
 
-def test_withdataenv():
+# def test_withdataenv():
 
-    de = WithDataEnv(1)
-    with de:
-        assert de.data.data == 1
+#     de = WithDataEnv(1)
+#     with de:
+#         assert de.data.data == 1
 
-    assert de.data.data is NULL
+#     assert de.data.data is NULL
