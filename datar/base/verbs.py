@@ -12,7 +12,7 @@ from ..core.utils import arg_match, ensure_nparray
 # from .seq import unique
 
 
-@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.EVAL)
 def colnames(df, new=None, nested=True):
     """Get or set the column names of a dataframe
 
@@ -104,7 +104,7 @@ def dim(x, nested=True):
     )
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def nrow(_data) -> int:
     """Get the number of rows in a dataframe
 
@@ -117,7 +117,7 @@ def nrow(_data) -> int:
     return _data.shape[0]
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def ncol(_data, nested=True):
     """Get the number of columns in a dataframe
 
@@ -189,7 +189,7 @@ def _(
     return np.diag(x)
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def t(_data, copy=False):
     """Get the transposed dataframe
 
@@ -203,7 +203,7 @@ def t(_data, copy=False):
     return _data.transpose(copy=copy)
 
 
-@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(object, context=Context.EVAL)
 def setdiff(x, y):
     """Diff of two iterables"""
     x = ensure_nparray(x)
@@ -211,7 +211,7 @@ def setdiff(x, y):
     return np.array([elem for elem in x if elem not in frozenset(y)])
 
 
-@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(object, context=Context.EVAL)
 def intersect(x, y):
     """Intersect of two iterables"""
     # order not kept
@@ -221,7 +221,7 @@ def intersect(x, y):
     return np.array([elem for elem in x if elem in frozenset(y)])
 
 
-@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(object, context=Context.EVAL)
 def union(x, y):
     """Union of two iterables"""
     # order not kept
@@ -230,7 +230,7 @@ def union(x, y):
     return pd.unique(out)
 
 
-@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(object, context=Context.EVAL)
 def unique(x):
     """Get unique elements from an iterable and keep their order"""
     # order not kept
@@ -245,7 +245,7 @@ def _(x):
     return x.apply(pd.unique).explode().astype(x.obj.dtype)
 
 
-@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(object, context=Context.EVAL)
 def setequal(x, y, equal_na=True):
     """Check set equality for two iterables (order doesn't matter)"""
     return np.array_equal(
@@ -258,7 +258,6 @@ def setequal(x, y, equal_na=True):
 @register_verb(
     (np.ndarray, list, tuple, Series, Categorical),
     context=Context.EVAL,
-    ast_fallback_arg=True,
 )
 def append(x, values, after=-1):
     """Add elements to a vector.
@@ -282,10 +281,7 @@ def append(x, values, after=-1):
     return np.insert(x, after, values)
 
 
-@register_verb(
-    (list, tuple, np.ndarray, Series, Categorical),
-    ast_fallback_arg=True,
-)
+@register_verb((list, tuple, np.ndarray, Series, Categorical))
 def duplicated(
     x,
     incomparables=None,
@@ -380,7 +376,7 @@ def complete_cases(_data):
     return _data.apply(lambda row: row.notna().all(), axis=1).values
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def proportions(x, margin=None):
     """Returns conditional proportions given `margins` (alias: prop_table)
 

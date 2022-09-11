@@ -10,7 +10,7 @@ from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.utils import dict_get
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def group_data(_data: DataFrame) -> Tibble:
     """Returns a data frame that defines the grouping structure.
 
@@ -34,7 +34,7 @@ def _(_data: Union[TibbleGrouped, GroupBy]) -> Tibble:
     return gpdata
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def group_keys(_data: DataFrame) -> Tibble:
     """Just grouping data without the `_rows` columns
 
@@ -68,7 +68,7 @@ def _(_data: TibbleRowwise) -> Tibble:
     return Tibble(_data.loc[:, _data.group_vars])
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def group_rows(_data: DataFrame) -> List[List[int]]:
     """The locations of grouping structure, always 0-based."""
     rows = list(range(_data.shape[0]))
@@ -109,7 +109,7 @@ def _(_data: TibbleGrouped) -> List[int]:
     return [ret[key] for key in sorted(ret)]
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def group_vars(_data: DataFrame) -> Sequence[str]:
     """Gives names of grouping variables as character vector"""
     return getattr(_data, "group_vars", [])

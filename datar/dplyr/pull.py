@@ -17,7 +17,6 @@ from ..tibble import as_tibble
     DataFrame,
     context=Context.SELECT,
     extra_contexts={"name": Context.EVAL},
-    ast_fallback_arg=True,
 )
 def pull(_data, var=-1, name=None, to=None):
 

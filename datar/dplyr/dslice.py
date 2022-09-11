@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from ..core.backends.pandas import Index
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def slice(
     _data: DataFrame,
     *rows: Union[int, str],
@@ -84,7 +84,7 @@ def _(
     return _data.take(indices)
 
 
-@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.EVAL)
 def slice_head(
     _data: DataFrame,
     n: int = None,

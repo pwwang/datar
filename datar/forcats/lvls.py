@@ -41,7 +41,7 @@ def refactor(_f, new_levels: Iterable, ordered: bool = None) -> Categorical:
     return new_f
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(ForcatsRegType, context=Context.EVAL)
 def lvls_reorder(
     _f,
     idx,
@@ -81,7 +81,7 @@ def lvls_reorder(
     )
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(ForcatsRegType, context=Context.EVAL)
 def lvls_revalue(
     _f,
     new_levels: Iterable,
@@ -118,7 +118,7 @@ def lvls_revalue(
     return recode_factor(_f, recodings).values
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(ForcatsRegType, context=Context.EVAL)
 def lvls_expand(
     _f,
     new_levels: Iterable,

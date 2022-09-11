@@ -195,7 +195,15 @@ class DatarFunction(Function, ABC):
         args_raw = bound.arguments.copy()
         args_df = Tibble.from_args(
             **{
-                key: val
+                key: (
+                    val
+                    if bound.signature.parameters[key].kind
+                    != inspect.Parameter.VAR_POSITIONAL
+                    else Tibble.from_pairs(
+                        [str(i) for i in range(len(val))],
+                        val
+                    )
+                )
                 for key, val in bound.arguments.items()
                 if key in self.data_args
             }
@@ -211,7 +219,15 @@ class DatarFunction(Function, ABC):
                 or args_df.columns.str.startswith(f"{arg}$").any()
             ):
                 # nest frames
-                bound.arguments[arg] = args_df[arg]
+                if (
+                    bound.signature.parameters[arg].kind
+                    != inspect.Parameter.VAR_POSITIONAL
+                ):
+                    bound.arguments[arg] = args_df[arg]
+                else:
+                    bound.arguments[arg] = tuple(
+                        args_df[arg].to_dict("series").values()
+                    )
 
         return args_df
 

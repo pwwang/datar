@@ -82,7 +82,7 @@ def chop(
     return reconstruct_tibble(data, out)
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def unchop(
     data: DataFrame,
     cols=None,

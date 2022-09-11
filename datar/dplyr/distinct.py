@@ -15,7 +15,7 @@ from ..base import union, setdiff, intersect, unique
 from .mutate import mutate
 
 
-@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.PENDING)
 def distinct(_data, *args, _keep_all=False, **kwargs):
     """Select only unique/distinct rows from a data frame.
 

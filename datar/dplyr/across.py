@@ -11,7 +11,7 @@ from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.broadcast import add_to_tibble
 from ..core.tibble import Tibble, reconstruct_tibble
-from ..core.utils import vars_select, with_verb_ast_fallback_arg
+from ..core.utils import vars_select
 from ..core.middlewares import CurColumn
 from ..core.contexts import Context
 from .tidyselect import everything
@@ -90,14 +90,13 @@ class Across:
                 kwargs = CurColumn.replace_kwargs(self.kwargs, column)
 
                 if isinstance(fn, Verb):
-                    with with_verb_ast_fallback_arg(fn):
-                        value = fn(
-                            self.data,
-                            self.data[column],
-                            *args,
-                            __ast_fallback="normal",
-                            **kwargs,
-                        )
+                    value = fn(
+                        self.data,
+                        self.data[column],
+                        *args,
+                        __ast_fallback="normal",
+                        **kwargs,
+                    )
                 else:
                     value = fn(
                         self.data[column],
@@ -155,7 +154,6 @@ class IfAll(IfCross):
     DataFrame,
     context=Context.PENDING,
     dep=True,
-    ast_fallback_arg=True,
 )
 def across(
     _data,

@@ -19,7 +19,7 @@ from ..core.operator import _binop
 from .group_by import ungroup
 
 
-@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.EVAL)
 def filter(
     _data: DataFrame,
     *conditions: Iterable[bool],

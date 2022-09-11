@@ -13,7 +13,7 @@ from .group_data import group_vars
 from .select import _eval_select
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def relocate(
     _data: DataFrame,
     *args: Any,

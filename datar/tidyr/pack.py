@@ -63,7 +63,7 @@ def pack(
     return reconstruct_tibble(_data, out)
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def unpack(
     data: DataFrame,
     cols,

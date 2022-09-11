@@ -13,7 +13,7 @@ from .group_data import group_vars
 from .select import _eval_select
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def rename(_data, **kwargs):
     """Changes the names of individual variables using new_name = old_name
     syntax
@@ -52,7 +52,7 @@ def rename(_data, **kwargs):
     return out
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def rename_with(_data, _fn, *args, **kwargs):
     """Renames columns using a function.
 

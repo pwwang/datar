@@ -82,7 +82,7 @@ def expand_grid(
     return _flatten_nested(out, named, _name_repair)
 
 
-@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.EVAL)
 def expand(
     data: DataFrame,
     *args: Union[Series, DataFrame],

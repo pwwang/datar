@@ -10,7 +10,7 @@ from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_scalar, is_bool
 
 from ..core.contexts import Context
-from ..core.utils import ensure_nparray, vars_select, with_verb_ast_fallback_arg
+from ..core.utils import ensure_nparray, vars_select
 from ..base import setdiff, intersect
 from .group_by import ungroup
 from .group_data import group_vars
@@ -37,8 +37,7 @@ def where(_data: DataFrame, fn: Callable) -> List[str]:
             dat = fn(_data[col])
             mask.append(dat)
         elif isinstance(fn, Verb):
-            with with_verb_ast_fallback_arg(fn):
-                dat = fn(_data, _data[col], __ast_fallback="normal")
+            dat = fn(_data, _data[col], __ast_fallback="normal")
             mask.append(dat)
         else:
             mask.append(fn(_data[col]))

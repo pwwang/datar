@@ -21,7 +21,7 @@ from .across import across
 from .tidyselect import where
 
 
-@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_map(
     _data,
     _f,
@@ -164,7 +164,7 @@ def with_groups(_data, _groups, _func, *args, **kwargs):
     return _func(grouped, *args, **kwargs)
 
 
-@register_verb(DataFrame, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_split(_data, *args, _keep=True, **kwargs):
     """Get a list of data in each group"""
     data = group_by(_data, *args, **kwargs, __ast_fallback="normal")

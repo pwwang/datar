@@ -13,7 +13,7 @@ from ..core.utils import vars_select
 from ..core.tibble import TibbleGrouped, reconstruct_tibble
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def fill(
     _data: DataFrame,
     *columns: Union[str, int],

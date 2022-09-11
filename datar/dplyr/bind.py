@@ -33,7 +33,6 @@ def _construct_tibble(data):
 @register_verb(
     (DataFrame, list, dict, type(None)),
     context=Context.EVAL,
-    ast_fallback_arg=True,
 )
 def bind_rows(
     _data,
@@ -150,7 +149,6 @@ def _(
 @register_verb(
     (DataFrame, dict, type(None)),
     context=Context.EVAL,
-    ast_fallback_arg=True,
 )
 def bind_cols(
     _data,

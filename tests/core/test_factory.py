@@ -425,3 +425,13 @@ def test_apply_df_meta():
     )
     out = weighted_mean(df.x, df.w)
     assert_iterable_equal([out], [33/7], approx=True)
+
+
+def test_varargs():
+    @func_factory()
+    def pmin(*x, __args_frame=None):
+        return __args_frame.agg('min', axis=1)
+
+    df = Tibble.from_args(x=[7, 2], w=[8, 0])
+    out = pmin(df.x, df.w)
+    assert_iterable_equal(out, [7, 0])

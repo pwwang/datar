@@ -23,7 +23,6 @@ from .relocate import relocate
     DataFrame,
     context=Context.PENDING,
     extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
-    ast_fallback_arg=True,
 )
 def mutate(
     _data,

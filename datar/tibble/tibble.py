@@ -163,7 +163,7 @@ def tibble_row(
     return df
 
 
-@register_verb(object, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(object, context=Context.EVAL)
 def as_tibble(df: Any) -> Tibble:
     """Convert a pandas DataFrame object to Tibble object"""
     return Tibble(df, copy=False)

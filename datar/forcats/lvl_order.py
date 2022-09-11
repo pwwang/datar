@@ -27,12 +27,12 @@ from ..base import (
 )
 from ..core.collections import Collection
 from ..core.contexts import Context
-from ..core.utils import logger, with_verb_ast_fallback_arg
+from ..core.utils import logger
 from .lvls import lvls_reorder, lvls_seq
 from .utils import check_factor, ForcatsRegType
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_relevel(
     _f,
     *lvls: Any,
@@ -90,7 +90,7 @@ def fct_relevel(
     )
 
 
-@register_verb(ForcatsRegType, context=Context.EVAL, ast_fallback_arg=True)
+@register_verb(ForcatsRegType, context=Context.EVAL)
 def fct_inorder(_f, ordered: bool = None) -> Categorical:
     """Reorder factor levels by first appearance
 
@@ -244,11 +244,10 @@ def fct_reorder(
     )
     args = args[1:]
     if isinstance(_fun, Verb):
-        with with_verb_ast_fallback_arg(_fun):
-            # simulate tapply
-            summary = summary.agg(
-                lambda col: _fun(col, *args, **kwargs, __ast_fallback="normal")
-            )
+        # simulate tapply
+        summary = summary.agg(
+            lambda col: _fun(col, *args, **kwargs, __ast_fallback="normal")
+        )
     else:
         summary = summary.agg(lambda col: _fun(col, *args, **kwargs))
 
@@ -301,15 +300,15 @@ def fct_reorder2(
     args = args[1:]
 
     if isinstance(_fun, Verb):
-        with with_verb_ast_fallback_arg(_fun):
-            summary = summary.apply(
-                lambda row: _fun(
-                    row.x.reset_index(drop=True),
-                    row.y.reset_index(drop=True),
-                    *args,
-                    **kwargs,
-                )
+        summary = summary.apply(
+            lambda row: _fun(
+                row.x.reset_index(drop=True),
+                row.y.reset_index(drop=True),
+                *args,
+                **kwargs,
+                __ast_fallback="normal",
             )
+        )
     else:
         summary = summary.apply(
             lambda row: _fun(

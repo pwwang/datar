@@ -131,7 +131,6 @@ def inner_join(
     DataFrame,
     context=Context.EVAL,
     extra_contexts={"by": Context.SELECT},
-    ast_fallback_arg=True,
 )
 def left_join(
     x,
@@ -194,7 +193,6 @@ def right_join(
     DataFrame,
     context=Context.EVAL,
     extra_contexts={"by": Context.SELECT},
-    ast_fallback_arg=True,
 )
 def full_join(
     x,

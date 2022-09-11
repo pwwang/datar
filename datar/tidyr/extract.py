@@ -18,7 +18,7 @@ from ..core.tibble import reconstruct_tibble
 from ..dplyr import ungroup
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def extract(
     data: DataFrame,
     col: Union[str, int],

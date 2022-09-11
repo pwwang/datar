@@ -74,7 +74,7 @@ def count(
     return reconstruct_tibble(x, out)
 
 
-@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.PENDING)
 def tally(
     x,
     wt=None,
@@ -142,7 +142,7 @@ def add_count(
     return out
 
 
-@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.PENDING)
 def add_tally(x, wt=None, sort=False, name="n"):
     """Equivalents to tally() but use mutate() instead of summarise()
 

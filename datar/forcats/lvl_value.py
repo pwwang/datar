@@ -17,7 +17,7 @@ from ..base import (
     rank,
 )
 from ..core.contexts import Context
-from ..core.utils import logger, with_verb_ast_fallback_arg
+from ..core.utils import logger
 from ..dplyr import recode_factor, if_else
 from .utils import check_factor, ForcatsRegType
 from .lvls import lvls_reorder, lvls_revalue
@@ -435,11 +435,8 @@ def fct_relabel(
     _f = check_factor(_f)
     old_levels = levels(_f)
     if isinstance(_fun, Verb):
-        with with_verb_ast_fallback_arg(_fun):
-            kwargs["__ast_fallback"] = "normal"
-            new_levels = _fun(old_levels, *args, **kwargs)
-    else:
-        new_levels = _fun(old_levels, *args, **kwargs)
+        kwargs["__ast_fallback"] = "normal"
+    new_levels = _fun(old_levels, *args, **kwargs)
     return lvls_revalue(_f, new_levels, __ast_fallback="normal")
 
 

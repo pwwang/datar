@@ -21,7 +21,7 @@ from ..dplyr import ungroup, mutate
 from .chop import unchop
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def separate(
     data: DataFrame,
     col: Union[str, int],

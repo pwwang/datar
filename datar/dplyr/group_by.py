@@ -19,7 +19,7 @@ from ..tibble import as_tibble
 from .group_data import group_vars
 
 
-@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.PENDING)
 def group_by(
     _data: DataFrame,
     *args: Any,
@@ -101,7 +101,7 @@ def _(
     )
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def rowwise(
     _data: DataFrame,
     *cols: Union[str, int],
@@ -154,7 +154,7 @@ def _(_data: TibbleRowwise, *cols: Union[str, int]) -> TibbleRowwise:
     return _data.rowwise(gvars)
 
 
-@register_verb(object, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(object, context=Context.SELECT)
 def ungroup(
     x: Any,
     *cols: Union[str, int],

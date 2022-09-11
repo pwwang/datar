@@ -19,7 +19,7 @@ from .group_by import ungroup
 from .group_data import group_vars, group_keys
 
 
-@register_verb(DataFrame, context=Context.PENDING, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.PENDING)
 def summarise(
     _data: DataFrame,
     *args: Any,

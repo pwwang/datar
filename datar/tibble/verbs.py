@@ -183,7 +183,7 @@ def add_column(
     return reconstruct_tibble(_data, out)
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def has_rownames(_data):
     """Detect if a data frame has row names
 
@@ -206,7 +206,7 @@ def has_rownames(_data):
 has_index = has_rownames
 
 
-@register_verb(DataFrame, ast_fallback_arg=True)
+@register_verb(DataFrame)
 def remove_rownames(_data):
     """Remove the index/rownames of a data frame
 
@@ -225,7 +225,7 @@ def remove_rownames(_data):
 remove_index = drop_index = remove_rownames
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def rownames_to_column(_data, var="rowname"):
     """Add rownames as a column
 

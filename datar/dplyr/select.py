@@ -16,7 +16,7 @@ from ..base import setdiff, union, intersect
 from .group_data import group_vars
 
 
-@register_verb(DataFrame, context=Context.SELECT, ast_fallback_arg=True)
+@register_verb(DataFrame, context=Context.SELECT)
 def select(
     _data: DataFrame,
     *args: Union[str, Iterable, Inverted],
