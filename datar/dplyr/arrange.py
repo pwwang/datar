@@ -13,7 +13,7 @@ from ..base import union
 from .mutate import mutate
 
 
-@register_verb(DataFrame, context=Context.PENDING)
+@register_verb(DataFrame, context=Context.PENDING, ast_fallback="piping")
 def arrange(_data, *args, _by_group=False, **kwargs):
     """orders the rows of a data frame by the values of selected columns.
 

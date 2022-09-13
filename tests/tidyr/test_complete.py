@@ -3,7 +3,11 @@
 import pytest  # noqa
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.datasets import mtcars
-from datar.all import *
+from datar import f
+from datar.base import c, NA, nrow, ncol, factor, NULL
+from datar.dplyr import group_by, group_vars
+from datar.tidyr import complete
+from datar.tibble import tibble
 
 from ..conftest import assert_iterable_equal
 
@@ -24,8 +28,9 @@ def test_preserves_grouping():
 def test_expands_empty_factors():
     ff = factor(levels=c("a", "b", "c"))
     df = tibble(one=ff, two=ff)
-    assert nrow(complete(df, f.one, f.two)) == 9
-    assert ncol(complete(df, f.one, f.two)) == 2
+    compl = complete(df, f.one, f.two)
+    assert nrow(compl) == 9
+    assert ncol(compl) == 2
 
 def test_empty_expansion_returns_original():
     df = tibble(x=[])

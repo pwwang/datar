@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any, Callable, Mapping
 
 from pipda import register_func, register_verb, ReferenceAttr, ReferenceItem
 
@@ -12,17 +13,11 @@ if TYPE_CHECKING:
     from pandas._typing import Dtype
 
 
-# Register as a function, so that
-# tibble(a=[1,2,3], b=f.a / sum(f.a)) can work
-# Otherwise sum(f.a) will do fast eval
-# Note that when use it as a argument of a verb
-# The expression is evaluated using the verb's data
-@register_func(context=Context.EVAL)
 def tibble(
     *args,
-    _name_repair: Union[str, Callable] = "check_unique",
+    _name_repair: str | Callable = "check_unique",
     _rows: int = None,
-    _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
+    _dtypes: Dtype | Mapping[str, Dtype] = None,
     _drop_index: bool = False,
     _index=None,
     **kwargs,
@@ -64,10 +59,15 @@ def tibble(
     return out
 
 
+# Like tibble, but works as a registered function, so that it can take
+# expressions that will be evaluated by verb data
+fibble = register_func(tibble, context=Context.EVAL)
+
+
 def tribble(
     *dummies: Any,
-    _name_repair: Union[str, Callable] = "minimal",
-    _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
+    _name_repair: str | Callable = "minimal",
+    _dtypes: Dtype | Mapping[str, Dtype] = None,
 ) -> Tibble:
     """Create dataframe using an easier to read row-by-row layout
     Unlike original API that uses formula (`f.col`) to indicate the column
@@ -133,8 +133,8 @@ def tribble(
 @register_func(context=Context.EVAL)
 def tibble_row(
     *args: Any,
-    _name_repair: Union[str, Callable] = "check_unique",
-    _dtypes: Union["Dtype", Mapping[str, "Dtype"]] = None,
+    _name_repair: str | Callable = "check_unique",
+    _dtypes: Dtype | Mapping[str, Dtype] = None,
     **kwargs: Any,
 ) -> Tibble:
     """Constructs a data frame that is guaranteed to occupy one row.

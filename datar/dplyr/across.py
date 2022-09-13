@@ -160,7 +160,6 @@ def across(
     *args,
     _names=None,
     _fn_context=Context.EVAL,
-    _context=None,
     **kwargs,
 ):
     """Apply the same transformation to multiple columns
@@ -230,7 +229,6 @@ def across(
 def c_across(
     _data,
     _cols=None,
-    _context=None,
 ):
     """Apply the same transformation to multiple columns rowwisely
 
@@ -241,7 +239,7 @@ def c_across(
     Returns:
         A rowwise tibble
     """
-    _data = _context.meta.get("input_data", _data)
+    _data = getattr(_data, "_datar", {}).get("summarise_source", _data)
 
     if not _cols:
         _cols = _data >> everything()
@@ -274,7 +272,7 @@ def if_any(
     elif len(args) == 1:
         args = (args[0], None)
     _cols, _fns, *args = args
-    _data = _context.meta.get("input_data", _data)
+    _data = getattr(_data, "_datar", {}).get("summarise_source", _data)
 
     return IfAny(
         _data,

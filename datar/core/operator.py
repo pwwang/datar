@@ -1,6 +1,7 @@
 """Operators for datar"""
 import operator
-from typing import Any, Callable, Sequence
+from collections.abc import Sequence
+from typing import Any, Callable
 from functools import partial
 
 from pipda import register_operator, Operator
@@ -120,6 +121,12 @@ class DatarOperator(Operator):
             return Collection(left, right)
 
         return _binop(operator.or_, left, right, boolean=True)
+
+    def rand_(self, left: Any, right: Any) -> Any:
+        return self.and_(right, left)
+
+    def ror_(self, left: Any, right: Any) -> Any:
+        return self.or_(right, left)
 
     # def _op_eq(
     #     self, left: Any, right: Any

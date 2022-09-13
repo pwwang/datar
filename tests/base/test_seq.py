@@ -2,7 +2,8 @@ import pytest
 
 import numpy as np
 from datar.core.backends.pandas import Series
-from datar.base.seq import (
+from datar import f
+from datar.base import (
     seq_len,
     seq,
     seq_along,
@@ -13,9 +14,11 @@ from datar.base.seq import (
     lengths,
     match,
     order,
+    rep,
+    mean,
 )
 from datar.tibble import tibble
-from datar.dplyr import rowwise
+from datar.dplyr import rowwise, mutate
 from datar.base import NA, c, unique
 from ..conftest import assert_iterable_equal
 
@@ -294,3 +297,7 @@ def test_c():
     x = Series([1, 2, 3, 4]).groupby([1, 1, 2, 2])
     out = c(7, [8, 9], x)
     assert_iterable_equal(out.obj, [7, 8, 9, 1, 2, 7, 8, 9, 3, 4])
+
+    df = tibble(x=c[1:5], y=rep(c[1:3], each=2)) >> rowwise()
+    out = df >> mutate(z=mean(c(f.x, f.y)))
+    assert_iterable_equal(out.z.obj, [1.0, 1.5, 2.5, 3.0])

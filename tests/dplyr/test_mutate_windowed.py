@@ -2,6 +2,38 @@
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-mutate-windowed.R
 import pytest  # noqa
 from datar.all import *
+from datar import f
+from datar.base import (
+    c,
+    seq,
+    rep,
+    letters,
+    LETTERS,
+    cummax,
+    cummin,
+    cumsum,
+    NA,
+    is_na,
+    factor,
+    scale,
+    all,
+)
+from datar.dplyr import (
+    rowwise,
+    mutate,
+    min_rank,
+    desc,
+    pull,
+    group_by,
+    row_number,
+    summarise,
+    lead,
+    lag,
+    ntile,
+    percent_rank,
+    dense_rank,
+    cume_dist,
+)
 from datar.datasets import mtcars
 from ..conftest import assert_iterable_equal
 
@@ -148,7 +180,7 @@ def test_ntile_works_with_one_argument():
     assert out.equals(exp)
 
     # with pytest.raises(TypeError):
-    out = df >> mutate(nt=ntile(row_number(), 9))
+    out = df >> mutate(nt=ntile(row_number(), n=9))
     assert out.equals(exp)
 
     df = group_by(tibble(x=range(1, 43), g=rep(range(1, 8), each=6)), f.g)
@@ -165,7 +197,7 @@ def test_rank_functions_deal_correctly_with_na():
         percent_rank=percent_rank(f.x),
         dense_rank=dense_rank(f.x),
         cume_dist=cume_dist(f.x),
-        ntile=ntile(f.x, 2),
+        ntile=ntile(f.x, n=2),
         row_number=row_number(f.x),
     )
     assert all(is_na(res.min_rank[[2, 5]]))
@@ -194,7 +226,7 @@ def test_rank_functions_deal_correctly_with_na():
             percent_rank=percent_rank(f.x),
             dense_rank=dense_rank(f.x),
             cume_dist=cume_dist(f.x),
-            ntile=ntile(f.x, 2),
+            ntile=ntile(f.x, n=2),
             row_number=row_number(f.x),
         )
     )

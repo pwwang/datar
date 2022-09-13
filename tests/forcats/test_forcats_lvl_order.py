@@ -2,7 +2,21 @@ from datar.core.backends.pandas import Series
 import pytest
 
 import numpy
-from datar.all import *
+from datar import f
+from datar.base import c, factor, levels, rev, TRUE, FALSE, NA
+from datar.forcats import (
+    fct_relevel,
+    fct_reorder2,
+    fct_reorder,
+    fct_rev,
+    fct_infreq,
+    fct_inseq,
+    fct_inorder,
+    fct_shift,
+    fct_shuffle,
+    first2,
+)
+from datar.tibble import tribble
 
 from ..conftest import assert_iterable_equal
 

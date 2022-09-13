@@ -110,7 +110,7 @@ def test_mutate_does_not_loose_variables():
     )
     by_ab = df >> group_by(f.a, f.b)
     by_a = by_ab >> summarise(x=sum(f.x), _groups="drop_last")
-    by_a_quantile = by_a >> group_by(quantile=ntile(f.x, 4))
+    by_a_quantile = by_a >> group_by(quantile=ntile(f.x, n=4))
 
     assert by_a_quantile.columns.tolist() == ["a", "b", "x", "quantile"]
 
@@ -169,7 +169,8 @@ def test_zero_row_dfs():
     dfg = group_by(df, f.g, _drop=False)
     assert dfg.shape == (0, 3)
     assert group_vars(dfg) == ["g"]
-    assert group_size(dfg) == []
+    sizes = group_size(dfg)
+    assert sizes == []
 
     x = summarise(dfg, n=n())
     assert x.shape == (0, 2)
@@ -178,22 +179,26 @@ def test_zero_row_dfs():
     x = mutate(dfg, c=f.b + 1)
     assert x.shape == (0, 4)
     assert group_vars(x) == ["g"]
-    assert group_size(x) == []
+    sizes = group_size(x)
+    assert sizes == []
 
     x = filter(dfg, f.a == 100)
     assert x.shape == (0, 3)
     assert group_vars(x) == ["g"]
-    assert group_size(x) == []
+    sizes = group_size(x)
+    assert sizes == []
 
     x = arrange(dfg, f.a, f.g)
     assert x.shape == (0, 3)
     assert group_vars(x) == ["g"]
-    assert group_size(x) == []
+    sizes = group_size(x)
+    assert sizes == []
 
     x = select(dfg, f.a)
     assert x.shape == (0, 2)
     assert group_vars(x) == ["g"]
-    assert group_size(x) == []
+    sizes = group_size(x)
+    assert sizes == []
 
 
 def test_does_not_affect_input_data():
@@ -488,7 +493,8 @@ def test_rowwise_preserved_by_major_verbs():
     assert group_vars(out) == ["x"]
 
     # Except for summarise
-    out = summarise(rf, z=mean(f.x, f.y))
+    # out = summarise(rf, z=mean(f.x, f.y))
+    out = summarise(rf, z=mean(f.x))
     assert isinstance(out, TibbleGrouped)
     assert group_vars(out) == ["x"]
 
@@ -529,9 +535,11 @@ def test_can_re_rowwise():
 
 
 def test_compound_ungroup():
-    assert ungroup(1) == 1
+    ungrouped = ungroup(1)
+    assert ungrouped == 1
     g = Series([1, 2, 3]).groupby([1, 1, 2])
-    assert ungroup(g) is g.obj
+    ungrouped = ungroup(g)
+    assert ungrouped is g.obj
 
     with pytest.raises(ValueError):
         ungroup(g, "abc")

@@ -207,11 +207,11 @@ def test_error_if_both_before_and_after_are_given():
 
 def test_missing_row_names_stay_missing_when_adding_row():
     assert not has_rownames(iris)
-    assert not has_rownames(add_row(iris, Species="unknown", _after=0))
+    assert not has_rownames(iris >> add_row(Species="unknown", _after=0))
     assert not has_rownames(
-        add_row(iris, Species="unknown", _after=nrow(iris))
+        iris >> add_row(Species="unknown", _after=nrow(iris))
     )
-    assert not has_rownames(add_row(iris, Species="unknown", _after=9))
+    assert not has_rownames(iris >> add_row(Species="unknown", _after=9))
 
 
 # test_that("adding to a list column adds a NULL value (#148)", {
@@ -396,9 +396,9 @@ def test_error_if_column_named_by_before_or_after_not_found():
 
 def test_missing_row_names_stay_missing_when_adding_column():
     assert not has_rownames(iris)
-    assert not has_rownames(add_column(iris, x=seq(1, 150), _after=0))
-    assert not has_rownames(add_column(iris, x=seq(1, 150), _after=ncol(iris)-1))
-    assert not has_rownames(add_column(iris, x=seq(1, 150), _before=1))
+    assert not has_rownames(iris >> add_column(x=seq(1, 150), _after=0))
+    assert not has_rownames(iris >> add_column(x=seq(1, 150), _after=ncol(iris)-1))
+    assert not has_rownames(iris >> add_column(x=seq(1, 150), _before=1))
 
 
 def test_errors_of_add_row_and_add_column():

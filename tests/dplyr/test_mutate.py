@@ -8,7 +8,7 @@ from datar.datasets import iris, mtcars
 from datar.core.backends.pandas import DataFrame
 from datar.core.tibble import TibbleRowwise, TibbleGrouped
 from datar.testing import assert_tibble_equal
-from datar.tibble import tibble
+from datar.tibble import tibble, fibble
 from datar.base import (
     NA,
     letters,
@@ -100,7 +100,8 @@ def test_removes_vars_with_None():
     assert out.columns.tolist() == ["x"]
     assert isinstance(out, TibbleGrouped)
     assert group_vars(out) == ["x"]
-    assert group_rows(out) == [[0], [1], [2]]
+    rows = group_rows(out)
+    assert rows == [[0], [1], [2]]
 
     # even if it doesn't exist
     out = df >> mutate(z=None)
@@ -144,11 +145,11 @@ def test_handles_data_frame_columns():
     res = mutate(df, new_col=tibble(x=[1, 2, 3]))
     assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]))
 
-    res = mutate(group_by(df, f.a), new_col=tibble(x=f.a))
+    res = mutate(group_by(df, f.a), new_col=fibble(x=f.a))
     assert_iterable_equal(res["new_col"].x.obj, [1, 2, 3])
 
     rf = rowwise(df, f.a)
-    res = mutate(rf, new_col=tibble(x=f.a))
+    res = mutate(rf, new_col=fibble(x=f.a))
     assert_tibble_equal(res["new_col"], tibble(x=[1, 2, 3]) >> rowwise())
 
 
@@ -177,10 +178,13 @@ def test_preserves_grouping():
     gf = group_by(tibble(x=[1, 2], y=2), f.x)
     out = mutate(gf, x=1)
     assert group_vars(out) == ["x"]
-    assert nrow(group_data(out)) == 1
+    gdata = group_data(out)
+    assert nrow(gdata) == 1
 
     out = mutate(gf, z=1)
-    assert group_data(out).equals(group_data(gf))
+    godata = group_data(out)
+    gfdata = group_data(gf)
+    assert godata.equals(gfdata)
 
 
 def test_works_on_0row_grouped_data_frame():
@@ -380,10 +384,13 @@ def test_transmutate_preserves_grouping():
 
     out = transmute(gf, x=1)
     assert group_vars(out) == ["x"]
-    assert nrow(group_data(out)) == 1
+    gdata = group_data(out)
+    assert nrow(gdata) == 1
 
     out = transmute(gf, z=1)
-    assert group_data(out).equals(group_data(gf))
+    godata = group_data(out)
+    gfdata = group_data(gf)
+    assert godata.equals(gfdata)
 
 
 # Empty transmutes -------------------------------------------------
@@ -432,7 +439,7 @@ def test_transmute_doesnot_warn_when_var_removed(caplog):
 
 
 def test_transmute_can_handle_auto_splicing():
-    out = iris >> transmute(tibble(f.Sepal_Length, f.Sepal_Width))
+    out = iris >> transmute(fibble(f.Sepal_Length, f.Sepal_Width))
     exp = iris >> select(f.Sepal_Length, f.Sepal_Width)
     assert out.equals(exp)
 

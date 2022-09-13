@@ -88,7 +88,7 @@ def distinct(_data, *args, _keep_all=False, **kwargs):
     return reconstruct_tibble(_data, Tibble(out, copy=False))
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def n_distinct(x, na_rm=True):
     """Get the length of distinct elements"""
     return x.nunique(dropna=na_rm)
@@ -96,6 +96,6 @@ def n_distinct(x, na_rm=True):
 
 n_distinct.register(
     (TibbleGrouped, GroupBy),
-    "nunique",
+    func="nunique",
     pre=lambda x, na_rm=True: (x, (), {"dropna": na_rm}),
 )

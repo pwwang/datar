@@ -1,10 +1,31 @@
 import pytest
 
 import numpy
-from datar.all import *
 from datar.forcats import as_factor
-from ..conftest import assert_iterable_equal, assert_factor_equal
+from datar.base import (
+    c,
+    letters,
+    factor,
+    levels,
+    NA,
+    TRUE,
+    FALSE,
+    NULL,
+    is_ordered,
+    ordered,
+)
+from datar.forcats import (
+    fct_inorder,
+    fct_count,
+    fct_match,
+    fct_unique,
+    lvls_reorder,
+    lvls_revalue,
+    lvls_expand,
+    lvls_union,
+)
 
+from ..conftest import assert_iterable_equal, assert_factor_equal
 # fct_as_factor
 def test_equivalent_to_fct_inorder():
     x = c("a", "z", "g")
@@ -106,13 +127,19 @@ def test_can_change_ordered_status_of_output():
     f1 = factor(letters[:3])
     f2 = ordered(f1)
 
-    assert not is_ordered(lvls_reorder(f1, c[:3]))
-    assert not is_ordered(lvls_reorder(f1, c[:3], ordered = FALSE))
-    assert is_ordered(lvls_reorder(f1, c[:3], ordered = TRUE))
+    out = not is_ordered(lvls_reorder(f1, c[:3]))
+    assert out
+    out = not is_ordered(lvls_reorder(f1, c[:3], ordered = FALSE))
+    assert out
+    out = is_ordered(lvls_reorder(f1, c[:3], ordered = TRUE))
+    assert out
 
-    assert is_ordered(lvls_reorder(f2, c[:3]))
-    assert not is_ordered(lvls_reorder(f2, c[:3], ordered = FALSE))
-    assert is_ordered(lvls_reorder(f2, c[:3], ordered = TRUE))
+    out = is_ordered(lvls_reorder(f2, c[:3]))
+    assert out
+    out = not is_ordered(lvls_reorder(f2, c[:3], ordered = FALSE))
+    assert out
+    out = is_ordered(lvls_reorder(f2, c[:3], ordered = TRUE))
+    assert out
 
 
 # lvls_expand -------------------------------------------------------------

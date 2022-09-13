@@ -150,7 +150,7 @@ def mutate(
     if keep == "all":
         keep = data.columns
     elif keep == "unused":
-        unused = setdiff(all_columns, used_refs, __ast_fallback="normal")
+        unused = setdiff(all_columns, list(used_refs), __ast_fallback="normal")
         keep = intersect(
             data.columns,
             c(gvars, unused, mutated_cols),

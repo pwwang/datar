@@ -19,7 +19,7 @@ from .group_by import ungroup
 from .group_data import group_vars, group_keys
 
 
-@register_verb(DataFrame, context=Context.PENDING)
+@register_verb(DataFrame, context=Context.PENDING, ast_fallback="piping")
 def summarise(
     _data: DataFrame,
     *args: Any,
@@ -159,6 +159,8 @@ def _summarise_build(
 
     if isinstance(_data, Tibble):
         # So we have _data._datar["used_ref"]
+        _data = _data.copy(False)
+    else:
         _data = Tibble(_data, copy=False)
 
     _data._datar["used_refs"] = set()
@@ -191,7 +193,7 @@ def _summarise_build(
         mcol
         for mcol in outframe.columns
         if mcol.startswith("_")
-        and mcol in _data._datar["used_refs"]
+        and mcol not in _data._datar["used_refs"]
         and mcol not in gvars
     ]
     outframe = ungroup(outframe, __ast_fallback="normal")

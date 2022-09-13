@@ -434,7 +434,8 @@ def fct_relabel(
     """
     _f = check_factor(_f)
     old_levels = levels(_f)
-    if isinstance(_fun, Verb):
+    if isinstance(_fun, Verb):  # pragma: no cover
+        # TODO: test
         kwargs["__ast_fallback"] = "normal"
     new_levels = _fun(old_levels, *args, **kwargs)
     return lvls_revalue(_f, new_levels, __ast_fallback="normal")

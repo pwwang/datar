@@ -132,7 +132,6 @@ def _(_data, _drop=None):
         across(
             fgroups.columns.tolist(),
             droplevels,
-            __ast_fallback="normal",
         ),
         __ast_fallback="normal",
     )

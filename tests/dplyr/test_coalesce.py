@@ -2,14 +2,15 @@
 
 import pytest  # noqa
 
-from datar.core.backends.pandas.testing import assert_frame_equal
-from datar.all import *
+from datar.base import NA, factor, c, letters
+from datar.dplyr import coalesce
+from datar.tibble import tibble
 from ..conftest import assert_iterable_equal
 
 def test_missing_replaced():
     x = [NA, 1]
     out = coalesce(x, 1)
-    assert out.tolist() == [1,1]
+    assert out.tolist() == [1, 1]
 
 def test_common_type():
     out = coalesce(NA, 1)

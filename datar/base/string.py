@@ -5,9 +5,7 @@ import numpy as np
 from pipda import register_func
 
 from ..core.backends import pandas as pd
-from ..core.backends.pandas import Series
 from ..core.backends.pandas.core.base import PandasObject
-from ..core.backends.pandas.core.groupby import SeriesGroupBy
 from ..core.backends.pandas.api.types import is_string_dtype, is_scalar
 
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
@@ -67,25 +65,8 @@ is_str = is_string = is_character
 
 
 # Grep family -----------------------------------
-# @dispatching(kind="transform", qualname="datar.base.grep")
-def _grep(
-    x, pattern, ignore_case=False, value=False, fixed=False, invert=False
-):
-    matched = _grepl.dispatch(Series)(
-        x,
-        pattern,
-        ignore_case=ignore_case,
-        fixed=fixed,
-        invert=invert,
-    )
 
-    if value:
-        return x[matched]
-
-    return np.flatnonzero(matched)
-
-
-@register_func(context=Context.EVAL)
+@func_factory('x')
 def grep(
     pattern,
     x,
@@ -108,29 +89,21 @@ def grep(
         The matched (or unmatched (`invert=True`)) indices
         (or values (`value=True`)).
     """
-    return _grep(
-        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
+    matched = grepl(
         pattern,
-        ignore_case=ignore_case,
-        value=value,
-        fixed=fixed,
-        invert=invert,
-    )
-
-
-# @dispatching(kind="transform", qualname="datar.base.grepl")
-def _grepl(x, pattern, ignore_case, fixed, invert):
-    pattern = _warn_more_pat_or_rep(pattern, "grepl")
-    return _match(
         x,
-        pattern,
         ignore_case=ignore_case,
-        invert=invert,
         fixed=fixed,
+        invert=invert,
     )
 
+    if value:
+        return x[matched]
 
-@register_func(context=Context.EVAL)
+    return np.flatnonzero(matched)
+
+
+@func_factory('x')
 def grepl(
     pattern,
     x,
@@ -150,27 +123,17 @@ def grepl(
     Returns:
         A bool array indicating whether the elements in x match the pattern
     """
-    return _grepl(
-        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
+    pattern = _warn_more_pat_or_rep(pattern, "grepl")
+    return _match(
+        x,
         pattern,
         ignore_case=ignore_case,
-        fixed=fixed,
         invert=invert,
-    )
-
-
-# @dispatching(kind="transform", qualname="datar.base.sub")
-def _sub(x, pattern, replacement, ignore_case, fixed):
-    return _sub_(
-        pattern=pattern,
-        replacement=replacement,
-        x=x,
-        ignore_case=ignore_case,
         fixed=fixed,
     )
 
 
-@register_func(context=Context.EVAL)
+@func_factory('x')
 def sub(
     pattern,
     replacement,
@@ -191,29 +154,16 @@ def sub(
     Returns:
         An array of strings with matched parts replaced.
     """
-    return _sub(
-        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
-        pattern,
-        replacement,
-        ignore_case=ignore_case,
-        fixed=fixed,
-    )
-
-
-# @dispatching(kind="transform", qualname="datar.base.gsub")
-def _gsub(x, pattern, replacement, ignore_case, fixed):
     return _sub_(
         pattern=pattern,
         replacement=replacement,
         x=x,
         ignore_case=ignore_case,
         fixed=fixed,
-        count=0,
-        fun="gsub",
     )
 
 
-@register_func(context=Context.EVAL)
+@func_factory('x')
 def gsub(
     pattern,
     replacement,
@@ -227,12 +177,14 @@ def gsub(
     See Also:
         [sub()](datar.base.string.sub)
     """
-    return _gsub(
-        x if isinstance(x, (Series, SeriesGroupBy)) else Series(x),
-        pattern,
-        replacement,
+    return _sub_(
+        pattern=pattern,
+        replacement=replacement,
+        x=x,
         ignore_case=ignore_case,
         fixed=fixed,
+        count=0,
+        fun="gsub",
     )
 
 
@@ -580,7 +532,7 @@ def strtoi(x, base=0):
     return x.transform(int, base=base)
 
 
-@func_factory(kind="transform")
+@func_factory("x")
 def chartr(old, new, x):
     """Replace strings char by char
 

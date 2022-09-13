@@ -18,7 +18,7 @@ def test_empty_returns_self():
     df = tibble(x=range(1, 11), y=range(1, 11))
     gf = df >> group_by(f.x)
 
-    assert arrange(df).equals(df)
+    assert (df >> arrange()).equals(df)
 
     out = arrange(gf)
     assert out.equals(gf)
@@ -82,7 +82,8 @@ def test_update_grouping():
     df = tibble(g=[2, 2, 1, 1], x=[1, 3, 2, 4])
     res = df >> group_by(f.g) >> arrange(f.x)
     assert isinstance(res, TibbleGrouped)
-    assert group_rows(res) == [[0, 2], [1, 3]]
+    out = group_rows(res)
+    assert out == [[0, 2], [1, 3]]
 
 
 def test_across():

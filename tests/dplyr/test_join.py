@@ -179,8 +179,10 @@ def test_joins_matches_nas_by_default():
     df1 = tibble(x=c(None, 1))
     df2 = tibble(x=c(None, 2))
 
-    assert nrow(inner_join(df1, df2, by=f.x)) == 1
-    assert nrow(semi_join(df1, df2, by=f.x)) == 1
+    inj = inner_join(df1, df2, by=f.x)
+    assert nrow(inj) == 1
+    semj = semi_join(df1, df2, by=f.x)
+    assert nrow(semj) == 1
 
 
 # def test_joins_donot_match_na_when_na_matches_is_never():
@@ -293,7 +295,8 @@ def test_rowwise_group_structure_is_updated_after_a_join():
     df2 = tibble(x=c([1, 2], 2))
 
     x = left_join(df1, df2, by="x")
-    assert group_rows(x) == [[0], [1], [2]]
+    rows = group_rows(x)
+    assert rows == [[0], [1], [2]]
 
 
 def test_join_by_dict_not_keep():

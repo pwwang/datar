@@ -2,7 +2,7 @@ import pytest
 from datar.core.backends.pandas import Categorical, DataFrame, Index, Series
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
-from datar.base import factor
+from datar.base import factor, c
 from datar.core.tibble import TibbleGrouped, TibbleRowwise
 from datar.testing import assert_tibble_equal
 from datar.tibble import tibble

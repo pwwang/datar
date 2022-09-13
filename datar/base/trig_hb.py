@@ -1,9 +1,8 @@
 """Trigonometric and Hyperbolic Functions"""
-from functools import singledispatch
 import numpy as np
 
 
-from ..core.tibble import TibbleGrouped
+from ..core.tibble import TibbleGrouped, TibbleRowwise
 from ..core.factory import func_factory
 
 from .constants import pi
@@ -221,7 +220,7 @@ atanh = _register_trig_hb_func(
 
 
 @func_factory({"y", "x"})
-def atan2(y, x):
+def atan2(y, x, __args_frame=None):
     """Calculates the angle between the x-axis and the vector (0,0) -> (x,y)
 
     Args:
@@ -232,3 +231,21 @@ def atan2(y, x):
         The angle between x-axis and vector (0,0) -> (x,y)
     """
     return np.arctan2(y, x)
+
+
+@atan2.register(
+    (TibbleGrouped, TibbleRowwise),
+    func="default",
+    post="decor",
+)
+def _atan2_post(__out, y, x, __args_frame):
+    grouped = __args_frame._datar["grouped"]
+    out = __out.groupby(
+        grouped.grouper,
+        sort=grouped.sort,
+        dropna=grouped.dropna,
+        observed=grouped.observed,
+    )
+    if isinstance(__args_frame, TibbleRowwise):
+        out.is_rowwise = True
+    return out

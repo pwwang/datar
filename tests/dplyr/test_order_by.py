@@ -1,5 +1,6 @@
 import pytest  # noqa
 
+import numpy as np
 from datar import f
 from datar.base import cumsum, seq, c
 from datar.dplyr import order_by, with_order, mutate
@@ -19,5 +20,12 @@ def test_order_by():
 
 def test_with_order():
     x = [1, 2, 3, 4, 5]
+
     out = with_order(seq(5, 1), cumsum, x)
     assert_iterable_equal(out, [15, 14, 12, 9, 5])
+
+    out = with_order(seq(5, 1), list, x)
+    assert_iterable_equal(out, [1, 2, 3, 4, 5])
+
+    out = with_order(seq(5, 1), np.array, x)
+    assert_iterable_equal(out, [1, 2, 3, 4, 5])

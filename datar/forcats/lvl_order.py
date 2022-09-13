@@ -243,8 +243,9 @@ def fct_reorder(
         .groupby("f", observed=False, sort=False, dropna=False)
     )
     args = args[1:]
-    if isinstance(_fun, Verb):
+    if isinstance(_fun, Verb):  # pragma: no cover
         # simulate tapply
+        # TODO: test
         summary = summary.agg(
             lambda col: _fun(col, *args, **kwargs, __ast_fallback="normal")
         )
@@ -299,7 +300,8 @@ def fct_reorder2(
     )
     args = args[1:]
 
-    if isinstance(_fun, Verb):
+    if isinstance(_fun, Verb):  # pragma: no cover
+        # TODO: test
         summary = summary.apply(
             lambda row: _fun(
                 row.x.reset_index(drop=True),

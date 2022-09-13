@@ -163,7 +163,9 @@ def test_cummean_is_consistent_with_cumsum_and_seq_along():
 def test_order_by_returns_correct_value():
     expected = [15, 14, 12, 9, 5]
     out = with_order(range(5, 0, -1), cumsum, range(1, 6))
-    assert out.tolist() == expected
+    out = out.tolist()
+    assert isinstance(out, list)
+    assert out == expected
 
     x = [5, 4, 3, 2, 1]
     y = [1, 2, 3, 4, 5]
@@ -186,7 +188,7 @@ def test_order_by_returns_correct_value():
 
 def test_order_by_errors():
     # with_order(NULL, 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(AttributeError):
         order_by(NULL, 1)
 
 
@@ -249,7 +251,7 @@ def test_nth_index_past_ends_returns_default_value():
 
 
 def test_nth_errors():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         nth(range(1, 11), "x")
 
 

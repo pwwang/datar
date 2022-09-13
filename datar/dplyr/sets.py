@@ -172,12 +172,14 @@ def _(x, y):
 
 
 @setequal.register(DataFrame, context=Context.EVAL)
-def _(x, y):
+def _(x, y, equal_na=True):
     """Check if two dataframes equal, grouping structures are ignored.
 
     Args:
         x: The first dataframe
         y: The second dataframe
+        equal_na: To be compatible with non-dataframe version. Takes no effect
+            for dataframe.
 
     Returns:
         True if they equal else False

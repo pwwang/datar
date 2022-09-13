@@ -10,6 +10,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Mapping,
+    Sequence,
     Set,
     Callable,
     Tuple,
@@ -40,8 +41,8 @@ if TYPE_CHECKING:
     from pipda.context import ContextType
 
 
-def _transform_seriesrowwise_post(__out, x, *args, **kwargs):
-    out = __out.groupby(x.grouper)
+def _transform_seriesrowwise_post(__out, __x, *args, **kwargs):
+    out = __out.groupby(__x.grouper)
     out.is_rowwise = True
     return out
 
@@ -118,17 +119,19 @@ class DatarFunction(Function, ABC):
         object: {
             "pre": None,
             "post": None,
+            "args_raw": None,
+            "args_frame": None,
             "op_args": (),
             "keep_args": False,
             "op_kwargs": {},
             "keep_series": False,
         },
         SeriesRowwise: {
-            "pre": lambda x, *args, **kwargs: (x.obj, args, kwargs)
+            "pre": lambda __x, *args, **kwargs: (__x.obj, args, kwargs)
         },
         TibbleGrouped: {
-            "pre": lambda x, *args, **kwargs: (
-                x._datar["grouped"],
+            "pre": lambda __x, *args, **kwargs: (
+                __x._datar["grouped"],
                 args,
                 kwargs,
             )
@@ -172,7 +175,10 @@ class DatarFunction(Function, ABC):
         # automatically
         self._register_defaults()
 
-    def _preprocess_boundargs(self, bound: BoundArguments) -> Tibble:
+    def _preprocess_boundargs(
+        self,
+        bound: BoundArguments,
+    ) -> Tuple[Mapping[str, Any], Tibble]:
         """Preprocess the arguments passed in.
 
         Broadcast the arguments from self.data_args to form __args_frame and
@@ -199,6 +205,8 @@ class DatarFunction(Function, ABC):
                     val
                     if bound.signature.parameters[key].kind
                     != inspect.Parameter.VAR_POSITIONAL
+                    else None
+                    if len(val) == 0
                     else Tibble.from_pairs(
                         [str(i) for i in range(len(val))],
                         val
@@ -218,18 +226,19 @@ class DatarFunction(Function, ABC):
                 arg in args_df
                 or args_df.columns.str.startswith(f"{arg}$").any()
             ):
-                # nest frames
                 if (
                     bound.signature.parameters[arg].kind
                     != inspect.Parameter.VAR_POSITIONAL
                 ):
                     bound.arguments[arg] = args_df[arg]
-                else:
+                elif len(bound.arguments[arg]) > 0:
+                    # nest frames
                     bound.arguments[arg] = tuple(
                         args_df[arg].to_dict("series").values()
                     )
+                # else:  # nothing passed to *args
 
-        return args_df
+        return args_raw, args_df
 
     def _default_meta(
         self,
@@ -251,7 +260,7 @@ class DatarFunction(Function, ABC):
 
     def register_dispatchee(
         self,
-        cls: Type,
+        cls: Type | Sequence[Type],
         func: Callable = None,
     ) -> DatarFunction:
         """Register functions to deal with everything with the cls
@@ -261,9 +270,13 @@ class DatarFunction(Function, ABC):
             func: The function, include the pre/post processes
         """
         if not func:
-            return lambda fun: self.register(cls, fun)
+            return lambda fun: self.register_dispatchee(cls, fun)
 
-        self.func.register(cls, func)
+        if not isinstance(cls, (tuple, set, list)):
+            cls = (cls, )
+
+        for cl in cls:
+            self.func.register(cl, func)
         return self
 
     def register(
@@ -271,6 +284,8 @@ class DatarFunction(Function, ABC):
         cls: Type,
         pre: str | Callable = "default",
         post: str | Callable = "default",
+        args_raw: str | bool = "default",
+        args_frame: str | bool = "default",
         op_args: Tuple = None,
         keep_args: bool = None,
         op_kwargs: Mapping[str, Any] = None,
@@ -293,9 +308,20 @@ class DatarFunction(Function, ABC):
                 It takes the arguments passed to the function and returns None
                 or (x, args, kwargs) to replace the original
                 If `"default"` use the default one
+                If `"decor"` use the decorated function
             post: The  post function to wrap up results
                 It takes `__out, *args, **kwargs` and returns the output.
                 If `"default"` use the default one
+                If `"decor"` use the decorated function
+            args_raw: Whether pass the raw values as a dict to `__args_raw`
+                True to add it to bound arguments; False to remove it from
+                bound arguments; None to keep it intact; "default" to use
+                the default value
+            args_frame: Whether pass the argument data frame (compiled by
+                self.data_args) to `__args_frame`.
+                True to add it to bound arguments; False to remove it from
+                bound arguments; None to keep it intact; "default" to use
+                the default value
             op_args: The `(axis, raw, result_type)` alike inside
                 `DataFrame.apply(func, axis, raw, result_type, args, **kwargs)`
             keep_args: Whether to keep the `args` as a whole to pass to the
@@ -307,17 +333,68 @@ class DatarFunction(Function, ABC):
             func: The focal function used in agg/transform/apply
                 If func is "default"`, initial registered function is used.
         """
+        if sum([pre == "decor", post == "decor", not func]) > 1:
+            raise ValueError(
+                "Can only decorate either pre, post or func at a time."
+            )
+
         if not func:
             return lambda fun: self.register(
                 cls=cls,
                 pre=pre,
                 post=post,
+                args_raw=args_raw,
+                args_frame=args_frame,
                 op_args=op_args,
                 keep_args=keep_args,
                 op_kwargs=op_kwargs,
                 keep_series=keep_series,
                 func=fun,
             )
+
+        if pre == "decor":
+            return lambda pre_fun: self.register(
+                cls=cls,
+                pre=pre_fun,
+                post=post,
+                args_raw=args_raw,
+                args_frame=args_frame,
+                op_args=op_args,
+                keep_args=keep_args,
+                op_kwargs=op_kwargs,
+                keep_series=keep_series,
+                func=func,
+            )
+
+        if post == "decor":
+            return lambda post_fun: self.register(
+                cls=cls,
+                pre=pre,
+                post=post_fun,
+                args_raw=args_raw,
+                args_frame=args_frame,
+                op_args=op_args,
+                keep_args=keep_args,
+                op_kwargs=op_kwargs,
+                keep_series=keep_series,
+                func=func,
+            )
+
+        if isinstance(cls, (tuple, set, list)):
+            for cl in cls:
+                self.register(
+                    cls=cl,
+                    pre=pre,
+                    post=post,
+                    args_raw=args_raw,
+                    args_frame=args_frame,
+                    op_args=op_args,
+                    keep_args=keep_args,
+                    op_kwargs=op_kwargs,
+                    keep_series=keep_series,
+                    func=func,
+                )
+            return self
 
         if op_args is None:
             op_args = self._default_meta(cls, "op_args")
@@ -335,33 +412,39 @@ class DatarFunction(Function, ABC):
             pre = self._default_meta(cls, "pre")
         if post == "default":
             post = self._default_meta(cls, "post")
+        if args_raw == "default":
+            args_raw = self._default_meta(cls, "args_raw")
+        if args_frame == "default":
+            args_frame = self._default_meta(cls, "args_frame")
 
-        def dispatchee(x, *args, **kwargs):
-            oldx = x
+        def dispatchee(__x, *args, **kwargs):
+            oldx = __x
             if pre:
                 arguments = pre(oldx, *args, **kwargs)
                 if arguments is not None:
-                    x, args, kwargs = arguments
+                    __x, args, kwargs = arguments
 
             out = self.run(
                 func,
                 op_args,
                 keep_args,
                 op_kwargs,
-                x,
-                *args,
-                **kwargs,
+                __x,
+                args,
+                kwargs,
             )
             if post:
                 out = post(out, oldx, *args, **kwargs)
             return out
 
         dispatchee.keep_series = keep_series
+        dispatchee.args_raw = args_raw
+        dispatchee.args_frame = args_frame
         return self.register_dispatchee(cls, func=dispatchee)
 
     def _register_defaults(self):
         """Register the default dispatchers"""
-        for typ in (
+        self.register((
             object,
             Series,
             SeriesGroupBy,
@@ -369,8 +452,7 @@ class DatarFunction(Function, ABC):
             DataFrame,
             TibbleGrouped,
             TibbleRowwise,
-        ):
-            self.register(typ, func="default")
+        ), func="default")
 
     def run(
         self,
@@ -379,12 +461,16 @@ class DatarFunction(Function, ABC):
         keep_args: bool,
         op_kwargs: Mapping[str, Any],
         x: Any,
-        *args: Any,
-        **kwargs: Any,
+        args: Any,
+        kwargs: Any,
     ) -> Any:
         """Run agg/transform/apply"""
+        if isinstance(x, Series) or x is None:
+            return func(x, *args, **kwargs)
+
         op = self.__class__.OPERATOR_FUN
         fun = getattr(x, op)
+
         if keep_args:
             return fun(func, *op_args, args, **kwargs, **op_kwargs)
 
@@ -393,7 +479,7 @@ class DatarFunction(Function, ABC):
     def call_bound(self, bound: BoundArguments) -> Any:
         """Call with the bound and evaluated arguments"""
         orig_x = bound.args[0]
-        self._preprocess_boundargs(bound)
+        raw, frame = self._preprocess_boundargs(bound)
         x, *args = bound.args
         if isinstance(x, SeriesGroupBy) and getattr(x, "is_rowwise", False):
             fun = self.dispatch(SeriesRowwise)
@@ -402,7 +488,18 @@ class DatarFunction(Function, ABC):
         else:
             fun = self.dispatch(type(orig_x))
 
-        return fun(x, *args, **bound.kwargs)
+        kwargs = {}
+        args_raw = getattr(fun, "args_raw", None)
+        args_frame = getattr(fun, "args_frame", None)
+        if args_raw is True:
+            kwargs["__args_raw"] = raw
+        elif args_raw is False and "__args_raw" in bound.arguments:
+            del bound.arguments["__args_raw"]
+        if args_frame is True:
+            kwargs["__args_frame"] = frame
+        elif args_frame is False and "__args_frame" in bound.arguments:
+            del bound.arguments["__args_frame"]
+        return fun(*bound.args, **bound.kwargs, **kwargs)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Call the function"""
@@ -420,7 +517,7 @@ class DatarTransformFunction(DatarFunction):
         object: {"op_args": (0,)},
         SeriesGroupBy: {
             "post": (
-                lambda __out, x, *args, **kwargs: __out.groupby(x.grouper)
+                lambda __out, __x, *args, **kwargs: __out.groupby(__x.grouper)
             ),
             "op_args": (),
         },
@@ -430,13 +527,17 @@ class DatarTransformFunction(DatarFunction):
         },
         TibbleGrouped: {
             "post": (
-                lambda __out, x, *args, **kwargs: reconstruct_tibble(x, __out)
+                lambda __out, __x, *args, **kwargs: (
+                    reconstruct_tibble(__x, __out)
+                )
             ),
             "op_args": (),
         },
         TibbleRowwise: {
             "post": (
-                lambda __out, x, *args, **kwargs: reconstruct_tibble(x, __out)
+                lambda __out, __x, *args, **kwargs: (
+                    reconstruct_tibble(__x, __out)
+                )
             ),
             "op_args": (1,),
         },
@@ -486,6 +587,7 @@ class DatarApplyFunction(DatarFunction):
     DEFAULT_DISPATCHEE_META = {
         object: {"keep_args": True},
         Series: {"op_args": (True,)},  # convert_dtype
+        SeriesGroupBy: {"keep_args": False},
         DataFrame: {"op_args": (0, False, None)},  # axis, raw, result_type
         TibbleGrouped: {"keep_args": False, "op_args": ()},
         TibbleRowwise: {"op_args": (1, False, None)},
@@ -507,18 +609,19 @@ class DatarApplyDfFunction(DatarFunction):
     }
 
     def _register_defaults(self):
-        for typ in (
+        self.register((
             DataFrame,
             TibbleGrouped,
             TibbleRowwise,
-        ):
-            self.register(typ, func="default")
+        ), func="default")
 
     def register(
         self,
-        cls: Type,
+        cls: Type | Sequence[Type],
         pre: str | Callable = "default",
         post: str | Callable = "default",
+        args_raw: str | bool = "default",
+        args_frame: str | bool = "default",
         op_args: Tuple = None,
         keep_args: bool = None,
         op_kwargs: Mapping[str, Any] = None,
@@ -526,17 +629,35 @@ class DatarApplyDfFunction(DatarFunction):
         func: str | Callable = None,
     ) -> DatarFunction:
         """Register the focal function"""
-        if not func:
-            return lambda fun: self.register(
+        if not func or "decor" in (pre, post):
+            return super().register(
                 cls=cls,
                 pre=pre,
                 post=post,
+                args_raw=args_raw,
+                args_frame=args_frame,
                 op_args=op_args,
                 keep_args=keep_args,
                 op_kwargs=op_kwargs,
                 keep_series=keep_series,
-                func=fun,
+                func=func,
             )
+
+        if isinstance(cls, (tuple, set, list)):
+            for cl in cls:
+                self.register(
+                    cls=cl,
+                    pre=pre,
+                    post=post,
+                    args_raw=args_raw,
+                    args_frame=args_frame,
+                    op_args=op_args,
+                    keep_args=keep_args,
+                    op_kwargs=op_kwargs,
+                    keep_series=keep_series,
+                    func=func,
+                )
+            return self
 
         if not issubclass(cls, DataFrame):
             raise TypeError(
@@ -556,8 +677,12 @@ class DatarApplyDfFunction(DatarFunction):
             pre = self._default_meta(cls, "pre")
         if post == "default":
             post = self._default_meta(cls, "post")
+        if args_raw == "default":
+            args_raw = self._default_meta(cls, "args_raw")
+        if args_frame == "default":
+            args_frame = self._default_meta(cls, "args_frame")
 
-        def dispatchee(args_df, bound):
+        def dispatchee(raw, df, bound):
             if pre:
                 arguments = pre(**bound.arguments)
                 if arguments is not None:
@@ -565,10 +690,13 @@ class DatarApplyDfFunction(DatarFunction):
 
             out = self.run(
                 func,
-                args_df,
+                raw,
+                df,
                 bound,
                 op_args,
                 op_kwargs,
+                args_raw,
+                args_frame,
             )
             if post:
                 out = post(out, **bound.arguments)
@@ -579,19 +707,23 @@ class DatarApplyDfFunction(DatarFunction):
     def run(
         self,
         func: str | Callable,
-        args_df: Tibble,
+        raw: Mapping[str, Any],
+        df: Tibble,
         bound: BoundArguments,
         op_args: Mapping[str, Any],
         op_kwargs: Mapping[str, Any],
+        args_raw: bool,
+        args_frame: bool,
     ) -> Any:
         """Run agg/transform/apply"""
-        if not isinstance(args_df, TibbleGrouped):
+        orig_df = df
+        if not isinstance(df, TibbleGrouped):
             # Tibble or DataFrame
             return func(*bound.args, **bound.kwargs)
 
-        if not isinstance(args_df, TibbleRowwise):
+        if not isinstance(df, TibbleRowwise):
             # TibbleGrouped
-            args_df = args_df._datar["grouped"]
+            df = df._datar["grouped"]
             to_dict = _df_to_dict
         else:
             to_dict = _series_to_dict
@@ -600,16 +732,26 @@ class DatarApplyDfFunction(DatarFunction):
             # replace the bound.arguments with columns in subdf
             dic = to_dict(subdf)
             bound.arguments.update(dic)
-            return func(*bound.args, **bound.kwargs)
+            kwargs = {}
+            if args_raw is True:
+                kwargs["__args_raw"] = raw
+            elif args_raw is False and "__args_raw" in bound.arguments:
+                del bound.arguments["__args_raw"]
+            if args_frame is True:
+                kwargs["__args_frame"] = orig_df
+            elif args_frame is False and "__args_frame" in bound.arguments:
+                del bound.arguments["__args_frame"]
 
-        return args_df.apply(to_be_applied, *op_args, **op_kwargs)
+            return func(*bound.args, **kwargs)
+
+        return df.apply(to_be_applied, *op_args, **op_kwargs)
 
     def call_bound(self, bound: BoundArguments) -> Any:
         """Call with the bound and evaluated arguments"""
-        args_df = self._preprocess_boundargs(bound)
+        args_raw, args_df = self._preprocess_boundargs(bound)
         fun = self.dispatch(type(args_df))  # dispatchee
 
-        return fun(args_df, bound)
+        return fun(args_raw, args_df, bound)
 
 
 def func_factory(

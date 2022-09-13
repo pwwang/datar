@@ -192,7 +192,7 @@ def _(
         __ast_fallback="normal",
     )
 
-    return group_by(obj, *new_groups, __ast_Fallback="normal")
+    return group_by(obj, *new_groups, __ast_fallback="normal")
 
 
 @ungroup.register(TibbleRowwise, context=Context.SELECT)

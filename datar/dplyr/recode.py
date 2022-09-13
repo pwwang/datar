@@ -228,7 +228,7 @@ def _check_args(values, default, missing):
         raise ValueError("No replacements provided.")
 
 
-@func_factory("transform", "_x")
+@func_factory(kind="transform")
 def recode(
     _x,
     *args,
@@ -254,7 +254,7 @@ def recode(
         The vector with values replaced
     """
     if is_categorical_dtype(_x):  # Categorical
-        return recode.dispatched.dispatch(SeriesCategorical)(
+        return recode.dispatch(SeriesCategorical)(
             _x,
             *args,
             _default=_default,
@@ -272,7 +272,7 @@ def recode(
     )
 
 
-@recode.register(SeriesCategorical, meta=False)
+@recode.register_dispatchee(SeriesCategorical)
 def _(
     _x,
     *args,
@@ -324,7 +324,7 @@ def _(
     return Series(out[x.codes], index=_x.index, name=_x.name)
 
 
-@func_factory("transform", "_x")
+@func_factory(kind="transform")
 def recode_factor(
     _x,
     *args,
@@ -339,7 +339,7 @@ def recode_factor(
     """
     values = _args_to_recodings(*args, **kwargs)
 
-    recoded = recode.dispatched.dispatch(Series)(
+    recoded = recode.dispatch(Series)(
         _x,
         values,
         _default=_default,

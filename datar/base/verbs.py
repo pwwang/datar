@@ -12,7 +12,7 @@ from ..core.utils import arg_match, ensure_nparray
 # from .seq import unique
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL, ast_fallback="normal")
 def colnames(df, new=None, nested=True):
     """Get or set the column names of a dataframe
 
@@ -66,7 +66,7 @@ def colnames(df, new=None, nested=True):
 names = colnames
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL, ast_fallback="normal")
 def rownames(df, new=None):
     """Get or set the row names of a dataframe
 
@@ -87,7 +87,7 @@ def rownames(df, new=None):
     return df.index.values
 
 
-@register_verb(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL, ast_fallback="normal")
 def dim(x, nested=True):
     """Retrieve the dimension of a dataframe.
 
@@ -104,7 +104,7 @@ def dim(x, nested=True):
     )
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, ast_fallback="normal")
 def nrow(_data) -> int:
     """Get the number of rows in a dataframe
 
@@ -117,7 +117,7 @@ def nrow(_data) -> int:
     return _data.shape[0]
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, ast_fallback="normal")
 def ncol(_data, nested=True):
     """Get the number of columns in a dataframe
 
@@ -203,7 +203,7 @@ def t(_data, copy=False):
     return _data.transpose(copy=copy)
 
 
-@register_verb(object, context=Context.EVAL)
+@register_verb(object, context=Context.EVAL, ast_fallback="normal")
 def setdiff(x, y):
     """Diff of two iterables"""
     x = ensure_nparray(x)
@@ -211,7 +211,7 @@ def setdiff(x, y):
     return np.array([elem for elem in x if elem not in frozenset(y)])
 
 
-@register_verb(object, context=Context.EVAL)
+@register_verb(object, context=Context.EVAL, ast_fallback="normal")
 def intersect(x, y):
     """Intersect of two iterables"""
     # order not kept
@@ -221,7 +221,7 @@ def intersect(x, y):
     return np.array([elem for elem in x if elem in frozenset(y)])
 
 
-@register_verb(object, context=Context.EVAL)
+@register_verb(object, context=Context.EVAL, ast_fallback="normal")
 def union(x, y):
     """Union of two iterables"""
     # order not kept
@@ -245,7 +245,7 @@ def _(x):
     return x.apply(pd.unique).explode().astype(x.obj.dtype)
 
 
-@register_verb(object, context=Context.EVAL)
+@register_verb(object, context=Context.EVAL, ast_fallback="normal")
 def setequal(x, y, equal_na=True):
     """Check set equality for two iterables (order doesn't matter)"""
     return np.array_equal(
@@ -418,8 +418,7 @@ def proportions(x, margin=None):
             x,
             across(
                 x >> everything(),
-                lambda col: col / sum_.__origfunc__(col),
-                __ast_fallback="normal",
+                lambda col: col / sum_.func(col),
             ),
             __ast_fallback="normal",
         )

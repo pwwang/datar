@@ -30,7 +30,7 @@ def seq_along(along_with):
 def seq_len(length_out):
     """Generate sequences with the length"""
     if isinstance(length_out, SeriesGroupBy):
-        return length_out.apply(seq_len.__origfunc__).explode().astype(int)
+        return length_out.apply(seq_len.func).explode().astype(int)
 
     if is_scalar(length_out):
         return np.arange(int(length_out)) + 1
@@ -153,7 +153,7 @@ def rev(x, __args_raw=None):
     return rawx[::-1]
 
 
-@func_factory(kind="agg")
+@func_factory()
 def sample(
     x,
     size=None,
@@ -206,7 +206,7 @@ def sort(
     Returns:
         The sorted array
     """
-    idx = order.__raw__(x, decreasing=decreasing, na_last=na_last).values
+    idx = order.func(x, decreasing=decreasing, na_last=na_last).values
     out = x.iloc[idx]
     out.index = x.index
     return out

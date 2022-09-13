@@ -3,7 +3,7 @@
 See souce https://github.com/tidyverse/dplyr/blob/master/R/context.R
 """
 import numpy as np
-from pipda import register_func, register_verb
+from pipda import register_verb
 
 from ..core.backends.pandas import DataFrame, Series
 

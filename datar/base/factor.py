@@ -74,7 +74,7 @@ def is_ordered(x) -> bool:
 
 @register_func(context=Context.EVAL)
 def factor(x=None, levels=None, exclude=np.nan, ordered=False):
-    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+    """encode a vector as a factor (the terms `category` and `enumerated type`
     are also used for factors).
 
     If argument ordered is TRUE, the factor levels are assumed to be ordered
@@ -90,7 +90,7 @@ def factor(x=None, levels=None, exclude=np.nan, ordered=False):
             as ordered (in the order given).
     """
     if isinstance(x, SeriesGroupBy):
-        out = factor.__origfunc__(
+        out = factor.func(
             x.obj,
             levels=levels,
             exclude=exclude,

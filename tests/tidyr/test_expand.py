@@ -1,7 +1,29 @@
 # tests grabbed from:
 # https://github.com/tidyverse/tidyr/blob/HEAD/tests/testthat/test-expand.R
 import pytest  # noqa
-from datar.all import *
+from datar import f
+from datar.base import (
+    c,
+    nrow,
+    factor,
+    NA,
+    NULL,
+    levels,
+    dim,
+    letters,
+    LETTERS,
+    rep,
+    seq,
+)
+from datar.tibble import tibble, tribble
+from datar.dplyr import pull, group_by, rowwise
+from datar.tidyr import (
+    expand,
+    nesting,
+    crossing,
+    nest,
+    expand_grid,
+)
 from datar.core.backends.pandas.testing import assert_frame_equal
 from ..conftest import assert_iterable_equal
 
@@ -113,7 +135,8 @@ def test_0len_input_gives_0len_output():
 
 def test_expand_crossing_expand_missing_factor_levels_nesting_doesnot():
     tb = tibble(x=c[1:4], f=factor("a", levels=c("a", "b")))
-    assert nrow(expand(tb, f.x, f.f)) == 6
+    expanded = expand(tb, f.x, f.f)
+    assert nrow(expanded) == 6
     assert nrow(crossing(x=tb.x, f=tb.f)) == 6
     assert nrow(nesting(x=tb.x, f=tb.f)) == 3
 

@@ -103,6 +103,7 @@ def diff(x, lag: int = 1, differences: int = 1):
     return x
 
 
+@diff.register(SeriesGroupBy, func="default", post="decor")
 def _diff_sgb_post(out, x, lag=1, differences=1):
     """Post process diff on SeriesGroupBy object"""
     non_na_out = out[out.transform(len) > 0]
@@ -113,9 +114,6 @@ def _diff_sgb_post(out, x, lag=1, differences=1):
         .reset_index(drop=True)
         .groupby(grouping, observed=False, sort=x.sort, dropna=x.dropna)
     )
-
-
-diff.register(SeriesGroupBy, func=None, post=_diff_sgb_post)
 
 
 @register_func(context=Context.EVAL)

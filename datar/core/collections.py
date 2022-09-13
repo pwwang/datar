@@ -426,7 +426,7 @@ def register_subscr_func(
         A registered `SubscrFunction` object, or a decorator
         if `func` is not given
     """
-    if func is None:
+    if func is None:  # pragma: no cover, only used once for base.c
         return lambda fun: register_subscr_func(
             fun,
             context=context,

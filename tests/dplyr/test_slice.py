@@ -35,7 +35,8 @@ from ..conftest import assert_iterable_equal
 
 def test_empty_slice_returns_input():
     df = tibble(x=[1, 2, 3])
-    assert slice(df).equals(df)
+    sf = slice(df)
+    assert sf.equals(df)
 
 
 def test_slice_handles_numeric_input():
@@ -121,20 +122,24 @@ def test_slice_gives_correct_rows():
 
 def test_slice_handles_na():
     df = tibble(x=[1, 2, 3])
-    assert nrow(slice(df, NA)) == 0
-    assert nrow(slice(df, c(1, NA))) == 1
+    out = slice(df, NA)
+    assert nrow(out) == 0
+    out = slice(df, c(1, NA))
+    assert nrow(out) == 1
     out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
     df = tibble(x=[1, 2, 3, 4], g=rep([1, 2], 2)) >> group_by(f.g)
-    assert nrow(slice(df, c(1, NA))) == 2
+    out = slice(df, c(1, NA))
+    assert nrow(out) == 2
     out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
 
 def test_slice_handles_logical_NA():
     df = tibble(x=[1, 2, 3])
-    assert nrow(slice(df, NA)) == 0
+    out = slice(df, NA)
+    assert nrow(out) == 0
 
 
 def test_slice_handles_empty_df():
@@ -154,7 +159,8 @@ def test_slice_works_fine_if_n_gt_nrow():
 def test_slice_strips_grouped_indices():
     res = mtcars >> group_by(f.cyl) >> slice(1) >> mutate(mpgplus=f.mpg + 1)
     assert nrow(res) == 3
-    assert group_rows(res) == [[0], [1], [2]]
+    out = group_rows(res)
+    assert out == [[0], [1], [2]]
 
 
 def test_slice_works_with_0col_dfs():
@@ -165,7 +171,8 @@ def test_slice_works_with_0col_dfs():
 def test_slice_correctly_computes_positive_indices_from_negative_indices():
     x = tibble(y=range(1, 11))
     # negative in dplyr meaning exclusive
-    assert slice(x, ~c[9:30]).equals(tibble(y=range(1, 10)))
+    out = slice(x, ~c[9:30]).equals(tibble(y=range(1, 10)))
+    assert out
 
 
 def test_slice_accepts_star_args():
@@ -203,12 +210,15 @@ def test_slice_handles_df_columns():
     assert out.equals(df.iloc[[0], :])
 
     gdf = group_by(df, f.x)
-    assert slice(gdf, 0).equals(gdf)
+    out = slice(gdf, 0).equals(gdf)
+    assert out
     # TODO: group_by a stacked df is not supported yet
     gdf = group_by(df, f["y$a"], f["y$b"])
-    assert slice(gdf, 0).equals(gdf)
+    out = slice(gdf, 0).equals(gdf)
+    assert out
     gdf = group_by(df, f["z$A"], f["z$B"])
-    assert slice(gdf, 0).equals(gdf)
+    out = slice(gdf, 0).equals(gdf)
+    assert out
 
 
 # # Slice variants ----------------------------------------------------------

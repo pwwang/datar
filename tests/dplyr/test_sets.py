@@ -3,9 +3,39 @@
 
 import pytest
 import numpy
+from datar import f
 from datar.core.backends.pandas.testing import assert_frame_equal
-from datar.all import *
-from datar.core.tibble import TibbleGrouped
+from datar.base import (
+    nrow,
+    union,
+    intersect,
+    setdiff,
+    factor,
+    letters,
+    c,
+    NA,
+    is_factor,
+    levels,
+    seq,
+    is_na,
+    rep,
+    rev,
+    seq_len,
+    rnorm,
+    length,
+    setequal,
+)
+from datar.dplyr import (
+    group_by,
+    group_vars,
+    group_rows,
+    bind_rows,
+    distinct,
+    union_all,
+    filter,
+)
+from datar.tibble import tibble
+from datar.datar import get
 
 from ..conftest import assert_iterable_equal
 

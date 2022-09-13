@@ -214,7 +214,7 @@ def test_tidyselect_funs():
     out = df >> select(where(isupper))
     assert out.columns.tolist() == ["X", "Y"]
 
-    @register_verb
+    @register_verb(DataFrame)
     def islower(_data, series):
         return [series.name.islower(), True]
 

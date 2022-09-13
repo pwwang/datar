@@ -118,7 +118,7 @@ def options(
             continue
         OPTIONS[key] = val
         callback = OPTION_CALLBACKS.get(key)
-        if callable(callback):
+        if callable(callback):  # pragma: no cover, already applied
             callback(val)
 
     return out

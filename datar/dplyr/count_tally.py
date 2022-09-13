@@ -3,7 +3,6 @@
 See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
 from pipda import register_verb
-from pipda.function import FunctionCall
 
 from ..core.backends.pandas import DataFrame
 
@@ -85,7 +84,6 @@ def tally(
 
     See count()
     """
-    tallyn = _tally_n(wt)
 
     name = _check_name(name, group_vars(x, __ast_fallback="normal"))
     # thread-safety?
@@ -96,8 +94,8 @@ def tally(
             **{
                 # name: n(__calling_env=CallingEnvs.PIPING)
                 name: n()
-                if tallyn is None
-                else tallyn
+                if wt is None
+                else sum_(wt, na_rm=True)
             },
         )
 
@@ -105,7 +103,8 @@ def tally(
         out = arrange(
             ungroup(out, __ast_fallback="normal"),
             # desc(f[name], __calling_env=CallingEnvs.PIPING)
-            FunctionCall(desc, (f[name], ), {}),
+            # FunctionCall(desc, (f[name], ), {}),
+            desc(f[name]),
             __ast_fallback="normal",
         )
         out.reset_index(drop=True, inplace=True)
@@ -148,7 +147,6 @@ def add_tally(x, wt=None, sort=False, name="n"):
 
     See count().
     """
-    tallyn = _tally_n(wt)
     name = _check_name(name, x.columns)
 
     out = mutate(
@@ -156,8 +154,8 @@ def add_tally(x, wt=None, sort=False, name="n"):
         **{
             # name: n(__calling_env=CallingEnvs.PIPING)
             name: n()
-            if tallyn is None
-            else tallyn
+            if wt is None
+            else sum_(wt, na_rm=True)
         },
         __ast_fallback="normal",
     )
@@ -166,7 +164,8 @@ def add_tally(x, wt=None, sort=False, name="n"):
         sort_ed = arrange(
             ungroup(out, __ast_fallback="normal"),
             # desc(f[name], __calling_env=CallingEnvs.PIPING)
-            FunctionCall(desc, (f[name], ), {}),
+            # FunctionCall(desc, (f[name], ), {}),
+            desc(f[name]),
             __ast_fallback="normal",
         )
         sort_ed.reset_index(drop=True, inplace=True)
@@ -176,15 +175,6 @@ def add_tally(x, wt=None, sort=False, name="n"):
 
 
 # Helpers -----------------------------------------------------------------
-def _tally_n(wt):
-    """Compuate the weights for counting"""
-    if wt is None:
-        return None  # will be n() later on
-
-    # If it's Expression, will return a Function object
-    # Otherwise, sum of wt
-    return Function(sum_, (wt, ), {"na_rm": True}, dataarg=False)
-
 
 def _check_name(name, invars):
     """Check if count is valid"""

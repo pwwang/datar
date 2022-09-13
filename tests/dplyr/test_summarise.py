@@ -124,8 +124,8 @@ def test_peels_off_a_single_layer_of_grouping():
     )
     gf = df >> group_by(f.x, f.y)
 
-    assert group_vars(summarise(gf)) == ["x"]
-    assert group_vars(summarise(summarise(gf))) == []
+    assert group_vars(gf >> summarise()) == ["x"]
+    assert group_vars(gf >> summarise() >> summarise()) == []
 
 
 def test_correctly_reconstructs_groups():
@@ -135,7 +135,8 @@ def test_correctly_reconstructs_groups():
         >> summarise(x=f.x + 1)
     )
     # Different from dplyr, original df does not reorder.
-    assert group_rows(d) == [[0, 2], [1, 3]]
+    out = group_rows(d)
+    assert out == [[0, 2], [1, 3]]
     # assert group_rows(d) == [[0,1], [2,3]]
 
 

@@ -183,7 +183,9 @@ def test_grouped_filter_handles_indices():
     grows1 = group_rows(res)
     grows2 = group_rows(res2)
     assert grows1 == grows2
-    assert all(group_keys(res) == group_keys(res2))
+    keys1 = group_keys(res)
+    keys2 = group_keys(res2)
+    assert all(keys1 == keys2)
 
 
 def test_filter_false_handles_indices(caplog):
@@ -334,11 +336,13 @@ def test_preserves_grouping():
     gf = tibble(g=[1, 1, 1, 2, 2], x=[1, 2, 3, 4, 5]) >> group_by(f.g)
     out = gf >> filter(is_element(f.x, [3, 4]))
     assert group_vars(out) == ["g"]
-    assert group_rows(out) == [[0], [1]]
+    rows = group_rows(out)
+    assert rows == [[0], [1]]
 
     out = gf >> filter(f.x < 3)
     assert group_vars(out) == ["g"]
-    assert group_rows(out) == [[0, 1]]
+    rows = group_rows(out)
+    assert rows == [[0, 1]]
 
 
 def test_works_with_if_any_if_all():

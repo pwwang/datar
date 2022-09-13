@@ -9,20 +9,21 @@
 # is_integer, is_list, is_logical, is_numeric
 # is_unsorted, (is_qr in base.qr)
 import builtins
+from functools import singledispatch
+from typing import Callable, Tuple, Type
 
 import numpy as np
 from pipda import register_func
 
-from ..core.backends.pandas import Series
+from ..core.backends.pandas import DataFrame, Series
 from ..core.backends.pandas.api.types import (
     is_scalar as is_scalar_pd,
     is_integer_dtype,
     is_float_dtype,
     is_numeric_dtype,
 )
-from ..core.backends.pandas.core.groupby import GroupBy, SeriesGroupBy
+from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
-from ..core.tibble import TibbleGrouped
 from ..core.contexts import Context
 from ..core.factory import func_factory
 
@@ -30,25 +31,40 @@ from .arithmetic import SINGLE_ARG_SIGNATURE
 
 
 def _register_type_testing(
-    name,
-    scalar_types,
-    dtype_checker,
-    doc="",
+    name: str,
+    scalar_types: Tuple[Type, ...],
+    dtype_checker: Callable,
+    doc: str = "",
 ):
     """Register type testing function"""
-
-    @func_factory(kind="agg", name=name, doc=doc)
-    def _testing(x, __args_raw=None):
-        x = __args_raw["x"]  # x as a series, dtype has been compromised
+    @singledispatch
+    def _dispatched(x):
         if is_scalar_pd(x):
             return isinstance(x, scalar_types)
-
-        if hasattr(x, "dtype"):
-            return dtype_checker(x)
-
         return builtins.all(isinstance(elem, scalar_types) for elem in x)
 
-    _testing.register((TibbleGrouped, GroupBy), dtype_checker)
+    @_dispatched.register(Series)
+    @_dispatched.register(np.ndarray)
+    def _(x):
+        return dtype_checker(x)
+
+    @_dispatched.register(SeriesGroupBy)
+    def _(x):
+        return x.agg(dtype_checker)
+
+    @_dispatched.register(DataFrame)
+    def _(x):
+        return False
+
+    @register_func
+    def _testing(x):
+        return _dispatched(x)
+
+    _testing.__name__ = name
+    _testing.__qualname__ = name
+    _testing.__module__ = "datar.base"
+    _testing.__doc__ = doc
+
     return _testing
 
 

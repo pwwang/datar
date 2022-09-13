@@ -29,7 +29,7 @@ def ntile_h(x, n):
 
 def test_ntile_ignores_number_of_nas():
     x = c(1, 2, 3, NA, NA)
-    out = ntile(x, 3)
+    out = ntile(x, n=3)
     assert_iterable_equal(out, [1, 2, 3, NA, NA])
 
     out = ntile_h(x, 3)
@@ -66,7 +66,7 @@ def test_row_number_handles_empty_dfs():
     res = df >> mutate(
         row_number_0=row_number(),
         # row_number_a=row_number(f.a), # row_number doesn't support extra arg
-        ntile=ntile(f.a, 2),
+        ntile=ntile(f.a, n=2),
         min_rank=min_rank(f.a),
         percent_rank=percent_rank(f.a),
         dense_rank=dense_rank(f.a),
@@ -131,7 +131,7 @@ def test_plain_arrays():
     assert_iterable_equal(out, [1, 2, 3])
     out = ntile(1, n=1)
     assert_iterable_equal(out, [1])
-    out = ntile((i for i in range(1)), 1)
+    out = ntile((i for i in range(1)), n=1)
     assert_iterable_equal(out, [1])
     out = cume_dist(1)
     assert_iterable_equal(out, [1])
@@ -159,7 +159,7 @@ def test_ntile_with_groups():
     assert out.tolist() == [1, 1, 1, 1, 2, 2, 2, 2]
 
     df = df.groupby("y")
-    out = ntile(df.x, 2)
+    out = ntile(df.x, n=2)
     assert out.tolist() == [1, 1, 2, 2, 1, 1, 2, 2]
 
 
