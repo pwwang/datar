@@ -4,7 +4,7 @@ import numpy
 from pipda import register_func, register_verb, VerbCall
 import pytest
 
-from datar.core.backends.pandas import DataFrame
+from datar.core.backends.pandas import DataFrame, Series
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
 from datar.tibble import tibble, fibble
@@ -410,3 +410,11 @@ def test_verb_as_fun():
     df = tibble(x=[1, 1, 2, 2])
     out = df >> mutate(z=across(f.x, duplicated))
     assert_iterable_equal(out['z'].x, [False, True, False, True])
+
+    # verb not using dataframe
+    @register_verb(Series)
+    def add(x):
+        return x + 1
+
+    out = df >> mutate(z=across(f.x, add))
+    assert_iterable_equal(out['z'].x, [2, 2, 3, 3])

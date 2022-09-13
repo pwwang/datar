@@ -11,7 +11,7 @@ from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
 from ..core.factory import func_factory
-from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise, SeriesRowwise
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.utils import ensure_nparray, logger
 from ..core.contexts import Context
 
@@ -64,7 +64,7 @@ sum.register(
     func="sum",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "sum", na_rm, "Use f.x.sum(min_count=...) to control NA produces."
-    ),
+    ) or (x, (), {}),
 )
 
 
@@ -114,12 +114,12 @@ def mean(x: "NDFrame", na_rm=True) -> "NDFrame":
 
 
 mean.register(
-    (TibbleGrouped, SeriesGroupBy, SeriesRowwise, TibbleRowwise),
+    (TibbleGrouped, SeriesGroupBy, TibbleRowwise),
     func="mean",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "mean",
         na_rm,
-    ),
+    ) or (x, (), {}),
 )
 
 
@@ -146,7 +146,7 @@ median.register(
     pre=lambda x, na_rm=True: _warn_na_rm(
         "median",
         na_rm,
-    ),
+    ) or (x, (), {}),
 )
 
 
@@ -173,7 +173,7 @@ min.register(
     func="min",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "min", na_rm, "Use f.x.min(min_count=...) to control NA produces."
-    ),
+    ) or (x, (), {}),
 )
 
 
@@ -200,7 +200,7 @@ max.register(
     func="max",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "max", na_rm, "Use f.x.max(min_count=...) to control NA produces."
-    ),
+    ) or (x, (), {}),
 )
 
 

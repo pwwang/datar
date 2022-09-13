@@ -1,11 +1,11 @@
 ## Register your own verb
 
-Verbs are registered by `verb_factory()` from `datar.core.factory` module. This function is an alias of `pipda.register_verb` from [`pipda`][1] package.
+Verbs are registered by `register_verb()` from [`pipda`][1] package.
 
-The full signature of `verb_factory()` is as follows:
+The full signature of `register_verb()` is as follows:
 
 ```python
-verb_factory(
+register_verb(
     types: Union[function, Type, Iterable[Type]] = <class 'object'>,
     context: Union[pipda.context.Context, pipda.context.ContextBase] = None,
     func: Union[function, NoneType] = None,
@@ -15,17 +15,17 @@ verb_factory(
     """
     Register a verb with specific types of data
 
-    If `func` is not given (works like `verb_factory(types, context=...)`),
+    If `func` is not given (works like `register_verb(types, context=...)`),
     it returns a function, works as a decorator.
 
     For example
-        >>> @verb_factory(DataFrame, context=Context.EVAL)
+        >>> @register_verb(DataFrame, context=Context.EVAL)
         >>> def verb(data, ...):
         >>>     ...
 
     When function is passed as a non-keyword argument, other arguments are as
     defaults
-        >>> @verb_factory
+        >>> @register_verb
         >>> def verb(data, ...):
         >>>     ...
 
@@ -56,7 +56,7 @@ Note that when define a verb, a data argument as the first argument is requried.
 
 These functions, registered by `context_func_factory`, are usually context-dependent, meaning it needs the data to calculate. For example, `row_number()` to get the row numbers of a frame. It does not require any arguments, however, when you register it, a data argument should be declared and it's used in side the function.
 
-You can also register specific types for a contextual function, like a verb. And `context_func_factory` accepts same arguments as `verb_factory` does.
+You can also register specific types for a contextual function, like a verb. And `context_func_factory` accepts same arguments as `register_verb` does.
 
 Those functions are just like verbs, but just don't support piping and they are supposed to be used inside verbs. To limit the function to be used inside a verb, use `verb_arg_only=True` with `context_func_factory`.
 

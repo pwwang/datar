@@ -95,14 +95,15 @@ df = tibble(x=numpy.linspace(0, 2*pi, 500))
 ![example](./example.png)
 
 ```python
-# easy to integrate with other libraries
+# very easy to integrate with other libraries
 # for example: klib
 import klib
-from datar.core.factory import verb_factory
+from pandas import Series
+from pipda import register_verb
 from datar.datasets import iris
 from datar.dplyr import pull
 
-dist_plot = verb_factory(func=klib.dist_plot)
+dist_plot = register_verb(Series, func=klib.dist_plot)
 iris >> pull(f.Sepal_Length) >> dist_plot()
 ```
 
