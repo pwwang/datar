@@ -10,7 +10,7 @@
 
 ### Breaking changes
 
-- Refactor `core.factory.func_factory()`
+- Refactor `core.factory.func_factory()` (#140)
 - Use `base.c[...]` for range short cut, instead of `f[...]`
 - Use `tibble.fibble()` when constructing `Tibble` inside a verb, instead of `tibble.tibble()`
 - Make `n` a keyword-only argument for `base.ntile`
