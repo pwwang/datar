@@ -297,7 +297,6 @@ See [here](../stats) for APIs ported from `r-stats` and [here](../utils) for API
 |[`proportions()`][147], [`prop_table`][147]|Returns conditional proportions given `margins`||
 |[`make_names()`][137]|Make names available as columns and can be accessed by `df.<name>`|[:material-notebook:][163]|
 |[`make_unique()`][138]|Make the names unique, alias of `make_names(names, unique=True)`|[:material-notebook:][163]|
-|[**`data_context()`**][116]|Mimic R's `with`|[:material-notebook:][163]|
 
 
 [1]: ../../api/datar.base.which/#datar.dplyr.which.which

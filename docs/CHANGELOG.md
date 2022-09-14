@@ -1,3 +1,31 @@
+## 0.9.0
+
+### Fixes
+
+- Fix `weighted_mean` not handling group variables with NaN values (#137)
+- Fix `weighted_mean` on `NA` raising error instead of returning `NA` (#139)
+- Fix pandas `.groupby()` used internally not inheriting `sort`, `dropna` and `observed` (#138, #142)
+- Fix `mutate/summarise` not counting references inside function as used for `_keep` `"used"/"unused"`
+- Fix metadata `_datar` of nested `TibbleGrouped` not frozen
+
+### Breaking changes
+
+- Refactor `core.factory.func_factory()`
+- Use `base.c[...]` for range short cut, instead of `f[...]`
+- Use `tibble.fibble()` when constructing `Tibble` inside a verb, instead of `tibble.tibble()`
+- Make `n` a keyword-only argument for `base.ntile`
+
+### Deprecation
+
+- Deprecate `verb_factory`, use `register_verb` from `pipda` instead
+- Deprecate `base.data_context`
+
+### Dependences
+
+- Adopt `pipda` `v0.7.1`
+- Remove `varname` dependency
+- Install `pdtypes` by default
+
 ## 0.8.6
 
 - 🐛 Fix weighted_mean not working for grouped data (#133)
