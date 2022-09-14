@@ -1,6 +1,5 @@
 """Arithmetic or math functions"""
 
-from functools import singledispatch
 import inspect
 from typing import TYPE_CHECKING, Union
 
@@ -907,24 +906,4 @@ def weighted_mean(
             return np.nan
         return np.average(x, weights=w)
 
-    return np.average(df["x"], weights=df["w"])
-
-
-@_weighted_mean.register(TibbleGrouped)
-def _(
-    df: TibbleGrouped,
-    has_w: bool = True,
-    na_rm: bool = True,
-) -> Series:
-    return df._datar["grouped"].apply(
-        lambda subdf: _weighted_mean(subdf, has_w, na_rm)
-    )
-
-
-@func_factory(None, {"x", "w"})
-def weighted_mean(
-    x: Series, w: Series = 1, na_rm=True, __args_raw=None, __args_frame=None,
-) -> Series:
-    """Calculate weighted mean"""
-    has_w = __args_raw["w"] is not None
-    return _weighted_mean(__args_frame, has_w, na_rm)
+    return np.average(x, weights=w)
