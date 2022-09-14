@@ -4,7 +4,7 @@ import pytest
 from datar.all import *
 from datar.core.tibble import TibbleGrouped
 from datar.core.backends.pandas.testing import assert_frame_equal
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 def test_missing_values_in_input_are_missing_in_output():
     df = tibble(x=c(NA, "a b"))
@@ -93,14 +93,14 @@ def test_too_few_pieces_dealt_with_as_requested(caplog):
 def test_preserves_grouping():
     df = tibble(g = 1, x = "a:b") >> group_by(f.g)
     rs = df >> separate(f.x, c("a", "b"))
-    assert group_vars(df) == group_vars(rs)
+    assert_equal(group_vars(df), group_vars(rs))
 
 
 def test_drops_grouping_when_needed():
     df = tibble(x = "a:b") >> group_by(f.x)
     rs = df >> separate(f.x, c("a", "b"))
     assert_iterable_equal(rs.a, ["a"])
-    assert group_vars(rs) == []
+    assert_equal(group_vars(rs), [])
 
 
 def test_overwrites_existing_columns():
@@ -136,16 +136,16 @@ def test_remove_false():
 def test_separate_on_group_vars():
     df = tibble(x=c("a b")) >> group_by(f.x)
     out = separate(df, f.x, c("x", "y"), remove=False)
-    assert group_vars(out) == ['x']
+    assert_equal(group_vars(out), ['x'])
 
     df = tibble(x=c("a b"), y=1) >> group_by(f.x, f.y)
     out = separate(df, f.x, c("x", "y"), remove=False)
-    assert group_vars(out) == ['x', 'y']
+    assert_equal(group_vars(out), ['x', 'y'])
 
 # separate_rows --------------------------------
 
 def test_can_handle_collapsed_rows():
-    df = tibble(x=f[1:4], y=c("a", "d,e,f", "g,h"))
+    df = tibble(x=c[1:4], y=c("a", "d,e,f", "g,h"))
     out = separate_rows(df, f.y)
     assert_iterable_equal(out.y, list("adefgh"))
 
@@ -162,13 +162,13 @@ def test_can_handle_empty_dfs():
 def test_preserves_grouping():
     df = tibble(g=1, x="a:b") >> group_by(f.g)
     rs = df >> separate_rows(f.x)
-    assert group_vars(df) == group_vars(rs)
+    assert_equal(group_vars(df), group_vars(rs))
 
 def test_drops_grouping_when_needed():
     df = tibble(x=1, y="a:b") >> group_by(f.x, f.y)
     out = df >> separate_rows(f.y)
     assert_iterable_equal(out.y.obj, c("a", "b"))
-    assert group_vars(out) == ['x']
+    assert_equal(group_vars(out), ['x'])
 
     out = df >> group_by(f.y) >> separate_rows(f.y)
     assert not isinstance(out, TibbleGrouped)

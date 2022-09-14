@@ -65,9 +65,13 @@ def _(x):
 
 @_row_number.register(TibbleGrouped)
 def _(x):
+    grouped = x._datar["grouped"]
     return _row_number(
         Series(np.arange(x.shape[0]), index=x.index).groupby(
-            x._datar["grouped"].grouper
+            grouped.grouper,
+            observed=grouped.observed,
+            sort=grouped.sort,
+            dropna=grouped.dropna,
         )
     )
 
@@ -160,7 +164,12 @@ def _(x, na_last="keep"):
 
 @_percent_rank.register(GroupBy)
 def _(x, na_last="keep"):
-    ranking = _rank(x, na_last, "min", True).groupby(x.grouper)
+    ranking = _rank(x, na_last, "min", True).groupby(
+        x.grouper,
+        observed=x.observed,
+        sort=x.sort,
+        dropna=x.dropna,
+    )
     maxs = ranking.transform("max")
     mins = ranking.transform("min")
     ret = ranking.transform(lambda r: (r - mins) / (maxs - mins))

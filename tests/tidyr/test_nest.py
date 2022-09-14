@@ -5,21 +5,21 @@ from datar.core.backends.pandas.api.types import is_categorical_dtype
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.tibble import TibbleGrouped, TibbleRowwise
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 # nest --------------------------------------------------------------------
 def test_nest_turns_grouped_values_into_one_list_df():
-    df = tibble(x=[1,1,1], y=f[1:4])
+    df = tibble(x=[1,1,1], y=c[1:4])
     out = nest(df, data=f.y)
     assert len(out.x) == 1
     assert len(out.data) == 1
-    assert_frame_equal(out.data.values[0], tibble(y=f[1:4]))
+    assert_frame_equal(out.data.values[0], tibble(y=c[1:4]))
 
 def test_nest_uses_grouping_vars_if_present():
-    df = tibble(x=[1,1,1], y=f[1:4])
+    df = tibble(x=[1,1,1], y=c[1:4])
     out = nest(group_by(df, f.x))
-    assert group_vars(out) == ['x']
-    assert_frame_equal(out.data.obj.values[0], tibble(y=f[1:4]))
+    assert_equal(group_vars(out), ['x'])
+    assert_frame_equal(out.data.obj.values[0], tibble(y=c[1:4]))
 
 def test_nest_provides_grouping_vars_override_grouped_defaults():
     df = tibble(x=1, y=2, z=3) >> group_by(f.x)
@@ -29,36 +29,36 @@ def test_nest_provides_grouping_vars_override_grouped_defaults():
     assert out.data.obj.values[0].columns.tolist() == ['y']
 
 def test_nest_puts_data_into_correct_row():
-    df = tibble(x = f[1:4], y = c("B", "A", "A"))
+    df = tibble(x = c[1:4], y = c("B", "A", "A"))
     out = df >> nest(data = f.x) >> filter(f.y == "B")
     assert len(out.data) == 1
     assert out.data.values[0].x.tolist() == [1]
 
 def test_nest_everyting_returns_a_simple_df():
-    df = tibble(x=f[1:4], y=['B', 'A', 'A'])
+    df = tibble(x=c[1:4], y=['B', 'A', 'A'])
     out = nest(df, data=c(f.x, f.y))
     assert len(out.data) == 1
     assert_frame_equal(out.data.values[0], df)
 
 def test_nest_preserves_order_of_data():
-    df = tibble(x=[1,3,2,3,2], y=f[1:6])
+    df = tibble(x=[1,3,2,3,2], y=c[1:6])
     out = nest(df, data=f.y)
     assert out.x.tolist() == [1,3,2]
 
 def test_nest_can_strip_names():
-    df = tibble(x = c(1, 1, 1), ya = f[1:4], yb = f[4:7])
+    df = tibble(x = c(1, 1, 1), ya = c[1:4], yb = c[4:7])
     out = df >> nest(y = starts_with("y"), _names_sep = "")
     assert out.y.values[0].columns.tolist() == ['a', 'b']
 
 def test_nest_names_sep():
-    df = tibble(x = c(1, 1, 1), y_a = f[1:4], y_b = f[4:7])
+    df = tibble(x = c(1, 1, 1), y_a = c[1:4], y_b = c[4:7])
     out = df >> nest(y = starts_with("y"), _names_sep = "_")
     assert out.y.values[0].columns.tolist() == ['a', 'b']
 
 def test_empty_factor_levels_dont_affect_nest():
     df = tibble(
         x = factor(c("z", "a"), levels=letters),
-        y = f[1:3]
+        y = c[1:3]
     )
     out = nest(df, data=f.y)
     assert out.x.eq(df.x).all()
@@ -67,11 +67,11 @@ def test_nest_works_with_empty_df():
     df = tibble(x=[], y=[])
     out = nest(df, data=f.x)
     assert out.columns.tolist() == ['y', 'data']
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
     out = nest(df, data=c(f.x, f.y))
     assert out.columns.tolist() == ['data']
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
 # test_that("tibble conversion occurs in the `nest.data.frame()` method", {
 #   df <- data.frame(x = 1, y = 1:2)
@@ -105,12 +105,12 @@ def test_nest_no_columns_error():
 # unnest ------------------------------------------------------------------
 
 def test_unnest_keep_empty_rows():
-    df = tibble(x=f[1:4], y = [NULL, tibble(), tibble(a=1)])
+    df = tibble(x=c[1:4], y = [NULL, tibble(), tibble(a=1)])
     out1 = df >> unnest(f.y)
-    assert nrow(out1) == 1
+    assert_equal(nrow(out1), 1)
 
     out2 = df >> unnest(f.y, keep_empty=True)
-    assert nrow(out2) == 3
+    assert_equal(nrow(out2), 3)
     assert_iterable_equal(out2.a, [NA, NA, 1])
 
 ## problem with NAs (numpy.nan), which is a float type
@@ -130,7 +130,7 @@ def test_unnest_bad_inputs_error():
     df = tibble(x=1, y=[mean])
     out = unnest(df, f.y)
     ## able to do it
-    assert nrow(out) == 1
+    assert_equal(nrow(out), 1)
     # with pytest.raises(ValueError):
     #   unnest(df, f.y)
 
@@ -146,44 +146,44 @@ def test_unnest_vector_unnest_preserves_names():
     assert out.columns.tolist() == ['x', 'y']
 
 def test_unnest_rows_and_cols_of_nested_dfs_are_expanded():
-    df = tibble(x = f[1:3], y = [tibble(a = 1), tibble(b = f[1:3])])
+    df = tibble(x = c[1:3], y = [tibble(a = 1), tibble(b = c[1:3])])
     out = df >> unnest(f.y)
 
     assert out.columns.tolist() == ['x', 'a', 'b']
-    assert nrow(out) == 3
+    assert_equal(nrow(out), 3)
 
 def test_unnest_nested_lists():
-    df = tibble(x=f[1:3], y=[[["a"]], [["b"]]])
+    df = tibble(x=c[1:3], y=[[["a"]], [["b"]]])
     rs = unnest(df, f.y)
-    assert_frame_equal(rs, tibble(x=f[1:3], y=[["a"], ["b"]]))
+    assert_frame_equal(rs, tibble(x=c[1:3], y=[["a"], ["b"]]))
 
 def test_can_unnest_mixture_of_named_and_unnamed():
     df = tibble(
         x="a",
-        y=[tibble(y=f[1:3])],
+        y=[tibble(y=c[1:3])],
         z=[[1,2]]
     )
     out = unnest(df, c(f.y, f.z))
-    assert_frame_equal(out, tibble(x=["a","a"], y=f[1:3], z=f[1:3]))
+    assert_frame_equal(out, tibble(x=["a","a"], y=c[1:3], z=c[1:3]))
 
 def test_can_unnest_lists():
-    df = tibble(x=f[1:3], y=[seq(1,3), seq(4,9)])
+    df = tibble(x=c[1:3], y=[seq(1,3), seq(4,9)])
     out = unnest(df, f.y)
-    assert_frame_equal(out, tibble(x=rep([1,2], [3,6]), y=f[1:10]))
+    assert_frame_equal(out, tibble(x=rep([1,2], [3,6]), y=c[1:10]))
 
 def test_unnest_can_combine_null_with_vectors_or_dfs():
-    df1 = tibble(x=f[1:3], y=[NULL, tibble(z=1)])
+    df1 = tibble(x=c[1:3], y=[NULL, tibble(z=1)])
     out = unnest(df1, f.y)
     assert out.columns.tolist() == ['x', 'z']
     assert_iterable_equal(out.z, [1])
 
-    df2 = tibble(x=f[1:3], y=[NULL, 1])
+    df2 = tibble(x=c[1:3], y=[NULL, 1])
     out = unnest(df2, f.y)
     assert out.columns.tolist() == ['x', 'y']
     assert_iterable_equal(out.y, [1])
 
 def test_unnest_vectors_become_columns():
-    df = tibble(x=f[1:3], y=[1, [1,2]])
+    df = tibble(x=c[1:3], y=[1, [1,2]])
     out = unnest(df, f.y)
     assert_iterable_equal(out.y, [1,1,2])
 
@@ -192,7 +192,7 @@ def test_unnest_multiple_columns_must_be_same_length():
     with pytest.raises(ValueError, match="Incompatible lengths: 2, 3"):
         unnest(df, c(f.x, f.y))
 
-    df = tibble(x=[[1,2]], y=[tibble(y=f[1:4])])
+    df = tibble(x=[[1,2]], y=[tibble(y=c[1:4])])
     with pytest.raises(ValueError, match="Incompatible lengths: 2, 3"):
         unnest(df, c(f.x, f.y))
 
@@ -209,7 +209,7 @@ def test_unnest_no_cols_error():
 def test_unnest_list_of_empty_dfs():
     df = tibble(x=[1,2], y=[tibble(a=[]), tibble(b=[])])
     out = df >> unnest(f.y)
-    assert dim(out) == (0, 3)
+    assert_equal(dim(out), (0, 3))
     assert out.columns.tolist() == ['x', 'a', 'b']
 
 # other methods -----------------------------------------------------------------
@@ -219,7 +219,7 @@ def test_unnest_rowwise_df_becomes_grouped_df():
     rs = df >> unnest(f.x)
     assert isinstance(rs, TibbleGrouped)
     assert not isinstance(rs, TibbleRowwise)
-    assert group_vars(rs) == ['g']
+    assert_equal(group_vars(rs), ['g'])
 
     # but without grouping vars, it's a tibble
     df = tibble(g=1, x=[[1,2,3]]) >> rowwise()
@@ -231,14 +231,14 @@ def test_unnest_grouping_preserved():
     rs = df >> unnest(f.x)
     assert isinstance(rs, TibbleGrouped)
     assert not isinstance(rs, TibbleRowwise)
-    assert group_vars(rs) == ['g']
+    assert_equal(group_vars(rs), ['g'])
 
 # Empty inputs ------------------------------------------------------------
 
 def test_unnest_empty_data_frame():
     df = tibble(x=[], y=[], _dtypes={'x': int})
     out = unnest(df, f.y)
-    assert dim(out) == (0, 2)
+    assert_equal(dim(out), (0, 2))
 
 
 ## unable to do it due to NAs being float
@@ -255,7 +255,7 @@ def test_unnest_empty_data_frame():
 # })
 
 def test_unnest_keeps_list_cols():
-    df = tibble(x=f[1:3], y=[[3], [4]], z=[5, [6,7]])
+    df = tibble(x=c[1:3], y=[[3], [4]], z=[5, [6,7]])
     out = df >> unnest(f.y)
     assert out.columns.tolist() == ['x', 'y', 'z']
 

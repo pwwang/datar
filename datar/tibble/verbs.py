@@ -3,7 +3,7 @@ from ..core.backends.pandas import DataFrame, Series, RangeIndex
 from ..core.backends.pandas.api.types import is_scalar
 from pipda import Context, register_verb
 
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from ..core.broadcast import broadcast_to
 from ..core.tibble import (
     TibbleGrouped,
@@ -121,7 +121,7 @@ def add_row(
             for col in _data.columns:
                 df[col] = Series(dtype=_data[col].dtype)
 
-    extra_vars = regcall(setdiff, df.columns, _data.columns)
+    extra_vars = setdiff(df.columns, _data.columns, __ast_fallback="normal")
     if extra_vars.size > 0:
         raise ValueError(f"New rows can't add columns: {extra_vars}")
 
@@ -244,14 +244,14 @@ def rownames_to_column(_data, var="rowname"):
 
     from ..dplyr.mutate import mutate
 
-    return regcall(
-        remove_rownames,
-        regcall(
-            mutate,
+    return remove_rownames(
+        mutate(
             _data,
             **{var: _data.index},
             _before=1,
+            __ast_fallback="normal",
         ),
+        __ast_fallback="normal",
     )
 
 
@@ -275,14 +275,14 @@ def rowid_to_column(_data, var="rowid"):
 
     from ..dplyr.mutate import mutate
 
-    return regcall(
-        remove_rownames,
-        regcall(
-            mutate,
+    return remove_rownames(
+        mutate(
             _data,
             **{var: range(_data.shape[0])},
             _before=1,
+            __ast_fallback="normal",
         ),
+        __ast_fallback="normal",
     )
 
 
@@ -299,7 +299,7 @@ def column_to_rownames(_data, var="rowname"):
     Returns:
         The data frame with the column converted to rownames
     """
-    if regcall(has_rownames, _data):
+    if has_rownames(_data, __ast_fallback="normal"):
         raise ValueError("`_data` must be a data frame without row names.")
 
     from ..dplyr.mutate import mutate
@@ -308,7 +308,7 @@ def column_to_rownames(_data, var="rowname"):
         rownames = [str(name) for name in _data[var]]
     except KeyError:
         raise KeyError(f"Column `{var}` does not exist.") from None
-    out = regcall(mutate, _data, **{var: None})
+    out = mutate(_data, __ast_fallback="normal", **{var: None})
     out.index = rownames
     return out
 
@@ -343,12 +343,12 @@ def _cbind_at(data, df, pos: int, _name_repair):
 
     part1 = data.iloc[:, :pos]
     part2 = data.iloc[:, pos:]
-    return regcall(
-        bind_cols,
+    return bind_cols(
         part1,
         df,
         part2,
         _name_repair=_name_repair,
+        __ast_fallback="normal",
     )
 
 
@@ -371,4 +371,4 @@ def _rbind_at(data, df, pos):
 
     part1 = data.iloc[:pos, :]
     part2 = data.iloc[pos:, :]
-    return regcall(bind_rows, part1, df, part2)
+    return bind_rows(part1, df, part2, __ast_fallback="normal")

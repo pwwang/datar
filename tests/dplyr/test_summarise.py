@@ -24,7 +24,7 @@ from datar.tibble import tibble
 from datar.testing import assert_tibble_equal
 from pipda import register_func
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_freshly_create_vars():
@@ -70,12 +70,12 @@ def test_works_with_empty_data_frames():
 def test_works_with_grouped_empty_data_frames():
     df = tibble(x=[])
     df1 = df >> group_by(f.x) >> summarise(y=1)
-    assert dim(df1) == (0, 2)
+    assert_equal(dim(df1), (0, 2))
     assert df1.columns.tolist() == ["x", "y"]
 
     df1 = df >> rowwise(f.x) >> summarise(y=1)
-    assert group_vars(df1) == ["x"]
-    assert dim(df1) == (0, 2)
+    assert_equal(group_vars(df1), ["x"])
+    assert_equal(dim(df1), (0, 2))
     assert df1.columns.tolist() == ["x", "y"]
 
 
@@ -84,18 +84,18 @@ def test_no_expressions():
     gf = group_by(df, f.x)
 
     out = summarise(df)
-    assert dim(out) == (1, 0)
+    assert_equal(dim(out), (1, 0))
 
     out = summarise(gf)
-    assert group_vars(out) == []
+    assert_equal(group_vars(out), [])
     exp = tibble(x=[1, 2])
     assert_tibble_equal(out, exp)
 
     out = summarise(df, tibble())
-    assert dim(out) == (1, 0)
+    assert_equal(dim(out), (1, 0))
 
     out = summarise(gf, tibble())
-    assert group_vars(out) == []
+    assert_equal(group_vars(out), [])
     exp = tibble(x=[1, 2])
     assert out.equals(exp)
 
@@ -124,8 +124,8 @@ def test_peels_off_a_single_layer_of_grouping():
     )
     gf = df >> group_by(f.x, f.y)
 
-    assert group_vars(summarise(gf)) == ["x"]
-    assert group_vars(summarise(summarise(gf))) == []
+    assert_equal(group_vars(gf >> summarise()), ["x"])
+    assert_equal(group_vars(gf >> summarise() >> summarise()), [])
 
 
 def test_correctly_reconstructs_groups():
@@ -135,7 +135,8 @@ def test_correctly_reconstructs_groups():
         >> summarise(x=f.x + 1)
     )
     # Different from dplyr, original df does not reorder.
-    assert group_rows(d) == [[0, 2], [1, 3]]
+    out = group_rows(d)
+    assert out == [[0, 2], [1, 3]]
     # assert group_rows(d) == [[0,1], [2,3]]
 
 
@@ -168,7 +169,7 @@ def test_list_output_columns():
 def test_unnamed_tibbles_are_unpacked():
     df = tibble(x=[1, 2])
 
-    @register_func(None, context=Context.EVAL)
+    @register_func(context=Context.EVAL)
     def tibble_func(**kwargs):
         return tibble(**kwargs)
 
@@ -178,7 +179,7 @@ def test_unnamed_tibbles_are_unpacked():
 
 
 def test_named_tibbles_are_packed():
-    @register_func(None, context=Context.EVAL)
+    @register_func(context=Context.EVAL)
     def tibble_func(**kwargs):
         return tibble(**kwargs)
 
@@ -204,7 +205,7 @@ def test_groups_arg(caplog):
     assert isinstance(df1, TibbleRowwise)
     assert isinstance(df2, TibbleRowwise)
     assert df1.equals(df2)
-    assert group_vars(df1) == group_vars(df2)
+    assert_equal(group_vars(df1), group_vars(df2))
 
     gf = df >> group_by(f.x, f.y)
     gvars = gf >> summarise() >> group_vars()
@@ -229,7 +230,7 @@ def test_groups_arg(caplog):
 def test_casts_data_frame_results_to_common_type():
     df = tibble(x=[1, 2], g=[1, 2]) >> group_by(f.g)
 
-    @register_func(None, context=Context.EVAL)
+    @register_func(context=Context.EVAL)
     def df_of_g(g):
         return g.apply(
             lambda x: tibble(y=1) if x.tolist() == [1] else tibble(y=1, z=2)

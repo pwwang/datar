@@ -9,7 +9,7 @@ from ..core.backends.pandas.api.types import is_scalar
 
 from ..core.tibble import Tibble, TibbleGrouped
 from ..core.contexts import Context
-from ..core.utils import arg_match, regcall
+from ..core.utils import arg_match
 from ..tibble import as_tibble
 
 
@@ -60,7 +60,7 @@ def pull(_data, var=-1, name=None, to=None):
     if name is not None and is_scalar(name):
         name = [name]
 
-    _data = regcall(as_tibble, _data)
+    _data = as_tibble(_data, __ast_fallback="normal")
     if isinstance(var, int):
         var = _data.columns[var]
         var = var.split("$", 1)[0]
@@ -123,10 +123,10 @@ def pull(_data, var=-1, name=None, to=None):
 )
 def _(_data, var=-1, name=None, to=None):
     """Pull a column from a grouped data frame"""
-    return regcall(
-        pull,
+    return pull(
         Tibble(_data, copy=False),
         var=var,
         name=name,
         to=to,
+        __ast_fallback="normal",
     )

@@ -1,16 +1,18 @@
 """Basic functions"""
-from pipda import evaluate_expr, register_func
+from pipda import register_func
+
 
 from ..core.backends.pandas import Series
+from ..core.backends.pandas.core.base import PandasObject
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.factory import func_factory
 from ..core.contexts import Context
+from ..core.tibble import TibbleGrouped
 from ..core.collections import Collection
-from ..core.utils import regcall
 
 
-@func_factory("apply", "x")
+@func_factory()
 def itemgetter(x, subscr, __args_raw=None):
     """Itemgetter as a function for verb
 
@@ -26,25 +28,29 @@ def itemgetter(x, subscr, __args_raw=None):
         subscr: The subscripts
     """
     # allow f[:2] to work
-    subscr = evaluate_expr(subscr, x, Context.EVAL)
+    # subscr = evaluate_expr(subscr, x, Context.EVAL)
     if isinstance(subscr, Collection):
         subscr.expand(pool=x.size)
 
     if isinstance(subscr, Series):
         subscr = subscr.values
-
     out = x.iloc[subscr]
-    if isinstance(__args_raw["x"], Series):
+    if isinstance(__args_raw["x"], PandasObject):
         return out
     return out.values
 
 
-itemgetter.register(
-    SeriesGroupBy,
-    func=None,
-    post=lambda out, x, subscr, __args_raw=None:
-    out.explode().astype(x.obj.dtype)
-)
+@itemgetter.register(TibbleGrouped, func="default", post="decor")
+def _itemgetter_post(__out, x, subscr, __args_raw=None):
+    rawx = __args_raw["x"]
+    idx = __out.index.get_level_values(0)
+    out = __out.reset_index(drop=True, level=0)
+    return out.groupby(
+        idx,
+        sort=rawx.sort,
+        dropna=rawx.dropna,
+        observed=rawx.observed,
+    )
 
 
 class _MethodAccessor:
@@ -63,7 +69,12 @@ class _MethodAccessor:
         )
 
         try:
-            return out.groupby(self.accessor.sgb.grouper)
+            return out.groupby(
+                self.accessor.sgb.grouper,
+                observed=self.accessor.sgb.observed,
+                sort=self.accessor.sgb.sort,
+                dropna=self.accessor.sgb.dropna,
+            )
         except (AttributeError, ValueError, TypeError):  # pragma: no cover
             return out
 
@@ -96,12 +107,17 @@ class _Accessor:
         )
 
         try:
-            return out.groupby(self.sgb.grouper)
+            return out.groupby(
+                self.sgb.grouper,
+                observed=self.sgb.observed,
+                sort=self.sgb.sort,
+                dropna=self.sgb.dropna,
+            )
         except (AttributeError, ValueError, TypeError):  # pragma: no cover
             return out
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def attrgetter(x, attr):
     """Attrgetter as a function for verb
 
@@ -111,33 +127,33 @@ def attrgetter(x, attr):
     return getattr(x, attr)
 
 
-@attrgetter.register(SeriesGroupBy, meta=False)
+@attrgetter.register_dispatchee(SeriesGroupBy)
 def _(x, attr):
     return _Accessor(x, attr)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def pd_str(x):
     """Pandas' str accessor for a Series (x.str)
 
     This is helpful when x is a SeriesGroupBy object
     """
-    return regcall(attrgetter, x, "str")
+    return attrgetter(x, "str")
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def pd_cat(x):
     """Pandas' cat accessor for a Series (x.cat)
 
     This is helpful when x is a SeriesGroupBy object
     """
-    return regcall(attrgetter, x, "cat")
+    return attrgetter(x, "cat")
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def pd_dt(x):
     """Pandas' dt accessor for a Series (x.dt)
 
     This is helpful when x is a SeriesGroupBy object
     """
-    return regcall(attrgetter, x, "dt")
+    return attrgetter(x, "dt")

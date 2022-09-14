@@ -5,7 +5,7 @@ import pytest  # noqa
 from datar.all import *
 from datar.datasets import table1
 from datar.core.backends.pandas.testing import assert_frame_equal
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_unite_pastes_columns_togeter_and_removes_old_col():
@@ -26,14 +26,14 @@ def test_unite_preserves_grouping():
     df = tibble(g=1, x="a") >> group_by(f.g)
     rs = df >> unite("x", f.x)
     assert_frame_equal(df, rs)
-    assert group_vars(df) == group_vars(rs)
+    assert_equal(group_vars(df), group_vars(rs))
 
 
 def test_drops_grouping_when_needed():
     df = tibble(g=1, x="a") >> group_by(f.g)
     rs = df >> unite("gx", f.g, f.x)
     assert_iterable_equal(rs.gx, ["1_a"])
-    assert group_vars(rs) == []
+    assert_equal(group_vars(rs), [])
 
 
 def test_empty_var_spec_uses_all_vars():

@@ -3,17 +3,15 @@
 https://github.com/tidyverse/dplyr/blob/master/R/lead-lag.R
 """
 import numpy as np
-from pipda import register_func
+
+from datar.core.factory import func_factory
 
 from ..core.backends.pandas import Series
 from ..core.backends.pandas.api.types import is_scalar
 
-from ..core.contexts import Context
-from ..core.factory import dispatching
 from .order_by import with_order
 
 
-@dispatching(kind="transform", qualname="datar.dplyr.lead/lag")
 def _shift(x, n, default=None, order_by=None):
     if not isinstance(n, int):
         raise ValueError("`lead-lag` expect an integer for `n`.")
@@ -24,20 +22,16 @@ def _shift(x, n, default=None, order_by=None):
     if not is_scalar(default):
         default = default[0]
 
-    newx = x
-    if not isinstance(x, Series):
-        newx = Series(x)
-
     if order_by is not None:
         # newx = newx.reset_index(drop=True)
-        out = with_order(order_by, Series.shift, newx, n, fill_value=default)
+        out = with_order(order_by, Series.shift, x, n, fill_value=default)
     else:
-        out = newx.shift(n, fill_value=default)
+        out = x.shift(n, fill_value=default)
 
-    return out if isinstance(x, Series) else out.values
+    return out
 
 
-@register_func(None, context=Context.EVAL)
+@func_factory(kind="transform")
 def lead(x, n=1, default=np.nan, order_by=None):
     """Find next values in a vector
 
@@ -54,7 +48,7 @@ def lead(x, n=1, default=np.nan, order_by=None):
     return _shift(x, n=-n, default=default, order_by=order_by)
 
 
-@register_func(None, context=Context.EVAL)
+@func_factory(kind="transform")
 def lag(x, n=1, default=np.nan, order_by=None):
     """Find previous values in a vector
 

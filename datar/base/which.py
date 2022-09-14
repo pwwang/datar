@@ -7,8 +7,7 @@ from ..core.factory import func_factory
 from .arithmetic import SINGLE_ARG_SIGNATURE
 
 which = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="which",
     qualname="datar.base.which",
     func=np.flatnonzero,
@@ -25,8 +24,7 @@ which = func_factory(
 )
 
 which_min = func_factory(
-    "agg",
-    "x",
+    kind="agg",
     name="which_min",
     qualname="datar.base.which_min",
     func=np.argmin,
@@ -44,8 +42,7 @@ which_min = func_factory(
 )
 
 which_max = func_factory(
-    "agg",
-    "x",
+    kind="agg",
     name="which_max",
     qualname="datar.base.which_max",
     func=np.argmax,

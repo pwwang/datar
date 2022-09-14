@@ -2,13 +2,12 @@
 from typing import List, Sequence, Union
 
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.core.groupby import GroupBy
 
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
-from ..core.utils import dict_get, regcall
+from ..core.utils import dict_get
 
 
 @register_verb(DataFrame)
@@ -25,13 +24,13 @@ def group_data(_data: DataFrame) -> Tibble:
 
         Note that `_rows` are always 0-based.
     """
-    return Tibble({"_rows": regcall(group_rows, _data)})
+    return Tibble({"_rows": group_rows(_data, __ast_fallback="normal")})
 
 
 @group_data.register((TibbleGrouped, GroupBy))
 def _(_data: Union[TibbleGrouped, GroupBy]) -> Tibble:
-    gpdata = regcall(group_keys, _data)
-    gpdata["_rows"] = regcall(group_rows, _data)
+    gpdata = group_keys(_data, __ast_fallback="normal")
+    gpdata["_rows"] = group_rows(_data, __ast_fallback="normal")
     return gpdata
 
 
@@ -79,7 +78,7 @@ def group_rows(_data: DataFrame) -> List[List[int]]:
 @group_rows.register(TibbleGrouped)
 def _(_data: TibbleGrouped) -> List[List[int]]:
     """Get row indices for each group"""
-    return regcall(group_rows, _data._datar["grouped"])
+    return group_rows(_data._datar["grouped"], __ast_fallback="normal")
 
 
 @group_rows.register(GroupBy)
@@ -104,9 +103,7 @@ def group_indices(_data: DataFrame) -> List[int]:
 @group_indices.register(TibbleGrouped)
 def _(_data: TibbleGrouped) -> List[int]:
     ret = {}
-    for row in group_data(
-        _data, __calling_env=CallingEnvs.REGULAR
-    ).itertuples():
+    for row in group_data(_data, __ast_fallback="normal").itertuples():
         for index in row[-1]:
             ret[index] = row.Index
     return [ret[key] for key in sorted(ret)]
@@ -131,7 +128,7 @@ def group_size(_data: DataFrame) -> Sequence[int]:
 
 @group_size.register(TibbleGrouped)
 def _(_data: TibbleGrouped) -> Sequence[int]:
-    return list(map(len, regcall(group_rows, _data)))
+    return list(map(len, group_rows(_data, __ast_fallback="normal")))
 
 
 @register_verb(DataFrame)

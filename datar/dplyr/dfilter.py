@@ -11,7 +11,7 @@ from pipda import register_verb
 from ..core.backends.pandas import DataFrame, Series
 
 from ..core.contexts import Context
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from ..core.tibble import Tibble, TibbleGrouped, reconstruct_tibble
 from ..core.broadcast import broadcast_to
 from ..core.operator import _binop
@@ -61,7 +61,7 @@ def filter(
     if isinstance(condition, Series):
         condition = condition.values
 
-    out = regcall(ungroup, _data)[condition]
+    out = ungroup(_data, __ast_fallback="normal")[condition]
     if isinstance(_data, TibbleGrouped):
         out.reset_index(drop=True, inplace=True)
 

@@ -8,9 +8,7 @@ from .backends.pandas import DataFrame, Index, Series
 from .backends.pandas.api.types import is_scalar
 from .backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
-from .collections import Collection
-from .contexts import Context
-from .utils import apply_dtypes, name_of, regcall
+from .utils import apply_dtypes, name_of
 from .names import repair_names
 
 if TYPE_CHECKING:
@@ -58,6 +56,8 @@ class Tibble(DataFrame):
             _dtypes: The dtypes for post conversion
         """
         from .broadcast import add_to_tibble
+        from .collections import Collection
+        from .contexts import Context
 
         if len(names) != len(data):
             raise ValueError(
@@ -68,7 +68,6 @@ class Tibble(DataFrame):
         out = None
         for name, value in zip(names, data):
             value = evaluate_expr(value, out, Context.EVAL)
-            # value = regcall(ungroup, value)
             if isinstance(value, Collection):
                 value.expand()
 
@@ -137,6 +136,7 @@ class Tibble(DataFrame):
 
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
+
         value = broadcast_to(value, self.index)
 
         # if isinstance(value, GroupBy):
@@ -180,7 +180,12 @@ class Tibble(DataFrame):
             if isinstance(cols, str)
             else list(cols)
         )
-        grouped = self.groupby(Index(range(self.shape[0])), sort=False)
+        grouped = self.groupby(
+            Index(range(self.shape[0])),
+            sort=False,
+            observed=True,
+            dropna=False,
+        )
         return TibbleRowwise(
             self,
             meta={"group_vars": cols, "grouped": grouped},
@@ -212,7 +217,7 @@ class TibbleGrouped(Tibble):
 
     @property
     def _html_footer(self):
-        groups = ', '.join((str(name) for name in self.group_vars))
+        groups = ", ".join((str(name) for name in self.group_vars))
         return (
             f"<p>{self.__class__.__name__}: {groups} "
             f"(n={self._datar['grouped'].grouper.ngroups})"
@@ -220,7 +225,7 @@ class TibbleGrouped(Tibble):
 
     @property
     def _str_footer(self):
-        groups = ', '.join((str(name) for name in self.group_vars))
+        groups = ", ".join((str(name) for name in self.group_vars))
         return (
             f"[{self.__class__.__name__}: {groups} "
             f"(n={self._datar['grouped'].grouper.ngroups})]"
@@ -236,9 +241,7 @@ class TibbleGrouped(Tibble):
         """"""
         if isinstance(grouped, SeriesGroupBy):
             frame = (
-                grouped.obj.to_frame(name)
-                if name
-                else grouped.obj.to_frame()
+                grouped.obj.to_frame(name) if name else grouped.obj.to_frame()
             )
             grouped = frame.groupby(
                 grouped.grouper,
@@ -255,14 +258,24 @@ class TibbleGrouped(Tibble):
 
     def __getitem__(self, key):
         result = super().__getitem__(key)
+        grouped = self._datar["grouped"]
         if isinstance(result, Series):
-            return self._datar["grouped"][key]
+            return grouped[key]
         if isinstance(result, DataFrame):
-            return TibbleGrouped(result, copy=False, meta=self._datar)
+            newmeta = self._datar.copy()
+            newmeta["grouped"] = result.groupby(
+                grouped.grouper,
+                sort=grouped.sort,
+                observed=grouped.observed,
+                dropna=grouped.dropna,
+            )
+            out = TibbleGrouped(result, copy=False, meta=newmeta)
+            return out
         return result  # pragma: no cover
 
     def __setitem__(self, key, value):
         from .broadcast import broadcast_to
+
         grouped = self._datar["grouped"]
         value = broadcast_to(value, self.index, grouped.grouper)
 
@@ -352,7 +365,7 @@ class TibbleGrouped(Tibble):
         if add and "grouped" in self._datar:
             from ..base import union
 
-            cols = list(regcall(union, self.group_vars, cols))
+            cols = list(union(self.group_vars, cols, __ast_fallback="normal"))
 
         return Tibble.group_by(
             Tibble(self, copy=False),
@@ -366,8 +379,7 @@ class TibbleGrouped(Tibble):
     def group_vars(self) -> Sequence[str]:
         # When column names changed, we save the new group vars
         return self._datar.get(
-            "group_vars",
-            self._datar["grouped"].grouper.names
+            "group_vars", self._datar["grouped"].grouper.names
         )
 
 
@@ -410,7 +422,12 @@ class TibbleRowwise(TibbleGrouped):
             out._datar["group_vars"] = self.group_vars
             return out
 
-        new = self.groupby(Index(range(self.shape[0])), sort=False)
+        new = self.groupby(
+            Index(range(self.shape[0])),
+            observed=True,
+            dropna=False,
+            sort=False,
+        )
         if not inplace:
             out = self.__class__.from_groupby(new)
             out._datar["group_vars"] = self.group_vars
@@ -458,13 +475,13 @@ def reconstruct_tibble(orig, out, drop=None, ungrouping_vars=None):
         out = Tibble(out, copy=False)
 
     if isinstance(orig, TibbleRowwise):
-        gvars = regcall(intersect, orig.group_vars, out.columns)
-        gvars = regcall(setdiff, gvars, ungrouping_vars or [])
+        gvars = intersect(orig.group_vars, out.columns, __ast_fallback="normal")
+        gvars = setdiff(gvars, ungrouping_vars or [], __ast_fallback="normal")
         out = out.rowwise(gvars)
 
     elif isinstance(orig, TibbleGrouped):
-        gvars = regcall(intersect, orig.group_vars, out.columns)
-        gvars = regcall(setdiff, gvars, ungrouping_vars or [])
+        gvars = intersect(orig.group_vars, out.columns, __ast_fallback="normal")
+        gvars = setdiff(gvars, ungrouping_vars or [], __ast_fallback="normal")
         if len(gvars) > 0:
             out = out.group_by(
                 gvars,

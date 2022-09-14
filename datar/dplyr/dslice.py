@@ -6,19 +6,17 @@ import builtins
 from typing import TYPE_CHECKING, Any, Iterable, Mapping, Union
 
 import numpy as np
+from pipda import register_verb, Expression
 
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_integer
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
-from pipda import register_verb, Expression
-
-from datar.core.collections import Collection
-
+from ..core.collections import Collection
 from ..core.broadcast import _ungroup
 from ..core.contexts import Context
-from ..core.utils import dict_get, logger, regcall
+from ..core.utils import dict_get, logger
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 
 if TYPE_CHECKING:
@@ -38,13 +36,13 @@ def slice(
     Args:
         _data: The dataframe
         rows: The indexes
-            Ranges can be specified as `f[1:3]`
+            Ranges can be specified as `c[1:3]`
             Note that the negatives mean differently than in dplyr.
             In dplyr, negative numbers meaning exclusive, but here negative
             numbers are negative indexes like how they act in python indexing.
             For exclusive indexes, you need to use inversion. For example:
-            `slice(df, ~f[:3])` excludes first 3 rows. You can also do:
-            `slice(df, ~c(f[:3], 6))` to exclude multiple set of rows.
+            `slice(df, ~c[:3])` excludes first 3 rows. You can also do:
+            `slice(df, ~c(c[:3], 6))` to exclude multiple set of rows.
             To exclude a single row, you can't do this directly: `slice(df, ~1)`
             since `~1` is directly compiled into a number. You can do this
             instead: `slice(df, ~c(1))`
@@ -109,10 +107,10 @@ def slice_head(
         The sliced dataframe
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return regcall(
-        slice,
+    return slice(
         _data,
         builtins.slice(None, n),
+        __ast_fallback="normal",
     )
 
 
@@ -165,10 +163,10 @@ def slice_tail(
         [`slice_head()`](datar.dplyr.slice.slice_head)
     """
     n = _n_from_prop(_data.shape[0], n, prop)
-    return regcall(
-        slice,
+    return slice(
         _data,
         builtins.slice(-n, None),
+        __ast_fallback="normal",
     )
 
 
@@ -201,11 +199,11 @@ def _(
     prop: float = None,
 ) -> TibbleRowwise:
     """Slice on grouped dataframe"""
-    return regcall(
-        slice_head,
+    return slice_head(
         _data,
         n=n,
         prop=prop,
+        __ast_fallback="normal",
     )
 
 

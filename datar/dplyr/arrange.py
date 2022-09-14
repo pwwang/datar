@@ -7,7 +7,6 @@ from pipda import register_verb
 from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
-from ..core.utils import regcall
 from ..core.tibble import TibbleGrouped
 from ..core.exceptions import NameNonUniqueError
 from ..base import union
@@ -47,9 +46,13 @@ def arrange(_data, *args, _by_group=False, **kwargs):
 
     gvars = getattr(_data, "group_vars", [])
 
-    sorting_df = regcall(mutate, _data, *args, **kwargs)
+    sorting_df = mutate(_data, *args, __ast_fallback="normal", **kwargs)
     if _by_group:
-        sorting_cols = regcall(union, gvars, sorting_df._datar["mutated_cols"])
+        sorting_cols = union(
+            gvars,
+            sorting_df._datar["mutated_cols"],
+            __ast_fallback="normal",
+        )
     else:
         sorting_cols = sorting_df._datar["mutated_cols"]
 

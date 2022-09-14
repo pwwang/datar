@@ -6,7 +6,6 @@ import textwrap
 from functools import singledispatch
 
 import numpy as np
-from pipda.utils import CallingEnvs
 
 from .backends import pandas as pd
 from .backends.pandas import DataFrame, Series
@@ -47,11 +46,6 @@ def _(value):
 @name_of.register(DataFrame)
 def _(value):
     return None
-
-
-def regcall(func, *args, **kwargs):
-    """Call function with regular calling env"""
-    return func(*args, **kwargs, __calling_env=CallingEnvs.REGULAR)
 
 
 def ensure_nparray(x, dtype=None):
@@ -128,7 +122,7 @@ def vars_select(
     selected = Collection(*columns, pool=list(all_columns))
     if raise_nonexists and selected.unmatched and selected.unmatched != {None}:
         raise KeyError(f"Columns `{selected.unmatched}` do not exist.")
-    return regcall(unique, selected).astype(int)
+    return unique(selected, __ast_fallback="normal").astype(int)
 
 
 def nargs(fun):

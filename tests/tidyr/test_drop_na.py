@@ -3,6 +3,7 @@
 import pytest
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
+from ..conftest import assert_equal
 
 
 def test_empty_call_drops_every_row():
@@ -30,7 +31,7 @@ def test_groups_are_preserved():
 
     out = drop_na(gdf, f.y)
     assert_frame_equal(out, gexp)
-    assert group_vars(out) == group_vars(gexp)
+    assert_equal(group_vars(out), group_vars(gexp))
 
 def test_empty_call_drops_every_row():
     df = tibble(x=c(1,2,NA), y=c("a", NA, "b"))

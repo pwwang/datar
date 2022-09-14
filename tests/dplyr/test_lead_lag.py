@@ -1,7 +1,8 @@
 # tests grabbed from:
 # https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-lead-lag.R
 import pytest
-from datar.all import *
+from datar.base import c, factor, levels, letters, NA, seq
+from datar.dplyr import lead, lag
 from ..conftest import assert_iterable_equal
 
 
@@ -107,9 +108,9 @@ def test_preserve_orders():
 
 
 def test_check_size_of_default():
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         lead(range(1, 11), default=[])
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         lag(range(1, 11), default=[])
 
 
@@ -127,7 +128,7 @@ def test_errors():
         lag(letters, "1")
     with pytest.raises(ValueError):
         lag(["1", "2", "3"], default=[1, 1])
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         lag(["1", "2", "3"], default=[])
 
 

@@ -9,7 +9,7 @@ from datar.base.funs import (
     outer,
     make_names,
     make_unique,
-    data_context,
+    # data_context,
     expandgrid,
     diff,
     rank,
@@ -99,20 +99,20 @@ def test_expandgrid():
     )
 
 
-def test_data_context():
-    df = DataFrame(dict(a=[1, 2], b=[3, 4]))
-    with data_context(df) as _:
-        out = expandgrid(f.a, f.b)
+# def test_data_context():
+#     df = DataFrame(dict(a=[1, 2], b=[3, 4]))
+#     with data_context(df) as _:
+#         out = expandgrid(f.a, f.b)
 
-    assert_frame_equal(
-        out,
-        DataFrame(
-            {
-                "a": [1, 1, 2, 2],
-                "b": [3, 4, 3, 4],
-            }
-        ),
-    )
+#     assert_frame_equal(
+#         out,
+#         DataFrame(
+#             {
+#                 "a": [1, 1, 2, 2],
+#                 "b": [3, 4, 3, 4],
+#             }
+#         ),
+#     )
 
 
 def test_outer():

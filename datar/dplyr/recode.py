@@ -12,10 +12,10 @@ from ..core.backends.pandas.api.types import (
     is_numeric_dtype,
 )
 
-from datar.core.tibble import SeriesCategorical
-
+from ..core.utils import logger
 from ..core.factory import func_factory
-from ..core.utils import logger, regcall
+from ..core.tibble import SeriesCategorical
+
 from ..base import c, intersect
 from ..base.na import NA_integer_, NA_character_
 
@@ -228,7 +228,7 @@ def _check_args(values, default, missing):
         raise ValueError("No replacements provided.")
 
 
-@func_factory("transform", "_x")
+@func_factory(kind="transform")
 def recode(
     _x,
     *args,
@@ -254,7 +254,7 @@ def recode(
         The vector with values replaced
     """
     if is_categorical_dtype(_x):  # Categorical
-        return recode.dispatched.dispatch(SeriesCategorical)(
+        return recode.dispatch(SeriesCategorical)(
             _x,
             *args,
             _default=_default,
@@ -272,7 +272,7 @@ def recode(
     )
 
 
-@recode.register(SeriesCategorical, meta=False)
+@recode.register_dispatchee(SeriesCategorical)
 def _(
     _x,
     *args,
@@ -324,7 +324,7 @@ def _(
     return Series(out[x.codes], index=_x.index, name=_x.name)
 
 
-@func_factory("transform", "_x")
+@func_factory(kind="transform")
 def recode_factor(
     _x,
     *args,
@@ -339,7 +339,7 @@ def recode_factor(
     """
     values = _args_to_recodings(*args, **kwargs)
 
-    recoded = recode.dispatched.dispatch(Series)(
+    recoded = recode.dispatch(Series)(
         _x,
         values,
         _default=_default,
@@ -361,7 +361,7 @@ def recode_factor(
         if isinstance(recoded, Categorical)
         else pd.unique(recoded[pd.notnull(recoded)])
     )
-    levels = regcall(intersect, all_levels, recoded_levels)
+    levels = intersect(all_levels, recoded_levels, __ast_fallback="normal")
 
     return Series(
         Categorical(recoded, categories=levels, ordered=_ordered),

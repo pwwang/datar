@@ -8,15 +8,10 @@ from pipda import register_verb, evaluate_expr
 from ..core.backends.pandas import DataFrame, Series
 
 from ..core.exceptions import NameNonUniqueError
-from ..core.contexts import Context, ContextEvalRefCounts
+from ..core.contexts import Context
 from ..core.options import get_option
 from ..core.broadcast import add_to_tibble
-from ..core.utils import (
-    arg_match,
-    logger,
-    name_of,
-    regcall,
-)
+from ..core.utils import arg_match, logger, name_of
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 
 from ..base import setdiff
@@ -85,7 +80,7 @@ def summarise(
         _groups, "_groups", ["drop", "drop_last", "keep", "rowwise", None]
     )
 
-    gvars = regcall(group_vars, _data)
+    gvars = group_vars(_data, __ast_fallback="normal")
     out, all_ones = _summarise_build(_data, *args, **kwargs)
     if _groups is None:
         if not isinstance(_data, TibbleRowwise) and all_ones:
@@ -106,6 +101,7 @@ def summarise(
                     list(gvars[:-1]),
                     observed=_data._datar["grouped"].observed,
                     sort=_data._datar["grouped"].sort,
+                    dropna=_data._datar["grouped"].dropna,
                 )
             )
 
@@ -151,7 +147,7 @@ def _summarise_build(
     if isinstance(_data, TibbleRowwise):
         outframe = _data.loc[:, _data.group_vars]
     else:
-        outframe = regcall(group_keys, _data)
+        outframe = group_keys(_data, __ast_fallback="normal")
         if isinstance(_data, TibbleGrouped):
             grouped = _data._datar["grouped"]
             outframe = outframe.group_by(
@@ -161,13 +157,20 @@ def _summarise_build(
                 sort=grouped.sort,
             )
 
+    if isinstance(_data, Tibble):
+        # So we have _data._datar["used_ref"]
+        _data = _data.copy(False)
+    else:
+        _data = Tibble(_data, copy=False)
+
+    _data._datar["used_refs"] = set()
+    outframe._datar["summarise_source"] = _data
     all_ones = True
-    context = ContextEvalRefCounts({"input_data": _data})
     for key, val in chain(enumerate(args), kwargs.items()):
         try:
-            val = evaluate_expr(val, outframe, context)
+            val = evaluate_expr(val, outframe, Context.EVAL)
         except KeyError:
-            val = evaluate_expr(val, _data, context)
+            val = evaluate_expr(val, _data, Context.EVAL)
 
         if val is None:
             continue
@@ -185,14 +188,16 @@ def _summarise_build(
 
         outframe = newframe
 
-    gvars = regcall(group_vars, _data)
+    gvars = group_vars(_data, __ast_fallback="normal")
     tmp_cols = [
         mcol
         for mcol in outframe.columns
         if mcol.startswith("_")
-        and mcol in context.used_refs
+        and mcol not in _data._datar["used_refs"]
         and mcol not in gvars
     ]
-    outframe = regcall(ungroup, outframe)
-    outframe = outframe[regcall(setdiff, outframe.columns, tmp_cols)]
+    outframe = ungroup(outframe, __ast_fallback="normal")
+    outframe = outframe[
+        setdiff(outframe.columns, tmp_cols, __ast_fallback="normal")
+    ]
     return outframe.reset_index(drop=True), all_ones

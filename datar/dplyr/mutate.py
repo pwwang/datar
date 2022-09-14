@@ -9,8 +9,8 @@ from pipda import register_verb, evaluate_expr, ReferenceAttr, ReferenceItem
 
 from ..core.backends.pandas import DataFrame
 
-from ..core.contexts import Context, ContextEvalRefCounts
-from ..core.utils import arg_match, name_of, regcall
+from ..core.contexts import Context
+from ..core.utils import arg_match, name_of
 from ..core.broadcast import add_to_tibble
 from ..core.tibble import reconstruct_tibble
 from ..base import setdiff, union, intersect, c
@@ -75,12 +75,12 @@ def mutate(
         - Data frame attributes are preserved.
     """
     keep = arg_match(_keep, "_keep", ["all", "unused", "used", "none"])
-    gvars = regcall(group_vars, _data)
-    data = regcall(as_tibble, _data.copy())
+    gvars = group_vars(_data, __ast_fallback="normal")
+    data = as_tibble(_data.copy(), __ast_fallback="normal")
+    data._datar["used_refs"] = set()
     all_columns = data.columns
 
     mutated_cols = []
-    context = ContextEvalRefCounts()
     for val in args:
         if (
             isinstance(val, (ReferenceItem, ReferenceAttr))
@@ -91,7 +91,7 @@ def mutate(
             continue
 
         bkup_name = name_of(val)
-        val = evaluate_expr(val, data, context)
+        val = evaluate_expr(val, data, Context.EVAL)
         if val is None:
             continue
 
@@ -104,7 +104,7 @@ def mutate(
             data = add_to_tibble(data, key, val, broadcast_tbl=False)
 
     for key, val in kwargs.items():
-        val = evaluate_expr(val, data, context)
+        val = evaluate_expr(val, data, Context.EVAL)
         if val is None:
             with suppress(KeyError):
                 data.drop(columns=[key], inplace=True)
@@ -116,46 +116,57 @@ def mutate(
                 mutated_cols.append(key)
 
     # names start with "_" are temporary names if they are used
+    used_refs = data._datar["used_refs"]
     tmp_cols = [
         mcol
         for mcol in mutated_cols
         if mcol.startswith("_")
-        and mcol in context.used_refs
+        and mcol in used_refs
         and mcol not in _data.columns
     ]
     # columns can be removed later
     # df >> mutate(Series(1, name="z"), z=None)
-    mutated_cols = regcall(intersect, mutated_cols, data.columns)
-    mutated_cols = regcall(setdiff, mutated_cols, tmp_cols)
+    mutated_cols = intersect(
+        mutated_cols,
+        data.columns,
+        __ast_fallback="normal",
+    )
+    mutated_cols = setdiff(mutated_cols, tmp_cols, __ast_fallback="normal")
     # new cols always at last
     # data.columns.difference() does not keep order
 
-    data = data.loc[:, regcall(setdiff, data.columns, tmp_cols)]
+    data = data.loc[:, setdiff(data.columns, tmp_cols, __ast_fallback="normal")]
 
     if _before is not None or _after is not None:
-        new_cols = regcall(setdiff, mutated_cols, _data.columns)
-        data = regcall(
-            relocate,
+        new_cols = setdiff(mutated_cols, _data.columns, __ast_fallback="normal")
+        data = relocate(
             data,
             *new_cols,
             _before=_before,
             _after=_after,
+            __ast_fallback="normal",
         )
 
     if keep == "all":
         keep = data.columns
     elif keep == "unused":
-        used = list(context.used_refs)
-        unused = regcall(setdiff, all_columns, used)
-        keep = regcall(intersect, data.columns, c(gvars, unused, mutated_cols))
+        unused = setdiff(all_columns, list(used_refs), __ast_fallback="normal")
+        keep = intersect(
+            data.columns,
+            c(gvars, unused, mutated_cols),
+            __ast_fallback="normal",
+        )
     elif keep == "used":
-        used = list(context.used_refs)
-        keep = regcall(intersect, data.columns, c(gvars, used, mutated_cols))
+        keep = intersect(
+            data.columns,
+            c(gvars, used_refs, mutated_cols),
+            __ast_fallback="normal",
+        )
     else:  # keep == 'none':
-        keep = regcall(
-            union,
-            regcall(setdiff, gvars, mutated_cols),
-            regcall(intersect, mutated_cols, data.columns),
+        keep = union(
+            setdiff(gvars, mutated_cols, __ast_fallback="normal"),
+            intersect(mutated_cols, data.columns, __ast_fallback="normal"),
+            __ast_fallback="normal",
         )
 
     data = data[keep]
@@ -183,12 +194,12 @@ def transmute(
     See Also:
         [`mutate()`](datar.dplyr.mutate.mutate).
     """
-    return regcall(
-        mutate,
+    return mutate(
         _data,
         *args,
         _keep="none",
         _before=_before,
         _after=_after,
+        __ast_fallback="normal",
         **kwargs,
     )

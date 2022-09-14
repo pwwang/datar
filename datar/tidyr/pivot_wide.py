@@ -8,7 +8,7 @@ from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select
 from ..core.tibble import reconstruct_tibble
 
 from ..base import NA, identity
@@ -75,7 +75,7 @@ def pivot_wider(
     if id_cols is not None and is_scalar(id_cols):
         id_cols = [id_cols]  # type: ignore
 
-    undata = regcall(ungroup, _data)
+    undata = ungroup(_data, __ast_fallback="normal")
     if id_cols is None:
         all_cols = _data.columns
         names_from = all_cols[vars_select(all_cols, names_from)]

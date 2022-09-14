@@ -3,8 +3,13 @@
 import pytest
 import numpy
 from datar.core.backends.pandas import Series
-from datar.all import *
-from datar.dplyr.recode import NA_integer_, NA_character_
+from datar.base import levels, factor, letters, c, NA, rep, seq
+from datar.dplyr.recode import (
+    NA_integer_,
+    NA_character_,
+    recode,
+    recode_factor,
+)
 from ..conftest import assert_iterable_equal
 
 
@@ -221,7 +226,7 @@ def test_errors():
     with pytest.raises(ValueError):
         recode(factor("a"))
 
-    with pytest.raises(ValueError, match="must be"):
+    with pytest.raises(TypeError, match="must be"):
         recode(letters[:3], a=1, b="c")
 
     with pytest.raises(ValueError):
@@ -236,7 +241,7 @@ def test_errors():
         recode([1, 2, 3], a=1)
 
     # default type mismatch
-    with pytest.raises(ValueError, match="must be str"):
+    with pytest.raises(TypeError, match="must be str"):
         recode(
             [1, 2, 3], "x", _default=numpy.array([1, "a", "b"], dtype=object)
         )

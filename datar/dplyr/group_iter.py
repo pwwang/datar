@@ -5,18 +5,13 @@ https://github.com/tidyverse/dplyr/blob/master/R/group_map.R
 https://github.com/tidyverse/dplyr/blob/master/R/group_trim.R
 """
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, TibbleRowwise, reconstruct_tibble
-from ..core.utils import (
-    logger,
-    nargs,
-    regcall,
-)
+from ..core.utils import logger, nargs
 from ..base import is_factor, droplevels, setdiff, intersect
 from .group_data import group_keys, group_rows, group_vars
 from .group_by import group_by, ungroup
@@ -35,8 +30,10 @@ def group_map(
     **kwargs,
 ):
     """A generator to map function to data in each group"""
-    keys = regcall(group_keys, _data) if nargs(_f) > 1 else None
-    for i, chunk in enumerate(regcall(group_split, _data, _keep=_keep)):
+    keys = group_keys(_data, __ast_fallback="normal") if nargs(_f) > 1 else None
+    for i, chunk in enumerate(
+        group_split(_data, _keep=_keep, __ast_fallback="normal")
+    ):
         if keys is None:
             yield _f(chunk)
         else:
@@ -46,13 +43,13 @@ def group_map(
 def _group_map_list(_data, _f, *args, _keep=False, **kwargs):
     """List version of group_map"""
     return list(
-        regcall(
-            group_map,
+        group_map(
             _data,
             _f,
             *args,
             **kwargs,
             _keep=_keep,
+            __ast_fallback="normal",
         )
     )
 
@@ -70,14 +67,14 @@ def group_modify(_data, _f, *args, _keep=False, **kwargs):
 
 @group_modify.register(TibbleGrouped)
 def _(_data, _f, *args, _keep=False, **kwargs):
-    gvars = regcall(group_vars, _data)
+    gvars = group_vars(_data, __ast_fallback="normal")
     func = (lambda df, keys: _f(df)) if nargs(_f) == 1 else _f
 
     def fun(df, keys):
         res = func(df, keys, *args, **kwargs)
         if not isinstance(res, DataFrame):
             raise ValueError("The result of `_f` should be a data frame.")
-        bad = regcall(intersect, res.columns, gvars)
+        bad = intersect(res.columns, gvars, __ast_fallback="normal")
         if len(bad) > 0:
             raise ValueError(
                 "The returned data frame cannot contain the original grouping "
@@ -92,7 +89,7 @@ def _(_data, _f, *args, _keep=False, **kwargs):
             axis=1,
         )
 
-    chunks = regcall(group_map, _data, fun, _keep=_keep)
+    chunks = group_map(_data, fun, _keep=_keep, __ast_fallback="normal")
     out = pd.concat(chunks, axis=0)
 
     return reconstruct_tibble(_data, out)
@@ -103,13 +100,13 @@ def group_walk(_data, _f, *args, _keep=False, **kwargs):
     """Walk along data in each groups, but don't return anything"""
     # list to trigger generator
     list(
-        regcall(
-            group_map,
+        group_map(
             _data,
             _f,
             *args,
             **kwargs,
             _keep=_keep,
+            __ast_fallback="normal",
         )
     )
 
@@ -123,21 +120,20 @@ def group_trim(_data, _drop=None):
 @group_trim.register(TibbleGrouped)
 def _(_data, _drop=None):
     """Group trim on grouped data"""
-    ungrouped = regcall(ungroup, _data)
+    ungrouped = ungroup(_data, __ast_fallback="normal")
 
-    fgroups = regcall(
-        select,
+    fgroups = select(
         ungrouped,
-        where(is_factor, __calling_env=CallingEnvs.PIPING),
+        where(is_factor),
+        __ast_fallback="normal",
     )
-    dropped = regcall(
-        mutate,
+    dropped = mutate(
         ungrouped,
         across(
             fgroups.columns.tolist(),
             droplevels,
-            __calling_env=CallingEnvs.PIPING,
         ),
+        __ast_fallback="normal",
     )
 
     return reconstruct_tibble(_data, dropped, drop=_drop)
@@ -157,12 +153,12 @@ def with_groups(_data, _groups, _func, *args, **kwargs):
         The new data frame with operations applied.
     """
     if _groups is None:
-        grouped = regcall(ungroup, _data)
+        grouped = ungroup(_data, __ast_fallback="normal")
     else:
         # all_columns = _data.columns
         # _groups = evaluate_expr(_groups, _data, Context.SELECT)
         # _groups = all_columns[vars_select(all_columns, _groups)]
-        grouped = regcall(group_by, _data, _groups)
+        grouped = group_by(_data, _groups, __ast_fallback="normal")
 
     return _func(grouped, *args, **kwargs)
 
@@ -170,7 +166,7 @@ def with_groups(_data, _groups, _func, *args, **kwargs):
 @register_verb(DataFrame, context=Context.EVAL)
 def group_split(_data, *args, _keep=True, **kwargs):
     """Get a list of data in each group"""
-    data = regcall(group_by, _data, *args, **kwargs)
+    data = group_by(_data, *args, **kwargs, __ast_fallback="normal")
     yield from group_split_impl(data, _keep=_keep)
 
 
@@ -204,11 +200,11 @@ def _(_data, *args, _keep=None, **kwargs):
 def _group_split_list(_data, *args, _keep=True, **kwargs):
     """List version of group_split"""
     return list(
-        regcall(
-            group_split,
+        group_split(
             _data,
             *args,
             _keep=_keep,
+            __ast_fallback="normal",
             **kwargs,
         )
     )
@@ -221,13 +217,13 @@ group_split.list = register_verb(DataFrame, context=Context.PENDING)(
 
 def group_split_impl(data, _keep):
     """Implement splitting data frame by groups"""
-    out = regcall(ungroup, data)
-    indices = regcall(group_rows, data)
+    out = ungroup(data, __ast_fallback="normal")
+    indices = group_rows(data, __ast_fallback="normal")
 
     if not _keep:
-        remove = regcall(group_vars, data)
+        remove = group_vars(data, __ast_fallback="normal")
         _keep = out.columns
-        _keep = regcall(setdiff, _keep, remove)
+        _keep = setdiff(_keep, remove, __ast_fallback="normal")
         out = out[_keep]
 
     for rows in indices:

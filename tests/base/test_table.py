@@ -4,7 +4,7 @@ import numpy as np
 from datar.base import (
     table,
     tabulate,
-    data_context,
+    # data_context,
     cut,
     letters,
     sample,
@@ -36,12 +36,12 @@ def test_table():
     assert sum(x.values.flatten()) == 100
 
     # -----------------
-    with data_context(warpbreaks) as _:
-        tab = table(f.wool, f.tension)
+    # with data_context(warpbreaks) as _:
+    #     tab = table(f.wool, f.tension)
 
-    assert tab.columns.tolist() == ["H", "L", "M"]
-    assert tab.index.tolist() == ["A", "B"]
-    assert_iterable_equal(tab.values.flatten(), [9] * 6)
+    # assert tab.columns.tolist() == ["H", "L", "M"]
+    # assert tab.index.tolist() == ["A", "B"]
+    # assert_iterable_equal(tab.values.flatten(), [9] * 6)
 
     tab = table(warpbreaks.loc[:, ["wool", "tension"]])
     assert tab.columns.tolist() == ["H", "L", "M"]
@@ -53,12 +53,12 @@ def test_table():
     assert tab.loc["New England", "Northeast"] == 6
 
     # -----------------
-    with data_context(airquality) as _:
-        qt = quantile(f.Temp)
-        ct = cut(f.Temp, qt)
-        tab = table(ct, f.Month)
+    # with data_context(airquality) as _:
+    #     qt = quantile(f.Temp)
+    #     ct = cut(f.Temp, qt)
+    #     tab = table(ct, f.Month)
 
-    assert tab.iloc[0, 0] == 24
+    # assert tab.iloc[0, 0] == 24
 
     # -----------------
     a = letters[:3]
@@ -104,10 +104,10 @@ def test_table():
     assert tab.shape == (3, 3)
     assert sum(tab.values.flatten()) == 3
 
-    with data_context(airquality) as _:
-        tab = table(f.Ozone, f.Solar_R, exclude=None)
-    assert "<NA>" in tab.columns
-    assert "<NA>" in tab.index
+    # with data_context(airquality) as _:
+    #     tab = table(f.Ozone, f.Solar_R, exclude=None)
+    # assert "<NA>" in tab.columns
+    # assert "<NA>" in tab.index
 
     with pytest.raises(ValueError):
         table([NA_REPR, np.nan], exclude=None)

@@ -30,7 +30,10 @@ def _construct_tibble(data):
     return Tibble(data, copy=False)
 
 
-@register_verb((DataFrame, list, dict, type(None)), context=Context.EVAL)
+@register_verb(
+    (DataFrame, list, dict, type(None)),
+    context=Context.EVAL,
+)
 def bind_rows(
     _data,
     *datas,
@@ -143,7 +146,10 @@ def _(
     return reconstruct_tibble(_data, data)
 
 
-@register_verb((DataFrame, dict, type(None)), context=Context.EVAL)
+@register_verb(
+    (DataFrame, dict, type(None)),
+    context=Context.EVAL,
+)
 def bind_cols(
     _data,
     *datas,

@@ -30,18 +30,19 @@ from datar.dplyr import (
 from datar.core.tibble import TibbleRowwise
 from datar.dplyr.dslice import _n_from_prop
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_empty_slice_returns_input():
     df = tibble(x=[1, 2, 3])
-    assert slice(df).equals(df)
+    sf = slice(df)
+    assert sf.equals(df)
 
 
 def test_slice_handles_numeric_input():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
     res = g >> slice(0)
-    assert nrow(res) == 3
+    assert_equal(nrow(res), 3)
     exp = g >> filter(row_number() == 1)
     assert_frame_equal(res, exp)
 
@@ -62,7 +63,7 @@ def test_slice_silently_ignores_out_of_range_values():
 
 
 def test_slice_works_with_negative_indices():
-    res = slice(mtcars, ~f[:2])
+    res = slice(mtcars, ~c[:2])
     exp = mtcars.tail(-2)
     assert_frame_equal(res, exp)
 
@@ -70,11 +71,11 @@ def test_slice_works_with_negative_indices():
 def test_slice_works_with_grouped_data():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
 
-    res = slice(g, f[:2])
+    res = slice(g, c[:2])
     exp = filter(g, row_number() < 3)
     assert_frame_equal(res, exp)
 
-    res = slice(g, ~f[:2])
+    res = slice(g, ~c[:2])
     exp = filter(g, row_number() >= 3)
     assert_tibble_equal(res, exp)
 
@@ -84,14 +85,14 @@ def test_slice_works_with_grouped_data():
     out = group_keys(slice(g, 2, _preserve=False))
     assert out.x.tolist() == [2]
 
-    gf = tibble(x=f[1:4]) >> group_by(
+    gf = tibble(x=c[1:4]) >> group_by(
         g=Categorical([1, 1, 2], categories=[1, 2, 3]),
         _drop=False,
     )
     with pytest.raises(TypeError):
         gf >> slice("a")
     with pytest.raises(ValueError):
-        gf >> slice(~f[:2], 1)
+        gf >> slice(~c[:2], 1)
 
     out = gf >> slice(0)
     assert out.shape[0] == 2
@@ -112,7 +113,7 @@ def test_slice_gives_correct_rows():
         value=[f"row{i}" for i in range(1, 11)], group=rep([1, 2], each=5)
     ) >> group_by(f.group)
 
-    out = slice(a, f[:3])
+    out = slice(a, c[:3])
     assert out.value.obj.tolist() == [f"row{i}" for i in [1, 2, 3, 6, 7, 8]]
 
     out = slice(a, c(1, 3))
@@ -121,27 +122,31 @@ def test_slice_gives_correct_rows():
 
 def test_slice_handles_na():
     df = tibble(x=[1, 2, 3])
-    assert nrow(slice(df, NA)) == 0
-    assert nrow(slice(df, c(1, NA))) == 1
+    out = slice(df, NA)
+    assert_equal(nrow(out), 0)
+    out = slice(df, c(1, NA))
+    assert_equal(nrow(out), 1)
     out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
     df = tibble(x=[1, 2, 3, 4], g=rep([1, 2], 2)) >> group_by(f.g)
-    assert nrow(slice(df, c(1, NA))) == 2
+    out = slice(df, c(1, NA))
+    assert_equal(nrow(out), 2)
     out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
 
 def test_slice_handles_logical_NA():
     df = tibble(x=[1, 2, 3])
-    assert nrow(slice(df, NA)) == 0
+    out = slice(df, NA)
+    assert_equal(nrow(out), 0)
 
 
 def test_slice_handles_empty_df():
     df = tibble(x=[])
-    res = df >> slice(f[:3])
-    assert nrow(res) == 0
-    assert names(res) == ["x"]
+    res = df >> slice(c[:3])
+    assert_equal(nrow(res), 0)
+    assert_equal(names(res), ["x"])
 
 
 def test_slice_works_fine_if_n_gt_nrow():
@@ -153,8 +158,9 @@ def test_slice_works_fine_if_n_gt_nrow():
 
 def test_slice_strips_grouped_indices():
     res = mtcars >> group_by(f.cyl) >> slice(1) >> mutate(mpgplus=f.mpg + 1)
-    assert nrow(res) == 3
-    assert group_rows(res) == [[0], [1], [2]]
+    assert_equal(nrow(res), 3)
+    out = group_rows(res)
+    assert out == [[0], [1], [2]]
 
 
 def test_slice_works_with_0col_dfs():
@@ -165,7 +171,8 @@ def test_slice_works_with_0col_dfs():
 def test_slice_correctly_computes_positive_indices_from_negative_indices():
     x = tibble(y=range(1, 11))
     # negative in dplyr meaning exclusive
-    assert slice(x, ~f[9:30]).equals(tibble(y=range(1, 10)))
+    out = slice(x, ~c[9:30]).equals(tibble(y=range(1, 10)))
+    assert out
 
 
 def test_slice_accepts_star_args():
@@ -184,8 +191,8 @@ def test_slice_accepts_star_args():
 
 
 def test_slice_does_not_evaluate_the_expression_in_empty_groups():
-    res = mtcars >> group_by(f.cyl) >> filter(f.cyl == 6) >> slice(f[:2])
-    assert nrow(res) == 2
+    res = mtcars >> group_by(f.cyl) >> filter(f.cyl == 6) >> slice(c[:2])
+    assert_equal(nrow(res), 2)
 
     # sample_n is Superseded in favor of slice_sample
     # res = mtcars >> \
@@ -203,12 +210,15 @@ def test_slice_handles_df_columns():
     assert out.equals(df.iloc[[0], :])
 
     gdf = group_by(df, f.x)
-    assert slice(gdf, 0).equals(gdf)
+    out = slice(gdf, 0).equals(gdf)
+    assert out
     # TODO: group_by a stacked df is not supported yet
     gdf = group_by(df, f["y$a"], f["y$b"])
-    assert slice(gdf, 0).equals(gdf)
+    out = slice(gdf, 0).equals(gdf)
+    assert out
     gdf = group_by(df, f["z$A"], f["z$B"])
-    assert slice(gdf, 0).equals(gdf)
+    out = slice(gdf, 0).equals(gdf)
+    assert out
 
 
 # # Slice variants ----------------------------------------------------------
@@ -340,7 +350,7 @@ def test_slice_any_checks_for_constant_n_and_prop():
 def test_slice_sample_dose_not_error_on_0rows():
     df = tibble(dummy=[], weight=[])
     res = slice_sample(df, prop=0.5, weight_by=f.weight)
-    assert nrow(res) == 0
+    assert_equal(nrow(res), 0)
 
 
 # # Errors ------------------------------------------------------------------
@@ -357,7 +367,7 @@ def test_rename_errors_with_invalid_grouped_df():
     with pytest.raises(ValueError):
         mtcars >> slice(c(~c(1), 2))
     with pytest.raises(ValueError):
-        mtcars >> slice(c(f[2:4], ~c(1)))
+        mtcars >> slice(c(c[2:4], ~c(1)))
 
     # n and prop are carefully validated
     # with pytest.raises(ValueError):
@@ -390,7 +400,7 @@ def test_mixed_rows():
     # 0   1   2   3   4
     #            -2  -1
     #             3
-    out = slice(df, c(-f[1:3], 3))
+    out = slice(df, c(-c[1:3], 3))
     assert out.x.tolist() == [4, 3, 3]
 
     # 0   1   2   3   4
@@ -399,14 +409,14 @@ def test_mixed_rows():
     out = slice(df, c(~c(0, 2), ~c(-1)))
     assert out.x.tolist() == [1, 3]
 
-    out = df >> slice(c(~f[3:], ~c(1)))
+    out = df >> slice(c(~c[3:], ~c(1)))
     assert out.x.tolist() == [0, 2]
 
 
 def test_slice_sample_n_defaults_to_1():
     df = tibble(g=rep([1, 2], each=3), x=seq(1, 6))
     out = df >> slice_sample(n=None)
-    assert dim(out) == (1, 2)
+    assert_equal(dim(out), (1, 2))
 
 
 def test_slicex_on_grouped_data():
@@ -417,7 +427,7 @@ def test_slicex_on_grouped_data():
     out = gf >> slice_max(f.x)
     assert out.equals(tibble(g=[1, 2], x=[3, 6]))
     out = gf >> slice_sample()
-    assert dim(out) == (2, 2)
+    assert_equal(dim(out), (2, 2))
 
 
 def test_n_from_prop():
@@ -438,37 +448,37 @@ def test_slice_head_tail_on_grouped_data():
 
 
 def test_slice_family_on_rowwise_df():
-    df = tibble(x=f[1:6]) >> rowwise()
+    df = tibble(x=c[1:6]) >> rowwise()
     out = df >> slice_head(prop=0.1)
     assert out.shape[0] == 0
 
     out = df >> slice([0, 1, 2])
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_head(n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_tail(n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_min(f.x, n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_max(f.x, n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_sample(n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
 
 def test_preserve_prop_not_support(caplog):
-    df = tibble(x=f[:5]) >> group_by(f.x)
+    df = tibble(x=c[:5]) >> group_by(f.x)
     df >> slice(f.x == 2, _preserve=True)
     assert "_preserve" in caplog.text
 
@@ -483,6 +493,6 @@ def test_preserve_prop_not_support(caplog):
 
 
 def test_wrong_indices():
-    df = tibble(x=f[:3])
+    df = tibble(x=c[:3])
     with pytest.raises(TypeError):
         df >> slice("a")

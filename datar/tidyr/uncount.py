@@ -8,7 +8,6 @@ from pipda import register_verb
 
 from ..core.broadcast import broadcast_to
 from ..core.contexts import Context
-from ..core.utils import regcall
 from ..core.tibble import reconstruct_tibble
 
 from ..dplyr import ungroup
@@ -35,7 +34,7 @@ def uncount(
         dataframe with rows repeated.
     """
     grouped = getattr(data, "_datar", {}).get("grouped", None)
-    undata = regcall(ungroup, data).copy()
+    undata = ungroup(data, __ast_fallback="normal").copy()
     weights = broadcast_to(
         weights,
         data.index,

@@ -1,7 +1,6 @@
 """Function from R-base that can be used as verbs"""
 import numpy as np
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import Categorical, DataFrame, Series, Index
@@ -9,11 +8,7 @@ from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
 from ..core.contexts import Context
-from ..core.utils import (
-    arg_match,
-    regcall,
-    ensure_nparray,
-)
+from ..core.utils import arg_match, ensure_nparray
 # from .seq import unique
 
 
@@ -51,7 +46,7 @@ def colnames(df, new=None, nested=True):
 
     # x, y, y -> x, y
     names = Index([col.split("$", 1)[0] for col in df.columns])
-    names = regcall(unique, names)
+    names = unique(names, __ast_fallback="normal")
     if new is None:
         return names if nested else df.columns.values
     mappings = dict(zip(names, new))
@@ -103,7 +98,10 @@ def dim(x, nested=True):
     Returns:
         The shape of the dataframe.
     """
-    return (regcall(nrow, x), regcall(ncol, x, nested))
+    return (
+        nrow(x, __ast_fallback="normal"),
+        ncol(x, nested, __ast_fallback="normal")
+    )
 
 
 @register_verb(DataFrame)
@@ -133,10 +131,10 @@ def ncol(_data, nested=True):
     if not nested:
         return _data.shape[1]
 
-    return len(regcall(colnames, _data, nested=nested))
+    return len(colnames(_data, nested=nested, __ast_fallback=True))
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL)
 def diag(x=1, nrow=None, ncol=None):
     """Extract, construct a diagonal dataframe or replace the diagnal of
     a dataframe.
@@ -205,7 +203,7 @@ def t(_data, copy=False):
     return _data.transpose(copy=copy)
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL)
 def setdiff(x, y):
     """Diff of two iterables"""
     x = ensure_nparray(x)
@@ -213,7 +211,7 @@ def setdiff(x, y):
     return np.array([elem for elem in x if elem not in frozenset(y)])
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL)
 def intersect(x, y):
     """Intersect of two iterables"""
     # order not kept
@@ -223,7 +221,7 @@ def intersect(x, y):
     return np.array([elem for elem in x if elem in frozenset(y)])
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL)
 def union(x, y):
     """Union of two iterables"""
     # order not kept
@@ -232,7 +230,7 @@ def union(x, y):
     return pd.unique(out)
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL)
 def unique(x):
     """Get unique elements from an iterable and keep their order"""
     # order not kept
@@ -247,7 +245,7 @@ def _(x):
     return x.apply(pd.unique).explode().astype(x.obj.dtype)
 
 
-@register_verb(context=Context.EVAL)
+@register_verb(object, context=Context.EVAL)
 def setequal(x, y, equal_na=True):
     """Check set equality for two iterables (order doesn't matter)"""
     return np.array_equal(
@@ -400,26 +398,29 @@ def proportions(x, margin=None):
 
     if margin == 1:
         index = x.index
-        out = regcall(
-            t,
-            regcall(
-                proportions,
-                regcall(rename_with, regcall(t, x), str),
+        out = t(
+            proportions(
+                rename_with(
+                    t(x, __ast_fallback="normal"),
+                    str,
+                    __ast_fallback="normal",
+                ),
                 2,
-            )
+                __ast_fallback="normal",
+            ),
+            __ast_fallback="normal",
         )
         out.index = index
         return out
 
     if margin == 2:
-        return regcall(
-            mutate,
+        return mutate(
             x,
             across(
-                everything(__calling_env=CallingEnvs.PIPING),
-                lambda col: col / sum_.__origfunc__(col),
-                __calling_env=CallingEnvs.PIPING,
+                x >> everything(),
+                lambda col: col / sum_.func(col),
             ),
+            __ast_fallback="normal",
         )
 
     return x.applymap(lambda elem: 1, na_action="ignore")

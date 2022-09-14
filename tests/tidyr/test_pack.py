@@ -4,7 +4,7 @@ import pytest
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 # pack --------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ def test_can_strip_outer_names_from_inner_names():
 def test_grouping_preserved():
     df = tibble(g1=1, g2=2, g3=3)
     out = df >> group_by(f.g1, f.g2) >> pack(g=c(f.g2, f.g3))
-    assert group_vars(out) == ['g1']
+    assert_equal(group_vars(out), ['g1'])
 
 
 # unpack ------------------------------------------------------------------
@@ -37,16 +37,16 @@ def test_grouping_preserved():
 def test_unpack_preserves_grouping():
     df = tibble(g=1, x=tibble(y=1))
     out = df >> group_by(f.g) >> unpack(f.x)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
     assert out.columns.tolist() == ['g', 'y']
 
 def test_unpack_error_on_atomic_columns():
-    df = tibble(x=f[1:2])
+    df = tibble(x=c[1:2])
     with pytest.raises(ValueError, match="must be a data frame column"):
         df >> unpack(f.x)
 
 def test_df_cols_are_directly_unpacked():
-    df = tibble(x=f[1:3], y=tibble(a=f[1:3], b=f[3:1]))
+    df = tibble(x=c[1:3], y=tibble(a=c[1:3], b=c[3:1]))
     out = df >> unpack(f.y)
     assert out.columns.tolist() == ['x', 'a', 'b']
     exp = df >> pull(f.y)
@@ -55,7 +55,7 @@ def test_df_cols_are_directly_unpacked():
 def test_cannot_unpack_0col_dfs():
     # Since we only have fake packed data frame columns,
     # this gives nothing about the column, so it can't be unpacked
-    df = tibble(x=f[1:4], y=tibble(_rows=3))
+    df = tibble(x=c[1:4], y=tibble(_rows=3))
     # `y` doesn't even exist
     with pytest.raises(ValueError):
         df >> unpack(f.y)

@@ -6,9 +6,7 @@ from ..core.backends import pandas as pd
 from ..core.backends.pandas import Categorical, DataFrame
 from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
-from pipda.utils import CallingEnvs
 
-from ..core.utils import regcall
 from ..core.contexts import Context
 
 from ..core.defaults import f
@@ -46,8 +44,8 @@ def fct_count(_f, sort: bool = False, prop=False) -> Categorical:
 
     df = DataFrame(
         {
-            "f": regcall(fct_inorder, regcall(levels, f2)),
-            "n": regcall(tabulate, f2, regcall(nlevels, f2)),
+            "f": fct_inorder(levels(f2), __ast_fallback="normal"),
+            "n": tabulate(f2, nlevels(f2)),
         }
     )
 
@@ -55,16 +53,16 @@ def fct_count(_f, sort: bool = False, prop=False) -> Categorical:
         df.loc[df.shape[0], :] = {"f": NA, "n": n_na}
 
     if sort:
-        df = regcall(
-            arrange,
+        df = arrange(
             df,
-            desc(f.n, __calling_env=CallingEnvs.PIPING),
+            desc(f.n),
+            __ast_fallback="normal",
         )
     if prop:
-        df = regcall(
-            mutate,
+        df = mutate(
             df,
-            p=prop_table(f.n, __calling_env=CallingEnvs.PIPING),
+            p=prop_table(f.n, __ast_fallback="normal"),
+            __ast_fallback="normal",
         )
 
     return df
@@ -88,7 +86,7 @@ def fct_match(_f, lvls: Any) -> Iterable[bool]:
     if is_scalar(lvls):
         lvls = [lvls]
 
-    bad_lvls = regcall(setdiff, lvls, regcall(levels, _f))
+    bad_lvls = setdiff(lvls, levels(_f), __ast_fallback="normal")
     if len(bad_lvls) > 0:
         bad_lvls = np.array(bad_lvls)[~pd.isnull(bad_lvls)]
     if len(bad_lvls) > 0:
@@ -107,6 +105,6 @@ def fct_unique(_f) -> Categorical:
     Returns:
         The factor with the unique values in `_f`
     """
-    lvls = regcall(levels, _f)
-    is_ord = regcall(is_ordered, _f)
+    lvls = levels(_f)
+    is_ord = is_ordered(_f)
     return factor(lvls, lvls, exclude=None, ordered=is_ord)

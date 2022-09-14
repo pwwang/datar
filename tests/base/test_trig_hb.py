@@ -20,6 +20,7 @@ from datar.base.trig_hb import (
     cospi,
 )
 from datar.tibble import tibble
+from datar.core.backends.pandas.core.groupby import SeriesGroupBy
 from ..conftest import assert_iterable_equal
 
 
@@ -50,6 +51,7 @@ def test_atan2():
     assert pytest.approx(atan2(3, 3)) == 0.7853982
 
     df = tibble(a=[1, 1], b=[3, 4])
+    gf = df.group_by('b')
     rf = df.rowwise()
     out = atan2(rf.a, rf.b)
     assert_iterable_equal(out.obj, [0.321751, 0.244979], approx=1e-4)
@@ -58,3 +60,7 @@ def test_atan2():
     out = atan2(df.a, df.b)
     assert_iterable_equal(out, [0.321751, 0.244979], approx=1e-4)
     assert_iterable_equal(out.index, [0, 1])
+
+    out = atan2(gf.a, gf.b)
+    assert isinstance(out, SeriesGroupBy)
+    assert_iterable_equal(out.obj, [0.321751, 0.244979], approx=1e-4)

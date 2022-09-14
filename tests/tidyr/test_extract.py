@@ -3,7 +3,7 @@
 import pytest
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_default_returns_first_alpha_group():
@@ -42,7 +42,7 @@ def test_can_combine_into_multiple_columns():
 def test_groups_are_preserved():
     df = tibble(g=1, x="X1") >> group_by(f.g)
     rs = df >> extract(f.x, ['x', 'y'], '(.)(.)')
-    assert group_vars(rs) == group_vars(df)
+    assert_equal(group_vars(rs), group_vars(df))
 
 def test_informative_error_message_if_wrong_number_of_groups():
     df = tibble(x="a")

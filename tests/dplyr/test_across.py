@@ -1,12 +1,13 @@
 """Grabbed from
 https://github.com/tidyverse/dplyr/blob/master/tests/testthat/test-across.R"""
 import numpy
-from pipda import register_func
+from pipda import register_func, register_verb, VerbCall
 import pytest
 
+from datar.core.backends.pandas import DataFrame, Series
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar import f
-from datar.tibble import tibble
+from datar.tibble import tibble, fibble
 from datar.base import (
     mean,
     sum,
@@ -23,6 +24,7 @@ from datar.base import (
     identity,
     round,
     expandgrid,
+    duplicated,
 )
 from datar.dplyr import (
     mutate,
@@ -42,7 +44,7 @@ from datar.dplyr import (
 from datar.base import runif, sd
 from datar.core.tibble import TibbleRowwise
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_on_one_column():
@@ -163,10 +165,12 @@ def test_original_ordering():
 def test_error_messages():
     with pytest.raises(ValueError, match="Argument `_fns` of across must be"):
         tibble(x=1) >> summarise(res=across(where(is_numeric), 42))
-    with pytest.raises(ValueError, match="must only be used inside verbs"):
-        across()
-    with pytest.raises(ValueError, match="must only be used inside verbs"):
-        c_across()
+
+    a = across()
+    assert isinstance(a, VerbCall)
+
+    a = c_across()
+    assert isinstance(a, VerbCall)
 
 
 def test_used_twice():
@@ -186,7 +190,7 @@ def test_used_separately():
 def test_with_group_id():
     df = tibble(g=[1, 2], a=[1, 2], b=[3, 4]) >> group_by(f.g)
 
-    @register_func(context=None)
+    @register_verb(DataFrame, dep=True, context=None)
     def switcher(data, group_id, across_a, across_b):
         return group_id.apply(
             lambda x: across_a.a.obj[0] if x == 0 else across_b.b.obj[1]
@@ -200,7 +204,7 @@ def test_cache_key():
     df = tibble(g=rep([1, 2], each=2), a=range(1, 5)) >> group_by(f.g)
 
     out = df >> mutate(
-        tibble(
+        fibble(
             x=across(where(is_numeric), mean).a,
             y=across(where(is_numeric), max).a,
         )
@@ -260,7 +264,7 @@ def test_empty_df():
 def test_mutate_cols_inside_func():
     df = tibble(x=2, y=4, z=8)
 
-    @register_func(None, context=None)
+    @register_func(context=None)
     def data_frame(**kwargs):
         return tibble(**kwargs)
 
@@ -273,7 +277,7 @@ def test_mutate_cols_inside_func():
 def test_summarise_cols_inside_func():
     df = tibble(x=2, y=4, z=8)
 
-    @register_func(None, context=None)
+    @register_func(context=None)
     def data_frame(**kwargs):
         return tibble(**kwargs)
 
@@ -382,7 +386,7 @@ def test_nb_fail_c_across():
     )
 
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 4
+    assert_equal(nrow(out), 4)
 
 
 def test_if_any_if_all_no_args():
@@ -400,3 +404,17 @@ def test_if_any_if_all_single_arg():
 
     out = df >> filter(if_all(c(f.x, f.y)))
     assert_frame_equal(out, df.iloc[[0], :])
+
+
+def test_verb_as_fun():
+    df = tibble(x=[1, 1, 2, 2])
+    out = df >> mutate(z=across(f.x, duplicated))
+    assert_iterable_equal(out['z'].x, [False, True, False, True])
+
+    # verb not using dataframe
+    @register_verb(Series)
+    def add(x):
+        return x + 1
+
+    out = df >> mutate(z=across(f.x, add))
+    assert_iterable_equal(out['z'].x, [2, 2, 3, 3])

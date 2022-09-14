@@ -1,18 +1,18 @@
 """Arithmetic or math functions"""
 
-from functools import singledispatch
 import inspect
 from typing import TYPE_CHECKING, Union
 
 import numpy as np
+from pipda import register_verb
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import DataFrame, Series
 from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy, GroupBy
 
-from ..core.factory import func_factory, verb_factory
-from ..core.tibble import Tibble, TibbleGrouped
-from ..core.utils import ensure_nparray, logger, regcall
+from ..core.factory import func_factory
+from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
+from ..core.utils import ensure_nparray, logger
 from ..core.contexts import Context
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ SINGLE_ARG_SIGNATURE = inspect.signature(lambda x: None)
 def _check_all_numeric(x, fun_name):
     from .testing import is_numeric
 
-    if x.apply(lambda x: regcall(is_numeric, x)).all():
+    if x.apply(is_numeric).all():
         return
 
     raise ValueError(f"In {fun_name}(...): input must be all numeric.")
@@ -41,7 +41,7 @@ def _warn_na_rm(funcname, na_rm, extra_info=""):
 
 
 # cor?, range, summary, iqr
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def sum(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Sum of the input.
 
@@ -60,16 +60,15 @@ def sum(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
 
 
 sum.register(
-    (TibbleGrouped, GroupBy),
-    "sum",
+    (TibbleGrouped, SeriesGroupBy),
+    func="sum",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "sum", na_rm, "Use f.x.sum(min_count=...) to control NA produces."
-    )
-    or (x, (), {}),
+    ) or (x, (), {}),
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def prod(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Product of the input.
 
@@ -89,7 +88,7 @@ def prod(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
 
 prod.register(
     (TibbleGrouped, GroupBy),
-    "prod",
+    func="prod",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "prod", na_rm, "Use f.x.prod(min_count=...) to control NA produces."
     )
@@ -97,7 +96,7 @@ prod.register(
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def mean(x: "NDFrame", na_rm=True) -> "NDFrame":
     """Mean of the input.
 
@@ -115,17 +114,16 @@ def mean(x: "NDFrame", na_rm=True) -> "NDFrame":
 
 
 mean.register(
-    (TibbleGrouped, GroupBy),
-    "mean",
+    (TibbleGrouped, SeriesGroupBy, TibbleRowwise),
+    func="mean",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "mean",
         na_rm,
-    )
-    or (x, (), {}),
+    ) or (x, (), {}),
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def median(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Median of the input.
 
@@ -144,16 +142,15 @@ def median(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
 
 median.register(
     (TibbleGrouped, GroupBy),
-    "median",
+    func="median",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "median",
         na_rm,
-    )
-    or (x, (), {}),
+    ) or (x, (), {}),
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def min(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Min of the input.
 
@@ -173,15 +170,14 @@ def min(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
 
 min.register(
     (TibbleGrouped, GroupBy),
-    "min",
+    func="min",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "min", na_rm, "Use f.x.min(min_count=...) to control NA produces."
-    )
-    or (x, (), {}),
+    ) or (x, (), {}),
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def max(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
     """Max of the input.
 
@@ -201,15 +197,14 @@ def max(x: "NDFrame", na_rm: bool = True) -> "NDFrame":
 
 max.register(
     (TibbleGrouped, GroupBy),
-    "max",
+    func="max",
     pre=lambda x, na_rm=True: _warn_na_rm(
         "max", na_rm, "Use f.x.max(min_count=...) to control NA produces."
-    )
-    or (x, (), {}),
+    ) or (x, (), {}),
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def var(x: "NDFrame", na_rm: bool = True, ddof: int = 1) -> "NDFrame":
     """Variance of the input.
 
@@ -229,7 +224,7 @@ def var(x: "NDFrame", na_rm: bool = True, ddof: int = 1) -> "NDFrame":
 
 var.register(
     (TibbleGrouped, GroupBy),
-    "var",
+    func="var",
     pre=lambda x, na_rm=True, ddof=1: _warn_na_rm(
         "var",
         na_rm,
@@ -238,7 +233,7 @@ var.register(
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def pmin(
     *x: Union["NDFrame", GroupBy],
     na_rm: bool = False,
@@ -256,7 +251,7 @@ def pmin(
     return __args_frame.min(axis=1, skipna=na_rm)
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def pmax(
     *x: Union["NDFrame", GroupBy],
     na_rm: bool = False,
@@ -274,8 +269,7 @@ def pmax(
 
 
 round = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Rounding a number
 
     Args:
@@ -291,8 +285,7 @@ round = func_factory(
 
 
 sqrt = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Get the square root of a number/numbers
 
     Args:
@@ -301,15 +294,15 @@ sqrt = func_factory(
     Returns:
         The square root of the input
     """,
-    qualname="datar.base.sqrt",
+    qualname="sqrt",
+    module="datar.base",
     func=np.sqrt,
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 abs = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Get the absolute value of a number/numbers
 
     Args:
@@ -319,14 +312,14 @@ abs = func_factory(
         The absolute values of the input
     """,
     func=np.abs,
-    qualname="datar.base.abs",
+    qualname="abs",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 sign = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Get the signs of the corresponding elements of x
 
     Args:
@@ -336,14 +329,14 @@ sign = func_factory(
         The signs of the corresponding elements of x
     """,
     func=np.sign,
-    qualname="datar.base.sign",
+    qualname="sign",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 trunc = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Get the integers truncated for each element in x
 
     Args:
@@ -354,15 +347,14 @@ trunc = func_factory(
         Note the dtype is still float.
     """,
     func=np.trunc,
-    qualname="datar.base.trunc",
+    qualname="trunc",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 ceiling = func_factory(
-    "transform",
-    "x",
-    name="ceiling",
+    kind="transform",
     doc="""Get the ceiling integer of a number/numbers
 
     Args:
@@ -372,14 +364,15 @@ ceiling = func_factory(
         The ceiling integer of the input
     """,
     func=np.ceil,
-    qualname="datar.base.ceiling",
+    name="ceiling",
+    qualname="ceiling",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 floor = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Get the floor integer of a number/numbers
 
     Args:
@@ -389,12 +382,13 @@ floor = func_factory(
         The floor integer of the input
     """,
     func=np.floor,
-    qualname="datar.base.floor",
+    qualname="floor",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@func_factory("transform", {"x", "digits"})
+@func_factory({"x", "digits"}, "transform")
 def signif(x: Series, digits: Series = 6) -> Series:
     """Rounds the values in its first argument to the specified number of
     significant digits
@@ -412,7 +406,7 @@ def signif(x: Series, digits: Series = 6) -> Series:
     )
 
 
-@func_factory("transform", {"x", "base"})
+@func_factory({"x", "base"}, "transform")
 def log(x: Series, base: Series = np.e) -> Series:
     """Computes logarithms, by default natural logarithm
 
@@ -428,8 +422,7 @@ def log(x: Series, base: Series = np.e) -> Series:
 
 
 exp = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Calculates the power of natural number
 
     Args:
@@ -439,14 +432,14 @@ exp = func_factory(
         Power of natural number of element-wise power of natural number for x
     """,
     func=np.exp,
-    qualname="datar.base.exp",
+    qualname="exp",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 log2 = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Computes logarithms with base 2
 
     Args:
@@ -457,14 +450,14 @@ log2 = func_factory(
         log2 of elements in x
     """,
     func=np.log2,
-    qualname="datar.base.log2",
+    qualname="log2",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 log10 = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Computes logarithms with base 10
 
     Args:
@@ -475,14 +468,14 @@ log10 = func_factory(
         log10 of elements in x
     """,
     func=np.log10,
-    qualname="datar.base.log10",
+    qualname="log10",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
 log1p = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     doc="""Computes log(1+x)
 
     Args:
@@ -493,12 +486,13 @@ log1p = func_factory(
         log(1+x) of elements in x
     """,
     func=np.log1p,
-    qualname="datar.base.log1p",
+    qualname="log1p",
+    module="datar.base",
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@verb_factory(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL)
 def cov(x, y=None, ddof=1) -> Tibble:
     """Compute pairwise covariance of dataframe columns,
     or between two variables
@@ -532,7 +526,7 @@ def _(x, y, ddof=1):
     return df._datar["grouped"].cov(ddof=ddof).droplevel(-1)["cov"].iloc[::2]
 
 
-@verb_factory(DataFrame, context=Context.EVAL)
+@register_verb(DataFrame, context=Context.EVAL)
 def _scale(x, center=True, scale=True):
     """Scaling and Centering of a numeric data frame
 
@@ -607,7 +601,16 @@ def _(x, center=True, scale=True):
 @_scale.register(SeriesGroupBy)
 def _(x, center=True, scale=True):
     """Scaling on series"""
-    return x.transform(_scale.dispatch(Series), center=center, scale=scale)
+    return x.transform(
+        _scale.dispatch(Series),
+        center=center,
+        scale=scale,
+    ).groupby(
+        x.grouper,
+        sort=x.sort,
+        dropna=x.dropna,
+        observed=x.observed,
+    )
 
 
 @_scale.register((list, tuple, np.ndarray))
@@ -623,7 +626,7 @@ def _(
 scale = _scale
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def col_sums(
     x,
     na_rm=False,
@@ -649,7 +652,7 @@ def col_sums(
     return x.sum(skipna=na_rm, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def row_sums(
     x,
     na_rm=False,
@@ -671,7 +674,7 @@ def row_sums(
     return x.sum(axis=1, skipna=na_rm, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def col_means(
     x,
     na_rm=False,
@@ -697,7 +700,7 @@ def col_means(
     return x.mean(skipna=na_rm, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def row_means(
     x,
     na_rm=False,
@@ -719,7 +722,7 @@ def row_means(
     return x.mean(axis=1, skipna=na_rm, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def col_sds(
     x,
     na_rm=False,
@@ -747,7 +750,7 @@ def col_sds(
     return x.std(skipna=na_rm, ddof=ddof, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def row_sds(
     x,
     na_rm=False,
@@ -770,7 +773,7 @@ def row_sds(
     return x.std(axis=1, skipna=na_rm, ddof=ddof, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def col_medians(
     x,
     na_rm=False,
@@ -796,7 +799,7 @@ def col_medians(
     return x.median(skipna=na_rm, numeric_only=True)
 
 
-@verb_factory(DataFrame)
+@register_verb(DataFrame)
 def row_medians(
     x,
     na_rm=False,
@@ -818,7 +821,7 @@ def row_medians(
     return x.median(numeric_only=True, axis=1, skipna=na_rm)
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def quantile(
     x: Series,
     probs=(0.0, 0.25, 0.5, 0.75, 1.0),
@@ -848,7 +851,7 @@ def quantile(
     return x.quantile(q=probs, interpolation=interpolation)
 
 
-@quantile.register(SeriesGroupBy, meta=False)
+@quantile.register_dispatchee(SeriesGroupBy)
 def _(
     x: Series,
     probs=(0.0, 0.25, 0.5, 0.75, 1.0),
@@ -863,7 +866,7 @@ def _(
     return out
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def std(
     x: Series,
     na_rm: bool = True,
@@ -876,7 +879,7 @@ def std(
 
 std.register(
     (TibbleGrouped, GroupBy),
-    "std",
+    func="std",
     pre=lambda x, na_rm=True, ddof=1: _warn_na_rm("sd/std", na_rm)
     or (x, (), {"ddof": ddof}),
 )
@@ -884,42 +887,23 @@ std.register(
 sd = std
 
 
-@singledispatch
-def _weighted_mean(
-    df: DataFrame,
-    has_w: bool = True,
-    na_rm: bool = True,
-) -> np.ndarray:
-    if not has_w:
-        return np.nanmean(df["x"]) if na_rm else np.mean(df["x"])
+@func_factory({"x", "w"})
+def weighted_mean(
+    x: Series, w: Series = 1, na_rm=True, __args_raw=None
+) -> Series:
+    """Calculate weighted mean"""
+    if __args_raw["w"] is None:
+        return np.nanmean(x) if na_rm else np.mean(x)
 
-    if np.nansum(df["w"]) == 0:
+    if np.nansum(w) == 0:
         return np.nan
 
     if na_rm:
-        na_mask = pd.isnull(df["x"])
-        x = df["x"][~na_mask.values]
-        w = df["w"][~na_mask.values]
+        na_mask = pd.isnull(x)
+        x = x[~na_mask.values]
+        w = w[~na_mask.values]
+        if w.size == 0:
+            return np.nan
         return np.average(x, weights=w)
 
-    return np.average(df["x"], weights=df["w"])
-
-
-@_weighted_mean.register(TibbleGrouped)
-def _(
-    df: TibbleGrouped,
-    has_w: bool = True,
-    na_rm: bool = True,
-) -> Series:
-    return df._datar["grouped"].apply(
-        lambda subdf: _weighted_mean(subdf, has_w, na_rm)
-    )
-
-
-@func_factory(None, {"x", "w"})
-def weighted_mean(
-    x: Series, w: Series = 1, na_rm=True, __args_raw=None, __args_frame=None,
-) -> Series:
-    """Calculate weighted mean"""
-    has_w = __args_raw["w"] is not None
-    return _weighted_mean(__args_frame, has_w, na_rm)
+    return np.average(x, weights=w)

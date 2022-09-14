@@ -20,7 +20,12 @@ def _as_type(x, type_, na=None):
         return type_(x)  # type: ignore
 
     if isinstance(x, SeriesGroupBy):
-        out = x.transform(_as_type, type_, na).groupby(x.grouper)
+        out = x.transform(_as_type, type_, na).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
         if getattr(x, "is_rowwise", False):
             out.is_rowwise = True
         return out
@@ -43,7 +48,7 @@ def _as_type(x, type_, na=None):
     return type(x)([_as_type(elem, type_=type_, na=na) for elem in x])
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_double(x):
     """Convert an object or elements of an iterable into double/float
 
@@ -56,7 +61,7 @@ def as_double(x):
     return _as_type(x, np.double)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_float(x, float_dtype=np.float_):
     """Convert an object or elements of an iterable into double/float
 
@@ -69,7 +74,7 @@ def as_float(x, float_dtype=np.float_):
     return _as_type(x, float_dtype)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_integer(
     x,
     integer_dtype=np.int_,
@@ -97,16 +102,23 @@ def as_integer(
         Converted values according to the integer_dtype
     """
     if isinstance(x, SeriesGroupBy) and is_categorical_dtype(x.obj):
-        return x.obj.cat.codes.groupby(x.grouper)
+        return x.obj.cat.codes.groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
+
     if is_categorical_dtype(x):
         return _ensure_categorical(x).codes
+
     return _as_type(x, integer_dtype, na=np.nan if _keep_na else None)
 
 
 as_int = as_integer
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_numeric(x, _keep_na=True):
     """Make elements numeric
 

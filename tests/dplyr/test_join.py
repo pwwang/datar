@@ -20,6 +20,7 @@ from datar.dplyr import (
     group_rows,
     rowwise,
 )
+from ..conftest import assert_equal
 
 
 def test_mutating_joins_preserve_row_and_column_order():
@@ -179,8 +180,10 @@ def test_joins_matches_nas_by_default():
     df1 = tibble(x=c(None, 1))
     df2 = tibble(x=c(None, 2))
 
-    assert nrow(inner_join(df1, df2, by=f.x)) == 1
-    assert nrow(semi_join(df1, df2, by=f.x)) == 1
+    inj = inner_join(df1, df2, by=f.x)
+    assert_equal(nrow(inj), 1)
+    semj = semi_join(df1, df2, by=f.x)
+    assert_equal(nrow(semj), 1)
 
 
 # def test_joins_donot_match_na_when_na_matches_is_never():
@@ -266,14 +269,14 @@ def test_joins_preserve_groups():
     gf2 = tibble(a=rep([1, 2, 3, 4], 2), b=1) >> group_by(f.b)
 
     out = inner_join(gf1, gf2, by="a")
-    assert group_vars(out) == ["a"]
+    assert_equal(group_vars(out), ["a"])
 
     out = semi_join(gf1, gf2, by="a")
-    assert group_vars(out) == ["a"]
+    assert_equal(group_vars(out), ["a"])
 
     # See comment in nest_join
     out = nest_join(gf1, gf2, by="a")
-    assert group_vars(out) == ["a"]
+    assert_equal(group_vars(out), ["a"])
 
 
 def test_group_column_names_reflect_renamed_duplicate_columns():
@@ -282,7 +285,7 @@ def test_group_column_names_reflect_renamed_duplicate_columns():
     df2 = tibble(x=range(1, 6), y=range(1, 6))
 
     out = inner_join(df1, df2, by="x")
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
     # dplyr todo: fix this issue: https://github.com/tidyverse/dplyr/issues/4917
     # expect_equal(group_vars(out), c("x", "y.x"))
 
@@ -293,7 +296,8 @@ def test_rowwise_group_structure_is_updated_after_a_join():
     df2 = tibble(x=c([1, 2], 2))
 
     x = left_join(df1, df2, by="x")
-    assert group_rows(x) == [[0], [1], [2]]
+    rows = group_rows(x)
+    assert rows == [[0], [1], [2]]
 
 
 def test_join_by_dict_not_keep():

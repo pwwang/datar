@@ -4,7 +4,7 @@ from datar.core.backends.pandas import DataFrame
 from datar.core.backends.pandas.api.types import is_float_dtype, is_integer_dtype
 from datar.core.backends.pandas.core.groupby import SeriesGroupBy
 from datar.core.backends.pandas.testing import assert_frame_equal
-from datar import f
+from datar.base import c
 from datar.core.exceptions import NameNonUniqueError
 from datar.core.tibble import Tibble, TibbleRowwise, TibbleGrouped
 from datar.testing import assert_tibble_equal
@@ -32,7 +32,7 @@ def test_tibble_from_pairs():
 
     df = Tibble.from_pairs(
         ["a", "a"],
-        [1, f[:3]],
+        [1, c[:3]],
         _name_repair="universal",
     )
     assert_frame_equal(df, DataFrame({"a__0": [1, 1, 1], "a__1": [0, 1, 2]}))

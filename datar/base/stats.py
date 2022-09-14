@@ -1,20 +1,51 @@
 # r-stats
 from typing import Mapping
-from functools import singledispatch
 
 import numpy as np
 
-from ..core.backends.pandas import DataFrame, Series
+from datar.core.tibble import TibbleGrouped
+
+from ..core.backends.pandas import Series
 from ..core.backends.pandas.api.types import is_scalar
 
-from ..core.tibble import TibbleGrouped, TibbleRowwise
 from ..core.factory import func_factory
 
 
-@singledispatch
-def _rnorm(args_frame, n, mean, sd, raw_n):
-    if is_scalar(raw_n):
-        scalar_n = raw_n
+def _sgb_post(__out, n, __args_raw=None, **kwargs):
+    """Post process SeriesGroupBy object"""
+    n = __args_raw["n"]
+    return __out.groupby(
+        __out.index.get_level_values(0),
+        observed=n.observed,
+        sort=n.sort,
+        dropna=n.dropna,
+    ).agg(list)
+
+
+@func_factory({"n", "mean", "sd"})
+def rnorm(
+    n: Series,
+    mean: Series = 0.0,
+    sd: Series = 1.0,
+    __args_raw: Mapping = None,
+) -> Series:
+    """random generation for the normal distribution with mean equal to mean
+    and standard deviation equal to sd.
+
+    Args:
+        n: number of observations.
+        mean: means.
+        sd: standard deviations.
+
+
+    Returns:
+        Randomly generated deviates.
+    """
+    if is_scalar(n):  # rowwise
+        return np.random.normal(mean, sd, n)
+
+    if is_scalar(__args_raw["n"]):
+        scalar_n = __args_raw["n"]
         if scalar_n > n.size:
             ntiles = scalar_n // n.size + 1
             return np.random.normal(
@@ -32,49 +63,32 @@ def _rnorm(args_frame, n, mean, sd, raw_n):
     return Series(np.random.normal(mean, sd, n.size), index=n.index)
 
 
-@_rnorm.register(TibbleGrouped)
-def _rnorm_grouped(args_frame, n, mean, sd, raw_n):
-    return args_frame._datar["grouped"].apply(
-        lambda subdf: np.random.normal(
-            subdf["mean"], subdf["sd"], subdf.shape[0]
-        )
-    )
+rnorm.register(TibbleGrouped, func="default", post=_sgb_post)
 
 
-@_rnorm.register(TibbleRowwise)
-def _rnorm_rowwise(args_frame, n, mean, sd, raw_n):
-    return args_frame.agg(
-        lambda row: np.random.normal(row["mean"], row["sd"], row["n"]), axis=1
-    )
-
-
-@func_factory(None, {"n", "mean", "sd"})
-def rnorm(
+@func_factory({"n", "min", "max"})
+def runif(
     n: Series,
-    mean: Series = 0.0,
-    sd: Series = 1.0,
+    min: Series = 0.0,
+    max: Series = 1.0,
     __args_raw: Mapping = None,
-    __args_frame: DataFrame = None,
 ) -> Series:
-    """random generation for the normal distribution with mean equal to mean
-    and standard deviation equal to sd.
+    """random generation for the uniform distribution
 
     Args:
         n: number of observations.
-        mean: means.
-        sd: standard deviations.
+        min: the minima.
+        max: the maxima.
 
 
     Returns:
         Randomly generated deviates.
     """
-    return _rnorm(__args_frame, n, mean, sd, __args_raw["n"])
+    if is_scalar(n):
+        return np.random.uniform(min, max, n)
 
-
-@singledispatch
-def _runif(args_frame, n, min, max, raw_n):
-    if is_scalar(raw_n):
-        scalar_n = raw_n
+    if is_scalar(__args_raw["n"]):
+        scalar_n = __args_raw["n"]
         if scalar_n > n.size:
             ntiles = scalar_n // n.size + 1
             return np.random.uniform(
@@ -95,40 +109,14 @@ def _runif(args_frame, n, min, max, raw_n):
     )
 
 
-@_runif.register(TibbleGrouped)
-def _runif_grouped(args_frame, n, min, max, raw_n):
-    return args_frame._datar["grouped"].apply(
-        lambda subdf: np.random.uniform(
-            low=subdf["min"],
-            high=subdf["max"],
-            size=subdf.shape[0],
-        )
-    )
+runif.register(TibbleGrouped, func="default", post=_sgb_post)
 
 
-@_runif.register(TibbleRowwise)
-def _runif_rowwise(
-    args_frame,
-    n,
-    min,
-    max,
-    raw_n,
-):  # pragma: no cover.  pytest-cov can't hit this, but it's tested
-    return args_frame.agg(
-        lambda row: np.random.uniform(
-            low=row["min"], high=row["max"], size=row["n"]
-        ),
-        axis=1,
-    )
-
-
-@func_factory(None, {"n", "min", "max"})
-def runif(
+@func_factory({"n", "lambda_"})
+def rpois(
     n: Series,
-    min: Series = 0.0,
-    max: Series = 1.0,
+    lambda_: Series = 0.0,
     __args_raw: Mapping = None,
-    __args_frame: DataFrame = None,
 ) -> Series:
     """random generation for the uniform distribution
 
@@ -141,13 +129,11 @@ def runif(
     Returns:
         Randomly generated deviates.
     """
-    return _runif(__args_frame, n, min, max, __args_raw["n"])
+    if is_scalar(n):
+        return np.random.poisson(lambda_, n)
 
-
-@singledispatch
-def _rpois(args_frame, n, lambda_, raw_n):
-    if is_scalar(raw_n):
-        scalar_n = raw_n
+    if is_scalar(__args_raw["n"]):
+        scalar_n = __args_raw["n"]
         if scalar_n > n.size:
             ntiles = scalar_n // n.size + 1
             return np.random.poisson(
@@ -166,40 +152,4 @@ def _rpois(args_frame, n, lambda_, raw_n):
     )
 
 
-@_rpois.register(TibbleGrouped)
-def _rpois_grouped(args_frame, n, lambda_, raw_n):
-    return args_frame._datar["grouped"].apply(
-        lambda subdf: np.random.poisson(
-            lam=subdf["lambda_"],
-            size=subdf.shape[0],
-        )
-    )
-
-
-@_rpois.register(TibbleRowwise)
-def _rpois_rowwise(args_frame, n, lambda_, raw_n):
-    return args_frame.agg(
-        lambda row: np.random.poisson(lam=row["lambda_"], size=row["n"]),
-        axis=1,
-    )
-
-
-@func_factory(None, {"n", "lambda_"})
-def rpois(
-    n: Series,
-    lambda_: Series = 0.0,
-    __args_raw: Mapping = None,
-    __args_frame: DataFrame = None,
-) -> Series:
-    """random generation for the uniform distribution
-
-    Args:
-        n: number of observations.
-        min: the minima.
-        max: the maxima.
-
-
-    Returns:
-        Randomly generated deviates.
-    """
-    return _rpois(__args_frame, n, lambda_, __args_raw["n"])
+rpois.register(TibbleGrouped, func="default", post=_sgb_post)

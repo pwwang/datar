@@ -30,8 +30,7 @@ def _register_bessel_function(
     if exp_fun is None:
 
         @func_factory(
-            "transform",
-            "x",
+            kind="transform",
             name=name,
             qualname=f"datar.base.{name}",
             doc=doc,
@@ -49,8 +48,7 @@ def _register_bessel_function(
     else:
 
         @func_factory(
-            "transform",
-            "x",
+            kind="transform",
             name=name,
             qualname=f"datar.base.{name}",
             doc=doc,

@@ -22,6 +22,7 @@ from datar.dplyr import (
     add_count,
     add_tally,
 )
+from ..conftest import assert_equal
 
 
 def test_informs_if_n_column_already_present_unless_overridden(caplog):
@@ -82,7 +83,7 @@ def test_preserve_grouping():
     df1 = df >> group_by(f.g) >> count()
     df2 = exp >> group_by(f.g)
     assert df1.equals(df2)
-    assert group_vars(df1) == group_vars(df2)
+    assert_equal(group_vars(df1), group_vars(df2))
 
 
 # can't keep it. Only when df is manipuated by DataFrame methods
@@ -135,7 +136,7 @@ def test_tally_drops_last_group(caplog):
     df = tibble(x=1, y=2, z=3)
     res = df >> group_by(f.x, f.y) >> tally(wt=f.z)
     assert caplog.text == ""
-    assert group_vars(res) == ["x"]
+    assert_equal(group_vars(res), ["x"])
 
 
 # add_count ---------------------------------------------------------------
@@ -149,7 +150,7 @@ def test_output_preserves_grouping():
     out = df >> group_by(f.g) >> add_count()
     exp >>= group_by(f.g)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
 
 # add_tally ---------------------------------------------------------------
@@ -160,13 +161,13 @@ def test_can_add_tallies_of_a_variable():
     out = df >> group_by(f.a) >> add_tally()
     exp = tibble(a=c(2, 1, 1), n=c(1, 2, 2)) >> group_by(f.a)
     assert_frame_equal(out, exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
     # sort
     out = df >> group_by(f.a) >> add_tally(sort=True)
     exp = tibble(a=c(1, 1, 2), n=c(2, 2, 1)) >> group_by(f.a)
     assert out.equals(exp)
     # assert_frame_equal(out, exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
 
 def test_add_tally_can_be_given_a_weighting_variable():

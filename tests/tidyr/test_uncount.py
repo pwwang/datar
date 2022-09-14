@@ -3,6 +3,7 @@
 import pytest
 from datar.all import *
 from datar.core.backends.pandas.testing import assert_frame_equal
+from ..conftest import assert_equal
 
 def test_symbols_weights_are_dropped_in_output():
     df = tibble(x=1, w=1)
@@ -13,7 +14,7 @@ def test_can_request_to_preserve_symbols():
     assert_frame_equal(df >> uncount(f.w, _remove=False), df)
 
 def test_unique_identifiers_created_on_request():
-    df = tibble(w=f[1:4])
+    df = tibble(w=c[1:4])
     assert_frame_equal(
         df >> uncount(f.w, _id="id"),
         tibble(id=c(0, 1, 1, 2, 2, 2), _dtypes=int)
@@ -37,14 +38,14 @@ def test_must_evaluate_to_integer():
     df = tibble(x=1, w=.5)
 
     out = uncount(df, f.w)
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
     df = tibble(x=1)
     with pytest.raises(ValueError, match="`weights` must evaluate to numerics"):
         uncount(df, "W")
 
 def test_works_with_0_weights():
-    df = tibble(x=f[1:3], w=[0,1])
+    df = tibble(x=c[1:3], w=[0,1])
     assert_frame_equal(df >> uncount(f.w), tibble(x=2))
 
 def test_errors_on_negative_weights():

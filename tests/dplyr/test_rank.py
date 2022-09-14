@@ -19,17 +19,17 @@ from datar.dplyr import (
     lead,
     lag,
 )
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def ntile_h(x, n):
-    out = tibble(x=x) >> mutate(y=ntile(x, n))
+    out = tibble(x=x) >> mutate(y=ntile(x, n=n))
     return out.y.tolist()
 
 
 def test_ntile_ignores_number_of_nas():
     x = c(1, 2, 3, NA, NA)
-    out = ntile(x, 3)
+    out = ntile(x, n=3)
     assert_iterable_equal(out, [1, 2, 3, NA, NA])
 
     out = ntile_h(x, 3)
@@ -58,7 +58,7 @@ def test_ntile_does_not_overflow():
     res = tibble(a=range(1,m+1)) >> mutate(
         b=ntile(f.a, n=m)
     ) >> count(f.b) >> pull(to='list')
-    assert sum(res) == 100
+    assert_equal(sum(res), 100)
 
 
 def test_row_number_handles_empty_dfs():
@@ -66,7 +66,7 @@ def test_row_number_handles_empty_dfs():
     res = df >> mutate(
         row_number_0=row_number(),
         # row_number_a=row_number(f.a), # row_number doesn't support extra arg
-        ntile=ntile(f.a, 2),
+        ntile=ntile(f.a, n=2),
         min_rank=min_rank(f.a),
         percent_rank=percent_rank(f.a),
         dense_rank=dense_rank(f.a),
@@ -84,7 +84,7 @@ def test_row_number_handles_empty_dfs():
             "cume_dist",
         ],
     )
-    assert nrow(res) == 0
+    assert_equal(nrow(res), 0)
 
 
 def test_lead_lag_inside_mutates_handles_expressions_as_value_for_default():
@@ -129,9 +129,9 @@ def test_plain_arrays():
     assert_iterable_equal(out, [1, 1, 3])
     out = row_number([1, 1, 2])
     assert_iterable_equal(out, [1, 2, 3])
-    out = ntile(1, 1)
+    out = ntile(1, n=1)
     assert_iterable_equal(out, [1])
-    out = ntile((i for i in range(1)), 1)
+    out = ntile((i for i in range(1)), n=1)
     assert_iterable_equal(out, [1])
     out = cume_dist(1)
     assert_iterable_equal(out, [1])
@@ -154,37 +154,37 @@ def test_row_number_with_groups():
 
 
 def test_ntile_with_groups():
-    df = tibble(x=f[1:9], y=[1] * 4 + [2] * 4)
-    out = ntile(df.x, 2)
-    assert out.tolist() == [1, 1, 1, 1, 2, 2, 2, 2]
+    df = tibble(x=c[1:9], y=[1] * 4 + [2] * 4)
+    out = ntile(df.x, n=2)
+    assert_equal(out.tolist(), [1, 1, 1, 1, 2, 2, 2, 2])
 
     df = df.groupby("y")
-    out = ntile(df.x, 2)
-    assert out.tolist() == [1, 1, 2, 2, 1, 1, 2, 2]
+    out = ntile(df.x, n=2)
+    assert_equal(out.tolist(), [1, 1, 2, 2, 1, 1, 2, 2])
 
 
 def test_min_rank_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = min_rank(df.x)
-    assert out.tolist() == [1, 1, 3, 3, 5, 5, 7, 7]
+    assert_equal(out.tolist(), [1, 1, 3, 3, 5, 5, 7, 7])
 
     df = df.groupby("y")
     out = min_rank(df.x)
-    assert out.tolist() == [1, 1, 3, 3, 1, 1, 3, 3]
+    assert_equal(out.tolist(), [1, 1, 3, 3, 1, 1, 3, 3])
 
 
 def test_dense_rank_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = dense_rank(df.x)
-    assert out.tolist() == [1, 1, 2, 2, 3, 3, 4, 4]
+    assert_equal(out.tolist(), [1, 1, 2, 2, 3, 3, 4, 4])
 
     df = df.groupby("y")
     out = dense_rank(df.x)
-    assert out.tolist() == [1, 1, 2, 2, 1, 1, 2, 2]
+    assert_equal(out.tolist(), [1, 1, 2, 2, 1, 1, 2, 2])
 
 
 def test_percent_rank_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = percent_rank(df.x)
     assert_iterable_equal(
         out,
@@ -201,7 +201,7 @@ def test_percent_rank_with_groups():
 
 
 def test_cume_dist_with_groups():
-    df = tibble(x=rep(f[1:5], each=2), y=rep([1, 2], each=4))
+    df = tibble(x=rep(c[1:5], each=2), y=rep([1, 2], each=4))
     out = cume_dist(df.x)
     assert_iterable_equal(
         out,

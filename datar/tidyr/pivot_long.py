@@ -12,7 +12,7 @@ from pipda import register_verb
 
 from ..core.defaults import DEFAULT_COLUMN_PREFIX
 from ..core.contexts import Context
-from ..core.utils import vars_select, apply_dtypes, regcall
+from ..core.utils import vars_select, apply_dtypes
 from ..core.tibble import reconstruct_tibble
 from ..core.names import repair_names
 
@@ -43,7 +43,7 @@ def pivot_longer(
     decreasing the number of columns.
 
     The row order is a bit different from `tidyr` and `pandas.DataFrame.melt`.
-        >>> df = tibble(x=f[1:2], y=f[3:4])
+        >>> df = tibble(x=c[1:2], y=c[3:4])
         >>> pivot_longer(df, f[f.x:f.y])
         >>> #    name   value
         >>> # 0  x      1
@@ -127,7 +127,7 @@ def pivot_longer(
         The pivoted dataframe.
     """
     rowid_column = "_PIVOT_ROWID_"
-    ret = regcall(ungroup, _data).assign(
+    ret = ungroup(_data, __ast_fallback="normal").assign(
         **{rowid_column: range(_data.shape[0])}
     )
     all_columns = ret.columns
@@ -181,29 +181,29 @@ def pivot_longer(
         ret[values_to] = ret[values_to].astype("category")
 
     if names_pattern:
-        ret = regcall(
-            extract,
+        ret = extract(
             ret,
             var_name,
             into=names_to,
             regex=names_pattern,
+            __ast_fallback="normal",
         )
 
     if names_sep:
-        ret = regcall(
-            separate,
+        ret = separate(
             ret,
             var_name,
             into=names_to,
             sep=names_sep,
+            __ast_fallback="normal",
         )
     # extract/separate puts `into` last
-    ret = regcall(relocate, ret, values_to, _after=-1)
+    ret = relocate(ret, values_to, _after=-1, __ast_fallback="normal")
 
     if ".value" in names_to:
-        names_to = regcall(setdiff, names_to, [".value"])
-        index_columns = regcall(union, id_columns, names_to)
-        names_to = regcall(setdiff, names_to, na_names_to)
+        names_to = setdiff(names_to, [".value"], __ast_fallback="normal")
+        index_columns = union(id_columns, names_to, __ast_fallback="normal")
+        names_to = setdiff(names_to, na_names_to, __ast_fallback="normal")
 
         # keep the order
         value_columns = pandas.unique(ret[".value"].values)

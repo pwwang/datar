@@ -23,7 +23,7 @@ from .bessel import _get_special_func_from_scipy
 # lfactorial(x)           => np.log(scipy.special.factoral(x))
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def beta(a, b):
     """The beta function
 
@@ -43,7 +43,7 @@ def beta(a, b):
     return fun(a, b)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def lbeta(a, b):
     """The natural logarithm of `beta()`
 
@@ -57,7 +57,7 @@ def lbeta(a, b):
     return np.log(beta(a, b))
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def gamma(x):
     """The gamma function
 
@@ -76,7 +76,7 @@ def gamma(x):
     return fun(x)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def lgamma(x):
     """The nature logarithm of `gamma()`
 
@@ -89,7 +89,7 @@ def lgamma(x):
     return np.log(gamma(x))
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def digamma(x):
     """The digamma function.
 
@@ -105,7 +105,7 @@ def digamma(x):
     return fun(x)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def choose(n, k):
     """The number of combinations of N things taken k at a time.
 
@@ -125,7 +125,7 @@ def choose(n, k):
     return fun(n, k)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def lchoose(n, k):
     """The natural logarithm of `choose()`
 
@@ -144,7 +144,7 @@ def lchoose(n, k):
     return np.log(choose(n, k))
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def factorial(x):
     """The factorial of a number or array of numbers.
 
@@ -165,7 +165,7 @@ def factorial(x):
     return out
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def lfactorial(x):
     """The natural logarithm of `factorial()`
 
@@ -178,7 +178,7 @@ def lfactorial(x):
     return np.log(factorial(x))
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def trigamma(x):
     """The second derivatives of the logarithm of the gamma function
 
@@ -192,7 +192,7 @@ def trigamma(x):
     return fun(1, x)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def psigamma(x, deriv):
     """The deriv-th derivatives of the logarithm of the gamma function
 

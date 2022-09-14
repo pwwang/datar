@@ -1,9 +1,14 @@
 """Provide Collection and related classes to mimic `c` from `r-base`"""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, List, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Mapping, Sequence, Union
 
 import numpy as np
+from pipda import evaluate_expr, Expression
+from pipda.context import ContextType
+from pipda.function import Function
+
 from .backends import pandas as pd
 from .backends.pandas.api.types import (
     is_array_like,
@@ -11,8 +16,6 @@ from .backends.pandas.api.types import (
     is_integer,
     is_integer_dtype,
 )
-from pipda import evaluate_expr, Expression
-from pipda.context import ContextAnnoType
 
 if TYPE_CHECKING:
     from pandas._typing import AnyArrayLike
@@ -38,7 +41,7 @@ class CollectionBase(ABC):
         except (ValueError, KeyError) as exc:
             self.error = exc
 
-    def _pipda_eval(self, data: Any, context: ContextAnnoType) -> Any:
+    def _pipda_eval(self, data: Any, context: ContextType) -> Any:
         """Defines how the object should be evaluated when evaluated by
         pipda's evaluation"""
         self.elems = evaluate_expr(self.elems, data, context)
@@ -393,3 +396,41 @@ class Slice(Collection):
             step = 1 if stop >= start else -1
 
         return list(range(*slice(start, stop, step).indices(len_pool)))
+
+
+class SubscrFunction(Function):
+
+    """A function that is subscriptable"""
+
+    def __getitem__(self, item: Any) -> CollectionBase:
+        """Allow c[1:3] to be interpreted as 1:3"""
+        return Collection(item)
+
+
+def register_subscr_func(
+    func: Callable = None,
+    *,
+    context: ContextType = None,
+    extra_contexts: Mapping[str, ContextType] = None,
+) -> SubscrFunction | Callable:
+    """Register a function that is subscritable
+
+    Args:
+        func: The original function
+        context: The context used to evaluate the arguments
+        extra_contexts: Extra contexts to evaluate keyword arguments
+            Note that the arguments should be defined as keyword-only arguments
+            For example the argument `y` in `def fun(x, *, y): ...`
+
+    Returns:
+        A registered `SubscrFunction` object, or a decorator
+        if `func` is not given
+    """
+    if func is None:  # pragma: no cover, only used once for base.c
+        return lambda fun: register_subscr_func(
+            fun,
+            context=context,
+            extra_contexts=extra_contexts or {},
+        )
+
+    return SubscrFunction(func, context, extra_contexts or {})

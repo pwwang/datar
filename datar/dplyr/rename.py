@@ -7,7 +7,7 @@ from pipda import register_verb
 from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
-from ..core.utils import vars_select, regcall
+from ..core.utils import vars_select
 from ..core.tibble import TibbleGrouped
 from .group_data import group_vars
 from .select import _eval_select
@@ -25,7 +25,7 @@ def rename(_data, **kwargs):
     Returns:
         The dataframe with new names
     """
-    gvars = regcall(group_vars, _data)
+    gvars = group_vars(_data, __ast_fallback="normal")
     all_columns = _data.columns
     selected, new_names = _eval_select(
         all_columns,
@@ -78,4 +78,4 @@ def rename_with(_data, _fn, *args, **kwargs):
     new_columns = {
         _fn(col, *args, **kwargs): col for col in cols  # type: ignore
     }
-    return regcall(rename, _data, **new_columns)
+    return rename(_data, **new_columns, __ast_fallback="normal")

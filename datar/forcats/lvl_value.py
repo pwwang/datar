@@ -4,8 +4,7 @@ from typing import Any, Callable, Iterable, List, Mapping
 import numpy as np
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import Categorical, DataFrame
-from pipda import register_verb
-from pipda.utils import CallingEnvs, functype
+from pipda import register_verb, Verb
 
 from ..base import (
     levels,
@@ -18,7 +17,7 @@ from ..base import (
     rank,
 )
 from ..core.contexts import Context
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from ..dplyr import recode_factor, if_else
 from .utils import check_factor, ForcatsRegType
 from .lvls import lvls_reorder, lvls_revalue
@@ -40,18 +39,17 @@ def fct_anon(
         The factor with levels anonymised
     """
     _f = check_factor(_f)
-    nlvls = regcall(nlevels, _f)
+    nlvls = nlevels(_f)
     ndigits = len(str(nlvls))
-    lvls = regcall(
-        paste0,
+    lvls = paste0(
         prefix,
         [str(i).rjust(ndigits, "0") for i in range(nlvls)],
     )
-    _f = regcall(lvls_revalue, _f, regcall(sample, lvls))
-    return regcall(
-        lvls_reorder,
+    _f = lvls_revalue(_f, sample(lvls), __ast_fallback="normal")
+    return lvls_reorder(
         _f,
-        regcall(match, lvls, regcall(levels, _f)),
+        match(lvls, levels(_f)),
+        __ast_fallback="normal",
     )
 
 
@@ -95,7 +93,7 @@ def fct_recode(
         recodings.update(arg)
     recodings.update(kwargs)
 
-    lvls = regcall(levels, _f)
+    lvls = levels(_f)
     for_recode = dict(zip(lvls, lvls))  # old => new
     unknown = set()
     for key, val in recodings.items():
@@ -114,7 +112,7 @@ def fct_recode(
     if unknown:
         logger.warning("[fct_recode] Unknown levels in `_f`: %s", unknown)
 
-    return regcall(recode_factor, _f, for_recode).values
+    return recode_factor(_f, for_recode).values
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -140,16 +138,16 @@ def fct_collapse(
     levs = set(lev for sublevs in kwargs.values() for lev in sublevs)
 
     if other_level is not None:
-        lvls = regcall(levels, _f)
+        lvls = levels(_f)
         kwargs[other_level] = set(lvls) - levs
 
     out = fct_recode(_f, kwargs)
     if other_level in kwargs:
-        return regcall(
-            fct_relevel,
+        return fct_relevel(
             out,
             other_level,
             after=-1,
+            __ast_fallback="normal",
         )
 
     return out
@@ -181,15 +179,14 @@ def fct_lump_min(
     if min < 0:
         raise ValueError("`min` must be a positive number.")
 
-    new_levels = regcall(
-        if_else,
+    new_levels = if_else(
         calcs["count"] >= min,
-        regcall(levels, _f),
+        levels(_f),
         other_level,
     )
 
     if other_level in new_levels:
-        _f = regcall(lvls_revalue, _f, new_levels)
+        _f = lvls_revalue(_f, new_levels, __ast_fallback="normal")
         return fct_relevel(_f, other_level, after=-1)
 
     return _f
@@ -222,17 +219,15 @@ def fct_lump_prop(
 
     prop_n = calcs["count"] / calcs["total"]
     if prop < 0:
-        new_levels = regcall(
-            if_else,
+        new_levels = if_else(
             prop_n <= -prop,
-            regcall(levels, _f),
+            levels(_f),
             other_level,
         )
     else:
-        new_levels = regcall(
-            if_else,
+        new_levels = if_else(
             prop_n > prop,
-            regcall(levels, _f),
+            levels(_f),
             other_level,
         )
 
@@ -240,7 +235,7 @@ def fct_lump_prop(
         return _f
 
     if other_level in new_levels:
-        _f = regcall(lvls_revalue, _f, new_levels)
+        _f = lvls_revalue(_f, new_levels, __ast_fallback="normal")
         return fct_relevel(_f, other_level, after=-1)
 
     return _f
@@ -275,15 +270,14 @@ def fct_lump_n(
     _f = calcs["_f"]
 
     if n < 0:
-        rnk = regcall(rank, calcs["count"], ties_method=ties_method)
+        rnk = rank(calcs["count"], ties_method=ties_method)
         n = -n
     else:
-        rnk = regcall(rank, -calcs["count"], ties_method=ties_method)
+        rnk = rank(-calcs["count"], ties_method=ties_method)
 
-    new_levels = regcall(
-        if_else,
+    new_levels = if_else(
         rnk <= n,
-        regcall(levels, _f),
+        levels(_f),
         other_level,
     )
 
@@ -291,7 +285,7 @@ def fct_lump_n(
         return _f
 
     if other_level in new_levels:
-        _f = regcall(lvls_revalue, _f, new_levels)
+        _f = lvls_revalue(_f, new_levels, __ast_fallback="normal")
         return fct_relevel(_f, other_level, after=-1)
 
     return _f  # pragma: no cover
@@ -313,15 +307,14 @@ def fct_lump_lowfreq(_f, other_level: Any = "Other"):
     calcs = check_calc_levels(_f)
     _f = calcs["_f"]
 
-    new_levels = regcall(
-        if_else,
+    new_levels = if_else(
         ~in_smallest(calcs["count"]),
-        regcall(levels, _f),
+        levels(_f),
         other_level,
     )
 
     if other_level in new_levels:
-        _f = regcall(lvls_revalue, _f, new_levels)
+        _f = lvls_revalue(_f, new_levels, __ast_fallback="normal")
         return fct_relevel(_f, other_level, after=-1)
 
     return _f
@@ -404,18 +397,18 @@ def fct_other(
     ):
         raise ValueError("Must supply exactly one of `keep` and `drop`")
 
-    lvls = regcall(levels, _f)
+    lvls = levels(_f)
     if keep is not None:
         lvls[~np.isin(lvls, keep)] = other_level
     else:
         lvls[np.isin(lvls, drop)] = other_level
 
-    _f = regcall(lvls_revalue, _f, lvls)
-    return regcall(
-        fct_relevel,
+    _f = lvls_revalue(_f, lvls, __ast_fallback="normal")
+    return fct_relevel(
         _f,
         other_level,
         after=-1,
+        __ast_fallback="normal",
     )
 
 
@@ -440,12 +433,12 @@ def fct_relabel(
         The factor with levels relabeled
     """
     _f = check_factor(_f)
-    old_levels = regcall(levels, _f)
-    if functype(_fun) != "plain":
-        kwargs["__calling_env"] = CallingEnvs.REGULAR
-
+    old_levels = levels(_f)
+    if isinstance(_fun, Verb):  # pragma: no cover
+        # TODO: test
+        kwargs["__ast_fallback"] = "normal"
     new_levels = _fun(old_levels, *args, **kwargs)
-    return regcall(lvls_revalue, _f, new_levels)
+    return lvls_revalue(_f, new_levels, __ast_fallback="normal")
 
 
 # -------------
@@ -487,7 +480,7 @@ def check_calc_levels(_f, w=None):
     else:
         cnt = (
             DataFrame({"w": w, "f": _f})
-            .groupby("f", observed=False)
+            .groupby("f", observed=False, sort=False, dropna=False)
             .agg("sum")
             .iloc[:, 0]
             .values
@@ -515,8 +508,8 @@ def lump_cutoff(x) -> int:
 
 def in_smallest(x) -> Iterable[bool]:
     """Check if elements in x are the smallest of x"""
-    ord_x = regcall(order, x, decreasing=True)
+    ord_x = order(x, decreasing=True)
     idx = lump_cutoff(x[ord_x])
 
     to_lump = np.arange(len(x)) >= idx
-    return to_lump[regcall(order, ord_x)]
+    return to_lump[order(ord_x)]

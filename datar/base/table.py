@@ -7,7 +7,7 @@ from ..core.backends.pandas import DataFrame, Series
 from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
 
 from ..core.contexts import Context
-from ..core.utils import ensure_nparray, regcall
+from ..core.utils import ensure_nparray
 from ..core.defaults import NA_REPR
 
 from .factor import _ensure_categorical
@@ -49,7 +49,7 @@ def _fillna_safe(data, rep=NA_REPR):
     return Series(data).fillna(rep).values
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def table(
     input,
     *more_inputs,
@@ -112,7 +112,7 @@ def table(
     return tab
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def tabulate(bin, nbins=None):
     """Takes the integer-valued vector `bin` and counts the
     number of times each integer occurs in it.
@@ -130,7 +130,7 @@ def tabulate(bin, nbins=None):
     from .casting import as_integer
 
     is_cat = is_categorical_dtype(bin)
-    bin = regcall(as_integer, bin)
+    bin = as_integer(bin)
     if is_cat:
         bin = bin + 1
 
@@ -139,7 +139,7 @@ def tabulate(bin, nbins=None):
         bin if is_scalar(bin) else 0 if len(bin) == 0 else max(bin),
         0 if nbins is None else nbins,
     )
-    tabled = regcall(table, bin)
+    tabled = table(bin)
     tabled = (
         tabled.T
         .reindex(range(1, nbins + 1), fill_value=0)

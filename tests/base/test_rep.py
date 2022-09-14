@@ -57,7 +57,7 @@ def test_rep_sgb_param(caplog):
 
 
 def test_rep_df():
-    df = tibble(x=f[:3])
+    df = tibble(x=c[:3])
     with pytest.raises(ValueError):
         rep(df, each=2)
 
@@ -66,7 +66,7 @@ def test_rep_df():
 
 
 def test_rep_grouped_df():
-    df = tibble(x=f[:3], g=[1, 1, 2]).group_by("g")
+    df = tibble(x=c[:3], g=[1, 1, 2]).group_by("g")
     out = rep(df, 2, length=5)
     assert isinstance(out, TibbleGrouped)
     assert_iterable_equal(out.x.obj, [0, 1, 2, 0, 1])

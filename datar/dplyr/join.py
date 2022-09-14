@@ -7,7 +7,6 @@ from ..core.backends.pandas.api.types import is_scalar, is_categorical_dtype
 
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
-from ..core.utils import regcall
 from ..base import intersect, setdiff, union
 from .dfilter import filter as filter_
 
@@ -43,12 +42,12 @@ def _join(
             suffixes=suffix,
         )
         if not keep:
-            to_drop = regcall(setdiff, right_on, left_on)
+            to_drop = setdiff(right_on, left_on, __ast_fallback="normal")
             ret.drop(columns=to_drop, inplace=True)
 
     elif keep:
         if by is None:
-            by = regcall(intersect, newx.columns, y.columns)
+            by = intersect(newx.columns, y.columns, __ast_fallback="normal")
         # on=... doesn't keep both by columns in left and right
         left_on = [f"{col}{suffix[0]}" for col in by]
         right_on = [f"{col}{suffix[1]}" for col in by]
@@ -66,7 +65,7 @@ def _join(
 
     else:
         if by is None:
-            by = regcall(intersect, newx.columns, y.columns)
+            by = intersect(newx.columns, y.columns, __ast_fallback="normal")
 
         by = [by] if is_scalar(by) else list(by)
         ret = pd.merge(newx, y, on=by, how=how, copy=copy, suffixes=suffix)
@@ -75,10 +74,10 @@ def _join(
             if is_categorical_dtype(x[col]) and is_categorical_dtype(y[col]):
                 ret[col] = Categorical(
                     ret[col],
-                    categories=regcall(
-                        union,
+                    categories=union(
                         x[col].cat.categories,
                         y[col].cat.categories,
+                        __ast_fallback="normal",
                     ),
                 )
 
@@ -306,7 +305,11 @@ def nest_join(
     if isinstance(by, (list, tuple, set)):
         on = dict(zip(by, by))
     elif by is None:
-        common_cols = regcall(intersect, newx.columns, y.columns)
+        common_cols = intersect(
+            newx.columns,
+            y.columns,
+            __ast_fallback="normal",
+        )
         on = dict(zip(common_cols, common_cols))
     elif not isinstance(by, dict):
         on = {by: by}
@@ -322,9 +325,11 @@ def nest_join(
                 condition = y[on[key]] == row[key]
             else:
                 condition = condition & (y[on[key]] == row[key])
-        df = regcall(filter_, y, condition)
+        df = filter_(y, condition, __ast_fallback="normal")
         if not keep:
-            df = df[regcall(setdiff, df.columns, list(on.values()))]
+            df = df[
+                setdiff(df.columns, list(on.values()), __ast_fallback="normal")
+            ]
 
         return df
 

@@ -27,6 +27,8 @@ from datar.base import c, rep, nrow, NA, min, re, is_element, letters
 from datar.core.backends.pandas.testing import assert_frame_equal
 from pipda import register_func
 
+from ..conftest import assert_equal
+
 
 def test_handles_passing_args():
     df = tibble(x=range(1, 5))
@@ -136,19 +138,19 @@ def test_row_number():
 
 def test_row_number_0col():
     out = tibble() >> mutate(a=row_number())
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
     assert out.columns.tolist() == ['a']
 
 
 def test_mixed_orig_df():
     df = tibble(x=range(1, 11), g=rep(range(1, 6), 2))
     res = df >> group_by(f.g) >> filter(f.x > min(df.x))
-    assert nrow(res) == 9
+    assert_equal(nrow(res), 9)
 
 
 def test_empty_df():
     res = tibble() >> filter(False)
-    assert nrow(res) == 0
+    assert_equal(nrow(res), 0)
     assert len(res.columns) == 0
 
 
@@ -159,7 +161,7 @@ def test_true_true():
 
 
 def test_rowwise():
-    @register_func(None)
+    @register_func
     def grepl(a, b):
         return Series([x in y for x, y in zip(a.obj, b.obj)], index=a.obj.index)
 
@@ -168,7 +170,7 @@ def test_rowwise():
         Second=c("Sentence with string1", "something"),
     )
     res = df >> rowwise() >> filter(grepl(f.First, f.Second))
-    assert nrow(res) == 1
+    assert_equal(nrow(res), 1)
 
     df1 = df >> slice(0)
     df2 = res >> ungroup()
@@ -179,11 +181,13 @@ def test_grouped_filter_handles_indices():
     res = iris >> group_by(f.Species) >> filter(f.Sepal_Length > 5)
     res2 = res >> mutate(Petal=f.Petal_Width * f.Petal_Length)
 
-    assert nrow(res) == nrow(res2)
+    assert_equal(nrow(res), nrow(res2))
     grows1 = group_rows(res)
     grows2 = group_rows(res2)
     assert grows1 == grows2
-    assert all(group_keys(res) == group_keys(res2))
+    keys1 = group_keys(res)
+    keys2 = group_keys(res2)
+    assert all(keys1 == keys2)
 
 
 def test_filter_false_handles_indices(caplog):
@@ -333,12 +337,14 @@ def test_errors():
 def test_preserves_grouping():
     gf = tibble(g=[1, 1, 1, 2, 2], x=[1, 2, 3, 4, 5]) >> group_by(f.g)
     out = gf >> filter(is_element(f.x, [3, 4]))
-    assert group_vars(out) == ["g"]
-    assert group_rows(out) == [[0], [1]]
+    assert_equal(group_vars(out), ["g"])
+    rows = group_rows(out)
+    assert rows == [[0], [1]]
 
     out = gf >> filter(f.x < 3)
-    assert group_vars(out) == ["g"]
-    assert group_rows(out) == [[0, 1]]
+    assert_equal(group_vars(out), ["g"])
+    rows = group_rows(out)
+    assert rows == [[0, 1]]
 
 
 def test_works_with_if_any_if_all():
@@ -362,4 +368,4 @@ def test_filter_restructures_group_data_correctly():
         >> filter(f.cum >= 5)
         >> mutate(ranking=f.cum.rank())
     )
-    assert nrow(df) == 29
+    assert_equal(nrow(df), 29)

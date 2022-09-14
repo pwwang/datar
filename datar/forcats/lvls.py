@@ -3,7 +3,6 @@ from typing import Iterable, List
 from ..core.backends.pandas import Categorical
 from pipda import register_verb
 
-from ..core.utils import regcall
 from ..core.contexts import Context
 from ..base import setdiff, union
 
@@ -29,13 +28,13 @@ from .utils import check_factor, ForcatsRegType
 
 def lvls_seq(_f):
     """Get the index sequence of a factor levels"""
-    return regcall(seq_along, regcall(levels, _f)) - 1
+    return seq_along(levels(_f)) - 1
 
 
 def refactor(_f, new_levels: Iterable, ordered: bool = None) -> Categorical:
     """Refactor using new levels"""
     if ordered is None:
-        ordered = regcall(is_ordered, _f)
+        ordered = is_ordered(_f)
 
     new_f = factor(_f, levels=new_levels, exclude=NA, ordered=ordered)
     # keep attributes?
@@ -62,19 +61,22 @@ def lvls_reorder(
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    if not regcall(is_integer, idx):
+    if not is_integer(idx):
         raise ValueError("`idx` must be integers")
 
     len_idx = len(idx)
     seq_lvls = lvls_seq(_f)
-    if not regcall(setequal, idx, seq_lvls) or len_idx != regcall(nlevels, _f):
+    if (
+        not setequal(idx, seq_lvls, __ast_fallback="normal")
+        or len_idx != nlevels(_f)
+    ):
         raise ValueError(
             "`idx` must contain one integer for each level of `f`"
         )
 
     return refactor(
         _f,
-        regcall(levels, _f)[idx],
+        levels(_f)[idx],
         ordered=ordered,
     )
 
@@ -96,25 +98,24 @@ def lvls_revalue(
     """
     _f = check_factor(_f)
 
-    if len(new_levels) != regcall(nlevels, _f):
+    if len(new_levels) != nlevels(_f):
         raise ValueError(
             "`new_levels` must be the same length as `levels(f)`: expected ",
-            f"{regcall(nlevels, _f)} new levels, " f"got {len(new_levels)}.",
+            f"{nlevels(_f)} new levels, " f"got {len(new_levels)}.",
         )
 
-    u_levels = regcall(unique, new_levels)
+    u_levels = unique(new_levels, __ast_fallback="normal")
     if len(new_levels) > len(u_levels):
         # has duplicates
-        index = regcall(match, new_levels, u_levels)
-        out = factor(regcall(as_character, index[regcall(as_integer, _f)]))
-        return regcall(
-            recode_factor,
+        index = match(new_levels, u_levels)
+        out = factor(as_character(index[as_integer(_f)]))
+        return recode_factor(
             out,
-            dict(zip(regcall(levels, out), u_levels)),
+            dict(zip(levels(out), u_levels)),
         ).values
 
-    recodings = dict(zip(regcall(levels, _f), new_levels))
-    return regcall(recode_factor, _f, recodings).values
+    recodings = dict(zip(levels(_f), new_levels))
+    return recode_factor(_f, recodings).values
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -133,9 +134,9 @@ def lvls_expand(
         The factor with the new levels
     """
     _f = check_factor(_f)
-    levs = regcall(levels, _f)
+    levs = levels(_f)
 
-    missing = regcall(setdiff, levs, new_levels)
+    missing = setdiff(levs, new_levels, __ast_fallback="normal")
     if len(missing) > 0:
         raise ValueError(
             "Must include all existing levels. Missing: {missing}"
@@ -159,6 +160,6 @@ def lvls_union(
     out = []
     for fct in fs:
         fct = check_factor(fct)
-        levs = regcall(levels, fct)
-        out = regcall(union, out, levs)
+        levs = levels(fct)
+        out = union(out, levs, __ast_fallback="normal")
     return out

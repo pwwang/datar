@@ -24,6 +24,7 @@ from datar.dplyr import (
     cur_column,
     pull,
 )
+from pipda import VerbCall
 from ..conftest import assert_iterable_equal
 
 
@@ -107,16 +108,16 @@ def test_errors():
     # n used directly in count
     # with pytest.raises(ValueError):
     #     n()
-    with pytest.raises(ValueError):
-        cur_data()
-    with pytest.raises(ValueError):
-        cur_data_all()
-    with pytest.raises(ValueError):
-        cur_group()
-    with pytest.raises(ValueError):
-        cur_group_id()
-    with pytest.raises(ValueError):
-        cur_group_rows()
+    # with pytest.raises(ValueError):
+    assert isinstance(cur_data(), VerbCall)
+    # with pytest.raises(ValueError):
+    assert isinstance(cur_data_all(), VerbCall)
+    # with pytest.raises(ValueError):
+    assert isinstance(cur_group(), VerbCall)
+    # with pytest.raises(ValueError):
+    assert isinstance(cur_group_id(), VerbCall)
+    # with pytest.raises(ValueError):
+    assert isinstance(cur_group_rows(), VerbCall)
 
 
 def test_cur_column():

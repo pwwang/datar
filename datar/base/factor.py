@@ -19,7 +19,7 @@ def _ensure_categorical(x):
     return x
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def droplevels(x):
     """drop unused levels from a factor
 
@@ -32,7 +32,7 @@ def droplevels(x):
     return _ensure_categorical(x).remove_unused_categories()
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def levels(x):
     """Get levels from a factor
 
@@ -49,7 +49,7 @@ def levels(x):
     return _ensure_categorical(x).categories.values.copy()
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def nlevels(x) -> int:
     """Get the number of levels of a factor
 
@@ -63,7 +63,7 @@ def nlevels(x) -> int:
     return 0 if lvls is None else len(lvls)
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def is_ordered(x) -> bool:
     """Check if a factor is ordered"""
     if not is_categorical_dtype(x):
@@ -72,9 +72,9 @@ def is_ordered(x) -> bool:
     return _ensure_categorical(x).ordered
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def factor(x=None, levels=None, exclude=np.nan, ordered=False):
-    """encode a vector as a factor (the terms ‘category’ and ‘enumerated type’
+    """encode a vector as a factor (the terms `category` and `enumerated type`
     are also used for factors).
 
     If argument ordered is TRUE, the factor levels are assumed to be ordered
@@ -90,13 +90,18 @@ def factor(x=None, levels=None, exclude=np.nan, ordered=False):
             as ordered (in the order given).
     """
     if isinstance(x, SeriesGroupBy):
-        out = factor.__origfunc__(
+        out = factor.func(
             x.obj,
             levels=levels,
             exclude=exclude,
             ordered=ordered,
         )
-        return Series(out, index=x.obj.index).groupby(x.grouper)
+        return Series(out, index=x.obj.index).groupby(
+            x.grouper,
+            observed=x.observed,
+            sort=x.sort,
+            dropna=x.dropna,
+        )
 
     if x is None:
         x = []
@@ -132,7 +137,7 @@ def ordered(x=None, levels=None):
     return factor(x, levels=levels).as_ordered()
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def as_factor(x):
     """Convert an iterable into a pandas.Categorical object
 
@@ -148,7 +153,7 @@ def as_factor(x):
 as_categorical = as_factor
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def is_categorical(x):
     """Check if x is categorical data
 

@@ -7,7 +7,7 @@ from ..core.tibble import SeriesCategorical
 from ..core.factory import func_factory
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def desc(x):
     """Transform a vector into a format that will be sorted in descending order
 
@@ -26,7 +26,7 @@ def desc(x):
         out = -x
     except (ValueError, TypeError):
         cat = Categorical(x.values)
-        out = desc.dispatched(
+        out = desc.dispatch(SeriesCategorical)(
             Series(cat, index=x.index)
         )
     out.name = None

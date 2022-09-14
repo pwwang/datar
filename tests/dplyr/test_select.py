@@ -24,14 +24,14 @@ from datar.dplyr import (
 from datar.core.backends.pandas import DataFrame
 from pipda import register_verb
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_preserves_grouping():
     gf = group_by(tibble(g=[1, 2, 3], x=[3, 2, 1]), f.g)
 
     out = select(gf, h=f.g)
-    assert group_vars(out), ["h"]
+    assert_equal(group_vars(out), ["h"])
 
 
 def test_grouping_variables_preserved_with_a_message(caplog):
@@ -61,12 +61,12 @@ def test_select_doesnot_fail_if_some_names_missing():
 # Special cases -------------------------------------------------
 def test_with_no_args_returns_nothing():
     empty = select(mtcars)
-    assert ncol(empty) == 0
-    assert nrow(empty) == 32
+    assert_equal(ncol(empty), 0)
+    assert_equal(nrow(empty), 32)
 
     empty = select(mtcars, **{})
-    assert ncol(empty) == 0
-    assert nrow(empty) == 32
+    assert_equal(ncol(empty), 0)
+    assert_equal(nrow(empty), 32)
 
 
 def test_excluding_all_vars_returns_nothing():
@@ -122,7 +122,7 @@ def test_arguments_to_select_dont_match_vars_select_arguments():
     out = select(group_by(df, f.a), var=f.a)
     exp = group_by(tibble(var=1), f.var)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = select(df, exclude=f.a)
     assert out.equals(tibble(exclude=1))
@@ -132,12 +132,12 @@ def test_arguments_to_select_dont_match_vars_select_arguments():
     out = select(group_by(df, f.a), exclude=f.a)
     exp = group_by(tibble(exclude=1), f.exclude)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = select(group_by(df, f.a), include=f.a)
     exp = group_by(tibble(include=1), f.include)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
 
 def test_can_select_data_pronoun():
@@ -214,7 +214,7 @@ def test_tidyselect_funs():
     out = df >> select(where(isupper))
     assert out.columns.tolist() == ["X", "Y"]
 
-    @register_verb
+    @register_verb(DataFrame)
     def islower(_data, series):
         return [series.name.islower(), True]
 

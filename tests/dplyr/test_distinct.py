@@ -29,10 +29,12 @@ from datar.testing import assert_frame_equal
 def test_single_column():
     df = tibble(x=c(1, 1, 1, 1), y=c(1, 1, 2, 2), z=c(1, 2, 1, 2))
     x = df >> distinct(f.x, _keep_all=False)
-    assert all(x.x == unique(df.x))
+    out = all(x.x == unique(df.x))
+    assert out
 
     y = df >> distinct(f.y, _keep_all=False)
-    assert all(y.y == unique(df.y))
+    out = all(y.y == unique(df.y))
+    assert out
 
 
 def test_0_col_df():

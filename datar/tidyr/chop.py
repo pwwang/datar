@@ -11,7 +11,7 @@ from ..core.backends.pandas import DataFrame, Series
 from ..core.backends.pandas.api.types import is_scalar
 from pipda import register_verb
 
-from ..core.utils import vars_select, apply_dtypes, regcall
+from ..core.utils import vars_select, apply_dtypes
 from ..core.contexts import Context
 from ..core.tibble import reconstruct_tibble
 
@@ -63,14 +63,21 @@ def chop(
     # when cols is empty
     # order may change for all_columns.difference([])
     key_cols = (
-        regcall(setdiff, all_columns, cols) if cols.size > 0 else all_columns
+        setdiff(all_columns, cols, __ast_fallback="normal")
+        if cols.size > 0
+        else all_columns
     )
-    ungrouped = regcall(ungroup, data)
+    ungrouped = ungroup(data, __ast_fallback="normal")
     if key_cols.size == 0:
-        grouped = ungrouped.groupby([1] * data.shape[0])
+        grouped = ungrouped.groupby([1] * data.shape[0], sort=False)
         out = grouped.agg(list).reset_index(drop=True)
     else:
-        grouped = regcall(ungroup, data).groupby(list(key_cols))
+        grouped = ungroup(data, __ast_fallback="normal").groupby(
+            list(key_cols),
+            dropna=False,
+            observed=True,
+            sort=False,
+        )
         out = grouped.agg(list).reset_index()
     return reconstruct_tibble(data, out)
 
@@ -124,7 +131,12 @@ def unchop(
 
     cols = all_columns[cols]
     key_cols = all_columns.difference(cols).tolist()
-    out = _unchopping(regcall(ungroup, data), cols, key_cols, keep_empty)
+    out = _unchopping(
+        ungroup(data, __ast_fallback="normal"),
+        cols,
+        key_cols,
+        keep_empty,
+    )
 
     apply_dtypes(out, dtypes)
     return reconstruct_tibble(data, out)
@@ -176,11 +188,11 @@ def _unchopping(
     # say y$a, then ['y'] will not select it
     out = _keep_column_order(DataFrame(key_data), data.columns)
     if not keep_empty:
-        out = regcall(
-            drop_na,
+        out = drop_na(
             out,
             *val_data,
             how_="all",
+            __ast_fallback="normal",
         )
     apply_dtypes(out, dtypes)
     return out
@@ -196,10 +208,10 @@ def _unchopping_df_column(
     dtypes = None
     for val in series:
         if isinstance(val, DataFrame):
-            union_cols = regcall(
-                union,
+            union_cols = union(
                 union_cols,
                 val.columns,
+                __ast_fallback="normal",
             )
             if dtypes is None:
                 dtypes = {col: val[col].dtype for col in val}

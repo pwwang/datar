@@ -58,7 +58,6 @@ from .factor import (
 )
 from .funs import (
     cut,
-    data_context,
     diff,
     expandgrid,
     identity,

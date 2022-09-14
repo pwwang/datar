@@ -6,7 +6,7 @@ from datar import f
 from datar.core.tibble import TibbleGrouped
 from datar.datasets import iris
 from datar.dplyr import mutate
-from datar.tibble import tibble, tribble, tibble_row, as_tibble
+from datar.tibble import fibble, tibble, tribble, tibble_row, as_tibble
 from datar.base import seq, c, rep, sum, letters, LETTERS
 from datar.testing import assert_tibble_equal
 
@@ -14,7 +14,7 @@ from ..conftest import assert_iterable_equal
 
 
 def test_mixed_numbering():
-    df = tibble(a=f[:5], b=seq(5), c=c(0, 1, 2, [3, 4]), d=c(f[:3], c(3, 4)))
+    df = tibble(a=c[:5], b=seq(5), c=c(0, 1, 2, [3, 4]), d=c(c[:3], c(3, 4)))
     exp = tibble(a=range(5), b=seq(5), c=f.a, d=f.a)
     assert_tibble_equal(df, exp)
 
@@ -276,7 +276,7 @@ def test_dup_cols():
 
 # tibble as registered function -------------
 def test_fibble():
-    df = tibble(x=[1, 2]) >> mutate(tibble(y=f.x))
+    df = tibble(x=[1, 2]) >> mutate(fibble(y=f.x))
     assert df.equals(tibble(x=[1, 2], y=[1, 2]))
 
 

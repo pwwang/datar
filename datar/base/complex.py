@@ -12,8 +12,7 @@ from .casting import _as_type
 from .arithmetic import SINGLE_ARG_SIGNATURE
 
 re = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="re",
     doc="""Real part of complex numbers
 
@@ -28,8 +27,7 @@ re = func_factory(
 )
 
 im = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="im",
     doc="""Real part of complex numbers
 
@@ -44,10 +42,10 @@ im = func_factory(
 )
 
 mod = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="mod",
-    qualname="datar.base.mod",
+    qualname="mod",
+    module="datar.base",
     doc="""Modulus of complex numbers
 
     Args:
@@ -61,8 +59,7 @@ mod = func_factory(
 )
 
 arg = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="arg",
     doc="""Angles of complex numbers
 
@@ -77,9 +74,9 @@ arg = func_factory(
 )
 
 conj = func_factory(
-    "transform",
-    "x",
-    qualname="datar.base.conj",
+    kind="transform",
+    qualname="conj",
+    module="datar.base",
     doc="""conjugate of complex numbers
 
     Args:

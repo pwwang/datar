@@ -2,7 +2,12 @@
 # https://github.com/tidyverse/tidyr/blob/master/tests/testthat/test-chop.R
 import pytest  # noqa
 from datar.core.backends.pandas.testing import assert_frame_equal
-from datar.all import *
+from datar import f
+from datar.base import c, seq, NULL, NA
+from datar.tibble import tibble, drop_index
+from datar.tidyr import chop, unchop
+from datar.dplyr import group_by, group_vars, pull
+from ..conftest import assert_equal
 
 # chop --------------------------------------------------------------------
 def test_chop_multiple_columns():
@@ -21,7 +26,7 @@ def test_chop_no_columns_returns_input():
 def test_chop_grouping_preserves():
     df = tibble(g = c(1, 1), x = [1,2])
     out = df >> group_by(f.g) >> chop(f.x)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
 
 def test_can_chop_empty_frame():
     df = tibble(x=[], y=[], _dtypes=object)
@@ -57,12 +62,12 @@ def test_can_unchop_multiple_cols():
     ))
 
 def test_unchopping_nothing_leaves_input_unchanged():
-    df = tibble(x = f[1:3], y = f[4:6])
+    df = tibble(x = c[1:3], y = c[4:6])
     assert_frame_equal(unchop(df, []), df)
 
 def test_unchopping_null_inputs_are_dropped():
     df = tibble(
-        x = f[1:5],
+        x = c[1:5],
         y = [NULL, [1,2], 4, NULL],
         z = [NULL, [1,2], NULL, 5]
     )
@@ -91,8 +96,10 @@ def test_unchop_optionally_keep_empty_rows():
 
 def test_unchop_preserves_columns_of_empty_inputs():
     df = tibble(x=[], y=[], z=[], _dtypes={'x': int})
-    assert unchop(df, f.y).columns.tolist() == ['x', 'y', 'z']
-    assert unchop(df, [f.y, f.z]).columns.tolist() == ['x', 'y', 'z']
+    unchopped = unchop(df, f.y)
+    assert unchopped.columns.tolist() == ['x', 'y', 'z']
+    unchopped = unchop(df, [f.y, f.z])
+    assert unchopped.columns.tolist() == ['x', 'y', 'z']
 
 # test_that("respects list_of types", {
 #   df <- tibble(x = integer(), y = list_of(.dtypes = integer()))
@@ -102,7 +109,7 @@ def test_unchop_preserves_columns_of_empty_inputs():
 def test_unchop_preserves_grouping():
     df = tibble(g=1, x=[[1,2]])
     out = df >> group_by(f.g) >> unchop(f.x)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
 
 def test_unchop_empty_list():
     df = tibble(x=[], y=[])

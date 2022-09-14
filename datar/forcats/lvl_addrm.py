@@ -9,7 +9,6 @@ from ..core.backends.pandas.api.types import is_scalar
 
 from ..base import levels, union, table, intersect, setdiff
 from ..core.contexts import Context
-from ..core.utils import regcall
 from .lvls import lvls_expand, lvls_union, refactor
 from .utils import check_factor, ForcatsRegType
 
@@ -27,7 +26,7 @@ def fct_expand(_f, *additional_levels: Any) -> Categorical:
         The factor with levels expanded
     """
     _f = check_factor(_f)
-    levs = regcall(levels, _f)
+    levs = levels(_f)
     addlevs = []
     for alev in additional_levels:
         if is_scalar(alev):
@@ -35,7 +34,7 @@ def fct_expand(_f, *additional_levels: Any) -> Categorical:
         else:
             addlevs.extend(alev)
     new_levels = union(levs, addlevs)
-    return regcall(lvls_expand, _f, new_levels)
+    return lvls_expand(_f, new_levels, __ast_fallback="normal")
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -86,19 +85,19 @@ def fct_drop(_f, only: Any = None) -> Categorical:
     """
     _f = check_factor(_f)
 
-    levs = regcall(levels, _f)
-    count = regcall(table, _f).iloc[0, :]
+    levs = levels(_f)
+    count = table(_f).iloc[0, :]
 
     to_drop = levs[count == 0]
     if only is not None and is_scalar(only):
         only = [only]
 
     if only is not None:
-        to_drop = regcall(intersect, to_drop, only)
+        to_drop = intersect(to_drop, only, __ast_fallback="normal")
 
     return refactor(
         _f,
-        new_levels=regcall(setdiff, levs, to_drop),
+        new_levels=setdiff(levs, to_drop, __ast_fallback="normal"),
     )
 
 
@@ -123,5 +122,5 @@ def fct_unify(
     out = []
     for fct in fs:
         fct = check_factor(fct)
-        out.append(regcall(lvls_expand, fct, new_levels=levels))
+        out.append(lvls_expand(fct, new_levels=levels, __ast_fallback="normal"))
     return out

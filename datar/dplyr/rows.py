@@ -10,7 +10,7 @@ from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.api.types import is_scalar
 
 from ..base import setdiff
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from ..tibble import rownames_to_column
 
 from .bind import bind_rows
@@ -51,7 +51,7 @@ def rows_insert(x, y, by=None, copy=True):
     if any(bad):
         raise ValueError("Attempting to insert duplicate rows.")
 
-    return regcall(bind_rows, x, y, _copy=copy)
+    return bind_rows(x, y, _copy=copy, __ast_fallback="normal")
 
 
 @register_verb(DataFrame)
@@ -171,7 +171,7 @@ def rows_upsert(x, y, by=None, copy=True):
     idx_existing = idx[~new]
 
     x.loc[idx_existing, y.columns] = y.loc[~new].values
-    return regcall(bind_rows, x, y.loc[new], _copy=copy)
+    return bind_rows(x, y.loc[new], _copy=copy, __ast_fallback="normal")
 
 
 @register_verb(DataFrame)
@@ -206,7 +206,7 @@ def rows_delete(
     _rows_check_key_df(x, key, df_name="x")
     _rows_check_key_df(y, key, df_name="y")
 
-    extra_cols = regcall(setdiff, y.columns, key)
+    extra_cols = setdiff(y.columns, key, __ast_fallback="normal")
     if len(extra_cols) > 0:
         logger.info("Ignoring extra columns: %s", extra_cols)
 
@@ -238,7 +238,7 @@ def _rows_check_key(by, x, y):
         if not isinstance(by_elem, str):
             raise ValueError("`by` must be a string or a list of strings.")
 
-    bad = regcall(setdiff, y.columns, x.columns)
+    bad = setdiff(y.columns, x.columns, __ast_fallback="normal")
     if len(bad) > 0:
         raise ValueError("All columns in `y` must exist in `x`.")
 
@@ -247,7 +247,7 @@ def _rows_check_key(by, x, y):
 
 def _rows_check_key_df(df, by, df_name) -> None:
     """Check key with the data frame"""
-    y_miss = regcall(setdiff, by, df.columns)
+    y_miss = setdiff(by, df.columns, __ast_fallback="normal")
     if len(y_miss) > 0:
         raise ValueError(f"All `by` columns must exist in `{df_name}`.")
 
@@ -258,6 +258,6 @@ def _rows_check_key_df(df, by, df_name) -> None:
 def _rows_match(x, y):
     """Mimic vctrs::vec_match"""
     id_col = "__id__"
-    y_with_id = regcall(rownames_to_column, y, var=id_col)
+    y_with_id = rownames_to_column(y, var=id_col, __ast_fallback="normal")
 
-    return regcall(left_join, x, y_with_id)[id_col].values
+    return left_join(x, y_with_id, __ast_fallback="normal")[id_col].values

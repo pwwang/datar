@@ -26,16 +26,16 @@ from datar.base.verbs import (
 from datar.base import c, NA
 from datar.tibble import tibble
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal, assert_
 
 
 def test_rowcolnames():
     df = DataFrame(dict(x=[1, 2, 3]))
-    assert colnames(df) == ["x"]
-    assert rownames(df).tolist() == [0, 1, 2]
+    assert_equal(colnames(df), ["x"])
+    assert_equal(rownames(df).tolist(), [0, 1, 2])
     df = DataFrame([1, 2, 3], index=["a", "b", "c"])
-    assert colnames(df) == [0]
-    assert rownames(df).tolist() == ["a", "b", "c"]
+    assert_equal(colnames(df), [0])
+    assert_equal(rownames(df).tolist(), ["a", "b", "c"])
 
     df = colnames(df, ["y"])
     assert_iterable_equal(df.columns, ["y"])
@@ -77,8 +77,10 @@ def test_diag():
 
 def test_ncol():
     df = tibble(x=tibble(a=1, b=2))
-    assert ncol(df) == 1
-    assert ncol(df, nested=False) == 2
+    out = ncol(df)
+    assert out == 1
+    out = ncol(df, nested=False)
+    assert out == 2
 
 
 def test_t():
@@ -110,8 +112,8 @@ def test_union():
 
 
 def test_setequal():
-    assert setequal([1, 2], [2, 1])
-    assert setequal(1, 1)
+    assert_(setequal([1, 2], [2, 1]))
+    assert_(setequal(1, 1))
 
 
 def test_duplicated():

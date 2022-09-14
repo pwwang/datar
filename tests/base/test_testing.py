@@ -11,6 +11,7 @@ from datar.base.testing import (
     is_integer,
     is_numeric,
 )
+from datar.core.backends.pandas import DataFrame, Series
 from datar.tibble import tibble
 from ..conftest import assert_iterable_equal
 
@@ -31,6 +32,13 @@ def test_is_integer():
 
     a = np.array([1, 2], dtype=float)
     assert not is_integer(a)
+
+    a = Series([1, 1]).groupby([1, 2])
+    out = is_integer(a)
+    assert_iterable_equal(out, [True, True])
+
+    out = is_integer(DataFrame(dict(a=a.obj)))
+    assert not out
 
 
 def test_is_atomic():

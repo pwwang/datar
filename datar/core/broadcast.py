@@ -44,7 +44,7 @@ from .backends.pandas.core.groupby import (
 from .backends.pandas.api.types import is_list_like
 
 from .tibble import Tibble, TibbleGrouped, TibbleRowwise
-from .utils import name_of, regcall, dict_get
+from .utils import name_of, dict_get
 
 if TYPE_CHECKING:
     from .backends.pandas import Grouper
@@ -71,8 +71,18 @@ def _regroup(x: GroupBy, new_sizes: Union[int, np.ndarray]) -> GroupBy:
     indices = np.arange(x.obj.shape[0]).repeat(repeats)
     gdata = x.grouper.groupings[0].obj
     gdata = gdata.take(indices)
-    grouped = gdata.groupby(x.grouper.names)
-    return x.obj.take(indices).groupby(grouped.grouper)
+    grouped = gdata.groupby(
+        x.grouper.names,
+        dropna=x.dropna,
+        observed=x.observed,
+        sort=x.sort,
+    )
+    return x.obj.take(indices).groupby(
+        grouped.grouper,
+        observed=grouped.observed,
+        sort=grouped.sort,
+        dropna=grouped.dropna,
+    )
 
 
 def _agg_result_compatible(index: Index, grouper: "Grouper") -> bool:
@@ -407,7 +417,7 @@ def broadcast_to(
         >>> broadcast_to([1, 2], Index([0, 0, 1, 1]))
         >>> # ValueError
         >>>
-        >>> # grouper: size()        # [1, 1]
+        >>> # grouper: size()        # [2, 2]
         >>> # grouper: result_index  # ['a', 'b']
         >>> broadcast_to([1, 2], Index([0, 0, 1, 1]), grouper)
         >>> # Series: [1, 2, 1, 2], index: [0, 0, 1, 1]
@@ -450,6 +460,8 @@ def broadcast_to(
     # broadcast value to each group
     # length of each group is checked in _broadcast_base
     # A better way to distribute the value to each group?
+    # TODO: NA in grouper_index?
+    # See also https://github.com/pandas-dev/pandas/issues/35202
     idx = np.concatenate(
         [grouper.groups[gdata] for gdata in grouper.result_index]
     )
@@ -730,7 +742,7 @@ def _(value: SeriesGroupBy, name: str) -> Tibble:
 def _(value: Union[DataFrame, DataFrameGroupBy], name: str) -> Tibble:
     from ..tibble import as_tibble
 
-    result = regcall(as_tibble, value)
+    result = as_tibble(value, __ast_fallback="normal")
 
     if name:
         result = result.copy()

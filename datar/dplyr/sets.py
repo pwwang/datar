@@ -9,7 +9,6 @@ from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
 from ..core.tibble import TibbleGrouped, reconstruct_tibble
-from ..core.utils import regcall
 
 from ..base.verbs import intersect, union, setdiff, setequal
 from .bind import bind_rows
@@ -24,8 +23,8 @@ def _check_xy(x, y):
             f"- different number of columns: {x.shape[1]} vs {y.shape[1]}"
         )
 
-    in_y_not_x = regcall(setdiff, y.columns, x.columns)
-    in_x_not_y = regcall(setdiff, x.columns, y.columns)
+    in_y_not_x = setdiff(y.columns, x.columns, __ast_fallback="normal")
+    in_x_not_y = setdiff(x.columns, y.columns, __ast_fallback="normal")
     if in_y_not_x.size > 0 or in_x_not_y.size > 0:
         msg = ["not compatible:"]
         if in_y_not_x:
@@ -49,7 +48,10 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
     _check_xy(x, y)
     from .distinct import distinct
 
-    out = regcall(distinct, pd.merge(x, regcall(ungroup, y), how="inner"))
+    out = distinct(
+        pd.merge(x, ungroup(y, __ast_fallback="normal"), how="inner"),
+        __ast_fallback="normal",
+    )
     if isinstance(y, TibbleGrouped):
         return reconstruct_tibble(y, out)
     return out
@@ -57,8 +59,8 @@ def _(x: DataFrame, y: DataFrame) -> DataFrame:
 
 @intersect.register(TibbleGrouped, context=Context.EVAL)
 def _(x, y):
-    newx = regcall(ungroup, x)
-    newy = regcall(ungroup, y)
+    newx = ungroup(x, __ast_fallback="normal")
+    newy = ungroup(y, __ast_fallback="normal")
     out = intersect.dispatch(DataFrame)(newx, newy)
     return reconstruct_tibble(x, out)
 
@@ -77,7 +79,10 @@ def _(x, y):
     _check_xy(x, y)
     from .distinct import distinct
 
-    out = regcall(distinct, pd.merge(x, regcall(ungroup, y), how="outer"))
+    out = distinct(
+        pd.merge(x, ungroup(y, __ast_fallback="normal"), how="outer"),
+        __ast_fallback="normal",
+    )
     out.reset_index(drop=True, inplace=True)
     if isinstance(y, TibbleGrouped):
         return reconstruct_tibble(y, out)
@@ -87,8 +92,8 @@ def _(x, y):
 @union.register(TibbleGrouped, context=Context.EVAL)
 def _(x, y):
     out = union.dispatch(DataFrame)(
-        regcall(ungroup, x),
-        regcall(ungroup, y),
+        ungroup(x, __ast_fallback="normal"),
+        ungroup(y, __ast_fallback="normal"),
     )
     return reconstruct_tibble(x, out)
 
@@ -106,15 +111,20 @@ def _(x, y):
     """
     _check_xy(x, y)
     indicator = "__datar_setdiff__"
-    out = pd.merge(x, regcall(ungroup, y), how="left", indicator=indicator)
+    out = pd.merge(
+        x,
+        ungroup(y, __ast_fallback="normal"),
+        how="left",
+        indicator=indicator,
+    )
 
     from .distinct import distinct
 
-    out = regcall(
-        distinct,
+    out = distinct(
         out[out[indicator] == "left_only"]
         .drop(columns=[indicator])
         .reset_index(drop=True),
+        __ast_fallback="normal",
     )
     if isinstance(y, TibbleGrouped):
         return reconstruct_tibble(y, out)
@@ -123,7 +133,10 @@ def _(x, y):
 
 @setdiff.register(TibbleGrouped, context=Context.EVAL)
 def _(x, y):
-    out = setdiff.dispatch(DataFrame)(regcall(ungroup, x), regcall(ungroup, y))
+    out = setdiff.dispatch(DataFrame)(
+        ungroup(x, __ast_fallback="normal"),
+        ungroup(y, __ast_fallback="normal"),
+    )
     return reconstruct_tibble(x, out)
 
 
@@ -139,7 +152,11 @@ def union_all(x, y):
         The dataframe of union of all rows of input dataframes
     """
     _check_xy(x, y)
-    out = regcall(bind_rows, x, regcall(ungroup, y))
+    out = bind_rows(
+        x,
+        ungroup(y, __ast_fallback="normal"),
+        __ast_fallback="normal",
+    )
     if isinstance(y, TibbleGrouped):
         return reconstruct_tibble(y, out)
     return out
@@ -147,23 +164,28 @@ def union_all(x, y):
 
 @union_all.register(TibbleGrouped, context=Context.EVAL)
 def _(x, y):
-    out = union_all.dispatch(DataFrame)(regcall(ungroup, x), regcall(ungroup, y))
+    out = union_all.dispatch(DataFrame)(
+        ungroup(x, __ast_fallback="normal"),
+        ungroup(y, __ast_fallback="normal"),
+    )
     return reconstruct_tibble(x, out)
 
 
 @setequal.register(DataFrame, context=Context.EVAL)
-def _(x, y):
+def _(x, y, equal_na=True):
     """Check if two dataframes equal, grouping structures are ignored.
 
     Args:
         x: The first dataframe
         y: The second dataframe
+        equal_na: To be compatible with non-dataframe version. Takes no effect
+            for dataframe.
 
     Returns:
         True if they equal else False
     """
-    x = regcall(ungroup, x)
-    y = regcall(ungroup, y)
+    x = ungroup(x, __ast_fallback="normal")
+    y = ungroup(y, __ast_fallback="normal")
     _check_xy(x, y)
 
     x = x.sort_values(by=x.columns.to_list()).reset_index(drop=True)

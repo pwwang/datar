@@ -1,6 +1,6 @@
 from datar.core.backends.pandas import Categorical
 from datar import f
-from datar.base.date import as_date
+from datar.base import c, as_date, rep
 from datar.datar import (
     get,
     flatten,
@@ -23,6 +23,9 @@ def test_itemgetter():
     out = df >> mutate(y=itemgetter(arr, f.x))
     assert_frame_equal(out, tibble(x=2, y=3))
 
+    df = tibble(x=c[1:9], y=rep(c[1:3], each=4)) >> group_by(f.y)
+    out = itemgetter(df.x, c[:2])
+    assert_iterable_equal(out.obj, [1, 2, 5, 6])
 
 def test_get():
     df = tibble(x=2)
@@ -84,7 +87,7 @@ def test_pd_cat():
         x=Categorical(["a", "b"], categories=["a", "b", "c"])
     ) >> group_by(g=[1, 2])
     out = df >> summarise(lvls=pd_cat(f.x).categories)
-
+    print(out)
     assert_iterable_equal(out.lvls[0], ["a", "b", "c"])
     assert_iterable_equal(out.lvls[1], ["a", "b", "c"])
 

@@ -35,6 +35,7 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 |---|---|---:|
 |<s>`tibble-package`</s>|||
 |[`tibble()`][12] [`tibble_row()`][18]|Build a data frame| [:material-notebook:][2] |
+|[`fibble()`][13]|Same as `tibble()` but used as Verb arguments| [:material-notebook:][2] |
 |<s>`tbl_df-class`</s>|||
 |<s>`print(<tbl_df>)`</s> <s>`format(<tbl_df>)`</s>|||
 |[`tribble()`][3]|Row-wise tibble creation|[:material-notebook:][2]|
@@ -79,6 +80,7 @@ Reference map of `r-tidyverse-tibble` can be found [here][1].
 [10]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.has_rownames
 [11]: ../../notebooks/rownames
 [12]: ../../api/datar.tibble.tibble/#datar.tibble.tibble.tibble
+[13]: ../../api/datar.tibble.tibble/#datar.tibble.tibble.fibble
 [14]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.deframe
 [15]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.remove_rownames
 [16]: ../../api/datar.tibble.verbs/#datar.tibble.verbs.rownames_to_column

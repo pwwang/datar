@@ -6,8 +6,7 @@ from ..core.backends.pandas import Categorical, DataFrame, Series
 from ..core.backends.pandas.api.types import is_scalar
 from ..core.backends.pandas.core.groupby import SeriesGroupBy
 
-from pipda import register_func, register_verb
-from pipda.utils import CallingEnvs, functype
+from pipda import register_func, register_verb, Verb
 
 from ..base import (
     NA,
@@ -28,7 +27,7 @@ from ..base import (
 )
 from ..core.collections import Collection
 from ..core.contexts import Context
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from .lvls import lvls_reorder, lvls_seq
 from .utils import check_factor, ForcatsRegType
 
@@ -57,29 +56,37 @@ def fct_relevel(
     """
 
     _f = check_factor(_f)
-    old_levels = regcall(levels, _f)
+    old_levels = levels(_f)
     if len(lvls) == 1 and callable(lvls[0]):
         first_levels = lvls[0](old_levels)
     else:
         first_levels = Collection(lvls)
 
-    unknown = regcall(setdiff, first_levels, old_levels)
+    unknown = setdiff(first_levels, old_levels, __ast_fallback="normal")
 
     if len(unknown) > 0:
         logger.warning("[fct_relevel] Unknown levels in `_f`: %s", unknown)
-        first_levels = regcall(intersect, first_levels, old_levels)
+        first_levels = intersect(
+            first_levels,
+            old_levels,
+            __ast_fallback="normal",
+        )
 
-    new_levels = regcall(
-        append,
-        regcall(setdiff, old_levels, first_levels).astype(old_levels.dtype),
+    new_levels = append(
+        setdiff(
+            old_levels,
+            first_levels,
+            __ast_fallback="normal",
+        ).astype(old_levels.dtype),
         first_levels,
         after=after,
+        __ast_fallback="normal",
     )
 
-    return regcall(
-        lvls_reorder,
+    return lvls_reorder(
         _f,
-        regcall(match, new_levels, old_levels),
+        match(new_levels, old_levels),
+        __ast_fallback="normal",
     )
 
 
@@ -99,15 +106,20 @@ def fct_inorder(_f, ordered: bool = None) -> Categorical:
     _f1 = _f.obj if is_sgb else _f
 
     _f1 = check_factor(_f1)
-    dups = regcall(duplicated, _f1)
-    idx = regcall(as_integer, _f1)[~dups]
+    dups = duplicated(_f1, __ast_fallback="normal")
+    idx = as_integer(_f1)[~dups]
     idx = idx[~pd.isnull(_f1[~dups])]
-    out = regcall(lvls_reorder, _f1, idx, ordered=ordered)
+    out = lvls_reorder(_f1, idx, ordered=ordered, __ast_fallback="normal")
 
     if not is_sgb:
         return out
 
-    return Series(out, _f.obj.index).groupby(_f.grouper)
+    return Series(out, _f.obj.index).groupby(
+        _f.grouper,
+        observed=_f.observed,
+        sort=_f.sort,
+        dropna=_f.dropna,
+    )
 
 
 as_factor = fct_inorder
@@ -126,15 +138,11 @@ def fct_infreq(_f, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    return regcall(
-        lvls_reorder,
+    return lvls_reorder(
         _f,
-        regcall(
-            order,
-            regcall(table, _f).values.flatten(),
-            decreasing=True,
-        ),
+        order(table(_f).values.flatten(), decreasing=True),
         ordered=ordered,
+        __ast_fallback="normal",
     )
 
 
@@ -151,11 +159,11 @@ def fct_inseq(_f, ordered: bool = None) -> Categorical:
         The factor with levels reordered
     """
     _f = check_factor(_f)
-    levs = regcall(levels, _f)
+    levs = levels(_f)
     num_levels = []
     for lev in levs:
         try:
-            numlev = regcall(as_integer, lev)
+            numlev = as_integer(lev)
         except (ValueError, TypeError):
             numlev = NA
         num_levels.append(numlev)
@@ -165,15 +173,15 @@ def fct_inseq(_f, ordered: bool = None) -> Categorical:
             "At least one existing level must be coercible to numeric."
         )
 
-    return regcall(
-        lvls_reorder,
+    return lvls_reorder(
         _f,
-        regcall(order, num_levels, na_last=True),
+        order(num_levels, na_last=True),
         ordered=ordered,
+        __ast_fallback="normal",
     )
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def last2(_x: Iterable, _y: Sequence) -> Any:
     """Find the last element of `_y` ordered by `_x`
 
@@ -187,7 +195,7 @@ def last2(_x: Iterable, _y: Sequence) -> Any:
     return list(_y[order(_x, na_last=False)])[-1]
 
 
-@register_func(None, context=Context.EVAL)
+@register_func(context=Context.EVAL)
 def first2(_x: Sequence, _y: Sequence) -> Any:
     """Find the first element of `_y` ordered by `_x`
 
@@ -230,24 +238,27 @@ def fct_reorder(
     if len(_f) != len(_x):
         raise ValueError("Unmatched length between `_x` and `_f`.")
 
-    if functype(_fun) != "plain":
-        kwargs["__calling_env"] = CallingEnvs.REGULAR
-
-    args = args[1:]
-    # simulate tapply
     summary = (
         DataFrame({"f": _f, "x": _x})
-        .groupby("f", observed=False)
-        .agg(lambda col: _fun(col, *args, **kwargs))
+        .groupby("f", observed=False, sort=False, dropna=False)
     )
+    args = args[1:]
+    if isinstance(_fun, Verb):  # pragma: no cover
+        # simulate tapply
+        # TODO: test
+        summary = summary.agg(
+            lambda col: _fun(col, *args, **kwargs, __ast_fallback="normal")
+        )
+    else:
+        summary = summary.agg(lambda col: _fun(col, *args, **kwargs))
 
     if not is_scalar(summary.iloc[0, 0]):
         raise ValueError("`fun` must return a single value per group.")
 
-    return regcall(
-        lvls_reorder,
+    return lvls_reorder(
         _f,
-        regcall(order, summary.iloc[:, 0], decreasing=_desc),
+        order(summary.iloc[:, 0], decreasing=_desc),
+        __ast_fallback="normal",
     )
 
 
@@ -283,15 +294,25 @@ def fct_reorder2(
     if len(_f) != len(_x) or len(_f) != len(_y):
         raise ValueError("Unmatched length between `_x` and `_f`.")
 
-    if functype(_fun) != "plain":
-        kwargs["__calling_env"] = CallingEnvs.REGULAR
-
-    args = args[1:]
-    # simulate tapply
     summary = (
         DataFrame({"f": _f, "x": _x, "y": _y})
-        .groupby("f", observed=False)
-        .apply(
+        .groupby("f", observed=False, sort=False, dropna=False)
+    )
+    args = args[1:]
+
+    if isinstance(_fun, Verb):  # pragma: no cover
+        # TODO: test
+        summary = summary.apply(
+            lambda row: _fun(
+                row.x.reset_index(drop=True),
+                row.y.reset_index(drop=True),
+                *args,
+                **kwargs,
+                __ast_fallback="normal",
+            )
+        )
+    else:
+        summary = summary.apply(
             lambda row: _fun(
                 row.x.reset_index(drop=True),
                 row.y.reset_index(drop=True),
@@ -299,15 +320,14 @@ def fct_reorder2(
                 **kwargs,
             )
         )
-    )
 
     if not isinstance(summary, Series) or not is_scalar(summary.values[0]):
         raise ValueError("`fun` must return a single value per group.")
 
-    return regcall(
-        lvls_reorder,
+    return lvls_reorder(
         _f,
-        regcall(order, summary, decreasing=_desc),
+        order(summary, decreasing=_desc),
+        __ast_fallback="normal",
     )
 
 
@@ -323,7 +343,7 @@ def fct_shuffle(_f) -> Categorical:
     """
     _f = check_factor(_f)
 
-    return regcall(lvls_reorder, _f, regcall(sample, lvls_seq(_f)))
+    return lvls_reorder(_f, sample(lvls_seq(_f)), __ast_fallback="normal")
 
 
 @register_verb(ForcatsRegType)
@@ -338,7 +358,7 @@ def fct_rev(_f) -> Categorical:
     """
     _f = check_factor(_f)
 
-    return regcall(lvls_reorder, _f, regcall(rev, lvls_seq(_f)))
+    return lvls_reorder(_f, rev(lvls_seq(_f)))
 
 
 @register_verb(ForcatsRegType, context=Context.EVAL)
@@ -353,7 +373,7 @@ def fct_shift(_f, n: int = 1) -> Categorical:
     Returns:
         The factor with levels shifted
     """
-    nlvls = regcall(nlevels, _f)
-    lvl_order = (regcall(seq_len, nlvls) + n - 1) % nlvls
+    nlvls = nlevels(_f)
+    lvl_order = (seq_len(nlvls) + n - 1) % nlvls
 
-    return regcall(lvls_reorder, _f, lvl_order)
+    return lvls_reorder(_f, lvl_order, __ast_fallback="normal")

@@ -4,7 +4,7 @@ from ..core.factory import func_factory
 from ..base import seq
 
 
-@func_factory("apply", "x")
+@func_factory(kind="apply")
 def full_seq(x, period, tol=1e-6):
     """Create the full sequence of values in a vector
 

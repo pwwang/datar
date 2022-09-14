@@ -7,7 +7,9 @@ from datar.all import (
     tibble,
     mutate,
     select,
+    summarise,
 )
+from tests.conftest import assert_iterable_equal
 
 
 def test_neg():
@@ -67,8 +69,11 @@ def test_inv():
 
 def test_neg():
     df = tibble(x=1, y=2)
-    out = df >> select(-f[:1])
+    out = df >> select(-c[:1])
     assert out.columns.tolist() == ["y"]
+
+    out = df >> summarise(z=-c(f.x, f.y))
+    assert_iterable_equal(out.z, [-1, -2])
 
 
 def test_and_or():
@@ -80,6 +85,9 @@ def test_and_or():
     assert out.a.tolist() == [True]
 
     out = df >> mutate(a=True & f.y)
+    assert out.a.tolist() == [True]
+
+    out = df >> mutate(a=True | f.y)
     assert out.a.tolist() == [True]
 
     out = df >> select(c(f.x, f.y) | c(f.y, f.z))

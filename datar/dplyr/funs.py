@@ -1,6 +1,8 @@
 """Functions from R-dplyr"""
 import numpy as np
 
+from datar.core.tibble import TibbleGrouped, TibbleRowwise
+
 from ..core.backends import pandas as pd
 from ..core.backends.pandas import Series
 from ..core.backends.pandas.api.types import is_scalar
@@ -9,7 +11,7 @@ from ..core.backends.pandas.core.groupby import SeriesGroupBy
 from ..core.factory import func_factory
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def between(x, left, right, inclusive="both"):
     """Function version of `left <= x <= right`, works for both scalar and
     vector data
@@ -34,25 +36,25 @@ def between(x, left, right, inclusive="both"):
 between.register(SeriesGroupBy, "between")
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def cummean(x: Series):
     """Get cumulative means"""
     return x.cumsum() / (np.arange(x.size) + 1.0)
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def cumall(x, na_as=False):
     """Get cumulative bool. All cases after first False"""
     return x.fillna(na_as).cumprod().astype(bool)
 
 
-@func_factory("transform", "x")
+@func_factory(kind="transform")
 def cumany(x, na_as=False):
     """Get cumulative bool. All cases after first True"""
     return x.fillna(na_as).cumsum().astype(bool)
 
 
-@func_factory("transform", {"x", "replace"})
+@func_factory({"x", "replace"}, "transform")
 def coalesce(x, *replace):
     """Replace missing values
 
@@ -72,17 +74,7 @@ def coalesce(x, *replace):
     return x
 
 
-@coalesce.register(SeriesGroupBy, meta=False)
-def _(x, *replace):
-    out = coalesce.dispatched(x.obj, *(repl.obj for repl in replace))
-    out = out.groupby(x.grouper)
-    if getattr(x, "is_rowwise", False):
-        out.is_rowwise = True
-
-    return out
-
-
-@func_factory("transform", {"x", "y"})
+@func_factory({"x", "y"})
 def na_if(x, y, __args_raw=None):
     """Convert an annoying value to NA
 
@@ -93,6 +85,9 @@ def na_if(x, y, __args_raw=None):
     Returns:
         A vector with values replaced.
     """
+    if is_scalar(x) and is_scalar(y):  # rowwise
+        return np.nan if x == y else x
+
     rawx = __args_raw["x"] if __args_raw else x
     lenx = 1 if is_scalar(rawx) else len(rawx)
     if lenx < y.size:
@@ -103,21 +98,25 @@ def na_if(x, y, __args_raw=None):
     return x
 
 
-@na_if.register(SeriesGroupBy, meta=False)
-def _(x, y, __args_raw=None):
-    out = na_if.dispatched(x.obj, y.obj)
-    out = out.groupby(x.grouper)
-    if getattr(x, "is_rowwise", False):
+@na_if.register((TibbleGrouped, TibbleRowwise), func="default", post="decor")
+def _na_if_post(__out, x, y, __args_raw=None):
+    rawx = __args_raw["x"]
+    out = __out.groupby(
+        rawx.grouper,
+        sort=rawx.sort,
+        dropna=rawx.dropna,
+        observed=rawx.observed,
+    )
+    if getattr(rawx, "is_rowwise", False):
         out.is_rowwise = True
-
     return out
 
 
 near = func_factory(
-    "transform",
     {"a", "b"},
     name="near",
-    qualname="datar.dplyr.near",
+    qualname="near",
+    module="datar.dplyr",
     doc="""Compare numbers with tolerance
 
     Args:
@@ -132,20 +131,21 @@ near = func_factory(
     Returns:
         A bool array indicating element-wise equvalence between a and b
     """,
-    func=np.isclose,
+    func=lambda a, b, __args_raw=None: np.isclose(a, b),
 )
 
 
-@near.register(SeriesGroupBy, meta=False)
-def _(x, y, rtol=1e-05, atol=1e-08, equal_nan=False):
-    out = Series(
-        near.dispatched(x.obj, y.obj, rtol, atol, equal_nan),
-        index=x.obj.index,
+@near.register((TibbleGrouped, TibbleRowwise), func="default", post="decor")
+def _near_post(__out, a, b, __args_raw=None):
+    rawx = __args_raw["a"]
+    out = __out.groupby(
+        rawx.grouper,
+        sort=rawx.sort,
+        dropna=rawx.dropna,
+        observed=rawx.observed,
     )
-    out = out.groupby(x.grouper)
-    if getattr(x, "is_rowwise", False):
+    if getattr(rawx, "is_rowwise", False):
         out.is_rowwise = True
-
     return out
 
 
@@ -166,7 +166,7 @@ def _nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
         return default
 
 
-@func_factory("agg", {"x", "order_by"})
+@func_factory({"x", "order_by"}, "agg")
 def nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
     """Get the nth element of x
 
@@ -187,7 +187,7 @@ def nth(x, n, order_by=np.nan, default=np.nan, __args_raw=None):
     )
 
 
-@func_factory("agg", {"x", "order_by"})
+@func_factory({"x", "order_by"}, "agg")
 def first(
     x,
     order_by=np.nan,
@@ -200,7 +200,7 @@ def first(
     )
 
 
-@func_factory("agg", {"x", "order_by"})
+@func_factory({"x", "order_by"}, "agg")
 def last(
     x,
     order_by=np.nan,

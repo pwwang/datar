@@ -20,8 +20,8 @@ NA_compex_ = complex(NA_real_, NA_real_)
 
 
 is_na = func_factory(
-    "transform",
-    "x",
+    kind="transform",
+    func=pd.isnull,
     qualname="datar.base.is_na",
     name="is_na",
     doc="""Test if a value is nullable or elements in the value is nullable
@@ -33,12 +33,11 @@ is_na = func_factory(
         If `x` is scalar, returns a scalar bool. Otherwise, return an array
         of bools.
     """,
-    func=pd.isnull,
     signature=SINGLE_ARG_SIGNATURE,
 )
 
 
-@func_factory("agg", "x")
+@func_factory(kind="agg")
 def any_na(x):
     """Check if any element in the value is nullable
 
@@ -53,10 +52,10 @@ def any_na(x):
 
 
 is_infinite = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="is_infinite",
-    qualname="datar.base.is_infinite",
+    qualname="is_infinite",
+    module="datar.base",
     doc="""Check if a value or values are infinite numbers
 
     Args:
@@ -71,10 +70,10 @@ is_infinite = func_factory(
 )
 
 is_finite = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="is_finite",
-    qualname="datar.base.is_finite",
+    qualname="is_finite",
+    module="datar.base",
     doc="""Check if a value or values are finite numbers
 
     Args:
@@ -89,10 +88,10 @@ is_finite = func_factory(
 )
 
 is_nan = func_factory(
-    "transform",
-    "x",
+    kind="transform",
     name="is_nan",
-    qualname="datar.base.is_nan",
+    qualname="is_nan",
+    module="datar.base",
     doc="""Check if a value or values are NaNs
 
     Args:

@@ -3,12 +3,11 @@
 See souce code https://github.com/tidyverse/dplyr/blob/master/R/count-tally.R
 """
 from pipda import register_verb
-from pipda.function import Function
 
 from ..core.backends.pandas import DataFrame
 
 from ..core.contexts import Context
-from ..core.utils import logger, regcall
+from ..core.utils import logger
 from ..core.defaults import f
 from ..core.tibble import reconstruct_tibble
 from ..base import options_context, sum_
@@ -52,23 +51,23 @@ def count(
         _drop = group_by_drop_default(x)
 
     if args or kwargs:
-        out = regcall(
-            group_by,
+        out = group_by(
             x,
             *args,
             **kwargs,
             _add=True,
             _drop=_drop,
+            __ast_fallback="normal",
         )
     else:
         out = x
 
-    out = regcall(
-        tally,
+    out = tally(
         out,
         wt=wt,
         sort=sort,
         name=name,
+        __ast_fallback="normal",
     )
 
     return reconstruct_tibble(x, out)
@@ -85,28 +84,28 @@ def tally(
 
     See count()
     """
-    tallyn = _tally_n(wt)
 
-    name = _check_name(name, regcall(group_vars, x))
+    name = _check_name(name, group_vars(x, __ast_fallback="normal"))
     # thread-safety?
     with options_context(dplyr_summarise_inform=False):
-        out = regcall(
-            summarise,
+        out = summarise(
             x,
+            __ast_fallback="normal",
             **{
                 # name: n(__calling_env=CallingEnvs.PIPING)
-                name: Function(n, (), {})
-                if tallyn is None
-                else tallyn
+                name: n()
+                if wt is None
+                else sum_(wt, na_rm=True)
             },
         )
 
     if sort:
-        out = regcall(
-            arrange,
-            regcall(ungroup, out),
+        out = arrange(
+            ungroup(out, __ast_fallback="normal"),
             # desc(f[name], __calling_env=CallingEnvs.PIPING)
-            Function(desc, (f[name], ), {}, dataarg=False)
+            # FunctionCall(desc, (f[name], ), {}),
+            desc(f[name]),
+            __ast_fallback="normal",
         )
         out.reset_index(drop=True, inplace=True)
         return reconstruct_tibble(x, out)
@@ -128,17 +127,17 @@ def add_count(
     See count().
     """
     if args or kwargs:
-        out = regcall(
-            group_by,
+        out = group_by(
             x,
             *args,
             **kwargs,
             _add=True,
+            __ast_fallback="normal",
         )
     else:
         out = x
 
-    out = regcall(add_tally, out, wt=wt, sort=sort, name=name)
+    out = add_tally(out, wt=wt, sort=sort, name=name, __ast_fallback="normal")
     return out
 
 
@@ -148,26 +147,26 @@ def add_tally(x, wt=None, sort=False, name="n"):
 
     See count().
     """
-    tallyn = _tally_n(wt)
     name = _check_name(name, x.columns)
 
-    out = regcall(
-        mutate,
+    out = mutate(
         x,
         **{
             # name: n(__calling_env=CallingEnvs.PIPING)
-            name: Function(n, (), {})
-            if tallyn is None
-            else tallyn
+            name: n()
+            if wt is None
+            else sum_(wt, na_rm=True)
         },
+        __ast_fallback="normal",
     )
 
     if sort:
-        sort_ed = regcall(
-            arrange,
-            regcall(ungroup, out),
+        sort_ed = arrange(
+            ungroup(out, __ast_fallback="normal"),
             # desc(f[name], __calling_env=CallingEnvs.PIPING)
-            Function(desc, (f[name], ), {}, dataarg=False)
+            # FunctionCall(desc, (f[name], ), {}),
+            desc(f[name]),
+            __ast_fallback="normal",
         )
         sort_ed.reset_index(drop=True, inplace=True)
         return reconstruct_tibble(x, sort_ed)
@@ -176,15 +175,6 @@ def add_tally(x, wt=None, sort=False, name="n"):
 
 
 # Helpers -----------------------------------------------------------------
-def _tally_n(wt):
-    """Compuate the weights for counting"""
-    if wt is None:
-        return None  # will be n() later on
-
-    # If it's Expression, will return a Function object
-    # Otherwise, sum of wt
-    return Function(sum_, (wt, ), {"na_rm": True}, dataarg=False)
-
 
 def _check_name(name, invars):
     """Check if count is valid"""
