@@ -32,7 +32,6 @@ def get_versions(prnt: bool = True):
     import numpy
     import pipda
     import executing
-    import varname
     from diot import Diot
 
     out = Diot(
@@ -41,7 +40,6 @@ def get_versions(prnt: bool = True):
         numpy=numpy.__version__,
         pipda=pipda.__version__,
         executing=executing.__version__,
-        varname=varname.__version__,
     )
 
     backend = get_option("backend")
