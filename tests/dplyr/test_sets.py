@@ -37,16 +37,16 @@ from datar.dplyr import (
 from datar.tibble import tibble
 from datar.datar import get
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal, assert_
 
 
 def test_set_uses_coercion_rules():
     df1 = tibble(x=[1, 2], y=[1, 1])
     df2 = tibble(x=[1, 2], y=[1, 2])
 
-    assert nrow(union(df1, df2)) == 3
-    assert nrow(intersect(df1, df2)) == 1
-    assert nrow(setdiff(df1, df2)) == 1
+    assert_equal(nrow(union(df1, df2)), 3)
+    assert_equal(nrow(intersect(df1, df2)), 1)
+    assert_equal(nrow(setdiff(df1, df2)), 1)
 
     df1 = tibble(x=factor(letters[:10]))
     df2 = tibble(x=letters[5:15])
@@ -103,7 +103,7 @@ def test_set_operations_reconstruct_grouping_metadata():
     out = union(df1, df2)
     exp = tibble(x=seq(1, 6), g=rep([1, 2, 3], each=2)) >> group_by(f.g)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = setdiff(df1, df2) >> group_rows()
     assert out == [[0, 1]]
@@ -177,17 +177,17 @@ def test_set_operations_remove_duplicates():
 
     out = union_all(df1 >> group_by(f.g), df2)
     assert out.equals(exp)
-    assert group_vars(out) == ["g"]
+    assert_equal(group_vars(out), ["g"])
 
 
 def test_set_equality():
     df1 = tibble(x=seq(1, 4), g=rep([1, 2], each=2)) >> group_by(f.g)
     df2 = tibble(x=seq(3, 6), g=rep([2, 3], each=2))
 
-    assert setequal(df1, df1)
-    assert setequal(df2, df2)
-    assert not setequal(df1, df2)
-    assert not setequal(df2, df1)
+    assert_(setequal(df1, df1))
+    assert_(setequal(df2, df2))
+    assert_(not setequal(df1, df2))
+    assert_(not setequal(df2, df1))
 
 
 # Errors ------------------------------------------------------------------

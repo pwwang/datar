@@ -30,7 +30,7 @@ from datar.dplyr import (
 from datar.core.tibble import TibbleRowwise
 from datar.dplyr.dslice import _n_from_prop
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_empty_slice_returns_input():
@@ -42,7 +42,7 @@ def test_empty_slice_returns_input():
 def test_slice_handles_numeric_input():
     g = mtcars >> arrange(f.cyl) >> group_by(f.cyl)
     res = g >> slice(0)
-    assert nrow(res) == 3
+    assert_equal(nrow(res), 3)
     exp = g >> filter(row_number() == 1)
     assert_frame_equal(res, exp)
 
@@ -123,15 +123,15 @@ def test_slice_gives_correct_rows():
 def test_slice_handles_na():
     df = tibble(x=[1, 2, 3])
     out = slice(df, NA)
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
     out = slice(df, c(1, NA))
-    assert nrow(out) == 1
+    assert_equal(nrow(out), 1)
     out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
     df = tibble(x=[1, 2, 3, 4], g=rep([1, 2], 2)) >> group_by(f.g)
     out = slice(df, c(1, NA))
-    assert nrow(out) == 2
+    assert_equal(nrow(out), 2)
     out = df >> slice(c(~c(1), NA)) >> nrow()
     assert out == 2
 
@@ -139,14 +139,14 @@ def test_slice_handles_na():
 def test_slice_handles_logical_NA():
     df = tibble(x=[1, 2, 3])
     out = slice(df, NA)
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
 
 def test_slice_handles_empty_df():
     df = tibble(x=[])
     res = df >> slice(c[:3])
-    assert nrow(res) == 0
-    assert names(res) == ["x"]
+    assert_equal(nrow(res), 0)
+    assert_equal(names(res), ["x"])
 
 
 def test_slice_works_fine_if_n_gt_nrow():
@@ -158,7 +158,7 @@ def test_slice_works_fine_if_n_gt_nrow():
 
 def test_slice_strips_grouped_indices():
     res = mtcars >> group_by(f.cyl) >> slice(1) >> mutate(mpgplus=f.mpg + 1)
-    assert nrow(res) == 3
+    assert_equal(nrow(res), 3)
     out = group_rows(res)
     assert out == [[0], [1], [2]]
 
@@ -192,7 +192,7 @@ def test_slice_accepts_star_args():
 
 def test_slice_does_not_evaluate_the_expression_in_empty_groups():
     res = mtcars >> group_by(f.cyl) >> filter(f.cyl == 6) >> slice(c[:2])
-    assert nrow(res) == 2
+    assert_equal(nrow(res), 2)
 
     # sample_n is Superseded in favor of slice_sample
     # res = mtcars >> \
@@ -350,7 +350,7 @@ def test_slice_any_checks_for_constant_n_and_prop():
 def test_slice_sample_dose_not_error_on_0rows():
     df = tibble(dummy=[], weight=[])
     res = slice_sample(df, prop=0.5, weight_by=f.weight)
-    assert nrow(res) == 0
+    assert_equal(nrow(res), 0)
 
 
 # # Errors ------------------------------------------------------------------
@@ -416,7 +416,7 @@ def test_mixed_rows():
 def test_slice_sample_n_defaults_to_1():
     df = tibble(g=rep([1, 2], each=3), x=seq(1, 6))
     out = df >> slice_sample(n=None)
-    assert dim(out) == (1, 2)
+    assert_equal(dim(out), (1, 2))
 
 
 def test_slicex_on_grouped_data():
@@ -427,7 +427,7 @@ def test_slicex_on_grouped_data():
     out = gf >> slice_max(f.x)
     assert out.equals(tibble(g=[1, 2], x=[3, 6]))
     out = gf >> slice_sample()
-    assert dim(out) == (2, 2)
+    assert_equal(dim(out), (2, 2))
 
 
 def test_n_from_prop():
@@ -454,27 +454,27 @@ def test_slice_family_on_rowwise_df():
 
     out = df >> slice([0, 1, 2])
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_head(n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_tail(n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_min(f.x, n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_max(f.x, n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
     out = df >> slice_sample(n=3)
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 5
+    assert_equal(nrow(out), 5)
 
 
 def test_preserve_prop_not_support(caplog):

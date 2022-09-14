@@ -5,7 +5,7 @@ from datar.core.backends.pandas.api.types import is_categorical_dtype
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 from datar.core.tibble import TibbleGrouped, TibbleRowwise
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 # nest --------------------------------------------------------------------
 def test_nest_turns_grouped_values_into_one_list_df():
@@ -18,7 +18,7 @@ def test_nest_turns_grouped_values_into_one_list_df():
 def test_nest_uses_grouping_vars_if_present():
     df = tibble(x=[1,1,1], y=c[1:4])
     out = nest(group_by(df, f.x))
-    assert group_vars(out) == ['x']
+    assert_equal(group_vars(out), ['x'])
     assert_frame_equal(out.data.obj.values[0], tibble(y=c[1:4]))
 
 def test_nest_provides_grouping_vars_override_grouped_defaults():
@@ -67,11 +67,11 @@ def test_nest_works_with_empty_df():
     df = tibble(x=[], y=[])
     out = nest(df, data=f.x)
     assert out.columns.tolist() == ['y', 'data']
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
     out = nest(df, data=c(f.x, f.y))
     assert out.columns.tolist() == ['data']
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
 # test_that("tibble conversion occurs in the `nest.data.frame()` method", {
 #   df <- data.frame(x = 1, y = 1:2)
@@ -107,10 +107,10 @@ def test_nest_no_columns_error():
 def test_unnest_keep_empty_rows():
     df = tibble(x=c[1:4], y = [NULL, tibble(), tibble(a=1)])
     out1 = df >> unnest(f.y)
-    assert nrow(out1) == 1
+    assert_equal(nrow(out1), 1)
 
     out2 = df >> unnest(f.y, keep_empty=True)
-    assert nrow(out2) == 3
+    assert_equal(nrow(out2), 3)
     assert_iterable_equal(out2.a, [NA, NA, 1])
 
 ## problem with NAs (numpy.nan), which is a float type
@@ -130,7 +130,7 @@ def test_unnest_bad_inputs_error():
     df = tibble(x=1, y=[mean])
     out = unnest(df, f.y)
     ## able to do it
-    assert nrow(out) == 1
+    assert_equal(nrow(out), 1)
     # with pytest.raises(ValueError):
     #   unnest(df, f.y)
 
@@ -150,7 +150,7 @@ def test_unnest_rows_and_cols_of_nested_dfs_are_expanded():
     out = df >> unnest(f.y)
 
     assert out.columns.tolist() == ['x', 'a', 'b']
-    assert nrow(out) == 3
+    assert_equal(nrow(out), 3)
 
 def test_unnest_nested_lists():
     df = tibble(x=c[1:3], y=[[["a"]], [["b"]]])
@@ -209,7 +209,7 @@ def test_unnest_no_cols_error():
 def test_unnest_list_of_empty_dfs():
     df = tibble(x=[1,2], y=[tibble(a=[]), tibble(b=[])])
     out = df >> unnest(f.y)
-    assert dim(out) == (0, 3)
+    assert_equal(dim(out), (0, 3))
     assert out.columns.tolist() == ['x', 'a', 'b']
 
 # other methods -----------------------------------------------------------------
@@ -219,7 +219,7 @@ def test_unnest_rowwise_df_becomes_grouped_df():
     rs = df >> unnest(f.x)
     assert isinstance(rs, TibbleGrouped)
     assert not isinstance(rs, TibbleRowwise)
-    assert group_vars(rs) == ['g']
+    assert_equal(group_vars(rs), ['g'])
 
     # but without grouping vars, it's a tibble
     df = tibble(g=1, x=[[1,2,3]]) >> rowwise()
@@ -231,14 +231,14 @@ def test_unnest_grouping_preserved():
     rs = df >> unnest(f.x)
     assert isinstance(rs, TibbleGrouped)
     assert not isinstance(rs, TibbleRowwise)
-    assert group_vars(rs) == ['g']
+    assert_equal(group_vars(rs), ['g'])
 
 # Empty inputs ------------------------------------------------------------
 
 def test_unnest_empty_data_frame():
     df = tibble(x=[], y=[], _dtypes={'x': int})
     out = unnest(df, f.y)
-    assert dim(out) == (0, 2)
+    assert_equal(dim(out), (0, 2))
 
 
 ## unable to do it due to NAs being float

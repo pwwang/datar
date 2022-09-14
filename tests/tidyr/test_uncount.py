@@ -3,6 +3,7 @@
 import pytest
 from datar.all import *
 from datar.core.backends.pandas.testing import assert_frame_equal
+from ..conftest import assert_equal
 
 def test_symbols_weights_are_dropped_in_output():
     df = tibble(x=1, w=1)
@@ -37,7 +38,7 @@ def test_must_evaluate_to_integer():
     df = tibble(x=1, w=.5)
 
     out = uncount(df, f.w)
-    assert nrow(out) == 0
+    assert_equal(nrow(out), 0)
 
     df = tibble(x=1)
     with pytest.raises(ValueError, match="`weights` must evaluate to numerics"):

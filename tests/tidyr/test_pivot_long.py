@@ -4,7 +4,7 @@ import pytest
 from datar.all import *
 
 from datar.core.backends.pandas.testing import assert_frame_equal
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 def test_can_pivot_all_cols_to_long():
     df = tibble(x=c[1:3], y=c[3:5])
@@ -174,7 +174,7 @@ def test_grouping_is_preserved():
         names_to="x",
         values_to="v"
     )
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
 
 def test_values_to_at_end_of_output():
     df = tibble(

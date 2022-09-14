@@ -41,7 +41,7 @@ from datar.dplyr import (
     cur_data_all,
     pull,
 )
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_empty_mutate_returns_input():
@@ -54,7 +54,7 @@ def test_empty_mutate_returns_input():
     out = mutate(gf)
     assert_tibble_equal(out, gf)
     assert isinstance(gf, TibbleGrouped)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
 
 def test_rownames_preserved():
@@ -99,7 +99,7 @@ def test_removes_vars_with_None():
     out = gf >> mutate(y=None)
     assert out.columns.tolist() == ["x"]
     assert isinstance(out, TibbleGrouped)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
     rows = group_rows(out)
     assert rows == [[0], [1], [2]]
 
@@ -177,9 +177,9 @@ def test_named_data_frames_are_packed():
 def test_preserves_grouping():
     gf = group_by(tibble(x=[1, 2], y=2), f.x)
     out = mutate(gf, x=1)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
     gdata = group_data(out)
-    assert nrow(gdata) == 1
+    assert_equal(nrow(gdata), 1)
 
     out = mutate(gf, z=1)
     godata = group_data(out)
@@ -205,13 +205,13 @@ def test_works_on_0row_rowwise_df():
 def test_works_on_empty_data_frames():
     df = tibble()
     res = df >> mutate()
-    assert nrow(res) == 0
+    assert_equal(nrow(res), 0)
     assert len(res) == 0
 
     res = df >> mutate(x=[])
     assert res.columns.tolist() == ["x"]
-    assert nrow(res) == 0
-    assert ncol(res) == 1
+    assert_equal(nrow(res), 0)
+    assert_equal(ncol(res), 1)
 
 
 def test_handles_0row_rowwise():
@@ -294,22 +294,22 @@ def test_keep_always_retains_grouping_variables():
     out = df >> mutate(a=f.x + 1, _keep="none")
     exp = tibble(z=3, a=2) >> group_by(f.z)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = df >> mutate(a=f.x + 1, _keep="all")
     exp = tibble(x=1, y=2, z=3, a=2) >> group_by(f.z)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = df >> mutate(a=f.x + 1, _keep="used")
     exp = tibble(x=1, z=3, a=2) >> group_by(f.z)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = df >> mutate(a=f.x + 1, _keep="unused")
     exp = tibble(y=2, z=3, a=2) >> group_by(f.z)
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
 
 def test_deals_with_0_groups():
@@ -317,11 +317,11 @@ def test_deals_with_0_groups():
     out = mutate(df, y=f.x + 1)
     exp = tibble(x=[], y=[]) >> group_by(f.x)
     assert_iterable_equal(out, exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))
 
     out = mutate(df, y=max(f.x))
     assert out.shape == (0, 2)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
 
 def test_mutate_None_preserves_correct_all_vars():
@@ -383,9 +383,9 @@ def test_transmutate_preserves_grouping():
     gf = group_by(tibble(x=[1, 2], y=2), f.x)
 
     out = transmute(gf, x=1)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
     gdata = group_data(out)
-    assert nrow(gdata) == 1
+    assert_equal(nrow(gdata), 1)
 
     out = transmute(gf, z=1)
     godata = group_data(out)
@@ -485,7 +485,7 @@ def test_complex_expression_as_value():
         # login=sample(f[1 : ], size=n(), replace=True)
         login=sample(c[1 : ], size=1, replace=True)
     )
-    assert nrow(out) == 20
+    assert_equal(nrow(out), 20)
 
 
 def test_mutate_none():

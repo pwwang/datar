@@ -14,7 +14,7 @@ from datar.dplyr import (
 from datar.tibble import tibble
 from datar.datasets import mtcars
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_rename_handles_data_pronoun():
@@ -34,7 +34,7 @@ def test_rename_preserve_grouping():
     gf = group_by(tibble(g=[1, 2, 3], x=[3, 2, 1]), f.g)
 
     out = rename(gf, h=f.g)
-    assert group_vars(out) == ["h"]
+    assert_equal(group_vars(out), ["h"])
 
 
 def test_can_rename_with_duplicate_columns():

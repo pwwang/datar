@@ -25,6 +25,7 @@ from datar.dplyr import (
 )
 from datar.tibble import tibble
 from datar.core.backends.pandas.testing import assert_frame_equal
+from ..conftest import assert_equal
 
 
 @pytest.fixture
@@ -127,7 +128,7 @@ def test_n_groups_respect_zero_len_groups():
     df = tibble(x=factor([1, 2, 3], levels=[1, 2, 3, 4])) >> group_by(
         f.x, _drop=False
     )
-    assert n_groups(df) == 4
+    assert_equal(n_groups(df), 4)
 
 
 def test_summarise_respect_zero_len_groups():

@@ -3,20 +3,20 @@
 import pytest
 from datar.all import *
 from datar.core.backends.pandas.testing import assert_frame_equal
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 def test_can_pivot_all_cols_to_wide():
     df = tibble(key=list('xyz'), val=c[1:4])
     pv = pivot_wider(df, names_from=f.key, values_from=f.val)
     assert pv.columns.tolist() == list('xyz')
-    assert nrow(pv) == 1
+    assert_equal(nrow(pv), 1)
 
 def test_non_pivoted_cols_are_preserved():
     df = tibble(a=1, key=list('xy'), val=c[1:2])
     pv = pivot_wider(df, names_from=f.key, values_from=f.val)
 
     assert pv.columns.tolist() == list('axy')
-    assert nrow(pv) == 1
+    assert_equal(nrow(pv), 1)
 
 def test_implicit_missings_turn_into_explicit_missings():
     df = tibble(a=[1,2], key=['x', 'y'], val=f.a)
@@ -38,14 +38,14 @@ def test_error_when_overwriting_existing_column():
 def test_grouping_is_preserved():
     df = tibble(g=1, k="x", v=2)
     out = df >> group_by(f.g) >> pivot_wider(names_from=f.k, values_from=f.v)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
 
 def test_double_underscore_j_can_be_used_as_names_from():
     df = tibble(__8=list('xyz'), val=c[1:4], _name_repair='minimal')
     pv = pivot_wider(df, names_from=f.__8, values_from=f.val)
 
     assert pv.columns.tolist() == ['x', 'y', 'z']
-    assert nrow(pv) == 1
+    assert_equal(nrow(pv), 1)
 
 def test_nested_df_pivot_correctly():
     df = tibble(
@@ -121,7 +121,7 @@ def test_can_override_default_keys():
         3,    "Bob", "age", 20,
     )
     pv = df >> pivot_wider(id_cols = f.name, names_from = f.var, values_from = f.value)
-    assert nrow(pv) == 2
+    assert_equal(nrow(pv), 2)
 
 
 # non-unqiue keys ---------------------------------------------------------

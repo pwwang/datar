@@ -44,7 +44,7 @@ from datar.dplyr import (
 from datar.base import runif, sd
 from datar.core.tibble import TibbleRowwise
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_on_one_column():
@@ -386,7 +386,7 @@ def test_nb_fail_c_across():
     )
 
     assert isinstance(out, TibbleRowwise)
-    assert nrow(out) == 4
+    assert_equal(nrow(out), 4)
 
 
 def test_if_any_if_all_no_args():

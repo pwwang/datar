@@ -782,7 +782,6 @@ def func_factory(
     - `agg/aggregate`: Run `x.agg()`
     - `transform`: Run `x.transform()`
     - `apply`: Run `x.apply()`
-    - `None`: deal the groupedness all by yourself
 
     With `apply_df`, we are running `__args_frame.apply()` on multiple arguments
     assigned by `data_args`.

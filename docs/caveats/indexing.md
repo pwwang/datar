@@ -1,6 +1,6 @@
 ## Index base
 
-By default, `datar` follows `R`'s 0-based indexing.
+By default, `datar` follows `python`'s 0-based indexing.
 
 ## Selection
 

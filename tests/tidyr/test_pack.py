@@ -4,7 +4,7 @@ import pytest
 from datar.core.backends.pandas.testing import assert_frame_equal
 from datar.all import *
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 # pack --------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ def test_can_strip_outer_names_from_inner_names():
 def test_grouping_preserved():
     df = tibble(g1=1, g2=2, g3=3)
     out = df >> group_by(f.g1, f.g2) >> pack(g=c(f.g2, f.g3))
-    assert group_vars(out) == ['g1']
+    assert_equal(group_vars(out), ['g1'])
 
 
 # unpack ------------------------------------------------------------------
@@ -37,7 +37,7 @@ def test_grouping_preserved():
 def test_unpack_preserves_grouping():
     df = tibble(g=1, x=tibble(y=1))
     out = df >> group_by(f.g) >> unpack(f.x)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
     assert out.columns.tolist() == ['g', 'y']
 
 def test_unpack_error_on_atomic_columns():

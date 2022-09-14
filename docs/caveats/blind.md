@@ -27,8 +27,7 @@ A quick example to simulate this siutation:
 0        a        A
 >>> source = "df >> mutate(A=f.a.str.upper())"
 >>> exec(source)
-/path/to/site-packages/pipda/utils.py:161: UserWarning: Failed to fet
-ch the node calling the function, call it with the original function.
+/path/to/pipda/pipda/utils.py:54: VerbCallingCheckWarning: Failed to detect AST node calling `mutate`, assuming a normal call.
   warnings.warn(
 Traceback (most recent call last):
   ...
@@ -36,7 +35,7 @@ Traceback (most recent call last):
 
 ## Solutions
 
-- Try switching to a REPL that maintains the source code (`ipython` instead of raw python REPL, for example)
+- Try switching to a REPL that maintains the source code (`ipython`/`bpython` instead of raw python REPL, for example)
 - Save the code into a file, and run that script with python interpreter
 - Stick with the regular calling:
 
@@ -53,36 +52,42 @@ Traceback (most recent call last):
     0        a        A
     ```
 
-- Stick with the piping calling:
+- Change the fallback of a verb:
 
     ```python
-    >>> from datar import options
-    >>> options(assume_all_piping=True)
+    >>> from datar.all import *
+    >>> df = tibble(a="a")
+    >>> mutate.ast_fallback = "piping"
     >>> source = "df2 = df >> mutate(A=f.a.str.upper())"
-    >>> exec(source)  # no warnings, we know we don't need the AST node anymore
+    >>> exec(source)
     >>> df2
              a        A
       <object> <object>
     0        a        A
     ```
 
-    !!! Note
+  Avaiable fallbacks:
 
-        Whichever calling mode you are sticking with, you have to stick with it for all verbs, even for those simple ones (i.e. `dim()`, `nrow()`, etc)
+  - `piping`: fallback to piping mode if AST node not avaiable
+  - `normal`: fallback to normal mode if AST node not avaiable
+  - `piping_warning`: fallback to piping mode if AST node not avaiable and given a warning
+  - `normal_warning` (default): fallback to normal mode if AST node not avaiable and given a warning
+  - `raise`: Raise an error
 
-    !!! Tip
+  See also: [https://pwwang.github.io/pipda/verbs/#fallbacks-when-ast-node-detection-fails](https://pwwang.github.io/pipda/verbs/#fallbacks-when-ast-node-detection-fails)
 
-        If you wonder whether a python function is registered as a verb or a plain function:
+- Change the fallback temporarily
 
-        ```python
-        >>> mutate.__pipda__
-        'Verb'
-        >>> nrow.__pipda__
-        'Verb'
-        >>> as_integer.__pipda__
-        'PlainFunction'
-        ```
-
+  ```python
+  >>> from datar.all import *
+  >>> df = tibble(a="a")
+  >>> source = "df2 = df >> mutate(A=f.a.str.upper(), __ast_fallback='piping')"
+  >>> exec(source)
+  >>> df2
+            a        A
+    <object> <object>
+  0        a        A
+  ```
 
 
 [1]: https://github.com/pwwang/datar/issues/45

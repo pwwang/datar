@@ -7,6 +7,7 @@ from datar.base import c, seq, NULL, NA
 from datar.tibble import tibble, drop_index
 from datar.tidyr import chop, unchop
 from datar.dplyr import group_by, group_vars, pull
+from ..conftest import assert_equal
 
 # chop --------------------------------------------------------------------
 def test_chop_multiple_columns():
@@ -25,7 +26,7 @@ def test_chop_no_columns_returns_input():
 def test_chop_grouping_preserves():
     df = tibble(g = c(1, 1), x = [1,2])
     out = df >> group_by(f.g) >> chop(f.x)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
 
 def test_can_chop_empty_frame():
     df = tibble(x=[], y=[], _dtypes=object)
@@ -108,7 +109,7 @@ def test_unchop_preserves_columns_of_empty_inputs():
 def test_unchop_preserves_grouping():
     df = tibble(g=1, x=[[1,2]])
     out = df >> group_by(f.g) >> unchop(f.x)
-    assert group_vars(out) == ['g']
+    assert_equal(group_vars(out), ['g'])
 
 def test_unchop_empty_list():
     df = tibble(x=[], y=[])

@@ -11,18 +11,18 @@ from datar.testing import assert_tibble_equal
 from datar.core.tibble import TibbleGrouped
 from datar.core.exceptions import NameNonUniqueError
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal, assert_
 
 
 def test_empty_returns_self():
     df = tibble(x=range(1, 11), y=range(1, 11))
     gf = df >> group_by(f.x)
 
-    assert (df >> arrange()).equals(df)
+    assert_(arrange(df).equals(df))
 
     out = arrange(gf)
     assert out.equals(gf)
-    assert group_vars(out) == group_vars(gf)
+    assert_equal(group_vars(out), group_vars(gf))
 
 
 def test_sort_empty_df():

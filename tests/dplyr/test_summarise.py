@@ -24,7 +24,7 @@ from datar.tibble import tibble
 from datar.testing import assert_tibble_equal
 from pipda import register_func
 
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_freshly_create_vars():
@@ -70,12 +70,12 @@ def test_works_with_empty_data_frames():
 def test_works_with_grouped_empty_data_frames():
     df = tibble(x=[])
     df1 = df >> group_by(f.x) >> summarise(y=1)
-    assert dim(df1) == (0, 2)
+    assert_equal(dim(df1), (0, 2))
     assert df1.columns.tolist() == ["x", "y"]
 
     df1 = df >> rowwise(f.x) >> summarise(y=1)
-    assert group_vars(df1) == ["x"]
-    assert dim(df1) == (0, 2)
+    assert_equal(group_vars(df1), ["x"])
+    assert_equal(dim(df1), (0, 2))
     assert df1.columns.tolist() == ["x", "y"]
 
 
@@ -84,18 +84,18 @@ def test_no_expressions():
     gf = group_by(df, f.x)
 
     out = summarise(df)
-    assert dim(out) == (1, 0)
+    assert_equal(dim(out), (1, 0))
 
     out = summarise(gf)
-    assert group_vars(out) == []
+    assert_equal(group_vars(out), [])
     exp = tibble(x=[1, 2])
     assert_tibble_equal(out, exp)
 
     out = summarise(df, tibble())
-    assert dim(out) == (1, 0)
+    assert_equal(dim(out), (1, 0))
 
     out = summarise(gf, tibble())
-    assert group_vars(out) == []
+    assert_equal(group_vars(out), [])
     exp = tibble(x=[1, 2])
     assert out.equals(exp)
 
@@ -124,8 +124,8 @@ def test_peels_off_a_single_layer_of_grouping():
     )
     gf = df >> group_by(f.x, f.y)
 
-    assert group_vars(gf >> summarise()) == ["x"]
-    assert group_vars(gf >> summarise() >> summarise()) == []
+    assert_equal(group_vars(gf >> summarise()), ["x"])
+    assert_equal(group_vars(gf >> summarise() >> summarise()), [])
 
 
 def test_correctly_reconstructs_groups():
@@ -205,7 +205,7 @@ def test_groups_arg(caplog):
     assert isinstance(df1, TibbleRowwise)
     assert isinstance(df2, TibbleRowwise)
     assert df1.equals(df2)
-    assert group_vars(df1) == group_vars(df2)
+    assert_equal(group_vars(df1), group_vars(df2))
 
     gf = df >> group_by(f.x, f.y)
     gvars = gf >> summarise() >> group_vars()

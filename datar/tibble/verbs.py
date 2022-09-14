@@ -84,7 +84,6 @@ def deframe(x):
     DataFrame,
     context=Context.EVAL,
     extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
-    ast_fallback="piping"
 )
 def add_row(
     _data,
@@ -142,7 +141,6 @@ add_case = add_row
     DataFrame,
     context=Context.EVAL,
     extra_contexts={"_before": Context.SELECT, "_after": Context.SELECT},
-    ast_fallback="piping",
 )
 def add_column(
     _data,
@@ -185,7 +183,7 @@ def add_column(
     return reconstruct_tibble(_data, out)
 
 
-@register_verb(DataFrame, ast_fallback="normal")
+@register_verb(DataFrame)
 def has_rownames(_data):
     """Detect if a data frame has row names
 
@@ -208,7 +206,7 @@ def has_rownames(_data):
 has_index = has_rownames
 
 
-@register_verb(DataFrame, ast_fallback="normal")
+@register_verb(DataFrame)
 def remove_rownames(_data):
     """Remove the index/rownames of a data frame
 

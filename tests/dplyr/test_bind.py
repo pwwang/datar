@@ -27,7 +27,7 @@ from datar.dplyr import (
     bind_rows,
     group_by,
 )
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 def test_handle_dict():
@@ -298,10 +298,10 @@ def test_errors():
 # for coverage
 def test_bind_empty_dfs():
     out = bind_rows(None)
-    assert dim(out) == (0, 0)
+    assert_equal(dim(out), (0, 0))
 
     out = bind_cols(None)
-    assert dim(out) == (0, 0)
+    assert_equal(dim(out), (0, 0))
 
     df1 = tibble(x=factor([1, 2, 3]))
     df2 = tibble()

@@ -28,24 +28,6 @@ Whether to enable `pdtypes`, a package that shows data types right beneith the c
 
 [https://github.com/pwwang/pdtypes](https://github.com/pwwang/pdtypes)
 
-### warn_astnode_failure
-
-Default: `True`
-
-Warn about failure to get ast node, will update `pipda.options.warn_astnode_failure`
-
-### assume_all_piping
-
-Default: `False`
-
-When `True`, enables all-piping mode:
-
-- Assume all verbs are using `PIPING_VERB` env
-- Assume all data functions are using `PIPING` env
-- Assume all non-data functions are using `PIPING` verbs
-
-This is useful when source code is not available.
-
 ### backend
 
 The backend for datar. `pandas` (default) or `modin`

@@ -51,6 +51,7 @@ from datar.dplyr import (
     tally,
 )
 from datar.datasets import mtcars, iris
+from ..conftest import assert_equal
 
 
 # group_data --------------------------------------------------------------
@@ -140,14 +141,14 @@ def test_group_indices_handles_0row_df():
 # group_size --------------------------------------------------------------
 def test_ungrouped_data_has_1group_with_group_size_nrow():
     df = tibble(x=rep([1, 2, 3], each=10), y=rep(range(1, 7), each=5))
-    assert n_groups(df) == 1
+    assert_equal(n_groups(df), 1)
     sizes = group_size(df)
     assert sizes == [30]
 
 
 def test_rowwise_data_has_1group_for_each_group():
     rw = rowwise(mtcars)
-    assert n_groups(rw) == 32
+    assert_equal(n_groups(rw), 32)
     sizes = group_size(rw)
     assert sizes == [1] * 32
 
@@ -156,7 +157,7 @@ def test_group_size_correct_for_grouped_data():
     df = tibble(
         x=rep([1, 2, 3], each=10), y=rep(range(1, 7), each=5)
     ) >> group_by(f.x)
-    assert n_groups(df) == 3
+    assert_equal(n_groups(df), 3)
     sizes = group_size(df)
     assert sizes == [10] * 3
 
@@ -201,7 +202,7 @@ def test_group_map_works_on_ungrouped_df():
 
 def test_group_modify_makes_a_grouped_df():
     res = group_by(mtcars, f.cyl) >> group_modify(lambda df: head(df, 2))
-    assert nrow(res) == 6
+    assert_equal(nrow(res), 6)
     rows = group_rows(res)
     assert rows == [[0, 1], [2, 3], [4, 5]]
 
@@ -211,7 +212,7 @@ def test_group_modify_makes_a_grouped_df():
         >> filter(f.Species == "setosa")
         >> group_modify(lambda df: tally(df))
     )
-    assert nrow(res) == 1
+    assert_equal(nrow(res), 1)
     rows = group_rows(res)
     assert rows == [[0]]
 
@@ -222,7 +223,7 @@ def test_group_modify_makes_a_grouped_df():
         >> group_modify(lambda df: tally(df))
     )
     # assert nrow(res) == 3
-    assert nrow(res) == 1
+    assert_equal(nrow(res), 1)
     # assert group_rows(res) == [[0], [1], [2]]
     rows = group_rows(res)
     assert rows == [[0]]
@@ -232,7 +233,7 @@ def test_group_modify_map_want_functions_with_at_least_1_arg():
     head1 = lambda df: head(df, 1)
     g = iris >> group_by(f.Species)
     mod = group_modify(g, head1)
-    assert nrow(mod) == 3
+    assert_equal(nrow(mod), 3)
     mpped = group_map(g, head1)
     assert len(list(mpped)) == 3
 
@@ -491,7 +492,7 @@ def test_group_trim_always_regroups_even_if_no_factors():
         >> filter(f.cyl == 6, _preserve=True)
         >> group_trim()
     )
-    assert n_groups(res) == 1
+    assert_equal(n_groups(res), 1)
 
 
 def test_group_trim_drops_factor_levels_in_data_and_grouping_structure():
@@ -503,8 +504,8 @@ def test_group_trim_drops_factor_levels_in_data_and_grouping_structure():
         >> group_trim()
     )
 
-    assert n_groups(res) == 1
-    assert levels(res.Species.obj) == ["setosa"]
+    assert_equal(n_groups(res), 1)
+    assert_equal(levels(res.Species.obj), ["setosa"])
     # expect_equal(levels(attr(res, "groups")$Species), "setosa")
 
 
@@ -535,4 +536,4 @@ def test__groups_is_defused_with_context():
     out = with_groups(mtcars, local_fn(2), mutate, disp=f.disp / sd(f.disp))
     exp = with_groups(mtcars, 2, mutate, disp=f.disp / sd(f.disp))
     assert out.equals(exp)
-    assert group_vars(out) == group_vars(exp)
+    assert_equal(group_vars(out), group_vars(exp))

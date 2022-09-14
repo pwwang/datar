@@ -55,7 +55,7 @@ from datar.base import (
     sqrt,
 )
 from datar.base import runif
-from ..conftest import assert_iterable_equal
+from ..conftest import assert_iterable_equal, assert_equal
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ def test_tibble_keep_grouping(df):
     g = df >> group_by(f.x)
     tbl = tibble(g)
     # with pytest.raises(NotImplementedError):
-    assert group_vars(tbl) == ["x"]
+    assert_equal(group_vars(tbl), ["x"])
 
 
 # group by a string is also referring to the column
@@ -161,42 +161,42 @@ def test_one_group_for_NA():
 
     assert n_distinct(x, na_rm=False) == 11
     res = tibble(x=x, w=w) >> group_by(f.x) >> summarise(n=n())
-    assert nrow(res) == 11
+    assert_equal(nrow(res), 11)
 
 
 def test_zero_row_dfs():
     df = tibble(a=[], b=[], g=[])
     dfg = group_by(df, f.g, _drop=False)
     assert dfg.shape == (0, 3)
-    assert group_vars(dfg) == ["g"]
+    assert_equal(group_vars(dfg), ["g"])
     sizes = group_size(dfg)
     assert sizes == []
 
     x = summarise(dfg, n=n())
     assert x.shape == (0, 2)
-    assert group_vars(x) == []
+    assert_equal(group_vars(x), [])
 
     x = mutate(dfg, c=f.b + 1)
     assert x.shape == (0, 4)
-    assert group_vars(x) == ["g"]
+    assert_equal(group_vars(x), ["g"])
     sizes = group_size(x)
     assert sizes == []
 
     x = filter(dfg, f.a == 100)
     assert x.shape == (0, 3)
-    assert group_vars(x) == ["g"]
+    assert_equal(group_vars(x), ["g"])
     sizes = group_size(x)
     assert sizes == []
 
     x = arrange(dfg, f.a, f.g)
     assert x.shape == (0, 3)
-    assert group_vars(x) == ["g"]
+    assert_equal(group_vars(x), ["g"])
     sizes = group_size(x)
     assert sizes == []
 
     x = select(dfg, f.a)
     assert x.shape == (0, 2)
-    assert group_vars(x) == ["g"]
+    assert_equal(group_vars(x), ["g"])
     sizes = group_size(x)
     assert sizes == []
 
@@ -244,12 +244,12 @@ def test_0_groups_arrange():
 
 def test_0_vars(df):
     gdata = group_data(group_by(iris))
-    assert names(gdata) == ["_rows"]
+    assert_equal(names(gdata), ["_rows"])
     out = gdata
     assert_iterable_equal(out._rows[0], range(nrow(iris)))
 
     gdata = group_data(group_by(iris, **{}))
-    assert names(gdata) == ["_rows"]
+    assert_equal(names(gdata), ["_rows"])
     out = gdata
     assert_iterable_equal(out._rows[0], range(nrow(iris)))
 
@@ -346,7 +346,7 @@ def test_joins_maintains__drop():
     )
 
     res = left_join(df1, df2, by="f1")
-    assert n_groups(res) == 2
+    assert_equal(n_groups(res), 2)
 
     df2 = group_by(
         tibble(f1=factor(c("a", "c"), levels=c("a", "b", "c")), y=[1, 2]),
@@ -354,7 +354,7 @@ def test_joins_maintains__drop():
         _drop=True,
     )
     res = full_join(df1, df2, by="f1")
-    assert n_groups(res) == 3
+    assert_equal(n_groups(res), 3)
 
 
 def test_add_passes_drop():
@@ -470,33 +470,33 @@ def test_rowwise_preserved_by_major_verbs():
 
     out = arrange(rf, f.y)
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     out = filter(rf, f.x < 3)
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     out = mutate(rf, x=f.x + 1)
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     out = rename(rf, X=f.x)
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["X"]
+    assert_equal(group_vars(out), ["X"])
 
     out = select(rf, "x")
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     out = slice(rf, c(0, 0))
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     # Except for summarise
     # out = summarise(rf, z=mean(f.x, f.y))
     out = summarise(rf, z=mean(f.x))
     assert isinstance(out, TibbleGrouped)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
 
 def test_rowwise_preserved_by_subsetting():
@@ -508,18 +508,18 @@ def test_rowwise_preserved_by_subsetting():
 
     out = mutate(rf, z=f.y)
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     out = rename_with(rf, str.upper)
     assert isinstance(out, TibbleRowwise)
-    assert group_vars(out) == ["X"]
+    assert_equal(group_vars(out), ["X"])
 
 
 def test_rowwise_captures_group_vars():
     df = group_by(tibble(g=[1, 2], x=[1, 2]), f.g)
     rw = rowwise(df)
 
-    assert group_vars(rw) == ["g"]
+    assert_equal(group_vars(rw), ["g"])
 
     with pytest.raises(ValueError):
         rowwise(df, f.x)
@@ -528,10 +528,10 @@ def test_rowwise_captures_group_vars():
 def test_can_re_rowwise():
     rf1 = rowwise(tibble(x=range(1, 6), y=range(1, 6)), "x")
     rf2 = rowwise(rf1, f.y)
-    assert group_vars(rf2) == ["y"]
+    assert_equal(group_vars(rf2), ["y"])
 
     rf3 = rowwise(rf2)
-    assert group_vars(rf3) == []
+    assert_equal(group_vars(rf3), [])
 
 
 def test_compound_ungroup():
@@ -546,16 +546,16 @@ def test_compound_ungroup():
 
     df = tibble(x=1, y=2) >> group_by(f.x, f.y)
     out = ungroup(df)
-    assert group_vars(out) == []
+    assert_equal(group_vars(out), [])
 
     out = ungroup(df, f.x)
-    assert group_vars(out) == ["y"]
+    assert_equal(group_vars(out), ["y"])
 
     out = ungroup(df, f.y)
-    assert group_vars(out) == ["x"]
+    assert_equal(group_vars(out), ["x"])
 
     out = group_by(df, f.y, _add=True)
-    assert group_vars(out) == ["x", "y"]
+    assert_equal(group_vars(out), ["x", "y"])
 
     rf = df >> rowwise()
     with pytest.raises(ValueError):
