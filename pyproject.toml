@@ -51,9 +51,7 @@ strict_optional = false
 addopts = "-vv -p no:asyncio --tb=short -n auto --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 # addopts = "-vv --cov-config=.coveragerc --cov=datar --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
-    # # python3.10: The distutils package is deprecated for varname
-    # # uncomment this until varname 0.8.2 is released
-    "error"
+    # "error"
 ]
 console_output_style = "progress"
 junit_family = "xunit1"
