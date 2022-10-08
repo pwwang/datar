@@ -1,3 +1,7 @@
+## 0.9.1
+
+- Pump pipda to 0.8.0 (fixes #149)
+
 ## 0.9.0
 
 ### Fixes
