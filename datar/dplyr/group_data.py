@@ -6,11 +6,13 @@ from pipda import register_verb
 from ..core.backends.pandas import DataFrame
 from ..core.backends.pandas.core.groupby import GroupBy
 
+from ..core.contexts import Context
+
 from ..core.tibble import Tibble, TibbleGrouped, TibbleRowwise
 from ..core.utils import dict_get
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_data(_data: DataFrame) -> Tibble:
     """Returns a data frame that defines the grouping structure.
 
@@ -34,7 +36,7 @@ def _(_data: Union[TibbleGrouped, GroupBy]) -> Tibble:
     return gpdata
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_keys(_data: DataFrame) -> Tibble:
     """Just grouping data without the `_rows` columns
 
@@ -68,7 +70,7 @@ def _(_data: TibbleRowwise) -> Tibble:
     return Tibble(_data.loc[:, _data.group_vars])
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_rows(_data: DataFrame) -> List[List[int]]:
     """The locations of grouping structure, always 0-based."""
     rows = list(range(_data.shape[0]))
@@ -91,7 +93,7 @@ def _(_data: GroupBy) -> List[List[int]]:
     ]
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_indices(_data: DataFrame) -> List[int]:
     """Returns an integer vector the same length as `_data`.
 
@@ -109,7 +111,7 @@ def _(_data: TibbleGrouped) -> List[int]:
     return [ret[key] for key in sorted(ret)]
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_vars(_data: DataFrame) -> Sequence[str]:
     """Gives names of grouping variables as character vector"""
     return getattr(_data, "group_vars", [])
@@ -120,7 +122,7 @@ groups = group_vars
 group_cols = group_vars
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def group_size(_data: DataFrame) -> Sequence[int]:
     """Gives the size of each group"""
     return [_data.shape[0]]
@@ -131,7 +133,7 @@ def _(_data: TibbleGrouped) -> Sequence[int]:
     return list(map(len, group_rows(_data, __ast_fallback="normal")))
 
 
-@register_verb(DataFrame)
+@register_verb(DataFrame, context=Context.EVAL)
 def n_groups(_data: DataFrame) -> int:
     """Gives the total number of groups."""
     return 1

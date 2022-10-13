@@ -325,7 +325,7 @@ def test_errors():
     # named inputs
     with pytest.raises(TypeError):
         mtcars >> filter(x=1)
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         mtcars >> filter(f.y > 2, z=3)
     with pytest.raises(TypeError):
         mtcars >> filter(True, x=1)
