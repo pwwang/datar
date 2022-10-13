@@ -20,7 +20,9 @@ jobs:
           # pandas==1.2.0,
           pandas==1.3.0,
           pandas==1.4.0,
-          pandas # lastest
+          # need to skip 1.5.0 because of pandas-dev/pandas#48645
+          pandas<1.5.0,
+          # pandas # lastest
         ]
         exclude:
           - python-version: 3.7
@@ -40,7 +42,7 @@ jobs:
           poetry config virtualenvs.create false
           poetry install -E scipy -E wcwidth -E slugify -v
           # reinstall pandas to specific version
-          pip install -U $PANDAS
+          pip install "$PANDAS"
         env:
           PANDAS: ${{ matrix.pandas }}
       - name: Run flake8
@@ -73,7 +75,8 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
         modin: [
           modin==0.10.2,
-          modin # lastest
+          modin<0.16.0,  # 0.16 uses pandas 1.5.0
+          # modin # lastest
         ]
         exclude:
           - python-version: 3.7
@@ -93,7 +96,7 @@ jobs:
           poetry config virtualenvs.create false
           poetry install -E modin -E scipy -E wcwidth -E slugify -v
           # reinstall modin to specific version
-          pip install -U $MODIN
+          pip install "$MODIN"
         env:
           MODIN: ${{ matrix.modin }}
       - name: Show versions
