@@ -28,24 +28,10 @@ repos:
               if [[ $v1 == $v2 ]]; then exit 0; else exit 1; fi
         pass_filenames: false
         files: ^pyproject\.toml|datar/__init__\.py$
-    -   id: pytest-pandas
-        name: Run pytest with pandas backend
-        entry: pytest --backend pandas
+    -   id: pytest
+        name: Run pytest
+        entry: pytest
         language: system
         args: [tests/]
         pass_filenames: false
         files: ^tests/.+$|^datar/.+$
-    -   id: pytest-modin
-        name: Run pytest with modin backend
-        entry: pytest --backend modin
-        language: system
-        args: [tests/]
-        pass_filenames: false
-        files: ^tests/.+$|^datar/.+$
-    -   id: notebooks
-        name: Executing all notebooks
-        entry: jupyter nbconvert --output-dir /tmp --to notebook --execute
-        language: system
-        pass_filenames: true
-        files: ^docs/.+\.ipynb$
-        exclude: '^docs/.+\.nbconvert\.ipynb$'

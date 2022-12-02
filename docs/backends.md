@@ -1,36 +1,50 @@
-`datar` by default uses `pandas` as backend. But you can switch it to `modin`.
+# Backends
 
-## Installing dependencies for `modin`
+The `datar` package is a collection of APIs that are ported from a bunch of R packages. The APIs are implemented in a backend-agnostic way, so that they can be used with different backends. Currently, `datar` supports the following backends:
 
-To install the dependencies for `modin` as backend, run the following command:
+- [`numpy`](https://github.com/pwwang/datar-numpy): Mostly the implementations of functions from `datar.base`.
+- [`pandas`](https://github.com/pwwang/datar-pandas): Implementations using `pandas` as backend.
 
-```shell
-pip install -U datar[modin]
+## Installation of a backend
+
+```bash
+pip install -U datar[<pandas>]
 ```
 
-You probably also need to install dependencies for `modin` engines, for example:
-```shell
-pip install -U modin[ray]
-```
+## Using desired backends
 
-## Switching backend to `modin`
-
-To switch backend:
+You can install multiple backends, but can use a subset of them.
 
 ```python
-# before you import other modules from datar
 from datar import options
-options(backend='modin')
 
-# Now import other modules from datar
+options(backends=['pandas'])
 ```
 
-Also checkout the [documentation](https://modin.readthedocs.io/en/latest/getting_started/quickstart.html) on modin usage
+## Writing a backend
 
-## Checking which backend is being used
+A backend is supposed to implement as a `Simplug` plugin. There are a hooks to be implemented.
+
+### Hooks
+
+- `setup()`: calleed before any API is imported. You can do some setup here.
+- `get_versions()`: return a dict of versions of the dependencies of the backend. The keys are the names of the packages, and the values are the versions.
+- `data_api()`: load the implementation of `datar.apis.data.load_dataset()`.
+- `base_api()`: load the implementation of `datar.apis.base`.
+- `dplyr_api()`: load the implementation of `datar.apis.dplyr`.
+- `tibble_api()`: load the implementation of `datar.apis.tibble`.
+- `forcats_api()`: load the implementation of `datar.apis.forcats`.
+- `tidyr_api()`: load the implementation of `datar.apis.tidyr`.
+- `other_api()`: load other backend-specific APIs.
+- `c_getitem()`: load the implementation of `datar.base.c.__getitem__` (`c[...]`).
+- `operate()`: load the implementation of the operators.
+
+## Seleting a backend at runtime
+
+You can use `__backend` to select a backend at runtime.
 
 ```python
->>> from datar import get_option
->>> get_option("backend")
-'modin'
+from datar.tibble import tibble
+
+tibble(..., __backend="pandas")
 ```
