@@ -1,7 +1,8 @@
-"""Some default values used in datar"""
+from pathlib import Path
+
 from pipda import Symbolic
 
-NA_REPR = "<NA>"
-DEFAULT_COLUMN_PREFIX = "_VAR_"
-
 f = Symbolic()
+
+OPTION_FILE_HOME = Path("~/.datar.toml").expanduser()
+OPTION_FILE_CWD = Path("./.datar.toml").resolve()

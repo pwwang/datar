@@ -9,7 +9,7 @@
 }
 </style>
 
-## Reference of `datar.datasets`
+## Reference of `datar.data`
 
 |API|Description|Source|
 |---|---|---:|

@@ -11,9 +11,8 @@ You can import it by `from datar import f`, or `from datar.all import *`
 There are different uses for the `f`.
 
 - Use as a proxy to refer to dataframe columns (i.e. `f.x`, `f['x']`)
-- Use as a slice container. For example:
-    - `f[f.x:f.z]` for columns from `x` to `z` (not indcluded). If you want to include the `stop` column: `f[f.x:f.z:1]`
 - Use as the column name marker for `tribble`:
+
     ```python
     tribble(
         f.x, f.y

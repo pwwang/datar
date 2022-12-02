@@ -2,17 +2,10 @@ Options are used to change some behaviors in `datar`.
 
 ## Available options
 
-### dplyr_summarise_inform
-
-Default: `True`
-
-With `dplyr.summarise()`, when `_groups` is not specified, a message is printed to inform the choice (`drop_last` or `keep`), based on the number of rows in the results.
-
-See [https://dplyr.tidyverse.org/reference/summarise.html](https://dplyr.tidyverse.org/reference/summarise.html)
-
 ### import_names_conflict
 
 What to do when there are conflicts importing names
+
 - `warn` (default): show warnings
 - `silent`: ignore the conflicts
 - `underscore_suffixed`: add suffix `_` to the conflicting names
@@ -20,18 +13,9 @@ What to do when there are conflicts importing names
 
 See also [Import datar/Warn abbout python reserved names](../import/#warn-about-python-reserved-names-to-be-overriden-by-datar)
 
-### enable_pdtypes
+### backends
 
-Default: `True`
-
-Whether to enable `pdtypes`, a package that shows data types right beneith the column names when a data frame is present in string, HTML or a jupyter notebook. See:
-
-[https://github.com/pwwang/pdtypes](https://github.com/pwwang/pdtypes)
-
-### backend
-
-The backend for datar. `pandas` (default) or `modin`
-
+If you have multiple backends installed, you can use this option to specify which backends to use.
 
 ## Configuration files
 

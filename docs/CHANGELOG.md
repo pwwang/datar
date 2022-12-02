@@ -1,3 +1,11 @@
+## 0.10.0
+
+- Detach backend support, so that more backends can be supported easier in the future
+  - numpy backend: https://github.com/pwwang/datar-numpy
+  - pandas backend: https://github.com/pwwang/datar-pandas
+- Adopt pipda 0.10 so that functions can be pipeable (#148)
+- Support pandas 1.5+ (#148), but v1.5.0 excluded (see pandas-dev/pandas#48645)
+
 ## 0.9.1
 
 - Pump pipda to 0.8.0 (fixes #149)

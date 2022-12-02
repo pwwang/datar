@@ -2,20 +2,37 @@
 import inspect
 import re
 import keyword
-from typing import Callable, List, Union, Iterable, Tuple
+import math
+from numbers import Number
+from typing import Any, Callable, List, Union, Iterable, Tuple
 
-import numpy
+from .utils import logger
 
-from .backends.pandas.api.types import is_list_like
 
-from .exceptions import NameNonUniqueError
+class NameNonUniqueError(ValueError):
+    """Error for non-unique names"""
+
+
+def _isnan(x: Any) -> bool:
+    """Check if x is nan"""
+    return isinstance(x, Number) and math.isnan(x)
+
+
+def _is_scalar(x: Any) -> bool:
+    """Check if x is scalar"""
+    if isinstance(x, str):
+        return True
+    try:
+        iter(x)
+    except TypeError:
+        return True
+    return False
 
 
 def _log_changed_names(changed_names: List[Tuple[str, str]]) -> None:
     """Log the changed names"""
     if not changed_names:
         return
-    from .utils import logger
 
     logger.warning("New names:")
     for orig_name, new_name in changed_names:
@@ -24,7 +41,7 @@ def _log_changed_names(changed_names: List[Tuple[str, str]]) -> None:
 
 def _repair_names_minimal(names: Iterable[str]) -> List[str]:
     """Minimal repairing"""
-    return ["" if name in (None, numpy.nan) else str(name) for name in names]
+    return ["" if name is None or _isnan(name) else str(name) for name in names]
 
 
 def _repair_names_unique(
@@ -86,7 +103,7 @@ def _repair_names_check_unique(names: Iterable[str]) -> Iterable[str]:
     for name in names:
         if names.count(name) > 1:
             raise NameNonUniqueError(f"Names must be unique: {name}")
-        if name == "" or name is numpy.nan:
+        if name == "" or _isnan(name):
             raise NameNonUniqueError(f"Names can't be empty: {name}")
         if re.search(r"(?:(?<!_)_{2}\d+|(?<!_)__)+$", str(name)):
             raise NameNonUniqueError(
@@ -145,7 +162,10 @@ def repair_names(
     """
     if isinstance(repair, str):
         repair = BUILTIN_REPAIR_METHODS[repair]  # type: ignore
-    elif is_list_like(repair) and all(isinstance(elem, str) for elem in repair):
+    elif (
+        not _is_scalar(repair)
+        and all(isinstance(elem, str) for elem in repair)
+    ):
         return repair  # type: ignore
     elif not callable(repair):
         raise ValueError("Expect a function for name repairing.")
