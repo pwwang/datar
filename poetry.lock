@@ -36,27 +36,27 @@ toml = ["tomli"]
 
 [[package]]
 name = "datar-numpy"
-version = "0.0.0rc0"
+version = "0.0.0"
 description = "The numpy backend for datar"
 category = "main"
 optional = true
 python-versions = ">=3.7.1,<4.0.0"
 
 [package.dependencies]
-datar = ">=0.10.0rc0,<0.11.0"
+datar = ">=0.10,<0.11"
 numpy = ">=1.17,<2.0"
 
 [[package]]
 name = "datar-pandas"
-version = "0.0.0rc0"
+version = "0.0.0"
 description = "The pandas backend for datar"
 category = "main"
 optional = true
 python-versions = ">=3.7.1,<4.0.0"
 
 [package.dependencies]
-datar = ">=0.10.0rc0,<0.11.0"
-datar-numpy = ">=0.0.0rc0,<0.0.1"
+datar = ">=0.10,<0.11"
+datar-numpy = ">=0.0,<0.1"
 pdtypes = ">=0.0.4,<0.0.5"
 
 [[package]]
@@ -350,7 +350,7 @@ pandas = ["datar-pandas"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "2aee8481490bd5014f7133fcfa61e34f99d4cb47563efc4d196279bc451ebaed"
+content-hash = "5dc059a84f19e574c28958cd782c08afd55a19537f885ce5fabb341e3e101203"
 
 [metadata.files]
 attrs = [
@@ -414,12 +414,12 @@ coverage = [
     {file = "coverage-6.5.0.tar.gz", hash = "sha256:f642e90754ee3e06b0e7e51bce3379590e76b7f76b708e1a71ff043f87025c84"},
 ]
 datar-numpy = [
-    {file = "datar_numpy-0.0.0rc0-py3-none-any.whl", hash = "sha256:1cc2ce074ec91261707cbc105be327ac91ecabc471ba6213640e2cf0e942b565"},
-    {file = "datar_numpy-0.0.0rc0.tar.gz", hash = "sha256:95b48345ac51fb2cbdfe62b7689b7179d5ab5c720575e9f1d4c04a78fa8a8e2d"},
+    {file = "datar_numpy-0.0.0-py3-none-any.whl", hash = "sha256:40138aed93ee7691a2f14035ceb9450105ab0aebe449f16775dfa349c84ff798"},
+    {file = "datar_numpy-0.0.0.tar.gz", hash = "sha256:d60f997ec6d36d4dfb726e8472d8fb21b41619af24c657a31b47a314a794d5c9"},
 ]
 datar-pandas = [
-    {file = "datar_pandas-0.0.0rc0-py3-none-any.whl", hash = "sha256:fc4e5ac1213b231da827845b9b0d4247c8be65390efad6bb2191388692bc1202"},
-    {file = "datar_pandas-0.0.0rc0.tar.gz", hash = "sha256:9189a5dbcd3d8b76800c9ccb5c436427e10ec5adfc11350f4fb921154cdb02dd"},
+    {file = "datar_pandas-0.0.0-py3-none-any.whl", hash = "sha256:6f646d1ac3332b1745ba39e3dc130fecd6da8abeae5f84f9b99a22d8b440ede2"},
+    {file = "datar_pandas-0.0.0.tar.gz", hash = "sha256:2c478edd409d5f8188c899a2f54176fac02376c817bf54c6e795f52e6870ca25"},
 ]
 diot = [
     {file = "diot-0.1.6-py3-none-any.whl", hash = "sha256:1e7f97bbc92cbbdd51d8c535885f5e2a71762b364c1b2410dfc84f3a4572d551"},
