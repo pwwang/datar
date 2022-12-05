@@ -297,7 +297,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "simplug"
-version = "0.1.5"
+version = "0.2.0"
 description = "A simple plugin system for python with async hooks supported"
 category = "main"
 optional = false
@@ -350,7 +350,7 @@ pandas = ["datar-pandas"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "5dc059a84f19e574c28958cd782c08afd55a19537f885ce5fabb341e3e101203"
+content-hash = "f2fd60b127bf5976959480b4beacee3dd960cd2c23512d72367a0b4503f0f405"
 
 [metadata.files]
 attrs = [
@@ -581,8 +581,8 @@ rtoml = [
     {file = "rtoml-0.8.0.tar.gz", hash = "sha256:6d55fa9df88256c6762f01f18b8bd3f6dc1836600ea8655eb3719a2b8f3df764"},
 ]
 simplug = [
-    {file = "simplug-0.1.5-py3-none-any.whl", hash = "sha256:fcfc0dcc4d5f7ebc5260a1b81c3f407a6e976537eb33b04b91d951de84750be1"},
-    {file = "simplug-0.1.5.tar.gz", hash = "sha256:3b9d094a16f77b99ceb37d8b59adcbe814361ac164b5e103112864dde1b2e09f"},
+    {file = "simplug-0.2.0-py3-none-any.whl", hash = "sha256:9e5d6ccf15bbc4df638cb460382e5d229ff68c6d8b55753dfbea79f0fe6ff08c"},
+    {file = "simplug-0.2.0.tar.gz", hash = "sha256:06db38e8073c26c1b6efbc36f945d85930352d861ccdf6687de61da8ddd215c7"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
