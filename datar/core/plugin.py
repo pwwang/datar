@@ -1,19 +1,20 @@
 """Plugin system to support different backends"""
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Tuple, Callable
 
-from simplug import Simplug, SimplugResult
+from simplug import Simplug, SimplugResult, makecall
 
 from .options import get_option
 
 plugin = Simplug("datar")
 
 
-def _collect(results: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+def _collect(calls: List[Tuple[Callable, Tuple, Mapping]]) -> Mapping[str, Any]:
     """Collect the results from plugins"""
     collected = {}
-    for result in results:
-        if result is not None:
-            collected.update(result)
+    for call in calls:
+        out = makecall(call)
+        if out is not None:
+            collected.update(out)
     return collected
 
 
@@ -22,7 +23,7 @@ def setup():
     """Initialize the backend"""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def get_versions():
     """Return the versions of the dependencies of the plugin."""
 
@@ -32,32 +33,32 @@ def data_api():
     """Implementations for load_dataset()"""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def base_api():
     """What is implemented the base APIs."""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def dplyr_api():
     """What is implemented the dplyr APIs."""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def tibble_api():
     """What is implemented the tibble APIs."""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def forcats_api():
     """What is implemented the forcats APIs."""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def tidyr_api():
     """What is implemented the tidyr APIs."""
 
 
-@plugin.spec(collect=_collect)
+@plugin.spec(result=_collect)
 def other_api():
     """What is implemented the other APIs."""
 

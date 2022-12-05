@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.10.0"
+version = "0.10.1"
 description = "A Grammar of Data Manipulation in python"
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
@@ -10,7 +10,7 @@ repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
 python = "^3.7.1"
-simplug = "^0.1.5"
+simplug = "^0.2"
 pipda = "^0.10"
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
 datar-numpy = {version = "^0.0.0", optional = true}
