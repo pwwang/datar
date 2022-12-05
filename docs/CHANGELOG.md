@@ -1,3 +1,7 @@
+## 0.10.1
+
+- Pump simplug to 0.2
+
 ## 0.10.0
 
 - Detach backend support, so that more backends can be supported easier in the future
