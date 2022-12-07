@@ -3,22 +3,33 @@
 _locs = locals()
 
 from .core.defaults import f
+from .core.import_names_conflict import (
+    handle_import_names_conflict as _handle_import_names_conflict,
+)
 
-from .base import *
-from .dplyr import *
+from . import base as _base, dplyr as _dplyr
+
 from .forcats import *
 from .tibble import *
 from .tidyr import *
 
-from .core.import_names_conflict import (
-    handle_import_names_conflict as _handle_import_names_conflict,
+_locs.update(
+    {
+        key: getattr(_base, key)
+        for key in _base.__all__
+        if key not in _base._conflict_names
+    }
 )
-from .base import _conflict_names as _base_conflict_names
-from .dplyr import _conflict_names as _dplyr_conflict_names
-
+_locs.update(
+    {
+        key: getattr(_dplyr, key)
+        for key in _dplyr.__all__
+        if key not in _dplyr._conflict_names
+    }
+)
 __all__, _getattr = _handle_import_names_conflict(
     _locs,
-    _base_conflict_names | _dplyr_conflict_names,
+    _base._conflict_names | _dplyr._conflict_names,
 )
 
 if _getattr is not None:
