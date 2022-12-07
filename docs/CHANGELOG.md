@@ -1,3 +1,9 @@
+# Change Log
+
+## 0.10.2
+
+- 🚑 Fix false warning when importing from all
+
 ## 0.10.1
 
 - Pump simplug to 0.2
