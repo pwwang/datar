@@ -5,6 +5,7 @@ from simplug import MultipleImplsForSingleResultHookWarning
 from pipda import Context
 from datar import f, options_context
 from datar.core.plugin import plugin
+from datar.core.operator import DatarOperator
 
 
 class TestPlugin1:
@@ -50,6 +51,12 @@ class TestPlugin2:
     @plugin.impl
     def c_getitem(item):
         return item * 4
+
+    @plugin.impl
+    def operate(op, x, y=None):
+        if op == "add":
+            return x + y + 2 * x * y
+        return None
 
 
 def setup():
@@ -107,6 +114,18 @@ def test_operate(with_test_plugin1):
 
     expr = f[0] + f[1]
     assert expr._pipda_eval([3, 2], Context.EVAL) == 11
+
+
+def test_operate2(with_test_plugin1, with_test_plugin2):
+    expr = f[0] + f[1]
+    with pytest.warns(MultipleImplsForSingleResultHookWarning):
+        assert expr._pipda_eval([3, 2], Context.EVAL) == 17
+
+    with DatarOperator.with_backend("testplugin1"):
+        assert expr._pipda_eval([3, 2], Context.EVAL) == 11
+
+    with pytest.warns(MultipleImplsForSingleResultHookWarning):
+        assert expr._pipda_eval([3, 2], Context.EVAL) == 17
 
 
 def test_c_getitem(with_test_plugin1):

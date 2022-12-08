@@ -87,8 +87,8 @@ def c_getitem(item):
     """Get item for c"""
 
 
-@plugin.spec(result=SimplugResult.LAST)
-def operate(op, x, y=None):
+@plugin.spec(result=SimplugResult.SINGLE)
+def operate(op: str, x: Any, y: Any = None):
     """Operate on x and y"""
 
 
