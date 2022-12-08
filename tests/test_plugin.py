@@ -119,8 +119,11 @@ def test_c_getitem2(with_test_plugin1, with_test_plugin2):
     with pytest.warns(MultipleImplsForSingleResultHookWarning):
         assert c[11] == 44
 
-    c.backend = "testplugin1"
-    assert c[11] == 22
+    with c.with_backend("testplugin1"):
+        assert c[11] == 22
+
+    with pytest.warns(MultipleImplsForSingleResultHookWarning):
+        assert c[11] == 44
 
 
 def test_array_ufunc(with_test_plugin1):

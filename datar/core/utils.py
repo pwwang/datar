@@ -2,6 +2,7 @@
 import sys
 import logging
 from typing import Any, Callable
+from contextlib import contextmanager
 
 from .plugin import plugin
 
@@ -43,6 +44,14 @@ class CollectionFunction:
     def __call__(self, *args, **kwargs):
         kwargs["__ast_fallback"] = "normal"
         return self.c(*args, **kwargs)
+
+    @contextmanager
+    def with_backend(self, backend: str):
+        """Set the backend for c[]"""
+        _backend = self.backend
+        self.backend = backend
+        yield
+        self.backend = _backend
 
     def __getitem__(self, item):
         """Allow c[1:3] to be interpreted as 1:3"""
