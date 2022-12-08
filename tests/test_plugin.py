@@ -47,6 +47,10 @@ class TestPlugin2:
     def load_dataset(name, metadata):
         return name * 3
 
+    @plugin.impl
+    def c_getitem(item):
+        return item * 4
+
 
 def setup():
     plugin.register(TestPlugin1)
@@ -107,6 +111,15 @@ def test_operate(with_test_plugin1):
 
 def test_c_getitem(with_test_plugin1):
     from datar.base import c
+    assert c[11] == 22
+
+
+def test_c_getitem2(with_test_plugin1, with_test_plugin2):
+    from datar.base import c
+    with pytest.warns(MultipleImplsForSingleResultHookWarning):
+        assert c[11] == 44
+
+    c.backend = "testplugin1"
     assert c[11] == 22
 
 

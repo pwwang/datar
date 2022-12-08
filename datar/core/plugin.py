@@ -82,7 +82,7 @@ def other_api():
     """What is implemented the other APIs."""
 
 
-@plugin.spec(result=SimplugResult.LAST)
+@plugin.spec(result=SimplugResult.SINGLE)
 def c_getitem(item):
     """Get item for c"""
 

@@ -38,6 +38,7 @@ class CollectionFunction:
 
     def __init__(self, c_func: Callable) -> None:
         self.c = c_func
+        self.backend = None
 
     def __call__(self, *args, **kwargs):
         kwargs["__ast_fallback"] = "normal"
@@ -45,7 +46,7 @@ class CollectionFunction:
 
     def __getitem__(self, item):
         """Allow c[1:3] to be interpreted as 1:3"""
-        return plugin.hooks.c_getitem(item)
+        return plugin.hooks.c_getitem(item, __plugin=self.backend)
 
 
 def arg_match(arg, argname, values, errmsg=None):
