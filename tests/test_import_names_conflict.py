@@ -77,7 +77,11 @@ def test_config_file_controls_silent(tmp_path):
 
     script = _setup_process(
         tmp_path,
-        "from datar.dplyr import slice",
+        (
+            "from datar import options; "
+            "options(backends=[None]); "
+            "from datar.dplyr import slice"
+        ),
         import_names_conflict="silent",
     )
 
@@ -95,7 +99,11 @@ def test_config_file_controls_underscore_suffixed(tmp_path):
 
     script = _setup_process(
         tmp_path,
-        "from datar.dplyr import slice",
+        (
+            "from datar import options; "
+            "options(backends=[None]); "
+            "from datar.dplyr import slice"
+        ),
         import_names_conflict="underscore_suffixed",
     )
 

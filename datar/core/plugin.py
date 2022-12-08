@@ -47,8 +47,8 @@ def get_versions():
     """Return the versions of the dependencies of the plugin."""
 
 
-@plugin.spec
-def data_api():
+@plugin.spec(result=SimplugResult.TRY_SINGLE)
+def load_dataset(name: str, metadata: Mapping):
     """Implementations for load_dataset()"""
 
 

@@ -19,12 +19,8 @@ class TestPlugin1:
         return {"abc": "1.2.3"}
 
     @plugin.impl
-    def data_api():
-        from datar.apis.data import load_dataset
-
-        @load_dataset.register(str)
-        def _load_dataset(name, meta):
-            return name * 2
+    def load_dataset(name, metadata):
+        return name * 2
 
     @plugin.impl
     def other_api():
@@ -46,6 +42,10 @@ class TestPlugin2:
     @plugin.impl
     def array_ufunc(ufunc, x, *args, **kwargs):
         return ufunc(x * 4, *args, **kwargs)
+
+    @plugin.impl
+    def load_dataset(name, metadata):
+        return name * 3
 
 
 def setup():
@@ -89,12 +89,14 @@ def test_other_api(with_test_plugin1):
     assert other_var == 1
 
 
-def test_data_api(with_test_plugin1):
-    # in case the implementation is not laoded
-    plugin.hooks.data_api()
-    from datar.data import iris
+def test_load_dataset(with_test_plugin1, with_test_plugin2):
+    with pytest.warns(MultipleImplsForSingleResultHookWarning):
+        from datar.data import iris
 
-    assert iris == "irisiris"
+    assert iris == "irisirisiris"
+
+    from datar.data import load_dataset
+    assert load_dataset("iris", __backend="testplugin1") == "irisiris"
 
 
 def test_operate(with_test_plugin1):

@@ -24,5 +24,5 @@ def test_load_dataset():
 
 
 def test_no_such():
-    with pytest.raises(ImportError):
+    with pytest.raises(NotImplementedByCurrentBackendError):
         from datar.data import nosuch  # noqa: F401
