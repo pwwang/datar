@@ -42,7 +42,7 @@ jobs:
         if: matrix.python-version == 3.9
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: .coverage.xml
+          coverage-reports: cov.xml
 
   deploy:
     needs: build
