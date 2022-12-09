@@ -26,6 +26,8 @@ jobs:
           poetry config virtualenvs.create false
           poetry install -v
           python -m pip install flake8
+          # pytest complains about missing six
+          python -m pip install six
       - name: Run flake8
         run: flake8 datar
       - name: Test with pytest
