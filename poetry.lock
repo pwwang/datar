@@ -130,7 +130,7 @@ name = "numpy"
 version = "1.21.1"
 description = "NumPy is the fundamental package for array computing with Python."
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7"
 
 [[package]]
@@ -298,7 +298,7 @@ name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
@@ -336,7 +336,7 @@ pandas = ["datar-pandas"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "096d4c818d70079bc598f62fc831cfb28c517109d5240e94e82f522d5819a682"
+content-hash = "84e43ef694cc190282adfed4832472dd327273c2146182be7d548763eab76d29"
 
 [metadata.files]
 attrs = [
