@@ -27,7 +27,7 @@ jobs:
           poetry install -v
           python -m pip install flake8
       - name: Run flake8
-        run: flake8 pipda
+        run: flake8 datar
       - name: Test with pytest
         run: poetry run pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
