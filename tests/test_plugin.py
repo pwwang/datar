@@ -1,19 +1,15 @@
 import pytest
-import numpy as np
 
+import numpy as np
 from simplug import MultipleImplsForSingleResultHookWarning
 from pipda import Context
-from datar import f, options_context
+from pipda.utils import MultiImplementationsWarning
+from datar import f
 from datar.core.plugin import plugin
 from datar.core.operator import DatarOperator
 
 
 class TestPlugin1:
-
-    @plugin.impl
-    def array_ufunc(ufunc, x, *args, **kwargs):
-        print(ufunc, x, args, kwargs)
-        return ufunc(x * 100, *args, **kwargs)
 
     @plugin.impl
     def get_versions():
@@ -25,6 +21,12 @@ class TestPlugin1:
 
     @plugin.impl
     def other_api():
+        from datar.apis.other import array_ufunc
+
+        @array_ufunc.register(object, backend="testplugin1")
+        def _array_ufunc(x, ufunc, *args, **kwargs):
+            return ufunc([i * 3 for i in x], *args, **kwargs)
+
         return {"other_var": 1}
 
     @plugin.impl
@@ -39,10 +41,6 @@ class TestPlugin1:
 
 
 class TestPlugin2:
-
-    @plugin.impl
-    def array_ufunc(ufunc, x, *args, **kwargs):
-        return ufunc(x * 4, *args, **kwargs)
 
     @plugin.impl
     def load_dataset(name, metadata):
@@ -100,6 +98,23 @@ def test_other_api(with_test_plugin1):
     assert other_var == 1
 
 
+def test_other_api_array_ufunc(with_test_plugin1):
+    from datar import f
+    from datar.apis.other import array_ufunc
+
+    plugin.hooks.other_api()
+
+    with pytest.warns(MultiImplementationsWarning):
+        out = np.sqrt(f)._pipda_eval([3, 12, 27], Context.EVAL)
+
+    assert out.tolist() == [3, 6, 9]
+
+    with array_ufunc.with_backend("_default"):
+        out = np.sqrt(f)._pipda_eval([1, 4, 9], Context.EVAL)
+
+    assert out.tolist() == [1, 2, 3]
+
+
 def test_load_dataset(with_test_plugin1, with_test_plugin2):
     with pytest.warns(MultipleImplsForSingleResultHookWarning):
         from datar.data import iris
@@ -143,23 +158,3 @@ def test_c_getitem2(with_test_plugin1, with_test_plugin2):
 
     with pytest.warns(MultipleImplsForSingleResultHookWarning):
         assert c[11] == 44
-
-
-def test_array_ufunc(with_test_plugin1):
-    assert np.sqrt(f)._pipda_eval(4) == 20.0
-
-
-def test_array_ufunc_backend(with_test_plugin1, with_test_plugin2):
-    with pytest.warns(MultipleImplsForSingleResultHookWarning):
-        assert np.sqrt(f)._pipda_eval(4) == 4.0
-
-    with options_context(ufunc_backend_default="testplugin1"):
-        assert np.sqrt(f)._pipda_eval(4) == 20.0
-
-    with options_context(ufunc_backend_default="testplugin2"):
-        assert np.sqrt(f)._pipda_eval(4) == 4.0
-
-    with options_context(ufunc_backend={"maximum.accumulate": "testplugin2"}):
-        assert np.maximum.accumulate(f)._pipda_eval([1, 2]).tolist() == [
-            1, 2, 2, 2, 2, 2, 2, 2
-        ]

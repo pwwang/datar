@@ -21,19 +21,14 @@ def _collect(calls: List[Tuple[Callable, Tuple, Mapping]]) -> Mapping[str, Any]:
 
 def _array_ufunc_to_register(ufunc, x, *args, **kwargs):
     """Register the array ufunc to pipda"""
-    if hasattr(ufunc, "__self__"):
-        name = f"{ufunc.__self__.__name__}.{ufunc.__name__}"
-    else:
-        name = ufunc.__name__
+    from ..apis.other import array_ufunc
 
-    default_backend = get_option("ufunc_backend_default")
-    backend = get_option("ufunc_backend").get(name, default_backend)
-    return plugin.hooks.array_ufunc(
-        ufunc,
+    return array_ufunc(
         x,
+        ufunc,
         *args,
         **kwargs,
-        __plugin=backend,
+        __backend=array_ufunc.backend,
     )
 
 
@@ -90,11 +85,6 @@ def c_getitem(item):
 @plugin.spec(result=SimplugResult.SINGLE)
 def operate(op: str, x: Any, y: Any = None):
     """Operate on x and y"""
-
-
-@plugin.spec(result=SimplugResult.SINGLE)
-def array_ufunc(ufunc, x, *args, **kwargs):
-    """Ufunc for Expression object"""
 
 
 plugin.load_entrypoints(only=get_option("backends"))
