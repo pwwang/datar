@@ -2,6 +2,7 @@
 from typing import Any, List, Mapping, Tuple, Callable
 
 from simplug import Simplug, SimplugResult, makecall
+from pipda import register_array_ufunc
 
 from .options import get_option
 
@@ -18,6 +19,19 @@ def _collect(calls: List[Tuple[Callable, Tuple, Mapping]]) -> Mapping[str, Any]:
     return collected
 
 
+def _array_ufunc_to_register(ufunc, x, *args, **kwargs):
+    """Register the array ufunc to pipda"""
+    from ..apis.other import array_ufunc
+
+    return array_ufunc(
+        x,
+        ufunc,
+        *args,
+        **kwargs,
+        __backend=array_ufunc.backend,
+    )
+
+
 @plugin.spec
 def setup():
     """Initialize the backend"""
@@ -28,8 +42,8 @@ def get_versions():
     """Return the versions of the dependencies of the plugin."""
 
 
-@plugin.spec
-def data_api():
+@plugin.spec(result=SimplugResult.TRY_SINGLE)
+def load_dataset(name: str, metadata: Mapping):
     """Implementations for load_dataset()"""
 
 
@@ -63,16 +77,17 @@ def other_api():
     """What is implemented the other APIs."""
 
 
-@plugin.spec(result=SimplugResult.LAST)
+@plugin.spec(result=SimplugResult.SINGLE)
 def c_getitem(item):
     """Get item for c"""
 
 
-@plugin.spec(result=SimplugResult.LAST)
-def operate(op, x, y=None):
+@plugin.spec(result=SimplugResult.SINGLE)
+def operate(op: str, x: Any, y: Any = None):
     """Operate on x and y"""
 
 
 plugin.load_entrypoints(only=get_option("backends"))
 
 plugin.hooks.setup()
+register_array_ufunc(_array_ufunc_to_register)

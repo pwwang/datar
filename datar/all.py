@@ -12,6 +12,7 @@ from . import base as _base, dplyr as _dplyr
 from .forcats import *
 from .tibble import *
 from .tidyr import *
+from .other import *
 
 _locs.update(
     {

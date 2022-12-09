@@ -20,7 +20,7 @@ def _isnan(x: Any) -> bool:
 
 def _is_scalar(x: Any) -> bool:
     """Check if x is scalar"""
-    if isinstance(x, str):
+    if isinstance(x, str):  # pragma: no cover
         return True
     try:
         iter(x)

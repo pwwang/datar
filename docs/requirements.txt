@@ -1,5 +1,5 @@
 # use_directory_urls doesn't work for newer versions
-mkdocs
+mkdocs==1.3.1
 mkdocs-material
 pymdown-extensions
 mkapi-fix

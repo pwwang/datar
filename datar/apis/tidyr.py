@@ -374,6 +374,7 @@ def drop_na(
     Returns:
         Dataframe with rows with NAs dropped and indexes dropped
     """
+    raise _NotImplementedByCurrentBackendError("drop_na", _data)
 
 
 @_register_verb()

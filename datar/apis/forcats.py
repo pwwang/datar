@@ -239,7 +239,14 @@ def fct_collapse(_f, other_level=None, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_lump(_f, n, prop, w, other_level="Other", ties_method: str = "min"):
+def fct_lump(
+    _f,
+    n=None,
+    prop=None,
+    w=None,
+    other_level="Other",
+    ties_method: str = "min",
+):
     """Lump together factor levels into "other"
 
     Args:
