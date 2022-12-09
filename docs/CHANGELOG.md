@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.10.3
+
+- ⬆️ Bump simplug to 0.2.2
+- ✨ Add `apis.other.array_ufunc` to support numpy ufuncs
+- 💥 Change hook `data_api` to `load_dataset`
+- ✨ Allow backend for `c[]`
+- ✨ Add `DatarOperator.with_backend()` to select backend for operators
+- ✅ Add tests
+- 📝 Update docs for backend supports
+
 ## 0.10.2
 
 - 🚑 Fix false warning when importing from all

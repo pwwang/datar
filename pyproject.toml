@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datar"
-version = "0.10.2"
+version = "0.10.3rc0"
 description = "A Grammar of Data Manipulation in python"
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
