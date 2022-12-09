@@ -25,10 +25,6 @@ OPTIONS = Diot(
             "import_names_conflict": "warn",
             # Disable some installed backends
             "backends": [],
-            # The backend for ufuncs
-            "ufunc_backend_default": None,
-            # The backend for each specific ufunc
-            "ufunc_backend": {},
         },
         OPTION_FILE_HOME,
         OPTION_FILE_CWD,
