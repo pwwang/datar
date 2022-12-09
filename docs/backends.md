@@ -80,7 +80,7 @@ with c.with_backend("pandas"):
 ## Selecting a backend for numpy ufuncs
 
 ```python
-from datar.other import array_ufunc
+from datar.apis.other import array_ufunc
 
 array_ufunc.backend = "pandas"
 
