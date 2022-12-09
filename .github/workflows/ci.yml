@@ -26,7 +26,7 @@ jobs:
           poetry config virtualenvs.create false
           # poetry install -v
           python -m pip install .
-          python -m pip install flake8
+          python -m pip install flake8 pytest pytest-cov six numpy python-slugify
       - name: Run flake8
         run: flake8 datar
       - name: Test with pytest
