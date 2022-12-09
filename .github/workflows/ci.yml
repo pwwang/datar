@@ -24,7 +24,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -v
+          # poetry install -v
+          python -m pip install .
           python -m pip install flake8
       - name: Run flake8
         run: flake8 datar
