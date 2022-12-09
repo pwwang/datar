@@ -44,6 +44,9 @@ def load_dataset(name: str, __backend: str = None):
     return loaded
 
 
-def __getattr__(name):
+def __getattr__(name: str):
     # mkapi accesses quite a lot of attributes starting with _
+    if not name.isidentifier() or name.startswith("__"):
+        raise AttributeError(name)
+
     return load_dataset(name.lower())
