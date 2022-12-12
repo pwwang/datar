@@ -27,7 +27,8 @@ def handle_import_names_conflict(imports, conflict_names):
         `sum` to `sum_`.
     """
     _import_names_conflict = get_option("import_names_conflict")
-    if _import_names_conflict == "underscore_suffixed":
+    if _import_names_conflict == "underscore_suffixed":  # pragma: no cover
+        # Test in subprocess.Popen
         return [name for name in imports if not name.startswith("_")], None
 
     import sys
