@@ -1,3 +1,9 @@
+[run]
+source =
+    datar
+concurrency = multiprocessing
+parallel = true
+sigterm = true
 [report]
 exclude_lines =
     pragma: no cover
