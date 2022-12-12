@@ -107,6 +107,11 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 
 ![example](./example2.png)
 
+## Testimonials
+
+[@coforfe](https://github.com/coforfe):
+> Thanks for your excellent package to port R (`dplyr`) flow of processing to Python. I have been using other alternatives, and yours is the one that offers the most extensive and equivalent to what is possible now with `dplyr`.
+
 [5]: https://pwwang.github.io/datar/
 [6]: https://img.shields.io/pypi/v/datar?style=flat-square
 [7]: https://pypi.org/project/datar/
