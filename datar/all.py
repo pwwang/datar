@@ -2,6 +2,7 @@
 
 _locs = locals()
 
+from .core import load_plugins as _
 from .core.defaults import f
 from .core.import_names_conflict import (
     handle_import_names_conflict as _handle_import_names_conflict,
@@ -12,7 +13,7 @@ from . import base as _base, dplyr as _dplyr
 from .forcats import *
 from .tibble import *
 from .tidyr import *
-from .other import *
+from .misc import *
 
 _locs.update(
     {

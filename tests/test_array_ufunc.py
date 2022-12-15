@@ -4,7 +4,7 @@ import numpy as np
 from pipda import Context
 from datar import f
 from datar.core import plugin as _  # noqa: F401
-from datar.apis.other import array_ufunc
+from datar.apis.misc import array_ufunc
 
 
 def test_default():
@@ -12,7 +12,7 @@ def test_default():
     assert out.tolist() == [1, 2, 3]
 
 
-def test_other_obj():
+def test_misc_obj():
     class Foo(list):
         pass
 

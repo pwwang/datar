@@ -4,3 +4,4 @@ exclude_lines =
     if TYPE_CHECKING:
 omit =
     datar/datasets.py
+    */site-packages/*

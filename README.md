@@ -20,6 +20,13 @@ pip install -U datar[pandas]
 # More backends support will be added in the future
 ```
 
+## Backends
+
+|Repo|Badges|
+|-|-|
+|[datar-numpy][1]|![3] ![18]|
+|[datar-pandas][2]|![4] ![19]|
+
 ## Example usage
 
 ```python
@@ -107,6 +114,15 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 
 ![example](./example2.png)
 
+## Testimonials
+
+[@coforfe](https://github.com/coforfe):
+> Thanks for your excellent package to port R (`dplyr`) flow of processing to Python. I have been using other alternatives, and yours is the one that offers the most extensive and equivalent to what is possible now with `dplyr`.
+
+[1]: https://github.com/pwwang/datar-numpy
+[2]: https://github.com/pwwang/datar-pandas
+[3]: https://img.shields.io/codacy/coverage/0a7519dad44246b6bab30576895f6766?style=flat-square
+[4]: https://img.shields.io/codacy/coverage/45f4ea84ae024f1a8cf84be54dd144f7?style=flat-square
 [5]: https://pwwang.github.io/datar/
 [6]: https://img.shields.io/pypi/v/datar?style=flat-square
 [7]: https://pypi.org/project/datar/
@@ -120,3 +136,5 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [15]: https://pwwang.github.io/datar/reference-maps/ALL/
 [16]: https://pwwang.github.io/datar/notebooks/across/
 [17]: https://pwwang.github.io/datar/api/datar/
+[18]: https://img.shields.io/pypi/v/datar-numpy?style=flat-square
+[19]: https://img.shields.io/pypi/v/datar-pandas?style=flat-square

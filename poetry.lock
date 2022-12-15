@@ -48,14 +48,14 @@ numpy = ">=1.17,<2.0"
 
 [[package]]
 name = "datar-pandas"
-version = "0.0.0"
+version = "0.1.1"
 description = "The pandas backend for datar"
 category = "main"
 optional = true
 python-versions = ">=3.7.1,<4.0.0"
 
 [package.dependencies]
-datar = ">=0.10,<0.11"
+datar = ">=0.10.3,<0.11.0"
 datar-numpy = ">=0.0,<0.1"
 pdtypes = ">=0.0.4,<0.0.5"
 
@@ -269,7 +269,7 @@ yaml = ["pyyaml (>=6,<7)"]
 name = "python-slugify"
 version = "7.0.0"
 description = "A Python slugify application that also handles Unicode"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -319,7 +319,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 name = "text-unidecode"
 version = "1.3"
 description = "The most basic Text::Unidecode port"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -358,7 +358,7 @@ pandas = ["datar-pandas"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "38a41a6f0a3e19a57aa07e638abdc5cfed9693ecd0ec5363c435f694b2394c28"
+content-hash = "b0839cf2320971b52efddd0b3f75ffb1f5755fd59cbada6e53dd8ee896e011d5"
 
 [metadata.files]
 attrs = [
@@ -426,8 +426,8 @@ datar-numpy = [
     {file = "datar_numpy-0.0.0.tar.gz", hash = "sha256:d60f997ec6d36d4dfb726e8472d8fb21b41619af24c657a31b47a314a794d5c9"},
 ]
 datar-pandas = [
-    {file = "datar_pandas-0.0.0-py3-none-any.whl", hash = "sha256:6f646d1ac3332b1745ba39e3dc130fecd6da8abeae5f84f9b99a22d8b440ede2"},
-    {file = "datar_pandas-0.0.0.tar.gz", hash = "sha256:2c478edd409d5f8188c899a2f54176fac02376c817bf54c6e795f52e6870ca25"},
+    {file = "datar_pandas-0.1.1-py3-none-any.whl", hash = "sha256:ca04c2cfa7a72123c6780dc20391e97127e503f3b8cf827cf81d4c985d5c8df6"},
+    {file = "datar_pandas-0.1.1.tar.gz", hash = "sha256:b00c618d9bfdb0177cb33f7635ab47fd32e5a31e01826c1cb45ea2202017bf2c"},
 ]
 diot = [
     {file = "diot-0.1.6-py3-none-any.whl", hash = "sha256:1e7f97bbc92cbbdd51d8c535885f5e2a71762b364c1b2410dfc84f3a4572d551"},

@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.11.0
+
+- 📝 Add testimonials and backend badges in README.md
+- 🐛 Load entrypoint plugins only when APIs are called (#162)
+- 💥 Rename `other` module to `misc`
+
 ## 0.10.3
 
 - ⬆️ Bump simplug to 0.2.2

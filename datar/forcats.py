@@ -1,4 +1,5 @@
-from .core.plugin import plugin as _plugin
+
+from .core.load_plugins import plugin as _plugin
 from .apis.forcats import *
 
 _additional_imports = _plugin.hooks.forcats_api()

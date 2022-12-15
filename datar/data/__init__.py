@@ -46,7 +46,7 @@ def load_dataset(name: str, __backend: str = None):
 
 def __getattr__(name: str):
     # mkapi accesses quite a lot of attributes starting with _
-    if not name.isidentifier() or name.startswith("__"):
+    if not name.isidentifier() or name.startswith("__"):  # pragma: no cover
         raise AttributeError(name)
 
     return load_dataset(name.lower())
