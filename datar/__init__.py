@@ -4,7 +4,7 @@ from .core import operator as _
 from .core.defaults import f
 from .core.options import options, get_option, options_context
 
-__version__ = "0.11.0"
+__version__ = "0.11.1"
 
 
 def get_versions(prnt: bool = True) -> _Mapping[str, str]:
@@ -20,7 +20,7 @@ def get_versions(prnt: bool = True) -> _Mapping[str, str]:
     import executing
     import pipda
     import simplug
-    from .core.plugin import plugin
+    from .core.load_plugins import plugin
 
     versions = {
         "python": sys.version,

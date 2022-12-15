@@ -1,0 +1,17 @@
+name: Submit Question
+description: Ask a general question about datar
+title: "[QST] "
+labels: [question]
+
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question about datar
+      description: >
+        Try to provide a clear and concise description of your question.
+      placeholder: |
+        ```python
+        # Your code here, if applicable
+
+        ```

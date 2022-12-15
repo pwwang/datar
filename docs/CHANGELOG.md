@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.11.1
+
+- 🐛 Fix `get_versions()` not showing plugin versions
+- 🐛 Fix plugins not loaded when loading datasets
+- 🚸 Add github issue templates
+
 ## 0.11.0
 
 - 📝 Add testimonials and backend badges in README.md
