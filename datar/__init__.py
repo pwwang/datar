@@ -20,7 +20,7 @@ def get_versions(prnt: bool = True) -> _Mapping[str, str]:
     import executing
     import pipda
     import simplug
-    from .core.plugin import plugin
+    from .core.load_plugins import plugin
 
     versions = {
         "python": sys.version,
