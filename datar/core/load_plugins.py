@@ -6,7 +6,7 @@ from .plugin import plugin
 
 def _array_ufunc_to_register(ufunc, x, *args, **kwargs):
     """Register the array ufunc to pipda"""
-    from ..apis.other import array_ufunc
+    from ..apis.misc import array_ufunc
 
     return array_ufunc(
         x,

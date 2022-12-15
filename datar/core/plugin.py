@@ -57,8 +57,8 @@ def tidyr_api():
 
 
 @plugin.spec(result=_collect)
-def other_api():
-    """What is implemented the other APIs."""
+def misc_api():
+    """What is implemented the misc APIs."""
 
 
 @plugin.spec(result=SimplugResult.SINGLE)

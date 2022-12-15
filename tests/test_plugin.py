@@ -20,8 +20,8 @@ class TestPlugin1:
         return name * 2
 
     @plugin.impl
-    def other_api():
-        from datar.apis.other import array_ufunc
+    def misc_api():
+        from datar.apis.misc import array_ufunc
 
         @array_ufunc.register(object, backend="testplugin1")
         def _array_ufunc(x, ufunc, *args, **kwargs):
@@ -86,23 +86,23 @@ def test_get_versions(with_test_plugin1, capsys):
     assert "datar" in capsys.readouterr().out
 
 
-def test_other_api(with_test_plugin1):
-    from datar import all, other
-    plugin.hooks.other_api()
+def test_misc_api(with_test_plugin1):
+    from datar import all, misc
+    plugin.hooks.misc_api()
     from importlib import reload
-    reload(other)
-    assert other.other_var == 1
+    reload(misc)
+    assert misc.other_var == 1
 
     reload(all)
     from datar.all import other_var
     assert other_var == 1
 
 
-def test_other_api_array_ufunc(with_test_plugin1):
+def test_misc_api_array_ufunc(with_test_plugin1):
     from datar import f
-    from datar.apis.other import array_ufunc
+    from datar.apis.misc import array_ufunc
 
-    plugin.hooks.other_api()
+    plugin.hooks.misc_api()
 
     with pytest.warns(MultiImplementationsWarning):
         out = np.sqrt(f)._pipda_eval([3, 12, 27], Context.EVAL)
