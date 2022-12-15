@@ -128,8 +128,8 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [7]: https://pypi.org/project/datar/
 [8]: https://img.shields.io/github/v/tag/pwwang/datar?style=flat-square
 [9]: https://github.com/pwwang/datar
-[10]: https://img.shields.io/github/workflow/status/pwwang/datar/Build%20and%20Deploy?style=flat-square
-[11]: https://img.shields.io/github/workflow/status/pwwang/datar/Build%20Docs?label=Docs&style=flat-square
+[10]: https://img.shields.io/github/actions/workflow/status/pwwang/datar/ci.yml?branch=master&style=flat-square
+[11]: https://img.shields.io/github/actions/workflow/status/pwwang/datar/docs.yml?branch=master&style=flat-square
 [12]: https://img.shields.io/codacy/grade/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
 [13]: https://app.codacy.com/gh/pwwang/datar
 [14]: https://img.shields.io/codacy/coverage/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
