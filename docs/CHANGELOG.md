@@ -4,6 +4,7 @@
 
 - 🐛 Fix `get_versions()` not showing plugin versions
 - 🐛 Fix plugins not loaded when loading datasets
+- 🚸 Add github issue templates
 
 ## 0.11.0
 
