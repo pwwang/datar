@@ -2,7 +2,7 @@
 import functools
 from typing import List
 
-from ..core.plugin import plugin
+from ..core.load_plugins import plugin
 from .metadata import Metadata, metadata
 
 
