@@ -3,7 +3,7 @@
 A Grammar of Data Manipulation in python
 
 <!-- badges -->
-[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13]
+[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13] [![Downloads][20]][7]
 
 [Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17]
 
@@ -138,3 +138,4 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [17]: https://pwwang.github.io/datar/api/datar/
 [18]: https://img.shields.io/pypi/v/datar-numpy?style=flat-square
 [19]: https://img.shields.io/pypi/v/datar-pandas?style=flat-square
+[20]: https://img.shields.io/pypi/dm/datar?style=flat-square
