@@ -1,4 +1,5 @@
-from .core.plugin import plugin as _plugin
+
+from .core.load_plugins import plugin as _plugin
 from .apis.base import *
 
 locals().update(_plugin.hooks.base_api())
