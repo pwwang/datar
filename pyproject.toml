@@ -30,7 +30,7 @@ pytest = "^7"
 pytest-cov = "^4"
 six = "^1.16"
 numpy = "^1.17"
-python-slugify = "^7"
+python-slugify = "^8"
 
 
 [build-system]

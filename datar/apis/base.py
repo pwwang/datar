@@ -2017,7 +2017,14 @@ def nzchar(x, keep_na: bool = False) -> Any:
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def table(x, *more, exclude=None, use_na="no", dnn=None, deparse_level=1) -> Any:
+def table(
+    x,
+    *more,
+    exclude=None,
+    use_na="no",
+    dnn=None,
+    deparse_level=1,
+) -> Any:
     """Get the table of a vector
 
     Args:
@@ -2043,8 +2050,8 @@ def tabulate(bin, nbins=None) -> Any:
         nbins: the number of bins
 
     Returns:
-        An integer valued ‘integer’ vector (without names).
-        There is a bin for each of the values ‘1, ..., nbins’
+        An integer valued 'integer' vector (without names).
+        There is a bin for each of the values '1, ..., nbins'
     """
     raise _NotImplementedByCurrentBackendError("tabulate", bin)
 
