@@ -1,5 +1,5 @@
 from __future__ import annotations as _
-from typing import Callable as _Callable
+from typing import Any, Callable as _Callable
 
 from pipda import (
     register_verb as _register_verb,
@@ -20,7 +20,7 @@ def tibble(
     _drop_index: bool = False,
     _index=None,
     **kwargs,
-):
+) -> Any:
     """Constructs a data frame
 
     Args:
@@ -54,7 +54,7 @@ def tibble_(
     _drop_index: bool = False,
     _index=None,
     **kwargs,
-):
+) -> Any:
     raise _NotImplementedByCurrentBackendError("tibble_")
 
 
@@ -63,7 +63,7 @@ def tribble(
     *dummies,
     _name_repair: str | _Callable = "minimal",
     _dtypes=None,
-):
+) -> Any:
     """Create dataframe using an easier to read row-by-row layout
     Unlike original API that uses formula (`f.col`) to indicate the column
     names, we use `f.col` to indicate them.
@@ -93,7 +93,7 @@ def tibble_row(
     _name_repair: str | _Callable = "check_unique",
     _dtypes=None,
     **kwargs,
-):
+) -> Any:
     """Constructs a data frame that is guaranteed to occupy one row.
     Scalar values will be wrapped with `[]`
     Args:
@@ -113,13 +113,13 @@ def tibble_row(
 
 
 @_register_verb()
-def as_tibble(df):
+def as_tibble(df) -> Any:
     """Convert a DataFrame object to Tibble object"""
     raise _NotImplementedByCurrentBackendError("as_tibble", df)
 
 
 @_register_verb()
-def enframe(x, name="name", value="value"):
+def enframe(x, name="name", value="value") -> Any:
     """Converts mappings or lists to one- or two-column data frames.
 
     Args:
@@ -137,7 +137,7 @@ def enframe(x, name="name", value="value"):
 
 
 @_register_verb()
-def deframe(x):
+def deframe(x) -> Any:
     """Converts two-column data frames to a dictionary
     using the first column as name and the second column as value.
     If the input has only one column, a list.
@@ -158,7 +158,7 @@ def add_row(
     _before=None,
     _after=None,
     **kwargs,
-):
+) -> Any:
     """Add one or more rows of data to an existing data frame.
 
     Aliases `add_case`
@@ -187,7 +187,7 @@ def add_column(
     _name_repair="check_unique",
     _dtypes=None,
     **kwargs,
-):
+) -> Any:
     """Add one or more columns to an existing data frame.
 
     Args:
@@ -207,7 +207,7 @@ def add_column(
 
 
 @_register_verb()
-def has_rownames(_data):
+def has_rownames(_data) -> bool:
     """Detect if a data frame has row names
 
     Aliases `has_index`
@@ -223,7 +223,7 @@ def has_rownames(_data):
 
 
 @_register_verb()
-def remove_rownames(_data):
+def remove_rownames(_data) -> Any:
     """Remove the index/rownames of a data frame
 
     Aliases `remove_index`, `drop_index`, `remove_rownames`
@@ -239,7 +239,7 @@ def remove_rownames(_data):
 
 
 @_register_verb()
-def rownames_to_column(_data, var="rowname"):
+def rownames_to_column(_data, var="rowname") -> Any:
     """Add rownames as a column
 
     Aliases `index_to_column`
@@ -256,7 +256,7 @@ def rownames_to_column(_data, var="rowname"):
 
 
 @_register_verb()
-def rowid_to_column(_data, var="rowid"):
+def rowid_to_column(_data, var="rowid") -> Any:
     """Add rownames as a column
 
     Args:
@@ -271,7 +271,7 @@ def rowid_to_column(_data, var="rowid"):
 
 
 @_register_verb()
-def column_to_rownames(_data, var="rowname"):
+def column_to_rownames(_data, var="rowname") -> Any:
     """Set rownames/index with one column, and remove it
 
     Aliases `column_to_index`

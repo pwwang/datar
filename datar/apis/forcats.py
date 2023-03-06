@@ -1,3 +1,6 @@
+
+from typing import Any
+
 from pipda import register_func as _register_func
 
 from ..core.utils import (
@@ -7,7 +10,7 @@ from .base import as_factor  # noqa: F401
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_relevel(_f, *lvls, after: int = None):
+def fct_relevel(_f, *lvls, after: int = None) -> Any:
     """Reorder factor levels by hand
 
     Args:
@@ -28,7 +31,7 @@ def fct_relevel(_f, *lvls, after: int = None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_inorder(_f, ordered: bool = None):
+def fct_inorder(_f, ordered: bool = None) -> Any:
     """Reorder factor levels by first appearance
 
     Args:
@@ -43,7 +46,7 @@ def fct_inorder(_f, ordered: bool = None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_infreq(_f, ordered: bool = None):
+def fct_infreq(_f, ordered: bool = None) -> Any:
     """Reorder factor levels by frequency
 
     Args:
@@ -58,7 +61,7 @@ def fct_infreq(_f, ordered: bool = None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_inseq(_f, ordered: bool = None):
+def fct_inseq(_f, ordered: bool = None) -> Any:
     """Reorder factor levels by sequence
 
     Args:
@@ -73,7 +76,7 @@ def fct_inseq(_f, ordered: bool = None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_reorder(_f, _x, *args, _fun=None, _desc: bool = False, **kwargs):
+def fct_reorder(_f, _x, *args, _fun=None, _desc: bool = False, **kwargs) -> Any:
     """Reorder factor levels by a function (default: median)
 
     Args:
@@ -91,7 +94,14 @@ def fct_reorder(_f, _x, *args, _fun=None, _desc: bool = False, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_reorder2(_f, _x, *args, _fun=None, _desc: bool = False, **kwargs):
+def fct_reorder2(
+    _f,
+    _x,
+    *args,
+    _fun=None,
+    _desc: bool = False,
+    **kwargs,
+) -> Any:
     """Reorder factor levels by a function (default: `last2`)
 
     Args:
@@ -109,7 +119,7 @@ def fct_reorder2(_f, _x, *args, _fun=None, _desc: bool = False, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_shuffle(_f):
+def fct_shuffle(_f) -> Any:
     """Shuffle the levels of a factor
 
     Args:
@@ -122,7 +132,7 @@ def fct_shuffle(_f):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_rev(_f):
+def fct_rev(_f) -> Any:
     """Reverse the order of the levels of a factor
 
     Args:
@@ -135,7 +145,7 @@ def fct_rev(_f):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_shift(_f, n: int = 1):
+def fct_shift(_f, n: int = 1) -> Any:
     """Shift the levels of a factor
 
     Args:
@@ -149,7 +159,7 @@ def fct_shift(_f, n: int = 1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def first2(_x, _y):
+def first2(_x, _y) -> Any:
     """Find the first element of `_y` ordered by `_x`
 
     Args:
@@ -163,7 +173,7 @@ def first2(_x, _y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def last2(_x, _y):
+def last2(_x, _y) -> Any:
     """Find the last element of `_y` ordered by `_x`
 
     Args:
@@ -177,7 +187,7 @@ def last2(_x, _y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_anon(_f, prefix: str = ""):
+def fct_anon(_f, prefix: str = "") -> Any:
     """Anonymise factor levels
 
     Args:
@@ -191,7 +201,7 @@ def fct_anon(_f, prefix: str = ""):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_recode(_f, *args, **kwargs):
+def fct_recode(_f, *args, **kwargs) -> Any:
     """Change factor levels by hand
 
     Args:
@@ -221,7 +231,7 @@ def fct_recode(_f, *args, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_collapse(_f, other_level=None, **kwargs):
+def fct_collapse(_f, other_level=None, **kwargs) -> Any:
     """Collapse factor levels into manually defined groups
 
     Args:
@@ -246,7 +256,7 @@ def fct_lump(
     w=None,
     other_level="Other",
     ties_method: str = "min",
-):
+) -> Any:
     """Lump together factor levels into "other"
 
     Args:
@@ -271,7 +281,7 @@ def fct_lump(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_lump_min(_f, min_, w=None, other_level="Other"):
+def fct_lump_min(_f, min_, w=None, other_level="Other") -> Any:
     """lumps levels that appear fewer than `min_` times.
 
     Args:
@@ -289,7 +299,7 @@ def fct_lump_min(_f, min_, w=None, other_level="Other"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_lump_prop(_f, prop, w=None, other_level="Other"):
+def fct_lump_prop(_f, prop, w=None, other_level="Other") -> Any:
     """Lumps levels that appear in fewer `prop * n` times.
 
     Args:
@@ -309,7 +319,7 @@ def fct_lump_prop(_f, prop, w=None, other_level="Other"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_lump_n(_f, n, w=None, other_level="Other"):
+def fct_lump_n(_f, n, w=None, other_level="Other") -> Any:
     """Lumps all levels except for the `n` most frequent.
 
     Args:
@@ -331,7 +341,7 @@ def fct_lump_n(_f, n, w=None, other_level="Other"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_lump_lowfreq(_f, other_level="Other"):
+def fct_lump_lowfreq(_f, other_level="Other") -> Any:
     """lumps together the least frequent levels, ensuring
     that "other" is still the smallest level.
 
@@ -347,7 +357,7 @@ def fct_lump_lowfreq(_f, other_level="Other"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_other(_f, keep=None, drop=None, other_level="Other"):
+def fct_other(_f, keep=None, drop=None, other_level="Other") -> Any:
     """Replace levels with "other"
 
     Args:
@@ -368,7 +378,7 @@ def fct_other(_f, keep=None, drop=None, other_level="Other"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_relabel(_f, _fun, *args, **kwargs):
+def fct_relabel(_f, _fun, *args, **kwargs) -> Any:
     """Automatically relabel factor levels, collapse as necessary
 
     Args:
@@ -386,7 +396,7 @@ def fct_relabel(_f, _fun, *args, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_expand(_f, *additional_levels):
+def fct_expand(_f, *additional_levels) -> Any:
     """Add additional levels to a factor
 
     Args:
@@ -401,7 +411,7 @@ def fct_expand(_f, *additional_levels):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_explicit_na(_f, na_level="(Missing)"):
+def fct_explicit_na(_f, na_level="(Missing)") -> Any:
     """Make missing values explicit
 
     This gives missing values an explicit factor level, ensuring that they
@@ -419,7 +429,7 @@ def fct_explicit_na(_f, na_level="(Missing)"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_drop(_f, only=None):
+def fct_drop(_f, only=None) -> Any:
     """Drop unused levels
 
     Args:
@@ -438,7 +448,7 @@ def fct_drop(_f, only=None):
 def fct_unify(
     fs,
     levels=None,
-):
+) -> Any:
     """Unify the levels in a list of factors
 
     Args:
@@ -453,7 +463,7 @@ def fct_unify(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_c(*fs):
+def fct_c(*fs) -> Any:
     """Concatenate factors, combining levels
 
     This is a useful ways of patching together factors from multiple sources
@@ -473,7 +483,7 @@ def fct_cross(
     *fs,
     sep: str = ":",
     keep_empty: bool = False,
-):
+) -> Any:
     """Combine levels from two or more factors to create a new factor
 
     Computes a factor whose levels are all the combinations of
@@ -491,7 +501,7 @@ def fct_cross(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_count(_f, sort: bool = False, prop=False):
+def fct_count(_f, sort: bool = False, prop=False) -> Any:
     """Count entries in a factor
 
     Args:
@@ -507,7 +517,7 @@ def fct_count(_f, sort: bool = False, prop=False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_match(_f, lvls):
+def fct_match(_f, lvls) -> Any:
     """Test for presence of levels in a factor
 
     Do any of `lvls` occur in `_f`?
@@ -523,7 +533,7 @@ def fct_match(_f, lvls):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def fct_unique(_f):
+def fct_unique(_f) -> Any:
     """Unique values of a factor
 
     Args:
@@ -540,7 +550,7 @@ def lvls_reorder(
     _f,
     idx,
     ordered: bool = None,
-):
+) -> Any:
     """Leaves values of a factor as they are, but changes the order by
     given indices
 
@@ -561,7 +571,7 @@ def lvls_reorder(
 def lvls_revalue(
     _f,
     new_levels,
-):
+) -> Any:
     """changes the values of existing levels; there must
     be one new level for each old level
 
@@ -579,7 +589,7 @@ def lvls_revalue(
 def lvls_expand(
     _f,
     new_levels,
-):
+) -> Any:
     """Expands the set of levels; the new levels must
     include the old levels.
 
@@ -594,7 +604,7 @@ def lvls_expand(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lvls_union(fs):
+def lvls_union(fs) -> Any:
     """Find all levels in a list of factors
 
     Args:

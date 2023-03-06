@@ -3,7 +3,7 @@
 A Grammar of Data Manipulation in python
 
 <!-- badges -->
-[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13]
+[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][5] [![Codacy][12]][13] [![Codacy coverage][14]][13] [![Downloads][20]][7]
 
 [Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17]
 
@@ -128,8 +128,8 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [7]: https://pypi.org/project/datar/
 [8]: https://img.shields.io/github/v/tag/pwwang/datar?style=flat-square
 [9]: https://github.com/pwwang/datar
-[10]: https://img.shields.io/github/workflow/status/pwwang/datar/Build%20and%20Deploy?style=flat-square
-[11]: https://img.shields.io/github/workflow/status/pwwang/datar/Build%20Docs?label=Docs&style=flat-square
+[10]: https://img.shields.io/github/actions/workflow/status/pwwang/datar/ci.yml?branch=master&style=flat-square
+[11]: https://img.shields.io/github/actions/workflow/status/pwwang/datar/docs.yml?branch=master&style=flat-square
 [12]: https://img.shields.io/codacy/grade/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
 [13]: https://app.codacy.com/gh/pwwang/datar
 [14]: https://img.shields.io/codacy/coverage/3d9bdff4d7a34bdfb9cd9e254184cb35?style=flat-square
@@ -138,3 +138,4 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [17]: https://pwwang.github.io/datar/api/datar/
 [18]: https://img.shields.io/pypi/v/datar-numpy?style=flat-square
 [19]: https://img.shields.io/pypi/v/datar-pandas?style=flat-square
+[20]: https://img.shields.io/pypi/dm/datar?style=flat-square

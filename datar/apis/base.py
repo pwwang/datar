@@ -1,6 +1,7 @@
 """APIs ported from r-base"""
 # import the variables with _ so that they are not imported by *
 import math as _math
+from typing import Any
 from string import ascii_letters as _ascii_letters
 
 from pipda import register_func as _register_func
@@ -40,7 +41,7 @@ Inf = float("inf")
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def ceiling(x):
+def ceiling(x) -> Any:
     """Round up to the nearest integer
 
     Args:
@@ -53,7 +54,7 @@ def ceiling(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cov(x, y=None, na_rm: bool = False, ddof: int = 1):
+def cov(x, y=None, na_rm: bool = False, ddof: int = 1) -> Any:
     """Compute pairwise covariance between two variables
 
     Args:
@@ -72,7 +73,7 @@ def cov(x, y=None, na_rm: bool = False, ddof: int = 1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def floor(x):
+def floor(x) -> Any:
     """Round down to the nearest integer
 
     Args:
@@ -85,7 +86,7 @@ def floor(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def mean(x, na_rm: bool = False):
+def mean(x, na_rm: bool = False) -> Any:
     """Compute the mean of a vector
 
     Args:
@@ -99,7 +100,7 @@ def mean(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def median(x, na_rm: bool = False):
+def median(x, na_rm: bool = False) -> Any:
     """Compute the median of a vector
 
     Args:
@@ -113,7 +114,7 @@ def median(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def pmax(*args, na_rm: bool = False):
+def pmax(*args, na_rm: bool = False) -> Any:
     """Returns the (regular or Parallel) maxima and minima of the input
      values.
 
@@ -129,7 +130,7 @@ def pmax(*args, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def pmin(*args, na_rm: bool = False):
+def pmin(*args, na_rm: bool = False) -> Any:
     """Returns the (regular or Parallel) maxima and minima of the input
      values.
 
@@ -145,7 +146,7 @@ def pmin(*args, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sqrt(x):
+def sqrt(x) -> Any:
     """Compute the square root of a vector
 
     Args:
@@ -158,7 +159,7 @@ def sqrt(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def var(x, na_rm: bool = False, ddof: int = 1):
+def var(x, na_rm: bool = False, ddof: int = 1) -> Any:
     """Compute the variance of a vector
 
     Args:
@@ -176,7 +177,7 @@ def var(x, na_rm: bool = False, ddof: int = 1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def scale(x, center=True, scale_=True):
+def scale(x, center=True, scale_=True) -> Any:
     """Center and/or scale the data
 
     Args:
@@ -191,7 +192,7 @@ def scale(x, center=True, scale_=True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def col_sums(x, na_rm: bool = False):
+def col_sums(x, na_rm: bool = False) -> Any:
     """Compute the column sums of a matrix
 
     Args:
@@ -205,7 +206,7 @@ def col_sums(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def col_means(x, na_rm: bool = False):
+def col_means(x, na_rm: bool = False) -> Any:
     """Compute the column means of a matrix
 
     Args:
@@ -219,7 +220,7 @@ def col_means(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def col_sds(x, na_rm: bool = False):
+def col_sds(x, na_rm: bool = False) -> Any:
     """Compute the column standard deviations of a matrix
 
     Args:
@@ -233,7 +234,7 @@ def col_sds(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def col_medians(x, na_rm: bool = False):
+def col_medians(x, na_rm: bool = False) -> Any:
     """Compute the column medians of a matrix
 
     Args:
@@ -247,7 +248,7 @@ def col_medians(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def row_sums(x, na_rm: bool = False):
+def row_sums(x, na_rm: bool = False) -> Any:
     """Compute the row sums of a matrix
 
     Args:
@@ -261,7 +262,7 @@ def row_sums(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def row_means(x, na_rm: bool = False):
+def row_means(x, na_rm: bool = False) -> Any:
     """Compute the row means of a matrix
 
     Args:
@@ -275,7 +276,7 @@ def row_means(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def row_sds(x, na_rm: bool = False):
+def row_sds(x, na_rm: bool = False) -> Any:
     """Compute the row standard deviations of a matrix
 
     Args:
@@ -289,7 +290,7 @@ def row_sds(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def row_medians(x, na_rm: bool = False):
+def row_medians(x, na_rm: bool = False) -> Any:
     """Compute the row medians of a matrix
 
     Args:
@@ -303,7 +304,7 @@ def row_medians(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def min_(x, na_rm: bool = False):
+def min_(x, na_rm: bool = False) -> Any:
     """Compute the minimum of a vector
 
     Args:
@@ -317,7 +318,7 @@ def min_(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def max_(x, na_rm: bool = False):
+def max_(x, na_rm: bool = False) -> Any:
     """Compute the maximum of a vector
 
     Args:
@@ -331,7 +332,7 @@ def max_(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def round_(x, digits: int = 0):
+def round_(x, digits: int = 0) -> Any:
     """Round the values of a vector
 
     Args:
@@ -345,7 +346,7 @@ def round_(x, digits: int = 0):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sum_(x, na_rm: bool = False):
+def sum_(x, na_rm: bool = False) -> Any:
     """Compute the sum of a vector
 
     Args:
@@ -359,7 +360,7 @@ def sum_(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def abs_(x):
+def abs_(x) -> Any:
     """Compute the absolute value of a vector
 
     Args:
@@ -372,7 +373,7 @@ def abs_(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def prod(x, na_rm: bool = False):
+def prod(x, na_rm: bool = False) -> Any:
     """Compute the product of a vector
 
     Args:
@@ -386,7 +387,7 @@ def prod(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sign(x):
+def sign(x) -> Any:
     """Compute the sign of a vector
 
     Args:
@@ -399,7 +400,7 @@ def sign(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def signif(x, digits: int = 6):
+def signif(x, digits: int = 6) -> Any:
     """Round the values of a vector to a given number of significant digits
 
     Args:
@@ -413,7 +414,7 @@ def signif(x, digits: int = 6):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def trunc(x):
+def trunc(x) -> Any:
     """Truncate the values of a vector
 
     Args:
@@ -426,7 +427,7 @@ def trunc(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def exp(x):
+def exp(x) -> Any:
     """Compute the exponential of a vector
 
     Args:
@@ -439,7 +440,7 @@ def exp(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def log(x, base: float = _math.e):
+def log(x, base: float = _math.e) -> Any:
     """Compute the logarithm of a vector
 
     Args:
@@ -453,7 +454,7 @@ def log(x, base: float = _math.e):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def log2(x):
+def log2(x) -> Any:
     """Compute the base-2 logarithm of a vector
 
     Args:
@@ -466,7 +467,7 @@ def log2(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def log10(x):
+def log10(x) -> Any:
     """Compute the base 10 logarithm of a vector
 
     Args:
@@ -479,7 +480,7 @@ def log10(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def log1p(x):
+def log1p(x) -> Any:
     """Compute the logarithm of one plus a vector
 
     Args:
@@ -492,7 +493,7 @@ def log1p(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sd(x, na_rm: bool = False):
+def sd(x, na_rm: bool = False) -> Any:
     """Compute the standard deviation of a vector
 
     Args:
@@ -506,7 +507,7 @@ def sd(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def weighted_mean(x, w=None, na_rm: bool = False):
+def weighted_mean(x, w=None, na_rm: bool = False) -> Any:
     """Compute the weighted mean of a vector
 
     Args:
@@ -528,7 +529,7 @@ def quantile(
     names: bool = True,
     type_: int = 7,
     digits: int = 7,
-):
+) -> Any:
     """Compute the quantiles of a vector
 
     Args:
@@ -542,7 +543,7 @@ def quantile(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def bessel_i(x, nu, expon_scaled: bool = False):
+def bessel_i(x, nu, expon_scaled: bool = False) -> Any:
     """Compute the modified Bessel function of the first kind
 
     Args:
@@ -557,7 +558,7 @@ def bessel_i(x, nu, expon_scaled: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def bessel_j(x, nu):
+def bessel_j(x, nu) -> Any:
     """Compute the Bessel function of the first kind
 
     Args:
@@ -571,7 +572,7 @@ def bessel_j(x, nu):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def bessel_k(x, nu, expon_scaled: bool = False):
+def bessel_k(x, nu, expon_scaled: bool = False) -> Any:
     """Compute the modified Bessel function of the second kind
 
     Args:
@@ -586,7 +587,7 @@ def bessel_k(x, nu, expon_scaled: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def bessel_y(x, nu):
+def bessel_y(x, nu) -> Any:
     """Compute the Bessel function of the second kind
 
     Args:
@@ -600,7 +601,7 @@ def bessel_y(x, nu):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_double(x):
+def as_double(x) -> Any:
     """Convert a vector to a double vector
 
     Args:
@@ -613,7 +614,7 @@ def as_double(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_integer(x):
+def as_integer(x) -> Any:
     """Convert a vector to an integer vector
 
     Args:
@@ -626,7 +627,7 @@ def as_integer(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_logical(x):
+def as_logical(x) -> Any:
     """Convert a vector to a logical vector
 
     Args:
@@ -639,7 +640,7 @@ def as_logical(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_character(x):
+def as_character(x) -> Any:
     """Convert a vector to a character vector
 
     Args:
@@ -652,7 +653,7 @@ def as_character(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_factor(x):
+def as_factor(x) -> Any:
     """Convert a vector to a factor vector
 
     Args:
@@ -665,7 +666,7 @@ def as_factor(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_ordered(x):
+def as_ordered(x) -> Any:
     """Convert a vector to an ordered vector
 
     Args:
@@ -686,7 +687,7 @@ def as_date(
     optional=False,
     tz=0,
     origin=None,
-):
+) -> Any:
     """Convert an object to a datetime.date object
 
     See: https://rdrr.io/r/base/as.Date.html
@@ -716,7 +717,7 @@ def as_date(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_numeric(x):
+def as_numeric(x) -> Any:
     """Convert a vector to a numeric vector
 
     Args:
@@ -729,7 +730,7 @@ def as_numeric(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def arg(x):
+def arg(x) -> Any:
     """Angles of complex numbers
 
     Args:
@@ -742,7 +743,7 @@ def arg(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def conj(x):
+def conj(x) -> Any:
     """Complex conjugate
 
     Args:
@@ -755,7 +756,7 @@ def conj(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def mod(x):
+def mod(x) -> Any:
     """Modulus of complex numbers
 
     Args:
@@ -768,7 +769,7 @@ def mod(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def re_(x):
+def re_(x) -> Any:
     """Real part of complex numbers
 
     Args:
@@ -781,7 +782,7 @@ def re_(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def im(x):
+def im(x) -> Any:
     """Imaginary part of complex numbers
 
     Args:
@@ -794,7 +795,7 @@ def im(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_complex(x):
+def as_complex(x) -> Any:
     """Convert a vector to a complex vector
 
     Args:
@@ -807,7 +808,7 @@ def as_complex(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_complex(x):
+def is_complex(x) -> Any:
     """Check if a vector is complex
 
     Args:
@@ -820,7 +821,7 @@ def is_complex(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cummax(x):
+def cummax(x) -> Any:
     """Cumulative maxima
 
     Args:
@@ -833,7 +834,7 @@ def cummax(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cummin(x):
+def cummin(x) -> Any:
     """Cumulative minima
 
     Args:
@@ -846,7 +847,7 @@ def cummin(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cumprod(x):
+def cumprod(x) -> Any:
     """Cumulative products
 
     Args:
@@ -859,7 +860,7 @@ def cumprod(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cumsum(x):
+def cumsum(x) -> Any:
     """Cumulative sums
 
     Args:
@@ -872,7 +873,7 @@ def cumsum(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def droplevels(x):
+def droplevels(x) -> Any:
     """Drop unused levels of a factor
 
     Args:
@@ -885,7 +886,7 @@ def droplevels(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def levels(x):
+def levels(x) -> Any:
     """Get the levels of a factor
 
     Args:
@@ -898,7 +899,7 @@ def levels(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def set_levels(x, levels):
+def set_levels(x, levels) -> Any:
     """Set the levels of a factor
 
     Args:
@@ -912,7 +913,7 @@ def set_levels(x, levels):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_factor(x):
+def is_factor(x) -> Any:
     """Check if a vector is a factor
 
     Args:
@@ -925,7 +926,7 @@ def is_factor(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_ordered(x):
+def is_ordered(x) -> Any:
     """Check if a vector is ordered
 
     Args:
@@ -938,7 +939,7 @@ def is_ordered(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def nlevels(x):
+def nlevels(x) -> Any:
     """Get the number of levels of a factor
 
     Args:
@@ -959,7 +960,7 @@ def factor(
     exclude=None,
     ordered=False,
     nmax=None,
-):
+) -> Any:
     """Create a factor vector
 
     Args:
@@ -977,7 +978,7 @@ def factor(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def ordered(x, levels=None, labels=None, exclude=None, nmax=None):
+def ordered(x, levels=None, labels=None, exclude=None, nmax=None) -> Any:
     """Create an ordered factor vector
 
     Args:
@@ -1002,7 +1003,7 @@ def cut(
     right=True,
     dig_lab=3,
     ordered_result=False,
-):
+) -> Any:
     """Cut a numeric vector into bins
 
     Args:
@@ -1021,7 +1022,7 @@ def cut(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def diff(x, lag: int = 1, differences: int = 1):
+def diff(x, lag: int = 1, differences: int = 1) -> Any:
     """Difference of a numeric vector
 
     Args:
@@ -1039,7 +1040,7 @@ def diff(x, lag: int = 1, differences: int = 1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def expand_grid(x, *args, **kwargs):
+def expand_grid(x, *args, **kwargs) -> Any:
     """Expand a grid
 
     Args:
@@ -1054,7 +1055,7 @@ def expand_grid(x, *args, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def outer(x, y, fun="*"):
+def outer(x, y, fun="*") -> Any:
     """Outer product of two vectors
 
     Args:
@@ -1072,7 +1073,7 @@ def outer(x, y, fun="*"):
 
 
 @_register_func(cls=object, pipeable=True, dispatchable=True)
-def make_names(names, unique: bool = True):
+def make_names(names, unique: bool = True) -> Any:
     """Make names for a vector
 
     Args:
@@ -1109,7 +1110,7 @@ def make_names(names, unique: bool = True):
 
 
 @_register_func(cls=object, pipeable=True, dispatchable=True)
-def make_unique(names):
+def make_unique(names) -> Any:
     """Make a vector unique
 
     Args:
@@ -1122,7 +1123,7 @@ def make_unique(names):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rank(x, na_last: bool = True, ties_method: str = "average"):
+def rank(x, na_last: bool = True, ties_method: str = "average") -> Any:
     """Rank a numeric vector
 
     Args:
@@ -1138,7 +1139,7 @@ def rank(x, na_last: bool = True, ties_method: str = "average"):
 
 
 @_register_func(cls=object, pipeable=True, dispatchable=True)
-def identity(x):
+def identity(x) -> Any:
     """Identity function
 
     Args:
@@ -1151,7 +1152,7 @@ def identity(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_logical(x):
+def is_logical(x) -> Any:
     """Check if a vector is logical
 
     Args:
@@ -1164,7 +1165,7 @@ def is_logical(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_true(x):
+def is_true(x) -> bool:
     """Check if anything is true
 
     Args:
@@ -1177,7 +1178,7 @@ def is_true(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_false(x):
+def is_false(x) -> bool:
     """Check if anything is false
 
     Args:
@@ -1190,7 +1191,7 @@ def is_false(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_na(x):
+def is_na(x) -> Any:
     """Check if anything is NA
 
     Args:
@@ -1203,7 +1204,7 @@ def is_na(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_finite(x):
+def is_finite(x) -> Any:
     """Check if anything is finite
 
     Args:
@@ -1216,7 +1217,7 @@ def is_finite(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_infinite(x):
+def is_infinite(x) -> Any:
     """Check if anything is infinite
 
     Args:
@@ -1229,7 +1230,7 @@ def is_infinite(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def any_na(x):
+def any_na(x) -> Any:
     """Check if anything in `x` is NA
 
     Args:
@@ -1242,7 +1243,7 @@ def any_na(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def as_null(x):
+def as_null(x) -> Any:
     """Convert anything to NULL
 
     Args:
@@ -1255,7 +1256,7 @@ def as_null(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_null(x):
+def is_null(x) -> Any:
     """Check if anything is NULL
 
     Args:
@@ -1268,7 +1269,7 @@ def is_null(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def set_seed(seed):
+def set_seed(seed) -> Any:
     """Set the seed of the random number generator
 
     Args:
@@ -1278,7 +1279,7 @@ def set_seed(seed):
 
 
 @_register_func(pipeable=True, dispatchable="all")
-def rep(x, times=1, length=None, each=1):
+def rep(x, times=1, length=None, each=1) -> Any:
     """Replicate elements of a vector
 
     Args:
@@ -1295,7 +1296,7 @@ def rep(x, times=1, length=None, each=1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def c_(*args):
+def c_(*args) -> Any:
     """Concatenate vectors
 
     Args:
@@ -1311,7 +1312,7 @@ c = _CollectionFunction(c_)
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def length(x):
+def length(x) -> Any:
     """Get the length of a vector
 
     Args:
@@ -1324,7 +1325,7 @@ def length(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lengths(x):
+def lengths(x) -> Any:
     """Get the lengths of a list
 
     Args:
@@ -1337,7 +1338,7 @@ def lengths(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def order(x, decreasing: bool = False, na_last: bool = True):
+def order(x, decreasing: bool = False, na_last: bool = True) -> Any:
     """Order a vector
 
     Args:
@@ -1352,7 +1353,7 @@ def order(x, decreasing: bool = False, na_last: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sort(x, decreasing: bool = False, na_last: bool = True):
+def sort(x, decreasing: bool = False, na_last: bool = True) -> Any:
     """Sort a vector
 
     Args:
@@ -1367,7 +1368,7 @@ def sort(x, decreasing: bool = False, na_last: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rev(x):
+def rev(x) -> Any:
     """Reverse a vector
 
     Args:
@@ -1380,7 +1381,7 @@ def rev(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sample(x, size=None, replace: bool = False, prob=None):
+def sample(x, size=None, replace: bool = False, prob=None) -> Any:
     """Sample a vector
 
     Args:
@@ -1396,7 +1397,7 @@ def sample(x, size=None, replace: bool = False, prob=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def seq(from_=None, to=None, by=None, length_out=None, along_with=None):
+def seq(from_=None, to=None, by=None, length_out=None, along_with=None) -> Any:
     """Generate a sequence
 
     Args:
@@ -1413,7 +1414,7 @@ def seq(from_=None, to=None, by=None, length_out=None, along_with=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def seq_along(x):
+def seq_along(x) -> Any:
     """Generate a sequence along a vector
 
     Args:
@@ -1426,7 +1427,7 @@ def seq_along(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def seq_len(x):
+def seq_len(x) -> Any:
     """Generate a sequence of length x
 
     Args:
@@ -1439,7 +1440,7 @@ def seq_len(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def match(x, table, nomatch=-1):
+def match(x, table, nomatch=-1) -> Any:
     """Match elements of a vector
 
     Args:
@@ -1454,7 +1455,7 @@ def match(x, table, nomatch=-1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def beta(x, y):
+def beta(x, y) -> Any:
     """Compute the beta function
 
     Args:
@@ -1468,7 +1469,7 @@ def beta(x, y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lgamma(x):
+def lgamma(x) -> Any:
     """Compute the log gamma function
 
     Args:
@@ -1481,7 +1482,7 @@ def lgamma(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def digamma(x):
+def digamma(x) -> Any:
     """Compute the digamma function
 
     Args:
@@ -1494,7 +1495,7 @@ def digamma(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def trigamma(x):
+def trigamma(x) -> Any:
     """Compute the trigamma function
 
     Args:
@@ -1507,7 +1508,7 @@ def trigamma(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def choose(n, k):
+def choose(n, k) -> Any:
     """Compute the binomial coefficient
 
     Args:
@@ -1521,7 +1522,7 @@ def choose(n, k):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def factorial(x):
+def factorial(x) -> Any:
     """Compute the factorial
 
     Args:
@@ -1534,7 +1535,7 @@ def factorial(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def gamma(x):
+def gamma(x) -> Any:
     """Compute the gamma function
 
     Args:
@@ -1547,7 +1548,7 @@ def gamma(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lfactorial(x):
+def lfactorial(x) -> Any:
     """Compute the log factorial
 
     Args:
@@ -1560,7 +1561,7 @@ def lfactorial(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lchoose(n, k):
+def lchoose(n, k) -> Any:
     """Compute the log binomial coefficient
 
     Args:
@@ -1574,7 +1575,7 @@ def lchoose(n, k):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lbeta(x, y):
+def lbeta(x, y) -> Any:
     """Compute the log beta function
 
     Args:
@@ -1588,7 +1589,7 @@ def lbeta(x, y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def psigamma(x, deriv):
+def psigamma(x, deriv) -> Any:
     """Compute the psi function
 
     Args:
@@ -1602,7 +1603,7 @@ def psigamma(x, deriv):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rnorm(n, mean=0, sd=1):
+def rnorm(n, mean=0, sd=1) -> Any:
     """Generate random normal variables
 
     Args:
@@ -1617,7 +1618,7 @@ def rnorm(n, mean=0, sd=1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def runif(n, min=0, max=1):
+def runif(n, min=0, max=1) -> Any:
     """Generate random uniform variables
 
     Args:
@@ -1632,7 +1633,7 @@ def runif(n, min=0, max=1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rpois(n, lambda_):
+def rpois(n, lambda_) -> Any:
     """Generate random Poisson variables
 
     Args:
@@ -1646,7 +1647,7 @@ def rpois(n, lambda_):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rbinom(n, size, prob):
+def rbinom(n, size, prob) -> Any:
     """Generate random binomial variables
 
     Args:
@@ -1661,7 +1662,7 @@ def rbinom(n, size, prob):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rcauchy(n, location=0, scale=1):
+def rcauchy(n, location=0, scale=1) -> Any:
     """Generate random Cauchy variables
 
     Args:
@@ -1676,7 +1677,7 @@ def rcauchy(n, location=0, scale=1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rchisq(n, df):
+def rchisq(n, df) -> Any:
     """Generate random chi-squared variables
 
     Args:
@@ -1690,7 +1691,7 @@ def rchisq(n, df):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rexp(n, rate):
+def rexp(n, rate) -> Any:
     """Generate random exponential variables
 
     Args:
@@ -1704,7 +1705,7 @@ def rexp(n, rate):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_character(x):
+def is_character(x) -> Any:
     """Is x a character vector
 
     Args:
@@ -1724,7 +1725,7 @@ def grep(
     value=False,
     fixed=False,
     invert=False,
-):
+) -> Any:
     """Grep for a pattern
 
     Args:
@@ -1742,7 +1743,7 @@ def grep(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def grepl(pattern, x, ignore_case=False, fixed=False):
+def grepl(pattern, x, ignore_case=False, fixed=False) -> Any:
     """Grep for a pattern
 
     Args:
@@ -1758,7 +1759,7 @@ def grepl(pattern, x, ignore_case=False, fixed=False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sub(pattern, replacement, x, ignore_case=False, fixed=False):
+def sub(pattern, replacement, x, ignore_case=False, fixed=False) -> Any:
     """Substitute a pattern
 
     Args:
@@ -1775,7 +1776,7 @@ def sub(pattern, replacement, x, ignore_case=False, fixed=False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def gsub(pattern, replacement, x, ignore_case=False, fixed=False):
+def gsub(pattern, replacement, x, ignore_case=False, fixed=False) -> Any:
     """Substitute a pattern
 
     Args:
@@ -1792,7 +1793,7 @@ def gsub(pattern, replacement, x, ignore_case=False, fixed=False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def strsplit(x, split, fixed=False, perl=False, use_bytes=False):
+def strsplit(x, split, fixed=False, perl=False, use_bytes=False) -> Any:
     """Split a string
 
     Args:
@@ -1809,7 +1810,7 @@ def strsplit(x, split, fixed=False, perl=False, use_bytes=False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def paste(*args, sep=" ", collapse=None):
+def paste(*args, sep=" ", collapse=None) -> Any:
     """Join a vector into a string
 
     Args:
@@ -1824,7 +1825,7 @@ def paste(*args, sep=" ", collapse=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def paste0(*args, collapse=None):
+def paste0(*args, collapse=None) -> Any:
     """Join a vector into a string
 
     Args:
@@ -1838,7 +1839,7 @@ def paste0(*args, collapse=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sprintf(fmt, *args):
+def sprintf(fmt, *args) -> Any:
     """Format a string
 
     Args:
@@ -1852,7 +1853,7 @@ def sprintf(fmt, *args):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def substr(x, start, stop):
+def substr(x, start, stop) -> Any:
     """Get a substring
 
     Args:
@@ -1867,7 +1868,7 @@ def substr(x, start, stop):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def substring(x, first, last=None):
+def substring(x, first, last=None) -> Any:
     """Get a substring
 
     Args:
@@ -1882,7 +1883,7 @@ def substring(x, first, last=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def startswith(x, prefix):
+def startswith(x, prefix) -> Any:
     """Does x start with prefix
 
     Args:
@@ -1896,7 +1897,7 @@ def startswith(x, prefix):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def endswith(x, suffix):
+def endswith(x, suffix) -> Any:
     """Does x end with suffix
 
     Args:
@@ -1910,7 +1911,7 @@ def endswith(x, suffix):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def strtoi(x, base=0):
+def strtoi(x, base=0) -> Any:
     """Convert a string to an integer
 
     Args:
@@ -1924,7 +1925,7 @@ def strtoi(x, base=0):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def trimws(x, which="both", whitespace=r" \t"):
+def trimws(x, which="both", whitespace=r" \t") -> Any:
     """Trim whitespace from a string
 
     Args:
@@ -1939,7 +1940,7 @@ def trimws(x, which="both", whitespace=r" \t"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def toupper(x):
+def toupper(x) -> Any:
     """Convert a string to upper case
 
     Args:
@@ -1952,7 +1953,7 @@ def toupper(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def tolower(x):
+def tolower(x) -> Any:
     """Convert a string to lower case
 
     Args:
@@ -1965,7 +1966,7 @@ def tolower(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def chartr(old, new, x):
+def chartr(old, new, x) -> Any:
     """Translate characters
 
     Args:
@@ -1986,7 +1987,7 @@ def nchar(
     allow_na: bool = True,
     keep_na: bool = False,
     _na_len: int = 2,
-):
+) -> Any:
     """Get the number of characters in a string
 
     Args:
@@ -2002,7 +2003,7 @@ def nchar(
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def nzchar(x, keep_na: bool = False):
+def nzchar(x, keep_na: bool = False) -> Any:
     """Is the string non-zero length
 
     Args:
@@ -2016,7 +2017,14 @@ def nzchar(x, keep_na: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def table(x, *more, exclude=None, use_na="no", dnn=None, deparse_level=1):
+def table(
+    x,
+    *more,
+    exclude=None,
+    use_na="no",
+    dnn=None,
+    deparse_level=1,
+) -> Any:
     """Get the table of a vector
 
     Args:
@@ -2034,7 +2042,7 @@ def table(x, *more, exclude=None, use_na="no", dnn=None, deparse_level=1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def tabulate(bin, nbins=None):
+def tabulate(bin, nbins=None) -> Any:
     """Get the table of a vector
 
     Args:
@@ -2042,14 +2050,14 @@ def tabulate(bin, nbins=None):
         nbins: the number of bins
 
     Returns:
-        An integer valued ‘integer’ vector (without names).
-        There is a bin for each of the values ‘1, ..., nbins’
+        An integer valued 'integer' vector (without names).
+        There is a bin for each of the values '1, ..., nbins'
     """
     raise _NotImplementedByCurrentBackendError("tabulate", bin)
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_atomic(x):
+def is_atomic(x) -> Any:
     """Is the object atomic
 
     Args:
@@ -2062,7 +2070,7 @@ def is_atomic(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_double(x):
+def is_double(x) -> Any:
     """Is the object a double
 
     Args:
@@ -2075,7 +2083,7 @@ def is_double(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_element(x, y):
+def is_element(x, y) -> Any:
     """Is the object an element of the table
 
     Args:
@@ -2092,7 +2100,7 @@ is_in = is_element
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_integer(x):
+def is_integer(x) -> Any:
     """Is the object an integer
 
     Args:
@@ -2105,7 +2113,7 @@ def is_integer(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def is_numeric(x):
+def is_numeric(x) -> Any:
     """Is the object numeric
 
     Args:
@@ -2118,7 +2126,7 @@ def is_numeric(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def any_(x, na_rm: bool = False):
+def any_(x, na_rm: bool = False) -> Any:
     """Is any element true
 
     Args:
@@ -2132,7 +2140,7 @@ def any_(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def all_(x, na_rm: bool = False):
+def all_(x, na_rm: bool = False) -> Any:
     """Are all elements true
 
     Args:
@@ -2146,7 +2154,7 @@ def all_(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def acos(x):
+def acos(x) -> Any:
     """Get the inverse cosine
 
     Args:
@@ -2159,7 +2167,7 @@ def acos(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def acosh(x):
+def acosh(x) -> Any:
     """Get the inverse hyperbolic cosine
 
     Args:
@@ -2172,7 +2180,7 @@ def acosh(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def asin(x):
+def asin(x) -> Any:
     """Get the inverse sine
 
     Args:
@@ -2185,7 +2193,7 @@ def asin(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def asinh(x):
+def asinh(x) -> Any:
     """Get the inverse hyperbolic sine
 
     Args:
@@ -2198,7 +2206,7 @@ def asinh(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def atan(x):
+def atan(x) -> Any:
     """Get the inverse tangent
 
     Args:
@@ -2211,7 +2219,7 @@ def atan(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def atanh(x):
+def atanh(x) -> Any:
     """Get the inverse hyperbolic tangent
 
     Args:
@@ -2224,7 +2232,7 @@ def atanh(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cos(x):
+def cos(x) -> Any:
     """Get the cosine
 
     Args:
@@ -2237,7 +2245,7 @@ def cos(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cosh(x):
+def cosh(x) -> Any:
     """Get the hyperbolic cosine
 
     Args:
@@ -2250,7 +2258,7 @@ def cosh(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cospi(x):
+def cospi(x) -> Any:
     """Get the cosine of pi times x
 
     Args:
@@ -2263,7 +2271,7 @@ def cospi(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sin(x):
+def sin(x) -> Any:
     """Get the sine
 
     Args:
@@ -2276,7 +2284,7 @@ def sin(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sinh(x):
+def sinh(x) -> Any:
     """Get the hyperbolic sine
 
     Args:
@@ -2289,7 +2297,7 @@ def sinh(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def sinpi(x):
+def sinpi(x) -> Any:
     """Get the sine of pi times x
 
     Args:
@@ -2302,7 +2310,7 @@ def sinpi(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def tan(x):
+def tan(x) -> Any:
     """Get the tangent
 
     Args:
@@ -2315,7 +2323,7 @@ def tan(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def tanh(x):
+def tanh(x) -> Any:
     """Get the hyperbolic tangent
 
     Args:
@@ -2328,7 +2336,7 @@ def tanh(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def tanpi(x):
+def tanpi(x) -> Any:
     """Get the tangent of pi times x
 
     Args:
@@ -2341,7 +2349,7 @@ def tanpi(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def atan2(y, x):
+def atan2(y, x) -> Any:
     """Get the inverse tangent of y/x
 
     Args:
@@ -2355,7 +2363,7 @@ def atan2(y, x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def append(x, values, after: int = -1):
+def append(x, values, after: int = -1) -> Any:
     """Append values to the vector
 
     Args:
@@ -2370,7 +2378,7 @@ def append(x, values, after: int = -1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def colnames(x, nested: bool = True):
+def colnames(x, nested: bool = True) -> Any:
     """Get the column names
 
     Args:
@@ -2384,7 +2392,7 @@ def colnames(x, nested: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def set_colnames(x, names, nested: bool = True):
+def set_colnames(x, names, nested: bool = True) -> Any:
     """Set the column names
 
     Args:
@@ -2399,7 +2407,7 @@ def set_colnames(x, names, nested: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def rownames(x):
+def rownames(x) -> Any:
     """Get the row names
 
     Args:
@@ -2412,7 +2420,7 @@ def rownames(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def set_rownames(x, names):
+def set_rownames(x, names) -> Any:
     """Set the row names
 
     Args:
@@ -2426,7 +2434,7 @@ def set_rownames(x, names):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def dim(x, nested: bool = True):
+def dim(x, nested: bool = True) -> Any:
     """Get the dimensions
 
     Args:
@@ -2440,7 +2448,7 @@ def dim(x, nested: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def diag(x, nrow=None, ncol=None):
+def diag(x, nrow=None, ncol=None) -> Any:
     """Get the diagonal of a matrix
 
     Args:
@@ -2455,7 +2463,7 @@ def diag(x, nrow=None, ncol=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def duplicated(x, incomparables=None, from_last: bool = False):
+def duplicated(x, incomparables=None, from_last: bool = False) -> Any:
     """Get the duplicated values
 
     Args:
@@ -2470,7 +2478,7 @@ def duplicated(x, incomparables=None, from_last: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def intersect(x, y):
+def intersect(x, y) -> Any:
     """Get the intersection of two vectors
 
     Args:
@@ -2484,7 +2492,7 @@ def intersect(x, y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def ncol(x, nested: bool = True):
+def ncol(x, nested: bool = True) -> Any:
     """Get the number of columns
 
     Args:
@@ -2498,7 +2506,7 @@ def ncol(x, nested: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def nrow(x):
+def nrow(x) -> Any:
     """Get the number of rows
 
     Args:
@@ -2511,7 +2519,7 @@ def nrow(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def proportions(x, margin: int = 1):
+def proportions(x, margin: int = 1) -> Any:
     """Get the proportion table
 
     Args:
@@ -2525,7 +2533,7 @@ def proportions(x, margin: int = 1):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def setdiff(x, y):
+def setdiff(x, y) -> Any:
     """Get the difference of two vectors
 
     Args:
@@ -2539,7 +2547,7 @@ def setdiff(x, y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def setequal(x, y):
+def setequal(x, y) -> Any:
     """Check if two vectors are equal
 
     Args:
@@ -2553,7 +2561,7 @@ def setequal(x, y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def unique(x):
+def unique(x) -> Any:
     """Get the unique values
 
     Args:
@@ -2566,7 +2574,7 @@ def unique(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def t(x):
+def t(x) -> Any:
     """Get the transpose
 
     Args:
@@ -2579,7 +2587,7 @@ def t(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def union(x, y):
+def union(x, y) -> Any:
     """Get the union of two vectors
 
     Args:
@@ -2593,7 +2601,7 @@ def union(x, y):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def max_col(x, ties_method: str = "random", nested: bool = True):
+def max_col(x, ties_method: str = "random", nested: bool = True) -> Any:
     """Get the maximum column
 
     Args:
@@ -2608,7 +2616,7 @@ def max_col(x, ties_method: str = "random", nested: bool = True):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def complete_cases(x):
+def complete_cases(x) -> Any:
     """Get the complete cases
 
     Args:
@@ -2621,7 +2629,7 @@ def complete_cases(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def head(x, n: int = 6):
+def head(x, n: int = 6) -> Any:
     """Get the first n rows
 
     Args:
@@ -2635,7 +2643,7 @@ def head(x, n: int = 6):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def tail(x, n: int = 6):
+def tail(x, n: int = 6) -> Any:
     """Get the last n rows
 
     Args:
@@ -2649,7 +2657,7 @@ def tail(x, n: int = 6):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def which(x):
+def which(x) -> Any:
     """Get the indices of the non-zero values
 
     Args:
@@ -2662,7 +2670,7 @@ def which(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def which_max(x):
+def which_max(x) -> Any:
     """Get the index of the maximum value
 
     Args:
@@ -2675,7 +2683,7 @@ def which_max(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def which_min(x):
+def which_min(x) -> Any:
     """Get the index of the minimum value
 
     Args:
