@@ -1,6 +1,6 @@
 # import the variables with _ so that they are not imported by *
 from __future__ import annotations as _
-from typing import Callable as _Callable, Sequence as _Sequence
+from typing import Any, Callable as _Callable, Sequence as _Sequence
 
 from pipda import (
     register_verb as _register_verb,
@@ -15,7 +15,7 @@ from .base import intersect, setdiff, setequal, union  # noqa: F401
 
 
 @_register_verb(dependent=True)
-def across(_data, *args, _names=None, **kwargs):
+def across(_data, *args, _names=None, **kwargs) -> Any:
     """Apply the same transformation to multiple columns
 
     The original API:
@@ -64,7 +64,7 @@ def across(_data, *args, _names=None, **kwargs):
 
 
 @_register_verb(dependent=True)
-def c_across(_data, _cols=None):
+def c_across(_data, _cols=None) -> Any:
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
@@ -78,7 +78,7 @@ def c_across(_data, _cols=None):
 
 
 @_register_verb(dependent=True)
-def if_any(_data, *args, _names=None, **kwargs):
+def if_any(_data, *args, _names=None, **kwargs) -> Any:
     """Apply the same predicate function to a selection of columns and combine
     the results True if any element is True.
 
@@ -89,7 +89,7 @@ def if_any(_data, *args, _names=None, **kwargs):
 
 
 @_register_verb(dependent=True)
-def if_all(_data, *args, _names=None, **kwargs):
+def if_all(_data, *args, _names=None, **kwargs) -> Any:
     """Apply the same predicate function to a selection of columns and combine
     the results True if all elements are True.
 
@@ -100,7 +100,7 @@ def if_all(_data, *args, _names=None, **kwargs):
 
 
 @_register_verb()
-def arrange(_data, *args, _by_group=False, **kwargs):
+def arrange(_data, *args, _by_group=False, **kwargs) -> Any:
     """orders the rows of a data frame by the values of selected columns.
 
     The original API:
@@ -126,7 +126,7 @@ def arrange(_data, *args, _by_group=False, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def bind_rows(*data, _id=None, _copy: bool = True, **kwargs):
+def bind_rows(*data, _id=None, _copy: bool = True, **kwargs) -> Any:
     """Bind rows of give dataframes
 
     Original APIs https://dplyr.tidyverse.org/reference/bind.html
@@ -146,7 +146,7 @@ def bind_rows(*data, _id=None, _copy: bool = True, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def bind_cols(*data, _name_repair="unique", _copy: bool = True):
+def bind_cols(*data, _name_repair="unique", _copy: bool = True) -> Any:
     """Bind columns of give dataframes
 
     Note that unlike `dplyr`, mismatched dimensions are allowed and
@@ -173,7 +173,7 @@ def bind_cols(*data, _name_repair="unique", _copy: bool = True):
 
 # context
 @_register_func(plain=True)
-def cur_column(_data, _name):
+def cur_column(_data, _name) -> Any:
     """Get the current column
 
     Args:
@@ -187,7 +187,7 @@ def cur_column(_data, _name):
 
 
 @_register_verb(dependent=True)
-def cur_data(_data):
+def cur_data(_data) -> Any:
     """Get the current dataframe
 
     Args:
@@ -200,7 +200,7 @@ def cur_data(_data):
 
 
 @_register_verb(dependent=True)
-def n(_data):
+def n(_data) -> Any:
     """Get the current group size
 
     Args:
@@ -213,7 +213,7 @@ def n(_data):
 
 
 @_register_verb(dependent=True)
-def cur_data_all(_data):
+def cur_data_all(_data) -> Any:
     """Get the current data for the current group including
     the grouping variables
 
@@ -227,7 +227,7 @@ def cur_data_all(_data):
 
 
 @_register_verb(dependent=True)
-def cur_group(_data):
+def cur_group(_data) -> Any:
     """Get the current group
 
     Args:
@@ -240,7 +240,7 @@ def cur_group(_data):
 
 
 @_register_verb(dependent=True)
-def cur_group_id(_data):
+def cur_group_id(_data) -> Any:
     """Get the current group id
 
     Args:
@@ -253,7 +253,7 @@ def cur_group_id(_data):
 
 
 @_register_verb(dependent=True)
-def cur_group_rows(_data):
+def cur_group_rows(_data) -> Any:
     """Get the current group row indices
 
     Args:
@@ -267,7 +267,15 @@ def cur_group_rows(_data):
 
 # count_tally
 @_register_verb()
-def count(_data, *args, wt=None, sort=False, name=None, _drop=None, **kwargs):
+def count(
+    _data,
+    *args,
+    wt=None,
+    sort=False,
+    name=None,
+    _drop=None,
+    **kwargs,
+) -> Any:
     """Count the number of rows in each group
 
     Original API:
@@ -296,7 +304,7 @@ def count(_data, *args, wt=None, sort=False, name=None, _drop=None, **kwargs):
 
 
 @_register_verb()
-def tally(_data, wt=None, sort=False, name=None):
+def tally(_data, wt=None, sort=False, name=None) -> Any:
     """Count the number of rows in each group
 
     Original API:
@@ -320,7 +328,7 @@ def tally(_data, wt=None, sort=False, name=None):
 
 
 @_register_verb()
-def add_count(_data, *args, wt=None, sort=False, name="n", **kwargs):
+def add_count(_data, *args, wt=None, sort=False, name="n", **kwargs) -> Any:
     """Add a count column to a data frame
 
     Original API:
@@ -347,7 +355,7 @@ def add_count(_data, *args, wt=None, sort=False, name="n", **kwargs):
 
 
 @_register_verb()
-def add_tally(_data, wt=None, sort=False, name="n"):
+def add_tally(_data, wt=None, sort=False, name="n") -> Any:
     """Add a count column to a data frame
 
     Original API:
@@ -372,7 +380,7 @@ def add_tally(_data, wt=None, sort=False, name="n"):
 
 # desc
 @_register_func(pipeable=True, dispatchable=True)
-def desc(x):
+def desc(x) -> Any:
     """Transform a vector into a format that will be sorted in descending order
 
     This is useful within arrange().
@@ -391,7 +399,7 @@ def desc(x):
 
 # filter
 @_register_verb()
-def filter_(_data, *conditions, _preserve: bool = False):
+def filter_(_data, *conditions, _preserve: bool = False) -> Any:
     """Filter a data frame based on conditions
 
     The original API:
@@ -410,7 +418,12 @@ def filter_(_data, *conditions, _preserve: bool = False):
 
 # distinct
 @_register_verb()
-def distinct(_data, *args, keep_all: bool = False, _preserve: bool = False):
+def distinct(
+    _data,
+    *args,
+    keep_all: bool = False,
+    _preserve: bool = False,
+) -> Any:
     """Filter a data frame based on conditions
 
     The original API:
@@ -429,7 +442,7 @@ def distinct(_data, *args, keep_all: bool = False, _preserve: bool = False):
 
 
 @_register_verb()
-def n_distinct(_data, na_rm: bool = True):
+def n_distinct(_data, na_rm: bool = True) -> Any:
     """Count the number of distinct values
 
     The original API:
@@ -447,7 +460,7 @@ def n_distinct(_data, na_rm: bool = True):
 
 # glimpse
 @_register_verb()
-def glimpse(_data, width: int = None, formatter=None):
+def glimpse(_data, width: int = None, formatter=None) -> Any:
     """Display a summary of a data frame
 
     The original API:
@@ -463,7 +476,7 @@ def glimpse(_data, width: int = None, formatter=None):
 
 # slice
 @_register_verb()
-def slice_(_data, *args, _preserve: bool = False):
+def slice_(_data, *args, _preserve: bool = False) -> Any:
     """Extract rows by their position
 
     The original API:
@@ -481,7 +494,7 @@ def slice_(_data, *args, _preserve: bool = False):
 
 
 @_register_verb()
-def slice_head(_data, n: int = None, prop: float = None):
+def slice_head(_data, n: int = None, prop: float = None) -> Any:
     """Extract the first rows
 
     The original API:
@@ -499,7 +512,7 @@ def slice_head(_data, n: int = None, prop: float = None):
 
 
 @_register_verb()
-def slice_tail(_data, n: int = None, prop: float = None):
+def slice_tail(_data, n: int = None, prop: float = None) -> Any:
     """Extract the last rows
 
     The original API:
@@ -523,7 +536,7 @@ def slice_sample(
     prop: float = None,
     weight_by=None,
     replace: bool = False,
-):
+) -> Any:
     """Extract rows by sampling
 
     The original API:
@@ -549,7 +562,7 @@ def slice_min(
     n: int = 1,
     prop: float = None,
     with_ties: bool | str = None,
-):
+) -> Any:
     """Extract rows with the minimum value
 
     The original API:
@@ -577,7 +590,7 @@ def slice_max(
     n: int = 1,
     prop: float = None,
     with_ties: bool | str = None,
-):
+) -> Any:
     """Extract rows with the maximum value
 
     The original API:
@@ -600,7 +613,7 @@ def slice_max(
 
 # misc funs
 @_register_func(pipeable=True, dispatchable=True)
-def between(x, left, right, inclusive: str = "both"):
+def between(x, left, right, inclusive: str = "both") -> Any:
     """Check if a value is between two other values
 
     The original API:
@@ -621,7 +634,7 @@ def between(x, left, right, inclusive: str = "both"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cummean(x, na_rm: bool = False):
+def cummean(x, na_rm: bool = False) -> Any:
     """Cumulative mean
 
     The original API:
@@ -638,7 +651,7 @@ def cummean(x, na_rm: bool = False):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cumall(x):
+def cumall(x) -> Any:
     """Get cumulative bool. All cases after first False
 
     The original API:
@@ -654,7 +667,7 @@ def cumall(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cumany(x):
+def cumany(x) -> Any:
     """Get cumulative bool. All cases after first True
 
     The original API:
@@ -670,7 +683,7 @@ def cumany(x):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def coalesce(x, *replace):
+def coalesce(x, *replace) -> Any:
     """Replace missing values with the first non-missing value
 
     The original API:
@@ -687,7 +700,7 @@ def coalesce(x, *replace):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def na_if(x, value):
+def na_if(x, value) -> Any:
     """Replace values with missing values
 
     The original API:
@@ -704,7 +717,7 @@ def na_if(x, value):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def near(x, y, tol: float = 1e-8):
+def near(x, y, tol: float = 1e-8) -> Any:
     """Check if values are approximately equal
 
     The original API:
@@ -722,7 +735,7 @@ def near(x, y, tol: float = 1e-8):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def nth(x, n, order_by=None, default=None):
+def nth(x, n, order_by=None, default=None) -> Any:
     """Extract the nth element of a vector
 
     The original API:
@@ -741,7 +754,7 @@ def nth(x, n, order_by=None, default=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def first(x, order_by=None, default=None):
+def first(x, order_by=None, default=None) -> Any:
     """Extract the first element of a vector
 
     The original API:
@@ -759,7 +772,7 @@ def first(x, order_by=None, default=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def last(x, order_by=None, default=None):
+def last(x, order_by=None, default=None) -> Any:
     """Extract the last element of a vector
 
     The original API:
@@ -778,7 +791,7 @@ def last(x, order_by=None, default=None):
 
 # group_by
 @_register_verb()
-def group_by(_data, *args, _add: bool = False, _drop: bool = None):
+def group_by(_data, *args, _add: bool = False, _drop: bool = None) -> Any:
     """Create a grouped frame
 
     The original API:
@@ -797,7 +810,7 @@ def group_by(_data, *args, _add: bool = False, _drop: bool = None):
 
 
 @_register_verb()
-def ungroup(_data, *cols: str | int):
+def ungroup(_data, *cols: str | int) -> Any:
     """Remove grouping variables
 
     The original API:
@@ -814,7 +827,7 @@ def ungroup(_data, *cols: str | int):
 
 
 @_register_verb()
-def rowwise(_data, *cols: str | int):
+def rowwise(_data, *cols: str | int) -> Any:
     """Create a rowwise frame
 
     The original API:
@@ -831,7 +844,7 @@ def rowwise(_data, *cols: str | int):
 
 
 @_register_verb()
-def group_by_drop_default(_data):
+def group_by_drop_default(_data) -> Any:
     """Get the default value of `_drop` of a frame
 
     The original API:
@@ -847,7 +860,7 @@ def group_by_drop_default(_data):
 
 
 @_register_verb()
-def group_vars(_data):
+def group_vars(_data) -> Any:
     """Get the grouping variables of a frame
 
     The original API:
@@ -863,7 +876,7 @@ def group_vars(_data):
 
 
 @_register_verb()
-def group_indices(_data):
+def group_indices(_data) -> Any:
     """Get the group indices of a frame
 
     The original API:
@@ -879,7 +892,7 @@ def group_indices(_data):
 
 
 @_register_verb()
-def group_keys(_data):
+def group_keys(_data) -> Any:
     """Get the group keys of a frame
 
     The original API:
@@ -895,7 +908,7 @@ def group_keys(_data):
 
 
 @_register_verb()
-def group_size(_data):
+def group_size(_data) -> Any:
     """Get the group sizes of a frame
 
     The original API:
@@ -911,7 +924,7 @@ def group_size(_data):
 
 
 @_register_verb()
-def group_rows(_data):
+def group_rows(_data) -> Any:
     """Get the group rows of a frame
 
     The original API:
@@ -927,7 +940,7 @@ def group_rows(_data):
 
 
 @_register_verb()
-def group_cols(_data):
+def group_cols(_data) -> Any:
     """Get the group columns of a frame
 
     The original API:
@@ -943,7 +956,7 @@ def group_cols(_data):
 
 
 @_register_verb()
-def group_data(_data):
+def group_data(_data) -> Any:
     """Get the group data of a frame
 
     The original API:
@@ -959,7 +972,7 @@ def group_data(_data):
 
 
 @_register_verb()
-def n_groups(_data):
+def n_groups(_data) -> int:
     """Get the number of groups of a frame
 
     The original API:
@@ -975,7 +988,7 @@ def n_groups(_data):
 
 
 @_register_verb()
-def group_map(_data, _f, *args, _keep: bool = False, **kwargs):
+def group_map(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     """Apply a function to each group
 
     The original API:
@@ -995,7 +1008,7 @@ def group_map(_data, _f, *args, _keep: bool = False, **kwargs):
 
 
 @_register_verb()
-def group_modify(_data, _f, *args, _keep: bool = False, **kwargs):
+def group_modify(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     """Apply a function to each group
 
     The original API:
@@ -1015,7 +1028,7 @@ def group_modify(_data, _f, *args, _keep: bool = False, **kwargs):
 
 
 @_register_verb()
-def group_split(_data, *args, _keep: bool = False, **kwargs):
+def group_split(_data, *args, _keep: bool = False, **kwargs) -> Any:
     """Split a grouped frame into a list of data frames
 
     The original API:
@@ -1034,7 +1047,7 @@ def group_split(_data, *args, _keep: bool = False, **kwargs):
 
 
 @_register_verb()
-def group_trim(_data, _drop=None):
+def group_trim(_data, _drop=None) -> Any:
     """Remove empty groups
 
     The original API:
@@ -1051,7 +1064,7 @@ def group_trim(_data, _drop=None):
 
 
 @_register_verb()
-def group_walk(_data, _f, *args, _keep: bool = False, **kwargs):
+def group_walk(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     """Apply a function to each group
 
     The original API:
@@ -1070,7 +1083,7 @@ def group_walk(_data, _f, *args, _keep: bool = False, **kwargs):
 
 
 @_register_verb()
-def with_groups(_data, _groups, _func, *args, **kwargs):
+def with_groups(_data, _groups, _func, *args, **kwargs) -> Any:
     """Modify the grouping variables for a single operation.
 
     Args:
@@ -1086,7 +1099,7 @@ def with_groups(_data, _groups, _func, *args, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def if_else(condition, true, false, missing=None):
+def if_else(condition, true, false, missing=None) -> Any:
     """Where condition is TRUE, the matching value from true, where it's FALSE,
     the matching value from false, otherwise missing.
 
@@ -1106,7 +1119,7 @@ def if_else(condition, true, false, missing=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def case_when(cond, value, *more_cases):
+def case_when(cond, value, *more_cases) -> Any:
     """Vectorise multiple `if_else()` statements.
 
     Args:
@@ -1129,7 +1142,7 @@ def inner_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
-):
+) -> Any:
     """Inner join two data frames by matching rows.
 
     The original API:
@@ -1158,7 +1171,7 @@ def left_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
-):
+) -> Any:
     """Left join two data frames by matching rows.
 
     The original API:
@@ -1187,7 +1200,7 @@ def right_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
-):
+) -> Any:
     """Right join two data frames by matching rows.
 
     The original API:
@@ -1216,7 +1229,7 @@ def full_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
-):
+) -> Any:
     """Full join two data frames by matching rows.
 
     The original API:
@@ -1243,7 +1256,7 @@ def semi_join(
     y,
     by=None,
     copy: bool = False,
-):
+) -> Any:
     """Semi join two data frames by matching rows.
 
     The original API:
@@ -1268,7 +1281,7 @@ def anti_join(
     y,
     by=None,
     copy: bool = False,
-):
+) -> Any:
     """Anti join two data frames by matching rows.
 
     The original API:
@@ -1295,7 +1308,7 @@ def nest_join(
     copy: bool = False,
     keep: bool = False,
     name=None,
-):
+) -> Any:
     """Nest join two data frames by matching rows.
 
     The original API:
@@ -1318,7 +1331,7 @@ def nest_join(
 
 # lead/lag
 @_register_func(pipeable=True, dispatchable=True)
-def lead(x, n=1, default=None, order_by=None):
+def lead(x, n=1, default=None, order_by=None) -> Any:
     """Shift a vector by `n` positions.
 
     The original API:
@@ -1337,7 +1350,7 @@ def lead(x, n=1, default=None, order_by=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def lag(x, n=1, default=None, order_by=None):
+def lag(x, n=1, default=None, order_by=None) -> Any:
     """Shift a vector by `n` positions.
 
     The original API:
@@ -1359,7 +1372,7 @@ def lag(x, n=1, default=None, order_by=None):
 @_register_verb()
 def mutate(
     _data, *args, _keep: str = "all", _before=None, _after=None, **kwargs
-):
+) -> Any:
     """Add new columns to a data frame.
 
     The original API:
@@ -1404,7 +1417,7 @@ def mutate(
 
 
 @_register_verb()
-def transmute(_data, *args, _before=None, _after=None, **kwargs):
+def transmute(_data, *args, _before=None, _after=None, **kwargs) -> Any:
     """Add new columns to a data frame and remove existing columns
     using mutate with `_keep="none"`.
 
@@ -1442,7 +1455,7 @@ def transmute(_data, *args, _before=None, _after=None, **kwargs):
 
 # order_by
 @_register_func(plain=True)
-def order_by(order, call):
+def order_by(order, call) -> Any:
     """Order the data by the given order
 
     Note:
@@ -1466,7 +1479,7 @@ def order_by(order, call):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def with_order(order, func, x, *args, **kwargs):
+def with_order(order, func, x, *args, **kwargs) -> Any:
     """Control argument and result of a window function
 
     Examples:
@@ -1488,7 +1501,7 @@ def with_order(order, func, x, *args, **kwargs):
 
 # pull
 @_register_verb()
-def pull(_data, var: str | int = -1, name=None, to=None):
+def pull(_data, var: str | int = -1, name=None, to=None) -> Any:
     """Pull a series or a dataframe from a dataframe
 
     Args:
@@ -1523,7 +1536,7 @@ def pull(_data, var: str | int = -1, name=None, to=None):
     raise _NotImplementedByCurrentBackendError("pull", _data)
 
 
-def row_number(x=_f_symbolic):
+def row_number(x=_f_symbolic) -> Any:
     """Get the row number of x
 
     Note that this function doesn't support piping.
@@ -1540,11 +1553,11 @@ def row_number(x=_f_symbolic):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def row_number_(x):
+def row_number_(x) -> Any:
     raise _NotImplementedByCurrentBackendError("row_number", x)
 
 
-def ntile(x=_f_symbolic, *, n: int = None):
+def ntile(x=_f_symbolic, *, n: int = None) -> Any:
     """a rough rank, which breaks the input vector into n buckets.
     The size of the buckets may differ by up to one, larger buckets
     have lower rank.
@@ -1564,11 +1577,11 @@ def ntile(x=_f_symbolic, *, n: int = None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def ntile_(x, *, n: int = None):
+def ntile_(x, *, n: int = None) -> Any:
     raise _NotImplementedByCurrentBackendError("ntile", x)
 
 
-def min_rank(x=_f_symbolic, *, na_last: str = "keep"):
+def min_rank(x=_f_symbolic, *, na_last: str = "keep") -> Any:
     """Get the min rank of x
 
     Note that this function doesn't support piping.
@@ -1589,11 +1602,11 @@ def min_rank(x=_f_symbolic, *, na_last: str = "keep"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def min_rank_(x, *, na_last: str = "keep"):
+def min_rank_(x, *, na_last: str = "keep") -> Any:
     raise _NotImplementedByCurrentBackendError("min_rank", x)
 
 
-def dense_rank(x=_f_symbolic, *, na_last: str = "keep"):
+def dense_rank(x=_f_symbolic, *, na_last: str = "keep") -> Any:
     """Get the dense rank of x
 
     Note that this function doesn't support piping.
@@ -1614,11 +1627,11 @@ def dense_rank(x=_f_symbolic, *, na_last: str = "keep"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def dense_rank_(x, *, na_last: str = "keep"):
+def dense_rank_(x, *, na_last: str = "keep") -> Any:
     raise _NotImplementedByCurrentBackendError("dense_rank", x)
 
 
-def percent_rank(x=_f_symbolic, *, na_last: str = "keep"):
+def percent_rank(x=_f_symbolic, *, na_last: str = "keep") -> Any:
     """Get the percent rank of x
 
     Note that this function doesn't support piping.
@@ -1639,11 +1652,11 @@ def percent_rank(x=_f_symbolic, *, na_last: str = "keep"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def percent_rank_(x, *, na_last: str = "keep"):
+def percent_rank_(x, *, na_last: str = "keep") -> Any:
     raise _NotImplementedByCurrentBackendError("percent_rank", x)
 
 
-def cume_dist(x=_f_symbolic, *, na_last: str = "keep"):
+def cume_dist(x=_f_symbolic, *, na_last: str = "keep") -> Any:
     """Get the cume_dist of x
 
     Note that this function doesn't support piping.
@@ -1664,13 +1677,13 @@ def cume_dist(x=_f_symbolic, *, na_last: str = "keep"):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def cume_dist_(x, *, na_last: str = "keep"):
+def cume_dist_(x, *, na_last: str = "keep") -> Any:
     raise _NotImplementedByCurrentBackendError("cume_dist", x)
 
 
 # recode
 @_register_func(pipeable=True, dispatchable=True)
-def recode(_x, *args, _default=None, _missing=None, **kwargs):
+def recode(_x, *args, _default=None, _missing=None, **kwargs) -> Any:
     """Recode a vector, replacing elements in it
 
     Args:
@@ -1699,7 +1712,7 @@ def recode_factor(
     _missing=None,
     _ordered: bool = False,
     **kwargs,
-):
+) -> Any:
     """Recode a factor, replacing levels in it
 
     Args:
@@ -1728,7 +1741,7 @@ def relocate(
     _before: int | str = None,
     _after: int | str = None,
     **kwargs,
-):
+) -> Any:
     """change column positions
 
     See original API
@@ -1755,7 +1768,7 @@ def relocate(
 
 
 @_register_verb()
-def rename(_data, **kwargs):
+def rename(_data, **kwargs) -> Any:
     """Rename columns
 
     See original API
@@ -1772,7 +1785,7 @@ def rename(_data, **kwargs):
 
 
 @_register_verb()
-def rename_with(_data, _fn, *args, **kwargs):
+def rename_with(_data, _fn, *args, **kwargs) -> Any:
     """Rename columns with a function
 
     See original API
@@ -1802,7 +1815,7 @@ def rows_insert(
     conflict: str = "error",
     copy: bool = False,
     in_place: bool = False,
-):
+) -> Any:
     """Insert rows from y into x
 
     See original API
@@ -1841,7 +1854,7 @@ def rows_update(
     unmatched: str = "error",
     copy: bool = False,
     in_place: bool = False,
-):
+) -> Any:
     """Update rows in x with values from y
 
     See original API
@@ -1884,7 +1897,7 @@ def rows_patch(
     unmatched: str = "error",
     copy: bool = False,
     in_place: bool = False,
-):
+) -> Any:
     """Patch rows in x with values from y
 
     See original API
@@ -1926,7 +1939,7 @@ def rows_upsert(
     by=None,
     copy: bool = False,
     in_place: bool = False,
-):
+) -> Any:
     """Upsert rows in x with values from y
 
     See original API
@@ -1963,7 +1976,7 @@ def rows_delete(
     unmatched: str = "error",
     copy: bool = False,
     in_place: bool = False,
-):
+) -> Any:
     """Delete rows in x that match keys in y
 
     See original API
@@ -2004,7 +2017,7 @@ def rows_append(
     y,
     copy: bool = False,
     in_place: bool = False,
-):
+) -> Any:
     """Append rows in y to x
 
     See original API
@@ -2027,7 +2040,7 @@ def rows_append(
 
 
 @_register_verb()
-def select(_data, *args, **kwargs):
+def select(_data, *args, **kwargs) -> Any:
     """Select columns from a data frame.
 
     See original API
@@ -2045,7 +2058,7 @@ def select(_data, *args, **kwargs):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def union_all(x, y):
+def union_all(x, y) -> Any:
     """Combine two data frames together.
 
     See original API
@@ -2062,7 +2075,7 @@ def union_all(x, y):
 
 
 @_register_verb()
-def summarise(_data, *args, _groups: str = None, **kwargs):
+def summarise(_data, *args, _groups: str = None, **kwargs) -> Any:
     """Summarise a data frame.
 
     See original API
@@ -2089,7 +2102,7 @@ summarize = summarise
 
 
 @_register_verb(dependent=True)
-def where(_data, fn: _Callable):
+def where(_data, fn: _Callable) -> Any:
     """Selects the variables for which a function returns True.
 
     See original API
@@ -2108,7 +2121,7 @@ def where(_data, fn: _Callable):
 
 
 @_register_verb(dependent=True)
-def everything(_data):
+def everything(_data) -> Any:
     """Select all variables.
 
     See original API
@@ -2124,7 +2137,7 @@ def everything(_data):
 
 
 @_register_verb(dependent=True)
-def last_col(_data, offset: int = 0, vars=None):
+def last_col(_data, offset: int = 0, vars=None) -> Any:
     """Select the last column.
 
     See original API
@@ -2142,7 +2155,7 @@ def last_col(_data, offset: int = 0, vars=None):
 
 
 @_register_verb(dependent=True)
-def starts_with(_data, match, ignore_case: bool = True, vars=None):
+def starts_with(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that start with a string.
 
     See original API
@@ -2161,7 +2174,7 @@ def starts_with(_data, match, ignore_case: bool = True, vars=None):
 
 
 @_register_verb(dependent=True)
-def ends_with(_data, match, ignore_case: bool = True, vars=None):
+def ends_with(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that end with a string.
 
     See original API
@@ -2180,7 +2193,7 @@ def ends_with(_data, match, ignore_case: bool = True, vars=None):
 
 
 @_register_verb(dependent=True)
-def contains(_data, match, ignore_case: bool = True, vars=None):
+def contains(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that contain a string.
 
     See original API
@@ -2199,7 +2212,7 @@ def contains(_data, match, ignore_case: bool = True, vars=None):
 
 
 @_register_verb(dependent=True)
-def matches(_data, match, ignore_case: bool = True, vars=None):
+def matches(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that match a regular expression.
 
     See original API
@@ -2218,7 +2231,7 @@ def matches(_data, match, ignore_case: bool = True, vars=None):
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def num_range(prefix: str, range_, width: int = None):
+def num_range(prefix: str, range_, width: int = None) -> Any:
     """Matches a numerical range like x01, x02, x03.
 
     Args:
@@ -2235,7 +2248,7 @@ def num_range(prefix: str, range_, width: int = None):
 
 
 @_register_verb(dependent=True)
-def all_of(_data, x):
+def all_of(_data, x) -> Any:
     """For strict selection.
 
     If any of the variables in the character vector is missing,
@@ -2256,7 +2269,7 @@ def all_of(_data, x):
 
 
 @_register_verb(dependent=True)
-def any_of(_data, x, vars=None):
+def any_of(_data, x, vars=None) -> Any:
     """For strict selection.
 
     If any of the variables in the character vector is missing,

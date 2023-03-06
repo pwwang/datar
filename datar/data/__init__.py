@@ -1,6 +1,6 @@
 """Collects datasets from R-datasets, dplyr and tidyr packages"""
 import functools
-from typing import List
+from typing import Any, List
 
 from ..core.load_plugins import plugin
 from .metadata import Metadata, metadata
@@ -34,7 +34,7 @@ def add_dataset(name: str, meta: Metadata):
 
 
 @functools.lru_cache()
-def load_dataset(name: str, __backend: str = None):
+def load_dataset(name: str, __backend: str = None) -> Any:
     """Load the specific dataset"""
     loaded = plugin.hooks.load_dataset(name, metadata, __plugin=__backend)
     if loaded is None:

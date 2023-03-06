@@ -1,5 +1,5 @@
 from __future__ import annotations as _
-from typing import Callable as _Callable, Mapping as _Mapping
+from typing import Any, Callable as _Callable, Mapping as _Mapping
 
 from pipda import (
     register_verb as _register_verb,
@@ -13,7 +13,7 @@ from .base import expand_grid  # noqa: F401
 
 
 @_register_func(pipeable=True, dispatchable=True)
-def full_seq(x, period, tol=1e-6):
+def full_seq(x, period, tol=1e-6) -> Any:
     """Create the full sequence of values in a vector
 
     Args:
@@ -32,7 +32,7 @@ def full_seq(x, period, tol=1e-6):
 def chop(
     data,
     cols=None,
-):
+) -> Any:
     """Makes data frame shorter by converting rows within each group
     into list-columns.
 
@@ -52,7 +52,7 @@ def unchop(
     cols=None,
     keep_empty: bool = False,
     dtypes=None,
-):
+) -> Any:
     """Makes df longer by expanding list-columns so that each element
     of the list-column gets its own row in the output.
 
@@ -94,7 +94,7 @@ def nest(
     _data,
     _names_sep: str = None,
     **cols: str | int,
-):
+) -> Any:
     """Nesting creates a list-column of data frames
 
     Args:
@@ -121,7 +121,7 @@ def unnest(
     dtypes=None,
     names_sep: str = None,
     names_repair: str | _Callable = "check_unique",
-):
+) -> Any:
     """Flattens list-column of data frames back out into regular columns.
 
     Args:
@@ -163,7 +163,7 @@ def pack(
     _data,
     _names_sep: str = None,
     **cols: str | int,
-):
+) -> Any:
     """Makes df narrow by collapsing a set of columns into a single df-column.
 
     Args:
@@ -185,7 +185,7 @@ def unpack(
     cols,
     names_sep: str = None,
     names_repair: str | _Callable = "check_unique",
-):
+) -> Any:
     """Makes df wider by expanding df-columns back out into individual columns.
 
     For empty columns, the column is kept asis, instead of removing it.
@@ -219,7 +219,7 @@ def expand(
     *args,
     _name_repair: str | _Callable = "check_unique",
     **kwargs,
-):
+) -> Any:
     """Generates all combination of variables found in a dataset.
 
     Args:
@@ -254,7 +254,7 @@ def nesting(
     *args,
     _name_repair: str | _Callable = "check_unique",
     **kwargs,
-):
+) -> Any:
     """A helper that only finds combinations already present in the data.
 
     Args:
@@ -288,7 +288,7 @@ def crossing(
     *args,
     _name_repair: str | _Callable = "check_unique",
     **kwargs,
-):
+) -> Any:
     """A wrapper around `expand_grid()` that de-duplicates and sorts its inputs
 
     When values are not specified by literal `list`, they will be sorted.
@@ -325,7 +325,7 @@ def complete(
     *args,
     fill=None,
     explict: bool = True,
-):
+) -> Any:
     """Turns implicit missing values into explicit missing values.
 
     Args:
@@ -358,7 +358,7 @@ def drop_na(
     _data,
     *columns: str,
     _how: str = "any",
-):
+) -> Any:
     """Drop rows containing missing values
 
     See https://tidyr.tidyverse.org/reference/drop_na.html
@@ -385,7 +385,7 @@ def extract(
     regex: str = r"(\w+)",
     remove: bool = True,
     convert=False,
-):
+) -> Any:
     """Given a regular expression with capturing groups, extract() turns each
     group into a new column. If the groups don't match, or the input is NA,
     the output will be NA.
@@ -414,7 +414,7 @@ def fill(
     _data,
     *columns: str | int,
     _direction: str = "down",
-):
+) -> Any:
     """Fills missing values in selected columns using the next or
     previous entry.
 
@@ -449,7 +449,7 @@ def pivot_longer(
     values_drop_na: bool = False,
     values_dtypes=None,
     values_transform: _Callable | _Mapping[str, _Callable] = None,
-):
+) -> Any:
     """ "lengthens" data, increasing the number of rows and
     decreasing the number of columns.
 
@@ -553,7 +553,7 @@ def pivot_wider(
     values_from="value",
     values_fill=None,
     values_fn: _Callable | _Mapping[str, _Callable] = None,
-):
+) -> Any:
     """ "widens" data, increasing the number of columns and decreasing
     the number of rows.
 
@@ -603,7 +603,7 @@ def separate(
     convert=False,
     extra: str = "warn",
     fill: str = "warn",
-):
+) -> Any:
     """Given either a regular expression or a vector of character positions,
     turns a single character column into multiple columns.
 
@@ -646,7 +646,7 @@ def separate_rows(
     *columns: str,
     sep: str = r"[^0-9A-Za-z]+",
     convert=False,
-):
+) -> Any:
     """Separates the values and places each one in its own row.
 
     Args:
@@ -668,7 +668,7 @@ def uncount(
     weights,
     _remove: bool = True,
     _id: str = None,
-):
+) -> Any:
     """Duplicating rows according to a weighting variable
 
     Args:
@@ -693,7 +693,7 @@ def unite(
     sep: str = "_",
     remove: bool = True,
     na_rm: bool = True,
-):
+) -> Any:
     """Unite multiple columns into one by pasting strings together
 
     Args:
@@ -716,7 +716,7 @@ def replace_na(
     data,
     data_or_replace=None,
     replace=None,
-):
+) -> Any:
     """Replace NA with a value
 
     This function can be also used not as a verb. As a function called as
