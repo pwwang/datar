@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.11.2
+
+- 📝 Add pypi downloads badge to README
+- 📝 Fix github workflow badges for README
+- 🐛 Add return type annotation to fix #173
+- ⬆️ Bump python-slugify to v8
+
 ## 0.11.1
 
 - 🐛 Fix `get_versions()` not showing plugin versions
