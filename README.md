@@ -82,6 +82,7 @@ df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
 # works with plotnine
 # example grabbed from https://github.com/has2k1/plydata
 import numpy
+from datar import f
 from datar.base import sin, pi
 from datar.tibble import tibble
 from datar.dplyr import mutate, if_else
