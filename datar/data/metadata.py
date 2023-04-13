@@ -213,7 +213,7 @@ metadata = dict(
     storms=Metadata(
         descr="This data is a subset of the NOAA Atlantic hurricane database best track data",
         ref="https://dplyr.tidyverse.org/reference/storms.html",
-        index=False,
+        index=True,
         source=HERE / "storms.csv.gz",
     ),
     table1=Metadata(
