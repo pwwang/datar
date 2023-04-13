@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.12.1
+
+- ⬆️ Bump datar-numpy to ^0.2
+
 ## 0.12.0
 
 - 📝 Added import f to plotnine on README.md (#177)
