@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.12.0
+
+- 📝 Added import f to plotnine on README.md (#177)
+- ⬆️ Drop support for python3.7
+- ⬆️ Bump pipda to 0.12
+- 🍱 Update storms data to 2020 (tidyverse/dplyr#5899)
+
 ## 0.11.2
 
 - 📝 Add pypi downloads badge to README

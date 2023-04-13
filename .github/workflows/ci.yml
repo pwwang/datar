@@ -40,7 +40,7 @@ jobs:
         if: ${{ always() }}
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: matrix.python-version == 3.9
+        if: matrix.python-version == 3.10
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: cov.xml
@@ -51,7 +51,7 @@ jobs:
     if: github.event_name == 'release'
     strategy:
       matrix:
-        python-version: [3.9]
+        python-version: ["3.10"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python # Set Python version
