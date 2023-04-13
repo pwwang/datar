@@ -20,6 +20,12 @@ pip install -U datar[pandas]
 # More backends support will be added in the future
 ```
 
+<!-- ## Maximum compatibility with R packages
+
+|Package|Version|
+|-|-|
+|[dplyr][21]|1.0.8| -->
+
 ## Backends
 
 |Repo|Badges|
@@ -140,3 +146,4 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [18]: https://img.shields.io/pypi/v/datar-numpy?style=flat-square
 [19]: https://img.shields.io/pypi/v/datar-pandas?style=flat-square
 [20]: https://img.shields.io/pypi/dm/datar?style=flat-square
+[21]: https://github.com/tidyverse/dplyr
