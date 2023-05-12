@@ -41,7 +41,7 @@ def get_versions(prnt: bool = True) -> _Mapping[str, str]:
         ver = versions[key]
         verlines = ver.splitlines()
         print(f"{key.ljust(keylen)}: {verlines.pop(0)}")
-        for verline in verlines:
+        for verline in verlines:  # pragma: no cover
             print(f"{' ' * keylen}  {verline}")
 
     return None
