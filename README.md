@@ -17,7 +17,7 @@ pip install -U datar
 # install with a backend
 pip install -U datar[pandas]
 
-# More backends support will be added in the future
+# More backends support coming soon
 ```
 
 <!-- ## Maximum compatibility with R packages
@@ -32,6 +32,7 @@ pip install -U datar[pandas]
 |-|-|
 |[datar-numpy][1]|![3] ![18]|
 |[datar-pandas][2]|![4] ![19]|
+|[datar-arrow][22]|![23] ![24]|
 
 ## Example usage
 
@@ -147,3 +148,6 @@ iris >> pull(f.Sepal_Length) >> dist_plot()
 [19]: https://img.shields.io/pypi/v/datar-pandas?style=flat-square
 [20]: https://img.shields.io/pypi/dm/datar?style=flat-square
 [21]: https://github.com/tidyverse/dplyr
+[22]: https://github.com/pwwang/datar-arrow
+[23]: https://img.shields.io/codacy/coverage/5f4ef9dd2503437db18786ff9e841d8b?style=flat-square
+[24]: https://img.shields.io/pypi/v/datar-arrow?style=flat-square

@@ -16,14 +16,14 @@ python-simpleconf = {version = "^0.5", extras = ["toml"]}
 datar-numpy = {version = "^0.2", optional = true}
 datar-pandas = {version = "^0.3", optional = true}
 # datar-polars = {version = "^0.0.0", optional = true}
-# datar-pyarrow = {version = "^0.0.0", optional = true}
+datar-arrow = {version = "^0.0", optional = true}
 
 [tool.poetry.extras]
 numpy = ["datar-numpy"]
 pandas = ["datar-pandas"]
+arrow = ["datar-arrow"]
 # modin = ["datar-pandas"]
 # polars = ["datar-polars"]
-# pyarrow = ["datar-pyarrow"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7"
