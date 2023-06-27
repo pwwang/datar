@@ -12,7 +12,7 @@ repository = "https://github.com/pwwang/datar"
 python = "^3.8"
 simplug = "^0.3"
 pipda = "^0.12"
-python-simpleconf = {version = "^0.5", extras = ["toml"]}
+python-simpleconf = {version = "^0.6", extras = ["toml"]}
 datar-numpy = {version = "^0.2", optional = true}
 datar-pandas = {version = "^0.3", optional = true}
 # datar-polars = {version = "^0.0.0", optional = true}
