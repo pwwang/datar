@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.12.2
+
+- ➕ Add pyarrow backend
+- 🐛 Exclude coverage for multiline version in `get_versions()`
+- ⬆️ Bump up `python-simpleconf` to 0.6 so datar can be installed in Windows (#180)
+
 ## 0.12.1
 
 - ⬆️ Bump datar-numpy to ^0.2

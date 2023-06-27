@@ -4,7 +4,7 @@ from .core import operator as _
 from .core.defaults import f
 from .core.options import options, get_option, options_context
 
-__version__ = "0.12.1"
+__version__ = "0.12.2"
 
 
 def get_versions(prnt: bool = True) -> _Mapping[str, str]:
@@ -41,7 +41,7 @@ def get_versions(prnt: bool = True) -> _Mapping[str, str]:
         ver = versions[key]
         verlines = ver.splitlines()
         print(f"{key.ljust(keylen)}: {verlines.pop(0)}")
-        for verline in verlines:
+        for verline in verlines:  # pragma: no cover
             print(f"{' ' * keylen}  {verline}")
 
     return None
