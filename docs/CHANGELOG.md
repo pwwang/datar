@@ -1,5 +1,19 @@
 # Change Log
 
+## 0.13.0
+
+- 👷 Add scripts for codesandbox
+- 💥 Change the option for conflict names (#184)
+
+    There is no more warning for conflict names (python reserved names). By default, those names are suffixed with `_` (ie `filter_` instead of `filter`). You can still use the original names by setting `allow_conflict_names` to `True` in `datar.options()`.
+
+    ```python
+    from datar import options
+    options(allow_conflict_names=True)
+    from datar.all import *
+    filter  # <function datar.dplyr.filter_ at 0x7f62303c8940>
+    ```
+
 ## 0.12.2
 
 - ➕ Add pyarrow backend
