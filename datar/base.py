@@ -3,14 +3,10 @@ from .core.load_plugins import plugin as _plugin
 from .apis.base import *
 
 locals().update(_plugin.hooks.base_api())
-
-from .core.import_names_conflict import (
-    handle_import_names_conflict as _handle_import_names_conflict
-)
-
+__all__ = [key for key in locals() if not key.startswith("_")]
 _conflict_names = {"min", "max", "sum", "abs", "round", "all", "any", "re"}
 
-__all__, _getattr = _handle_import_names_conflict(locals(), _conflict_names)
-
-if _getattr is not None:
-    __getattr__ = _getattr
+if get_option("allow_conflict_names"):  # noqa: F405 pragma: no cover
+    __all__.extend(_conflict_names)
+    for name in _conflict_names:
+        locals()[name] = locals()[name + "_"]

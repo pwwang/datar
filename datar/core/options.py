@@ -17,12 +17,8 @@ _dict_transform_back = lambda dic: {
 OPTIONS = Diot(
     Config.load(
         {
-            # What to do when there are conflicts importing names
-            # - `warn`: show warnings
-            # - `silent`: ignore the conflicts
-            # - `underscore_suffixed`: add suffix `_` to the conflicting names
-            #   (and don't do any warnings)
-            "import_names_conflict": "warn",
+            # Do we allow to use conflict names directly?
+            "allow_conflict_names": False,
             # Disable some installed backends
             "backends": [],
         },

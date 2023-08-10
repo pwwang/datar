@@ -7,7 +7,7 @@ import pardoc
 from varname.helpers import debug  # noqa
 from datar import options
 
-options(import_names_conflict="silent")
+options(allow_conflict_names=True)
 
 InteractiveShell.ast_node_interactivity = "all"
 

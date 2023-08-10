@@ -2,5 +2,4 @@
 from .core.load_plugins import plugin as _plugin
 from .apis.tibble import *
 
-_additional_imports = _plugin.hooks.tibble_api()
-locals().update(_additional_imports)
+locals().update(_plugin.hooks.tibble_api())
