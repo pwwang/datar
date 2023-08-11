@@ -88,47 +88,47 @@ toml = ["tomli"]
 
 [[package]]
 name = "datar-arrow"
-version = "0.0.0"
+version = "0.0.1"
 description = "The pyarrow backend for datar"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "datar_arrow-0.0.0-py3-none-any.whl", hash = "sha256:41ddc5d3171ac76433c20380178a12e9f08a6761ea930c5626a843a2e5dba21b"},
-    {file = "datar_arrow-0.0.0.tar.gz", hash = "sha256:1c713201830ed9232a4892ce73aa6a834d5cbe3c885ae5629b666749b1be4a86"},
+    {file = "datar_arrow-0.0.1-py3-none-any.whl", hash = "sha256:20a0ead1d3bf74b800d1e0255647ed7bc287f546aca0d88b9f8489286ea5d553"},
+    {file = "datar_arrow-0.0.1.tar.gz", hash = "sha256:0b4f8f4eb5446e0b64306def93ae63741f7c6099a24a59b13763b2037202842f"},
 ]
 
 [package.dependencies]
-datar = ">=0.12,<0.13"
+datar = ">=0.13,<0.14"
 pyarrow = ">=11,<12"
 
 [[package]]
 name = "datar-numpy"
-version = "0.2.0"
+version = "0.2.1"
 description = "The numpy backend for datar"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "datar_numpy-0.2.0-py3-none-any.whl", hash = "sha256:2369f3d8419e7ffbbe950ad6b459a3f75ae6571155fab09f63874d49e96bab6b"},
-    {file = "datar_numpy-0.2.0.tar.gz", hash = "sha256:a0e119f3ec208ba45100e31b22a8dc1d0a926a42f144bb5b2b859e2897d2e320"},
+    {file = "datar_numpy-0.2.1-py3-none-any.whl", hash = "sha256:f9a85e514c612d6c400514f75242648d17c340aff188d8b8cf94d0a0de157bab"},
+    {file = "datar_numpy-0.2.1.tar.gz", hash = "sha256:49d835f6fdbd856cd7ea00d2829da664b2138be40892d72be464d0df79b5252a"},
 ]
 
 [package.dependencies]
-datar = ">=0.12,<0.13"
+datar = ">=0.13,<0.14"
 numpy = ">=1.20,<2.0"
 
 [[package]]
 name = "datar-pandas"
-version = "0.3.0"
+version = "0.3.1"
 description = "The pandas backend for datar"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "datar_pandas-0.3.0-py3-none-any.whl", hash = "sha256:738190a54c816dd3fa1529d0f48a601b134edc52a3e1d11ce6d3d0bcec91c2a7"},
-    {file = "datar_pandas-0.3.0.tar.gz", hash = "sha256:97803e124f0e3ac2f6b65ddd087859fabb47e5d510fc1f4d3772a882853dbea9"},
+    {file = "datar_pandas-0.3.1-py3-none-any.whl", hash = "sha256:ccd5db148b2d5a5d76aa408ea8b2b33b6bb4b4cc0a47d84062de980ef42a91f2"},
+    {file = "datar_pandas-0.3.1.tar.gz", hash = "sha256:2d683cca9eb1991fe19e0669b41242dfed66e0d65d183e3c76a0014376e1a051"},
 ]
 
 [package.dependencies]
-datar = ">=0.12,<0.13"
+datar = ">=0.13,<0.14"
 datar-numpy = ">=0.2,<0.3"
 pdtypes = ">=0.0.4,<0.0.5"
 
