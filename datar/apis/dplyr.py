@@ -1813,8 +1813,7 @@ def rows_insert(
     y,
     by=None,
     conflict: str = "error",
-    copy: bool = False,
-    in_place: bool = False,
+    **kwargs,
 ) -> Any:
     """Insert rows from y into x
 
@@ -1833,12 +1832,8 @@ def rows_insert(
         conflict: How to handle conflicts
             - "error": Throw an error
             - "ignore": Ignore conflicts
-        copy: If x and y are not from the same data source, and copy is TRUE,
-            then y will be copied into the same src as x.
-            This allows you to join tables across srcs, but it is a potentially
-            expensive operation so you must opt into it.
-        in_place: Should x be modified in place?
-            This may not be supported, depending on the backend implementation.
+        **kwargs: Additional arguments to pass to the backend, such as
+            `copy` and `in_place`. Depends on the backend implementation.
 
     Returns:
         A data frame with all existing rows and potentially new rows
@@ -1852,8 +1847,7 @@ def rows_update(
     y,
     by=None,
     unmatched: str = "error",
-    copy: bool = False,
-    in_place: bool = False,
+    **kwargs,
 ) -> Any:
     """Update rows in x with values from y
 
@@ -1876,12 +1870,8 @@ def rows_update(
             are unmatched by the keys in x.
             "ignore" will ignore rows in y with keys that are unmatched
             by the keys in x.
-        copy: If x and y are not from the same data source, and copy is TRUE,
-            then y will be copied into the same src as x.
-            This allows you to join tables across srcs, but it is a potentially
-            expensive operation so you must opt into it.
-        in_place: Should x be modified in place?
-            This may not be supported, depending on the backend implementation.
+        **kwargs: Additional arguments to pass to the backend, such as
+            `copy` and `in_place`. Depends on the backend implementation.
 
     Returns:
         A data frame with all existing rows and potentially new rows
@@ -1895,8 +1885,7 @@ def rows_patch(
     y,
     by=None,
     unmatched: str = "error",
-    copy: bool = False,
-    in_place: bool = False,
+    **kwargs,
 ) -> Any:
     """Patch rows in x with values from y
 
@@ -1919,12 +1908,8 @@ def rows_patch(
             are unmatched by the keys in x.
             "ignore" will ignore rows in y with keys that are unmatched
             by the keys in x.
-        copy: If x and y are not from the same data source, and copy is TRUE,
-            then y will be copied into the same src as x.
-            This allows you to join tables across srcs, but it is a potentially
-            expensive operation so you must opt into it.
-        in_place: Should x be modified in place?
-            This may not be supported, depending on the backend implementation.
+        **kwargs: Additional arguments to pass to the backend, such as
+            `copy` and `in_place`. Depends on the backend implementation.
 
     Returns:
         A data frame with NA values overwritten and the number of rows preserved
@@ -1933,13 +1918,7 @@ def rows_patch(
 
 
 @_register_verb()
-def rows_upsert(
-    x,
-    y,
-    by=None,
-    copy: bool = False,
-    in_place: bool = False,
-) -> Any:
+def rows_upsert(x, y, by=None, **kwargs) -> Any:
     """Upsert rows in x with values from y
 
     See original API
@@ -1954,12 +1933,8 @@ def rows_upsert(
             enforced for the key values of y
             By default, we use the first column in y, since the first column is
             a reasonable place to put an identifier variable.
-        copy: If x and y are not from the same data source, and copy is TRUE,
-            then y will be copied into the same src as x.
-            This allows you to join tables across srcs, but it is a potentially
-            expensive operation so you must opt into it.
-        in_place: Should x be modified in place?
-            This may not be supported, depending on the backend implementation.
+        **kwargs: Additional arguments to pass to the backend, such as
+            `copy` and `in_place`. Depends on the backend implementation.
 
     Returns:
         A data frame with inserted or updated depending on whether or not
@@ -1974,8 +1949,7 @@ def rows_delete(
     y,
     by=None,
     unmatched: str = "error",
-    copy: bool = False,
-    in_place: bool = False,
+    **kwargs,
 ) -> Any:
     """Delete rows in x that match keys in y
 
@@ -1998,12 +1972,8 @@ def rows_delete(
             are unmatched by the keys in x.
             "ignore" will ignore rows in y with keys that are unmatched
             by the keys in x.
-        copy: If x and y are not from the same data source, and copy is TRUE,
-            then y will be copied into the same src as x.
-            This allows you to join tables across srcs, but it is a potentially
-            expensive operation so you must opt into it.
-        in_place: Should x be modified in place?
-            This may not be supported, depending on the backend implementation.
+        **kwargs: Additional arguments to pass to the backend, such as
+            `copy` and `in_place`. Depends on the backend implementation.
 
     Returns:
         A data frame with rows deleted
@@ -2012,12 +1982,7 @@ def rows_delete(
 
 
 @_register_verb()
-def rows_append(
-    x,
-    y,
-    copy: bool = False,
-    in_place: bool = False,
-) -> Any:
+def rows_append(x, y, **kwargs) -> Any:
     """Append rows in y to x
 
     See original API
@@ -2026,12 +1991,8 @@ def rows_append(
     Args:
         x: A data frame
         y: A data frame
-        copy: If x and y are not from the same data source, and copy is TRUE,
-            then y will be copied into the same src as x.
-            This allows you to join tables across srcs, but it is a potentially
-            expensive operation so you must opt into it.
-        in_place: Should x be modified in place?
-            This may not be supported, depending on the backend implementation.
+        **kwargs: Additional arguments to pass to the backend, such as
+            `copy` and `in_place`. Depends on the backend implementation.
 
     Returns:
         A data frame with rows appended
