@@ -1,6 +1,11 @@
 # import the variables with _ so that they are not imported by *
 from __future__ import annotations as _
-from typing import Any, Callable as _Callable, Sequence as _Sequence
+from typing import (
+    Any,
+    Callable as _Callable,
+    Sequence as _Sequence,
+    TypeVar as _TypeVar,
+)
 
 from pipda import (
     register_verb as _register_verb,
@@ -13,9 +18,28 @@ from ..core.utils import (
 )
 from .base import intersect, setdiff, setequal, union  # noqa: F401
 
+T = _TypeVar("T")
+
 
 @_register_verb(dependent=True)
-def across(_data, *args, _names=None, **kwargs) -> Any:
+def pick(_data: T, *args, **kwargs) -> T:
+    """Pick columns by name
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/pick.html
+
+    Args:
+        _data: The dataframe
+        *args: The columns to pick
+
+    Returns:
+        The picked dataframe
+    """
+    raise _NotImplementedByCurrentBackendError("pick", _data)
+
+
+@_register_verb(dependent=True)
+def across(_data: T, *args, _names=None, **kwargs) -> T:
     """Apply the same transformation to multiple columns
 
     The original API:
@@ -64,7 +88,7 @@ def across(_data, *args, _names=None, **kwargs) -> Any:
 
 
 @_register_verb(dependent=True)
-def c_across(_data, _cols=None) -> Any:
+def c_across(_data: T, _cols=None) -> T:
     """Apply the same transformation to multiple columns rowwisely
 
     Args:
@@ -97,6 +121,26 @@ def if_all(_data, *args, _names=None, **kwargs) -> Any:
         [`across()`](datar.dplyr.across.across)
     """
     raise _NotImplementedByCurrentBackendError("if_all", _data)
+
+
+@_register_verb()
+def symdiff(x: T, y: T) -> T:
+    """Get the symmetric difference of two dataframes
+
+    It computes the symmetric difference, i.e. all rows in x that aren't in y
+    and all rows in y that aren't in x.
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/setops.html
+
+    Args:
+        x: A dataframe
+        y: A dataframe
+
+    Returns:
+        The symmetric difference of x and y
+    """
+    raise _NotImplementedByCurrentBackendError("symdiff", x)
 
 
 @_register_verb()
@@ -700,6 +744,23 @@ def coalesce(x, *replace) -> Any:
 
 
 @_register_func(pipeable=True, dispatchable=True)
+def consecutive_id(x, *args) -> _Sequence[int]:
+    """Generate consecutive ids
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/consecutive_id.html
+
+    Args:
+        x: A vector
+        *args: Other vectors
+
+    Returns:
+        A sequence of consecutive ids
+    """
+    raise _NotImplementedByCurrentBackendError("consecutive_id", x)
+
+
+@_register_func(pipeable=True, dispatchable=True)
 def na_if(x, value) -> Any:
     """Replace values with missing values
 
@@ -1119,6 +1180,25 @@ def if_else(condition, true, false, missing=None) -> Any:
 
 
 @_register_func(pipeable=True, dispatchable=True)
+def case_match(_x: T, *args, _default=None, _dtypes=None) -> T:
+    """This function allows you to vectorise multiple `switch()` statements.
+    Each case is evaluated sequentially and the first match for each element
+    determines the corresponding value in the output vector.
+    If no cases match, the `_default` is used.
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/case_match.html
+
+    Args:
+        _x: A vector
+        *args: A series of condition-value pairs
+        _default: The default value
+        _dtypes: The data types of the output
+    """
+    raise _NotImplementedByCurrentBackendError("case_match", _x)
+
+
+@_register_func(pipeable=True, dispatchable=True)
 def case_when(cond, value, *more_cases) -> Any:
     """Vectorise multiple `if_else()` statements.
 
@@ -1142,6 +1222,10 @@ def inner_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
+    na_matches: str = "na",
+    multiple: str = "all",
+    unmatched: str = "drop",
+    relationship: str = None,
 ) -> Any:
     """Inner join two data frames by matching rows.
 
@@ -1156,6 +1240,24 @@ def inner_join(
         copy: If True, always copy the data.
         suffix: A tuple of suffixes to apply to overlapping columns.
         keep: If True, keep the grouping variables in the output.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
+        multiple: How should multiple matches be handled?
+            "all": All matches are returned.
+            "first": The first match is returned.
+            "last": The last match is returned.
+            "any": Any of the matched rows in y
+        unmatched: How should unmatched keys that would result in dropped rows
+            be handled?
+            "drop": Drop unmatched keys.
+            "error": Raise an error.
+        relationship: The relationship between x and y.
+            None: No expected relationship.
+            "one_to_one": Each row in x matches at most one row in y.
+            "one_to_many": Each row in x matches zero or more rows in y.
+            "many_to_one": Each row in x matches at most one row in y.
+            "many_to_many": Each row in x matches zero or more rows in y.
 
     Returns:
         A data frame
@@ -1171,6 +1273,10 @@ def left_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
+    na_matches: str = "na",
+    multiple: str = "all",
+    unmatched: str = "drop",
+    relationship: str = None,
 ) -> Any:
     """Left join two data frames by matching rows.
 
@@ -1185,6 +1291,24 @@ def left_join(
         copy: If True, always copy the data.
         suffix: A tuple of suffixes to apply to overlapping columns.
         keep: If True, keep the grouping variables in the output.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
+        multiple: How should multiple matches be handled?
+            "all": All matches are returned.
+            "first": The first match is returned.
+            "last": The last match is returned.
+            "any": Any of the matched rows in y
+        unmatched: How should unmatched keys that would result in dropped rows
+            be handled?
+            "drop": Drop unmatched keys.
+            "error": Raise an error.
+        relationship: The relationship between x and y.
+            None: No expected relationship.
+            "one_to_one": Each row in x matches at most one row in y.
+            "one_to_many": Each row in x matches zero or more rows in y.
+            "many_to_one": Each row in x matches at most one row in y.
+            "many_to_many": Each row in x matches zero or more rows in y.
 
     Returns:
         A data frame
@@ -1200,6 +1324,10 @@ def right_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
+    na_matches: str = "na",
+    multiple: str = "all",
+    unmatched: str = "drop",
+    relationship: str = None,
 ) -> Any:
     """Right join two data frames by matching rows.
 
@@ -1214,6 +1342,24 @@ def right_join(
         copy: If True, always copy the data.
         suffix: A tuple of suffixes to apply to overlapping columns.
         keep: If True, keep the grouping variables in the output.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
+        multiple: How should multiple matches be handled?
+            "all": All matches are returned.
+            "first": The first match is returned.
+            "last": The last match is returned.
+            "any": Any of the matched rows in y
+        unmatched: How should unmatched keys that would result in dropped rows
+            be handled?
+            "drop": Drop unmatched keys.
+            "error": Raise an error.
+        relationship: The relationship between x and y.
+            None: No expected relationship.
+            "one_to_one": Each row in x matches at most one row in y.
+            "one_to_many": Each row in x matches zero or more rows in y.
+            "many_to_one": Each row in x matches at most one row in y.
+            "many_to_many": Each row in x matches zero or more rows in y.
 
     Returns:
         A data frame
@@ -1229,6 +1375,10 @@ def full_join(
     copy: bool = False,
     suffix: _Sequence[str] = ("_x", "_y"),
     keep: bool = False,
+    na_matches: str = "na",
+    multiple: str = "all",
+    unmatched: str = "drop",
+    relationship: str = None,
 ) -> Any:
     """Full join two data frames by matching rows.
 
@@ -1243,6 +1393,24 @@ def full_join(
         copy: If True, always copy the data.
         suffix: A tuple of suffixes to apply to overlapping columns.
         keep: If True, keep the grouping variables in the output.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
+        multiple: How should multiple matches be handled?
+            "all": All matches are returned.
+            "first": The first match is returned.
+            "last": The last match is returned.
+            "any": Any of the matched rows in y
+        unmatched: How should unmatched keys that would result in dropped rows
+            be handled?
+            "drop": Drop unmatched keys.
+            "error": Raise an error.
+        relationship: The relationship between x and y.
+            None: No expected relationship.
+            "one_to_one": Each row in x matches at most one row in y.
+            "one_to_many": Each row in x matches zero or more rows in y.
+            "many_to_one": Each row in x matches at most one row in y.
+            "many_to_many": Each row in x matches zero or more rows in y.
 
     Returns:
         A data frame
@@ -1256,6 +1424,7 @@ def semi_join(
     y,
     by=None,
     copy: bool = False,
+    na_matches: str = "na",
 ) -> Any:
     """Semi join two data frames by matching rows.
 
@@ -1268,6 +1437,9 @@ def semi_join(
         by: A list of column names to join by.
             If None, use the intersection of the columns of x and y.
         copy: If True, always copy the data.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
 
     Returns:
         A data frame
@@ -1281,6 +1453,7 @@ def anti_join(
     y,
     by=None,
     copy: bool = False,
+    na_matches: str = "na",
 ) -> Any:
     """Anti join two data frames by matching rows.
 
@@ -1293,6 +1466,9 @@ def anti_join(
         by: A list of column names to join by.
             If None, use the intersection of the columns of x and y.
         copy: If True, always copy the data.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
 
     Returns:
         A data frame
@@ -1308,6 +1484,8 @@ def nest_join(
     copy: bool = False,
     keep: bool = False,
     name=None,
+    na_matches: str = "na",
+    unmatched: str = "drop",
 ) -> Any:
     """Nest join two data frames by matching rows.
 
@@ -1322,11 +1500,43 @@ def nest_join(
         copy: If True, always copy the data.
         keep: If True, keep the grouping variables in the output.
         name: The name of the column to store the nested data frame.
+        na_matches: How should NA values be matched?
+            "na": NA values are equal.
+            "never": NA values are never matched.
+        unmatched: How should unmatched keys that would result in dropped rows
+            be handled?
+            "drop": Drop unmatched keys.
+            "error": Raise an error.
 
     Returns:
         A data frame
     """
     raise _NotImplementedByCurrentBackendError("nest_join", x)
+
+
+@_register_verb()
+def cross_join(
+    x: T,
+    y: T,
+    copy: bool = False,
+    suffix: _Sequence[str] = ("_x", "_y"),
+) -> T:
+    """Cross joins match each row in x to every row in y, resulting in a
+    data frame with nrow(x) * nrow(y) rows.
+
+    The original API:
+    https://dplyr.tidyverse.org/reference/cross_join.html
+
+    Args:
+        x: A data frame
+        y: A data frame
+        copy: If True, always copy the data.
+        suffix: A tuple of suffixes to apply to overlapping columns.
+
+    Returns:
+        An object of the same type as x (including the same groups).
+    """
+    raise _NotImplementedByCurrentBackendError("cross_join", x)
 
 
 # lead/lag

@@ -105,6 +105,11 @@ from datar.dplyr import (
     where,
     with_groups,
     with_order,
+    pick,
+    symdiff,
+    consecutive_id,
+    case_match,
+    cross_join,
 )
 
 
@@ -193,6 +198,10 @@ from datar.dplyr import (
     (union_all, None, [1], None),
     (with_groups, None, [1, 2], None),
     (with_order, None, [1, 2], None),
+    (symdiff, None, [None], None),
+    (consecutive_id, None, [], None),
+    (case_match, None, [], None),
+    (cross_join, None, [1], None),
 ])
 def test_verb_not_implemented(verb, data, args, kwargs):
     kwargs = kwargs or {}
@@ -201,6 +210,7 @@ def test_verb_not_implemented(verb, data, args, kwargs):
 
 
 @pytest.mark.parametrize("verb, data, args, kwargs", [
+    (pick, None, [], None),
     (across, None, [], None),
     (if_any, None, [], None),
     (if_all, None, [], None),
