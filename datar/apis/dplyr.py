@@ -22,7 +22,7 @@ T = _TypeVar("T")
 
 
 @_register_verb(dependent=True)
-def pick(_data: T, *args, **kwargs) -> T:
+def pick(_data: T, *args) -> T:
     """Pick columns by name
 
     The original API:
