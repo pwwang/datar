@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.14.0
+
+- ⬆️ Bump pipda to 0.13
+- 🍱 Support dplyr up to 1.1.3
+- 👽️ Align `rows_*()` verbs to align with dplyr 1.1.3 (#188)
+- 🔧 Update pyproject.toml to generate setup.py for poetry
+
+## 0.13.1
+
+- 🎨 Allow `datar.all.filter` regardless of `allow_conflict_names` (#184)
+
 ## 0.13.0
 
 - 👷 Add scripts for codesandbox
