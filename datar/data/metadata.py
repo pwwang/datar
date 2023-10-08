@@ -60,6 +60,18 @@ metadata = dict(
         index=False,
         source=HERE / "chickweight.csv.gz",
     ),
+    cms_patient_care=Metadata(
+        descr="Data from the Centers for Medicare & Medicaid Services",
+        ref="https://tidyr.tidyverse.org/reference/cms_patient_experience.html",
+        index=False,
+        source=HERE / "cms_patient_care.csv.gz",
+    ),
+    cms_patient_experience=Metadata(
+        descr="Data from the Centers for Medicare & Medicaid Services",
+        ref="https://tidyr.tidyverse.org/reference/cms_patient_experience.html",
+        index=False,
+        source=HERE / "cms_patient_experience.csv.gz",
+    ),
     construction=Metadata(
         descr="Completed construction in the US in 2018",
         ref="https://tidyr.tidyverse.org/reference/construction.html",
@@ -113,6 +125,12 @@ metadata = dict(
         ref="https://forcats.tidyverse.org/reference/gss_cat.html",
         index=False,
         source=HERE / "gss_cat.csv.gz",
+    ),
+    household=Metadata(
+        descr="This dataset is based on an example in `vignette(\"datatable-reshape\", package = \"data.table\")`",
+        ref="https://tidyr.tidyverse.org/reference/household.html",
+        index=False,
+        source=HERE / "household.csv.gz",
     ),
     iris=Metadata(
         descr="Edgar Anderson's Iris Data",
@@ -287,6 +305,12 @@ metadata = dict(
         ref="https://tidyr.tidyverse.org/reference/who.html",
         index=False,
         source=HERE / "who.csv.gz",
+    ),
+    who2=Metadata(
+        descr="A subset of data from the World Health Organization Global Tuberculosis Report, and accompanying global populations.",
+        ref="https://tidyr.tidyverse.org/reference/who.html",
+        index=False,
+        source=HERE / "who2.csv.gz",
     ),
     world_bank_pop=Metadata(
         descr="Population data from the world bank",
