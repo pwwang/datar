@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.0
+
+- ✨ Add data who2, household, cms_patient_experience, and
+cms_patient_care
+- ⬆️ Bump datar-pandas to 0.5 to support pandas2 (#186)
+
 ## 0.14.0
 
 - ⬆️ Bump pipda to 0.13
