@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.15.1
+
+- ⬆️ Bump datar-pandas to 0.5.1
+    - Dismiss ast warning for if_else.
+    - Make scipy and wcwidth optional deps
+    - Set seed in tests
+    - Dismiss warnings of fillna with method for pandas2.1
+
 ## 0.15.0
 
 - ✨ Add data who2, household, cms_patient_experience, and
