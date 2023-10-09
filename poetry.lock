@@ -116,21 +116,22 @@ all = ["scipy (>=1.8,<2.0)", "wcwidth (>=0.2,<0.3)"]
 
 [[package]]
 name = "datar-pandas"
-version = "0.5.1"
+version = "0.5.2"
 description = "The pandas backend for datar"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "datar_pandas-0.5.1-py3-none-any.whl", hash = "sha256:278d7e6be4c9b860abf7c1390efe9e10c92750fafb8f76d84a9de2a7ce19bb7e"},
-    {file = "datar_pandas-0.5.1.tar.gz", hash = "sha256:07e38a775e25e0f446a2b8a6dc6bc7118dbd01437614cd9395c19edfa368f1e7"},
+    {file = "datar_pandas-0.5.2-py3-none-any.whl", hash = "sha256:8bae404f7abd2aee9297dc98c0adf8a0219ab003a892e3a8bb2443d103ccdb33"},
+    {file = "datar_pandas-0.5.2.tar.gz", hash = "sha256:0ab22908a35aec8d257e1567270e78b25f774bb6fa729c5991e8a2adb31713a9"},
 ]
 
 [package.dependencies]
 datar = ">=0.15,<0.16"
+datar-numpy = ">=0.3.2,<0.4.0"
 pdtypes = ">=0.2,<0.3"
 
 [package.extras]
-all = ["datar-numpy (>=0.3.2,<0.4.0)", "datar-numpy[all] (>=0.3.2,<0.4.0)"]
+all = ["scipy (>=1.8,<2.0)", "wcwidth (>=0.2,<0.3)"]
 
 [[package]]
 name = "diot"
@@ -611,4 +612,4 @@ pandas = ["datar-pandas"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "3a434736f618365af62ba4cdb56dd877e3db043809881feb965f90a1eb7a1c8a"
+content-hash = "08328a8bf43e1a4f495e84b860717f0fb992f8d61fbb6f2d787de1fff8ad95d4"
