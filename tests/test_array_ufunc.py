@@ -17,7 +17,7 @@ def test_misc_obj():
         pass
 
     @array_ufunc.register(Foo)
-    def _array_ufunc(x, ufunc, *args, **kwargs):
+    def _array_ufunc(x, ufunc, *args, kind, **kwargs):
         return ufunc([i * 2 for i in x], *args, **kwargs)
 
     out = np.sqrt(f)._pipda_eval(Foo([2, 8, 18]), Context.EVAL)

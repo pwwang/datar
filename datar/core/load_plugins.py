@@ -4,7 +4,7 @@ from .options import get_option
 from .plugin import plugin
 
 
-def _array_ufunc_to_register(ufunc, x, *args, **kwargs):
+def _array_ufunc_to_register(ufunc, x, *args, kind, **kwargs):
     """Register the array ufunc to pipda"""
     from ..apis.misc import array_ufunc
 
@@ -12,6 +12,7 @@ def _array_ufunc_to_register(ufunc, x, *args, **kwargs):
         x,
         ufunc,
         *args,
+        kind=kind,
         **kwargs,
         __backend=array_ufunc.backend,
     )

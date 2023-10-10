@@ -13,7 +13,7 @@ def _array_ufunc_with_backend(backend: str):
 
 
 @register_func(cls=object, dispatchable="first")
-def array_ufunc(x, ufunc, *args, **kwargs):
+def array_ufunc(x, ufunc, *args, kind, **kwargs):
     """Implement the array ufunc
 
     Allow other backends to override the behavior of the ufunc on

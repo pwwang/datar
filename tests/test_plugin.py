@@ -24,7 +24,7 @@ class TestPlugin1:
         from datar.apis.misc import array_ufunc
 
         @array_ufunc.register(object, backend="testplugin1")
-        def _array_ufunc(x, ufunc, *args, **kwargs):
+        def _array_ufunc(x, ufunc, *args, kind, **kwargs):
             return ufunc([i * 3 for i in x], *args, **kwargs)
 
         return {"other_var": 1}

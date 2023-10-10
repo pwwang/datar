@@ -11,10 +11,10 @@ repository = "https://github.com/pwwang/datar"
 [tool.poetry.dependencies]
 python = "^3.8"
 simplug = "^0.3"
-pipda = "^0.13"
+pipda = "^0.13.1"
 python-simpleconf = {version = "^0.6", extras = ["toml"]}
 datar-numpy = {version = "^0.3.2", optional = true}
-datar-pandas = {version = "^0.5.2", optional = true}
+datar-pandas = {version = "^0.5.3", optional = true}
 # datar-polars = {version = "^0.0.0", optional = true}
 datar-arrow = {version = "^0.1", optional = true}
 

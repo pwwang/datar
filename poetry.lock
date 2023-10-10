@@ -328,13 +328,13 @@ pandas = ">=2.0,<3.0"
 
 [[package]]
 name = "pipda"
-version = "0.13.0"
+version = "0.13.1"
 description = "A framework for data piping in python"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pipda-0.13.0-py3-none-any.whl", hash = "sha256:d4740e02e0b600082d091af4f621ffa1e84ef66b4feb5e319c5cd855515fd5fc"},
-    {file = "pipda-0.13.0.tar.gz", hash = "sha256:1d9ab1a1c9fa308bee9133baa01d505eab8b3b543acd057c66d30421b4ed2158"},
+    {file = "pipda-0.13.1-py3-none-any.whl", hash = "sha256:9e9046ac507ad03ced7b63e09e2468bdc2c863c01d44233c5502b4f450461893"},
+    {file = "pipda-0.13.1.tar.gz", hash = "sha256:56420cbb285a085db385a37ad267f59ba090ec1e901eb122132bd64ad5f515f9"},
 ]
 
 [package.dependencies]
@@ -612,4 +612,4 @@ pandas = ["datar-pandas"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "08328a8bf43e1a4f495e84b860717f0fb992f8d61fbb6f2d787de1fff8ad95d4"
+content-hash = "367e118ef9fe3d5248704ea9c9fb33b77df4a0f7d5c029ad9afcec5874095d8c"
