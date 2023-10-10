@@ -4,7 +4,7 @@ from .core import operator as _
 from .core.defaults import f
 from .core.options import options, get_option, options_context
 
-__version__ = "0.15.2"
+__version__ = "0.15.3"
 
 
 def get_versions(prnt: bool = True) -> _Mapping[str, str]:

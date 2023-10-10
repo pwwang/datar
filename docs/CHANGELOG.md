@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.15.3
+
+- ⬆️ Bump pipda to 0.13.1
+
 ## 0.15.2
 
 - ⬆️ Bump datar-pandas to 0.5.2 to fix `pip install datar[pandas]` not having numpy backend installed.
