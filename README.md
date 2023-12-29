@@ -39,10 +39,10 @@ pip install -U datar[pandas]
 ```python
 # with pandas backend
 from datar import f
-from datar.dplyr import mutate, filter, if_else
+from datar.dplyr import mutate, filter_, if_else
 from datar.tibble import tibble
 # or
-# from datar.all import f, mutate, filter, if_else, tibble
+# from datar.all import f, mutate, filter_, if_else, tibble
 
 df = tibble(
     x=range(4),  # or c[:4]  (from datar.base import c)
@@ -68,7 +68,7 @@ df >> mutate(z=if_else(f.x>1, 1, 0))
 3       3    three       1
 """
 
-df >> filter(f.x>1)
+df >> filter_(f.x>1)
 """# output:
         x        y
   <int64> <object>
@@ -76,7 +76,7 @@ df >> filter(f.x>1)
 1       3    three
 """
 
-df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter(f.z==1)
+df >> mutate(z=if_else(f.x>1, 1, 0)) >> filter_(f.z==1)
 """# output:
         x        y       z
   <int64> <object> <int64>
