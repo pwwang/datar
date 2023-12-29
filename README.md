@@ -7,7 +7,7 @@ A Grammar of Data Manipulation in python
 
 [Documentation][5] | [Reference Maps][15] | [Notebook Examples][16] | [API][17]
 
-`datar` is a re-imagining of APIs for data manipulation in python with multiple backends supported. Those APIs are aligned with tidyrverse packages in R as much as possible.
+`datar` is a re-imagining of APIs for data manipulation in python with multiple backends supported. Those APIs are aligned with tidyverse packages in R as much as possible.
 
 ## Installation
 
