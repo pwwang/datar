@@ -12,7 +12,7 @@ from datar import data
 iris = data.iris
 ```
 
-To list all avaiable datasets:
+To list all available datasets:
 
 ```python
 from datar import data
