@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.15.4
+
+- docs: fix typo in README.md (#197)
+- docs: change `filter` to `filter_` in README.md
+- docs: fix typo in data.md
+- deps: bump datar-pandas to 0.5.4 (support pandas 2.2+)
+
 ## 0.15.3
 
 - ⬆️ Bump pipda to 0.13.1
