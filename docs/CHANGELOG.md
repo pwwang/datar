@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.15.5
+
+- deps: bump datar-numpy to 0.3.3
+
 ## 0.15.4
 
 - docs: fix typo in README.md (#197)
