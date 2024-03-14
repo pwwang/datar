@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.6
+
+- deps: bump simplug to 0.4, datar-numpy to 0.3.4 and datar-pandas to 0.5.5
+- tests: adopt pytest v8
+- ci: use latest actions
+
 ## 0.15.5
 
 - deps: bump datar-numpy to 0.3.3
