@@ -1,0 +1,4254 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.4">
+    
+    
+      
+        <title>datar.apis.forcats - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.80dcb947.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#000000">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=['FreightSans',+'Helvetica+Neue',+'Helvetica',+'Arial',+'sans-serif']:300,300i,400,400i,700,700i%7C['IBMPlexMono',+'SFMono-Regular',+'Menlo',+'Monaco',+'Consolas',+'Liberation+Mono',+'Courier+New',+'monospace']:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"['FreightSans', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']";--md-code-font:"['IBMPlexMono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace']"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../style.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="black" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datarapisforcats" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="datar" class="md-header__button md-logo" aria-label="datar" data-md-component="logo">
+      
+  <img src="../../favicon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              datar.apis.forcats
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/datar" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/datar
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="datar" class="md-nav__button md-logo" aria-label="datar" data-md-component="logo">
+      
+  <img src="../../favicon.png" alt="logo">
+
+    </a>
+    datar
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/datar" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/datar
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Reference maps
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference maps" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Reference maps
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/ALL/" class="md-nav__link">
+        ALL
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/base/" class="md-nav__link">
+        base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/dplyr/" class="md-nav__link">
+        dplyr
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/tibble/" class="md-nav__link">
+        tibble
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/tidyr/" class="md-nav__link">
+        tidyr
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/forcats/" class="md-nav__link">
+        forcats
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/datasets/" class="md-nav__link">
+        data
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference-maps/other/" class="md-nav__link">
+        other
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../import/" class="md-nav__link">
+        Import datar
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backends/" class="md-nav__link">
+        Backends
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../options/" class="md-nav__link">
+        Options
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../f/" class="md-nav__link">
+        The f-expression
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/" class="md-nav__link">
+        Data
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_8">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Examples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/across/" class="md-nav__link">
+        across
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/add_column/" class="md-nav__link">
+        add_column
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/add_row/" class="md-nav__link">
+        add_row
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/arrange/" class="md-nav__link">
+        arrange
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/base/" class="md-nav__link">
+        base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/base-arithmetic/" class="md-nav__link">
+        base-arithmetic
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/base-funs/" class="md-nav__link">
+        base-funs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/between/" class="md-nav__link">
+        between
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/bind/" class="md-nav__link">
+        bind
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/case_when/" class="md-nav__link">
+        case_when
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/chop/" class="md-nav__link">
+        chop
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/coalesce/" class="md-nav__link">
+        coalesce
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/complete/" class="md-nav__link">
+        complete
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/context/" class="md-nav__link">
+        context
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/count/" class="md-nav__link">
+        count
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/cumall/" class="md-nav__link">
+        cumall
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/desc/" class="md-nav__link">
+        desc
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/distinct/" class="md-nav__link">
+        distinct
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/drop_na/" class="md-nav__link">
+        drop_na
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/enframe/" class="md-nav__link">
+        enframe
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/expand/" class="md-nav__link">
+        expand
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/expand_grid/" class="md-nav__link">
+        expand_grid
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/extract/" class="md-nav__link">
+        extract
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/fill/" class="md-nav__link">
+        fill
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/filter/" class="md-nav__link">
+        filter
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/filter-joins/" class="md-nav__link">
+        filter-joins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/forcats_fct_multi/" class="md-nav__link">
+        forcats_fct_multi
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/forcats_lvl_addrm/" class="md-nav__link">
+        forcats_lvl_addrm
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/forcats_lvl_order/" class="md-nav__link">
+        forcats_lvl_order
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/forcats_lvl_value/" class="md-nav__link">
+        forcats_lvl_value
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/forcats_misc/" class="md-nav__link">
+        forcats_misc
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/full_seq/" class="md-nav__link">
+        full_seq
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/other/" class="md-nav__link">
+        other
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/group_by/" class="md-nav__link">
+        group_by
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/group_map/" class="md-nav__link">
+        group_map
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/group_split/" class="md-nav__link">
+        group_split
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/group_trim/" class="md-nav__link">
+        group_trim
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lead-lag/" class="md-nav__link">
+        lead-lag
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/mutate-joins/" class="md-nav__link">
+        mutate-joins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/mutate/" class="md-nav__link">
+        mutate
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/n_distinct/" class="md-nav__link">
+        n_distinct
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/na_if/" class="md-nav__link">
+        na_if
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/near/" class="md-nav__link">
+        near
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/nest/" class="md-nav__link">
+        nest
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/nest-join/" class="md-nav__link">
+        nest-join
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/nth/" class="md-nav__link">
+        nth
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/pack/" class="md-nav__link">
+        pack
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/pivot_longer/" class="md-nav__link">
+        pivot_longer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/pivot_wider/" class="md-nav__link">
+        pivot_wider
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/pull/" class="md-nav__link">
+        pull
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/ranking/" class="md-nav__link">
+        ranking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/readme/" class="md-nav__link">
+        readme
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/recode/" class="md-nav__link">
+        recode
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/relocate/" class="md-nav__link">
+        relocate
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/rename/" class="md-nav__link">
+        rename
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/replace_na/" class="md-nav__link">
+        replace_na
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/rownames/" class="md-nav__link">
+        rownames
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/rows/" class="md-nav__link">
+        rows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/rowwise/" class="md-nav__link">
+        rowwise
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/select/" class="md-nav__link">
+        select
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/separate/" class="md-nav__link">
+        separate
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/setops/" class="md-nav__link">
+        setops
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/slice/" class="md-nav__link">
+        slice
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/summarise/" class="md-nav__link">
+        summarise
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/tibble/" class="md-nav__link">
+        tibble
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/uncount/" class="md-nav__link">
+        uncount
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/unite/" class="md-nav__link">
+        unite
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/with_groups/" class="md-nav__link">
+        with_groups
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9_1" type="checkbox" id="__nav_9_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9_1">
+          datar
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="datar" data-md-level="2">
+        <label class="md-nav__title" for="__nav_9_1">
+          <span class="md-nav__icon md-icon"></span>
+          datar
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar/" class="md-nav__link">
+        datar
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.all/" class="md-nav__link">
+        datar.all
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.datasets/" class="md-nav__link">
+        datar.datasets
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.base/" class="md-nav__link">
+        datar.base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.dplyr/" class="md-nav__link">
+        datar.dplyr
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9_2" type="checkbox" id="__nav_9_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9_2">
+          datar.core
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="datar.core" data-md-level="2">
+        <label class="md-nav__title" for="__nav_9_2">
+          <span class="md-nav__icon md-icon"></span>
+          datar.core
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.core/" class="md-nav__link">
+        datar.core
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.core.operator/" class="md-nav__link">
+        datar.core.operator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.core.utils/" class="md-nav__link">
+        datar.core.utils
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.core.options/" class="md-nav__link">
+        datar.core.options
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.core.names/" class="md-nav__link">
+        datar.core.names
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.core.plugin/" class="md-nav__link">
+        datar.core.plugin
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9_3" type="checkbox" id="__nav_9_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9_3">
+          datar.data
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="datar.data" data-md-level="2">
+        <label class="md-nav__title" for="__nav_9_3">
+          <span class="md-nav__icon md-icon"></span>
+          datar.data
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.data/" class="md-nav__link">
+        datar.data
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.data.metadata/" class="md-nav__link">
+        datar.data.metadata
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9_4" type="checkbox" id="__nav_9_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9_4">
+          datar.apis
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="datar.apis" data-md-level="2">
+        <label class="md-nav__title" for="__nav_9_4">
+          <span class="md-nav__icon md-icon"></span>
+          datar.apis
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.apis/" class="md-nav__link">
+        datar.apis
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.apis.tidyr/" class="md-nav__link">
+        datar.apis.tidyr
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.apis.tibble/" class="md-nav__link">
+        datar.apis.tibble
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.apis.base/" class="md-nav__link">
+        datar.apis.base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.apis.dplyr/" class="md-nav__link">
+        datar.apis.dplyr
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datar.apis.misc/" class="md-nav__link">
+        datar.apis.misc
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          datar.apis.forcats
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        datar.apis.forcats
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datarapisforcats" class="md-nav__link">
+    forcats
+  </a>
+  
+    <nav class="md-nav" aria-label="forcats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_relevel" class="md-nav__link">
+    fct_relevel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_inorder" class="md-nav__link">
+    fct_inorder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_infreq" class="md-nav__link">
+    fct_infreq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_inseq" class="md-nav__link">
+    fct_inseq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_reorder" class="md-nav__link">
+    fct_reorder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_reorder2" class="md-nav__link">
+    fct_reorder2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_shuffle" class="md-nav__link">
+    fct_shuffle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_rev" class="md-nav__link">
+    fct_rev
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_shift" class="md-nav__link">
+    fct_shift
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfirst2" class="md-nav__link">
+    first2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslast2" class="md-nav__link">
+    last2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_anon" class="md-nav__link">
+    fct_anon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_recode" class="md-nav__link">
+    fct_recode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_collapse" class="md-nav__link">
+    fct_collapse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump" class="md-nav__link">
+    fct_lump
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_min" class="md-nav__link">
+    fct_lump_min
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_prop" class="md-nav__link">
+    fct_lump_prop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_n" class="md-nav__link">
+    fct_lump_n
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_lowfreq" class="md-nav__link">
+    fct_lump_lowfreq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_other" class="md-nav__link">
+    fct_other
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_relabel" class="md-nav__link">
+    fct_relabel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_expand" class="md-nav__link">
+    fct_expand
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_explicit_na" class="md-nav__link">
+    fct_explicit_na
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_drop" class="md-nav__link">
+    fct_drop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_unify" class="md-nav__link">
+    fct_unify
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_c" class="md-nav__link">
+    fct_c
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_cross" class="md-nav__link">
+    fct_cross
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_count" class="md-nav__link">
+    fct_count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_match" class="md-nav__link">
+    fct_match
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_unique" class="md-nav__link">
+    fct_unique
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_reorder" class="md-nav__link">
+    lvls_reorder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_revalue" class="md-nav__link">
+    lvls_revalue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_expand" class="md-nav__link">
+    lvls_expand
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_union" class="md-nav__link">
+    lvls_union
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        Change Log
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#datarapisforcats" class="md-nav__link">
+    forcats
+  </a>
+  
+    <nav class="md-nav" aria-label="forcats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_relevel" class="md-nav__link">
+    fct_relevel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_inorder" class="md-nav__link">
+    fct_inorder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_infreq" class="md-nav__link">
+    fct_infreq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_inseq" class="md-nav__link">
+    fct_inseq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_reorder" class="md-nav__link">
+    fct_reorder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_reorder2" class="md-nav__link">
+    fct_reorder2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_shuffle" class="md-nav__link">
+    fct_shuffle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_rev" class="md-nav__link">
+    fct_rev
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_shift" class="md-nav__link">
+    fct_shift
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfirst2" class="md-nav__link">
+    first2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslast2" class="md-nav__link">
+    last2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_anon" class="md-nav__link">
+    fct_anon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_recode" class="md-nav__link">
+    fct_recode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_collapse" class="md-nav__link">
+    fct_collapse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump" class="md-nav__link">
+    fct_lump
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_min" class="md-nav__link">
+    fct_lump_min
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_prop" class="md-nav__link">
+    fct_lump_prop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_n" class="md-nav__link">
+    fct_lump_n
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_lump_lowfreq" class="md-nav__link">
+    fct_lump_lowfreq
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_other" class="md-nav__link">
+    fct_other
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_relabel" class="md-nav__link">
+    fct_relabel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_expand" class="md-nav__link">
+    fct_expand
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_explicit_na" class="md-nav__link">
+    fct_explicit_na
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_drop" class="md-nav__link">
+    fct_drop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_unify" class="md-nav__link">
+    fct_unify
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_c" class="md-nav__link">
+    fct_c
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_cross" class="md-nav__link">
+    fct_cross
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_count" class="md-nav__link">
+    fct_count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_match" class="md-nav__link">
+    fct_match
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatsfct_unique" class="md-nav__link">
+    fct_unique
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_reorder" class="md-nav__link">
+    lvls_reorder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_revalue" class="md-nav__link">
+    lvls_revalue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_expand" class="md-nav__link">
+    lvls_expand
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datarapisforcatslvls_union" class="md-nav__link">
+    lvls_union
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/pwwang/datar/edit/master/docs/api/datar.apis.forcats.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+  <h1>datar.apis.forcats</h1>
+
+<div class="mkapi-node" id="datar.apis.forcats">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="datarapisforcats" class="mkapi-object-body module top"><span class="mkapi-object-prefix"><a href="../datar.apis/#datar.apis">datar.apis</a>.</span><span class="mkapi-object-name">forcats</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats" title="Source for datar.apis.forcats">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section functions">
+      <div class="mkapi-section-name functions">
+          <span class="mkapi-section-name-body functions">Functions</span> 
+        </div>
+      <div class="mkapi-section-body functions"><ul class="mkapi-items">
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_anon">fct_anon</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">prefix</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Anonymise factor levels<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_anon" title="Source for datar.apis.forcats.fct_anon">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_c">fct_c</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*fs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Concatenate factors, combining levels<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_c" title="Source for datar.apis.forcats.fct_c">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_collapse">fct_collapse</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">other_level</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Collapse factor levels into manually defined groups<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_collapse" title="Source for datar.apis.forcats.fct_collapse">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_count">fct_count</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">sort</code>, <code class="mkapi-object-signature">prop</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Count entries in a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_count" title="Source for datar.apis.forcats.fct_count">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_cross">fct_cross</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*fs</code>, <code class="mkapi-object-signature">sep</code>, <code class="mkapi-object-signature">keep_empty</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Combine levels from two or more factors to create a new factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_cross" title="Source for datar.apis.forcats.fct_cross">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_drop">fct_drop</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">only</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Drop unused levels<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_drop" title="Source for datar.apis.forcats.fct_drop">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_expand">fct_expand</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">*additional_levels</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Add additional levels to a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_expand" title="Source for datar.apis.forcats.fct_expand">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_explicit_na">fct_explicit_na</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">na_level</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Make missing values explicit<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_explicit_na" title="Source for datar.apis.forcats.fct_explicit_na">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_infreq">fct_infreq</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">ordered</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reorder factor levels by frequency<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_infreq" title="Source for datar.apis.forcats.fct_infreq">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_inorder">fct_inorder</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">ordered</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reorder factor levels by first appearance<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_inorder" title="Source for datar.apis.forcats.fct_inorder">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_inseq">fct_inseq</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">ordered</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reorder factor levels by sequence<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_inseq" title="Source for datar.apis.forcats.fct_inseq">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_lump">fct_lump</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">prop</code>, <code class="mkapi-object-signature">w</code>, <code class="mkapi-object-signature">other_level</code>, <code class="mkapi-object-signature">ties_method</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Lump together factor levels into "other"<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump" title="Source for datar.apis.forcats.fct_lump">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_lump_lowfreq">fct_lump_lowfreq</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">other_level</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">lumps together the least frequent levels, ensuringthat "other" is still the smallest level.
+<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_lowfreq" title="Source for datar.apis.forcats.fct_lump_lowfreq">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_lump_min">fct_lump_min</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">min_</code>, <code class="mkapi-object-signature">w</code>, <code class="mkapi-object-signature">other_level</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">lumps levels that appear fewer than <code>min_</code> times.<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_min" title="Source for datar.apis.forcats.fct_lump_min">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_lump_n">fct_lump_n</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">w</code>, <code class="mkapi-object-signature">other_level</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Lumps all levels except for the <code>n</code> most frequent.<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_n" title="Source for datar.apis.forcats.fct_lump_n">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_lump_prop">fct_lump_prop</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">prop</code>, <code class="mkapi-object-signature">w</code>, <code class="mkapi-object-signature">other_level</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Lumps levels that appear in fewer <code>prop * n</code> times.<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_prop" title="Source for datar.apis.forcats.fct_lump_prop">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_match">fct_match</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">lvls</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Test for presence of levels in a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_match" title="Source for datar.apis.forcats.fct_match">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_other">fct_other</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">keep</code>, <code class="mkapi-object-signature">drop</code>, <code class="mkapi-object-signature">other_level</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Replace levels with "other"<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_other" title="Source for datar.apis.forcats.fct_other">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_recode">fct_recode</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Change factor levels by hand<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_recode" title="Source for datar.apis.forcats.fct_recode">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_relabel">fct_relabel</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">_fun</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Automatically relabel factor levels, collapse as necessary<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_relabel" title="Source for datar.apis.forcats.fct_relabel">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_relevel">fct_relevel</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">*lvls</code>, <code class="mkapi-object-signature">after</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reorder factor levels by hand<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_relevel" title="Source for datar.apis.forcats.fct_relevel">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_reorder">fct_reorder</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">_fun</code>, <code class="mkapi-object-signature">_desc</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reorder factor levels by a function (default: median)<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_reorder" title="Source for datar.apis.forcats.fct_reorder">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_reorder2">fct_reorder2</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">_fun</code>, <code class="mkapi-object-signature">_desc</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reorder factor levels by a function (default: <code>last2</code>)<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_reorder2" title="Source for datar.apis.forcats.fct_reorder2">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_rev">fct_rev</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Reverse the order of the levels of a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_rev" title="Source for datar.apis.forcats.fct_rev">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_shift">fct_shift</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">n</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Shift the levels of a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_shift" title="Source for datar.apis.forcats.fct_shift">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_shuffle">fct_shuffle</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Shuffle the levels of a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_shuffle" title="Source for datar.apis.forcats.fct_shuffle">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_unify">fct_unify</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">fs</code>, <code class="mkapi-object-signature">levels</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Unify the levels in a list of factors<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_unify" title="Source for datar.apis.forcats.fct_unify">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.fct_unique">fct_unique</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Unique values of a factor<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_unique" title="Source for datar.apis.forcats.fct_unique">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.first2">first2</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">_y</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Find the first element of <code>_y</code> ordered by <code>_x</code><a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.first2" title="Source for datar.apis.forcats.first2">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.last2">last2</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">_y</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Find the last element of <code>_y</code> ordered by <code>_x</code><a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.last2" title="Source for datar.apis.forcats.last2">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.lvls_expand">lvls_expand</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">new_levels</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Expands the set of levels; the new levels mustinclude the old levels.
+<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_expand" title="Source for datar.apis.forcats.lvls_expand">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.lvls_reorder">lvls_reorder</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">idx</code>, <code class="mkapi-object-signature">ordered</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Leaves values of a factor as they are, but changes the order bygiven indices
+<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_reorder" title="Source for datar.apis.forcats.lvls_reorder">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.lvls_revalue">lvls_revalue</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">new_levels</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">changes the values of existing levels; there mustbe one new level for each old level
+<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_revalue" title="Source for datar.apis.forcats.lvls_revalue">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#datar.apis.forcats.lvls_union">lvls_union</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">fs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Find all levels in a list of factors<a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_union" title="Source for datar.apis.forcats.lvls_union">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_relevel">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_relevel" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_relevel</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">*lvls</code>, <code class="mkapi-object-signature">after=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_relevel" title="Source for datar.apis.forcats.fct_relevel">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reorder factor levels by hand</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor (categoriccal), or a string vector</span></li>
+
+<li><code class="mkapi-item-name">*lvls</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Either a function (then <code>len(lvls)</code> should equal to <code>1</code>) orthe new levels.
+A function will be called with the current levels as input, and the
+return value (which must be a character vector) will be used to
+relevel the factor.
+Any levels not mentioned will be left in their existing order,
+by default after the explicitly mentioned levels.
+</span></li>
+
+<li><code class="mkapi-item-name">after</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Where should the new values be placed?</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels replaced</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_inorder">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_inorder" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_inorder</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">ordered=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_inorder" title="Source for datar.apis.forcats.fct_inorder">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reorder factor levels by first appearance</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">ordered</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A logical which determines the "ordered" status of theoutput factor.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reordered</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_infreq">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_infreq" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_infreq</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">ordered=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_infreq" title="Source for datar.apis.forcats.fct_infreq">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reorder factor levels by frequency</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">ordered</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A logical which determines the "ordered" status of theoutput factor.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reordered</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_inseq">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_inseq" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_inseq</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">ordered=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_inseq" title="Source for datar.apis.forcats.fct_inseq">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reorder factor levels by sequence</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">ordered</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A logical which determines the "ordered" status of theoutput factor.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reordered</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_reorder">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_reorder" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_reorder</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">_fun=None</code>, <code class="mkapi-object-signature">_desc=False</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_reorder" title="Source for datar.apis.forcats.fct_reorder">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reorder factor levels by a function (default: median)</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">_x</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The data to be used to reorder the factor</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Extra arguments to be passed to <code>_fun</code></span></li>
+
+<li><code class="mkapi-item-name">_fun</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A function to be used to reorder the factor</span></li>
+
+<li><code class="mkapi-item-name">_desc</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If <code>True</code>, the factor will be reordered in descending order</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Extra keyword arguments to be passed to <code>_fun</code></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reordered</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_reorder2">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_reorder2" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_reorder2</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">_fun=None</code>, <code class="mkapi-object-signature">_desc=False</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_reorder2" title="Source for datar.apis.forcats.fct_reorder2">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reorder factor levels by a function (default: <code>last2</code>)</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">_x</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The data to be used to reorder the factor</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Extra arguments to be passed to <code>_fun</code></span></li>
+
+<li><code class="mkapi-item-name">_fun</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A function to be used to reorder the factor</span></li>
+
+<li><code class="mkapi-item-name">_desc</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If <code>True</code>, the factor will be reordered in descending order</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Extra keyword arguments to be passed to <code>_fun</code></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reordered</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_shuffle">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_shuffle" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_shuffle</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_shuffle" title="Source for datar.apis.forcats.fct_shuffle">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Shuffle the levels of a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels shuffled</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_rev">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_rev" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_rev</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_rev" title="Source for datar.apis.forcats.fct_rev">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Reverse the order of the levels of a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reversed</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_shift">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_shift" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_shift</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">n=1</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_shift" title="Source for datar.apis.forcats.fct_shift">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Shift the levels of a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">n</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The number of levels to shift</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels shifted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.first2">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfirst2" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">first2</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">_y</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.first2" title="Source for datar.apis.forcats.first2">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Find the first element of <code>_y</code> ordered by <code>_x</code></p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_x</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The vector used to order <code>_y</code></span></li>
+
+<li><code class="mkapi-item-name">_y</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The vector to get the first element of</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>First element of <code>_y</code> ordered by <code>_x</code></p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.last2">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatslast2" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">last2</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_x</code>, <code class="mkapi-object-signature">_y</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.last2" title="Source for datar.apis.forcats.last2">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Find the last element of <code>_y</code> ordered by <code>_x</code></p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_x</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The vector used to order <code>_y</code></span></li>
+
+<li><code class="mkapi-item-name">_y</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The vector to get the last element of</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Last element of <code>_y</code> ordered by <code>_x</code></p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_anon">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_anon" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_anon</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">prefix=&#39;&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_anon" title="Source for datar.apis.forcats.fct_anon">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Anonymise factor levels</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">prefix</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A character prefix to insert in front of the random labels.</span></li>
+
+<li><code class="mkapi-item-name">f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels anonymised</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_recode">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_recode" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_recode</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_recode" title="Source for datar.apis.forcats.fct_recode">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Change factor levels by hand</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">and</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A sequence of named character vectors where the namegives the new level, and the value gives the old level.
+Levels not otherwise mentioned will be left as is. Levels can
+be removed by naming them <code>NULL</code>.
+As <code>NULL/None</code> cannot be a name of keyword arguments, replacement
+has to be specified as a dict
+(i.e. <code>fct_recode(x, {NULL: "apple"})</code>)
+If you want to replace multiple values with the same old value,
+use a <code>set</code>/<code>list</code>/<code>numpy.ndarray</code>
+(i.e. <code>fct_recode(x, fruit=["apple", "banana"])</code>).
+This is a safe way, since <code>set</code>/<code>list</code>/<code>numpy.ndarray</code> is
+not hashable to be a level of a factor.
+Do NOT use a <code>tuple</code>, as it's hashable!<br>
+Note that the order of the name-value is in the reverse way as
+<code>dplyr.recode()</code> and <code>dplyr.recode_factor()</code>
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor recoded with given recodings</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_collapse">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_collapse" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_collapse</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">other_level=None</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_collapse" title="Source for datar.apis.forcats.fct_collapse">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Collapse factor levels into manually defined groups</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Replace all levels not named in <code>kwargs</code>.If not, don't collapse them.
+</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The levels to collapse.Like <code>name=[old_level, old_level1, ...]</code>. The old levels will
+be replaced with <code>name</code>
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels collapsed.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_lump">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_lump" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_lump</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">n=None</code>, <code class="mkapi-object-signature">prop=None</code>, <code class="mkapi-object-signature">w=None</code>, <code class="mkapi-object-signature">other_level=&#39;Other&#39;</code>, <code class="mkapi-object-signature">ties_method=&#39;min&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump" title="Source for datar.apis.forcats.fct_lump">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Lump together factor levels into "other"</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">n</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Positive <code>n</code> preserves the most common <code>n</code> values.Negative <code>n</code> preserves the least common <code>-n</code> values.
+It there are ties, you will get at least <code>abs(n)</code> values.
+</span></li>
+
+<li><code class="mkapi-item-name">prop</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Positive <code>prop</code> lumps values which do not appear at least<code>prop</code> of the time. Negative <code>prop</code> lumps values that
+do not appear at most <code>-prop</code> of the time.
+</span></li>
+
+<li><code class="mkapi-item-name">w</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">An optional numeric vector giving weights for frequency ofeach value (not level) in f.
+</span></li>
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Value of level used for "other" values. Alwaysplaced at end of levels.
+</span></li>
+
+
+<li><code class="mkapi-item-name">f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">ties_method A character string specifying how ties are treated.</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">One of: <code>average</code>, <code>first</code>, <code>dense</code>, <code>max</code>, and <code>min</code>.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels lumped.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_lump_min">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_lump_min" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_lump_min</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">min_</code>, <code class="mkapi-object-signature">w=None</code>, <code class="mkapi-object-signature">other_level=&#39;Other&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_min" title="Source for datar.apis.forcats.fct_lump_min">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>lumps levels that appear fewer than <code>min_</code> times.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">min_</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Preserve levels that appear at least <code>min_</code> number of times.</span></li>
+
+<li><code class="mkapi-item-name">w</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">An optional numeric vector giving weights for frequency ofeach value (not level) in f.
+</span></li>
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Value of level used for "other" values. Alwaysplaced at end of levels.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels lumped.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_lump_prop">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_lump_prop" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_lump_prop</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">prop</code>, <code class="mkapi-object-signature">w=None</code>, <code class="mkapi-object-signature">other_level=&#39;Other&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_prop" title="Source for datar.apis.forcats.fct_lump_prop">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Lumps levels that appear in fewer <code>prop * n</code> times.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">prop</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Positive <code>prop</code> lumps values which do not appear at least<code>prop</code> of the time. Negative <code>prop</code> lumps values that
+do not appear at most <code>-prop</code> of the time.
+</span></li>
+
+<li><code class="mkapi-item-name">w</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">An optional numeric vector giving weights for frequency ofeach value (not level) in f.
+</span></li>
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Value of level used for "other" values. Alwaysplaced at end of levels.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels lumped.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_lump_n">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_lump_n" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_lump_n</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">n</code>, <code class="mkapi-object-signature">w=None</code>, <code class="mkapi-object-signature">other_level=&#39;Other&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_n" title="Source for datar.apis.forcats.fct_lump_n">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Lumps all levels except for the <code>n</code> most frequent.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">n</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Positive <code>n</code> preserves the most common <code>n</code> values.Negative <code>n</code> preserves the least common <code>-n</code> values.
+It there are ties, you will get at least <code>abs(n)</code> values.
+</span></li>
+
+<li><code class="mkapi-item-name">w</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">An optional numeric vector giving weights for frequency ofeach value (not level) in f.
+</span></li>
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Value of level used for "other" values. Alwaysplaced at end of levels.
+</span></li>
+
+<li><code class="mkapi-item-name">f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">ties_method A character string specifying how ties are treated.</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">One of: <code>average</code>, <code>first</code>, <code>dense</code>, <code>max</code>, and <code>min</code>.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels lumped.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_lump_lowfreq">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_lump_lowfreq" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_lump_lowfreq</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">other_level=&#39;Other&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_lump_lowfreq" title="Source for datar.apis.forcats.fct_lump_lowfreq">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>lumps together the least frequent levels, ensuringthat "other" is still the smallest level.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Value of level used for "other" values. Alwaysplaced at end of levels.
+</span></li>
+
+<li><code class="mkapi-item-name">f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels lumped.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_other">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_other" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_other</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">keep=None</code>, <code class="mkapi-object-signature">drop=None</code>, <code class="mkapi-object-signature">other_level=&#39;Other&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_other" title="Source for datar.apis.forcats.fct_other">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Replace levels with "other"</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">keep</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">and</span></li>
+
+<li><code class="mkapi-item-name">drop</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Pick one of <code>keep</code> and <code>drop</code>:<ul><li>- <code>keep</code> will preserve listed levels, replacing all others with<br />&nbsp;    <code>other_level</code>.</li><li>- <code>drop</code> will replace listed levels with <code>other_level</code>, keeping all<br />&nbsp;    as is.</li></ul></span></li>
+
+<li><code class="mkapi-item-name">other_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Value of level used for "other" values. Alwaysplaced at end of levels.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels replaced.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_relabel">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_relabel" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_relabel</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">_fun</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_relabel" title="Source for datar.apis.forcats.fct_relabel">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Automatically relabel factor levels, collapse as necessary</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">_fun</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A function to be applied to each level. Must accept the oldlevels and return a character vector of the same length
+as its input.
+</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">and</span></li>
+
+<li><code class="mkapi-item-name">**kwargs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Addtional arguments to <code>_fun</code></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels relabeled</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_expand">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_expand" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_expand</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">*additional_levels</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_expand" title="Source for datar.apis.forcats.fct_expand">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Add additional levels to a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">*additional_levels</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Additional levels to add to the factor.Levels that already exist will be silently ignored.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels expanded</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_explicit_na">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_explicit_na" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_explicit_na</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">na_level=&#39;(Missing)&#39;</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_explicit_na" title="Source for datar.apis.forcats.fct_explicit_na">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Make missing values explicit</p><p>This gives missing values an explicit factor level, ensuring that they
+appear in summaries and on plots.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">na_level</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Level to use for missing values.This is what NAs will be changed to.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with explict na_levels</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_drop">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_drop" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_drop</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">only=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_drop" title="Source for datar.apis.forcats.fct_drop">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Drop unused levels</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">only</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A character vector restricting the set of levels to be dropped.If supplied, only levels that have no entries and appear in
+this vector will be removed.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with unused levels dropped</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_unify">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_unify" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_unify</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">fs</code>, <code class="mkapi-object-signature">levels=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_unify" title="Source for datar.apis.forcats.fct_unify">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Unify the levels in a list of factors</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">fs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of factors</span></li>
+
+<li><code class="mkapi-item-name">levels</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Set of levels to apply to every factor. Default to unionof all factor levels
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A list of factors with the levels expanded</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_c">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_c" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_c</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*fs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_c" title="Source for datar.apis.forcats.fct_c">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Concatenate factors, combining levels</p><p>This is a useful ways of patching together factors from multiple sources
+that really should have the same levels but don't.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">*fs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">factors to concatenate</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The concatenated factor</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_cross">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_cross" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_cross</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*fs</code>, <code class="mkapi-object-signature">sep=&#39;:&#39;</code>, <code class="mkapi-object-signature">keep_empty=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_cross" title="Source for datar.apis.forcats.fct_cross">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Combine levels from two or more factors to create a new factor</p><p>Computes a factor whose levels are all the combinations of
+the levels of the input factors.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">*fs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">factors to cross</span></li>
+
+<li><code class="mkapi-item-name">sep</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A string to separate levels</span></li>
+
+<li><code class="mkapi-item-name">keep_empty</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If True, keep combinations with no observations as levels</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The new factor</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_count">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_count" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_count</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">sort=False</code>, <code class="mkapi-object-signature">prop=False</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_count" title="Source for datar.apis.forcats.fct_count">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Count entries in a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">sort</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If True, sort the result so that the most common values float tothe top
+</span></li>
+
+<li><code class="mkapi-item-name">prop</code>
+<span class="mkapi-item-type">(optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">If True, compute the fraction of marginal table.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A data frame with columns <code>f</code>, <code>n</code> and <code>p</code>, if prop is True</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_match">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_match" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_match</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">lvls</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_match" title="Source for datar.apis.forcats.fct_match">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Test for presence of levels in a factor</p><p>Do any of <code>lvls</code> occur in <code>_f</code>?</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">lvls</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A vector specifying levels to look for.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A logical factor</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.fct_unique">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatsfct_unique" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">fct_unique</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.fct_unique" title="Source for datar.apis.forcats.fct_unique">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Unique values of a factor</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with the unique values in <code>_f</code></p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.lvls_reorder">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatslvls_reorder" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">lvls_reorder</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">idx</code>, <code class="mkapi-object-signature">ordered=None</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_reorder" title="Source for datar.apis.forcats.lvls_reorder">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Leaves values of a factor as they are, but changes the order bygiven indices</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">idx</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A integer index, with one integer for each existing level.</span></li>
+
+<li><code class="mkapi-item-name">ordered</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A logical which determines the "ordered" status of theoutput factor. <code>None</code> preserves the existing status of the factor.
+</span></li>
+
+<li><code class="mkapi-item-name">f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor (or character vector).</span></li>
+
+<li><code class="mkapi-item-name">new_levels</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A character vector of new levels.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with levels reordered</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.lvls_revalue">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatslvls_revalue" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">lvls_revalue</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">new_levels</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_revalue" title="Source for datar.apis.forcats.lvls_revalue">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>changes the values of existing levels; there mustbe one new level for each old level</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">new_levels</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A character vector of new levels.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with the new levels</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.lvls_expand">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatslvls_expand" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">lvls_expand</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">_f</code>, <code class="mkapi-object-signature">new_levels</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_expand" title="Source for datar.apis.forcats.lvls_expand">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Expands the set of levels; the new levels mustinclude the old levels.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">_f</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A factor</span></li>
+
+<li><code class="mkapi-item-name">new_levels</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new levels. Must include the old ones</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The factor with the new levels</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="datar.apis.forcats.lvls_union">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="datarapisforcatslvls_union" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#datar.apis.forcats">datar.apis.forcats</a>.</code><code class="mkapi-object-name">lvls_union</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">fs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/datar.apis.forcats/#datar.apis.forcats.lvls_union" title="Source for datar.apis.forcats.lvls_union">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Find all levels in a list of factors</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">fs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of factors</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Any)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>A list of all levels</p></div>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../datar.apis.misc/" class="md-footer__link md-footer__link--prev" aria-label="Previous: datar.apis.misc" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              datar.apis.misc
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../../CHANGELOG/" class="md-footer__link md-footer__link--next" aria-label="Next: Change Log" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Change Log
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.top"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.078830c0.min.js"></script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>
