@@ -57,7 +57,7 @@ class TestPlugin2:
         return None
 
 
-def setup():
+def setup_function(function):
     plugin.register(TestPlugin1)
     plugin.register(TestPlugin2)
     plugin.get_plugin("testplugin1").disable()
