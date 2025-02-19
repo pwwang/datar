@@ -1,0 +1,4870 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../api/datar.data.metadata/">
+      
+      
+      
+      <link rel="icon" href="../favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+    
+    
+      
+        <title>Change Log - datar</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=['FreightSans',+'Helvetica+Neue',+'Helvetica',+'Arial',+'sans-serif']:300,300i,400,400i,700,700i%7C['IBMPlexMono',+'SFMono-Regular',+'Menlo',+'Monaco',+'Consolas',+'Liberation+Mono',+'Courier+New',+'monospace']:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"['FreightSans', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']";--md-code-font:"['IBMPlexMono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace']"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#change-log" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="datar" class="md-header__button md-logo" aria-label="datar" data-md-component="logo">
+      
+  <img src="../favicon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            datar
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Change Log
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/datar" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/datar
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="datar" class="md-nav__button md-logo" aria-label="datar" data-md-component="logo">
+      
+  <img src="../favicon.png" alt="logo">
+
+    </a>
+    datar
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/datar" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/datar
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference maps
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Reference maps
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/ALL/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ALL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Base
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/dplyr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dplyr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/tibble/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tibble
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/tidyr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tidyr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/forcats/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Forcats
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/datasets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Datasets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference-maps/other/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Other
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../import/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import datar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backends/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Backends
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../options/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../f/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    The f-expression
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/across/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    across
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/add_column/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    add_column
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/add_row/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    add_row
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/arrange/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    arrange
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/base-arithmetic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base-arithmetic
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/base-funs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base-funs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/between/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    between
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/bind/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    bind
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/case_when/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    case_when
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/chop/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    chop
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/coalesce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    coalesce
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    complete
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    context
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/count/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    count
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/cumall/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    cumall
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/desc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    desc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/distinct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    distinct
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/drop_na/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    drop_na
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/enframe/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    enframe
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/expand/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    expand
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/expand_grid/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    expand_grid
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/extract/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    extract
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/fill/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    fill
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/filter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    filter
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/filter-joins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    filter-joins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/forcats_fct_multi/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    forcats_fct_multi
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/forcats_lvl_addrm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    forcats_lvl_addrm
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/forcats_lvl_order/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    forcats_lvl_order
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/forcats_lvl_value/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    forcats_lvl_value
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/forcats_misc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    forcats_misc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/full_seq/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    full_seq
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/other/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    other
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/group_by/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    group_by
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/group_map/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    group_map
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/group_split/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    group_split
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/group_trim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    group_trim
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/lead-lag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    lead-lag
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/mutate-joins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mutate-joins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/mutate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mutate
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/n_distinct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    n_distinct
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/na_if/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    na_if
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/near/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    near
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/nest/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    nest
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/nest-join/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    nest-join
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/nth/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    nth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/pack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pack
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/pivot_longer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pivot_longer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/pivot_wider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pivot_wider
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/pull/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pull
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/ranking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ranking
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    readme
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/recode/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    recode
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/relocate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    relocate
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/rename/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rename
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/replace_na/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    replace_na
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/rownames/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rownames
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/rows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rows
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/rowwise/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rowwise
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/select/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    select
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/separate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    separate
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/setops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    setops
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/slice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    slice
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/summarise/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    summarise
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/tibble/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    tibble
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/uncount/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    uncount
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/unite/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    unite
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/with_groups/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    with_groups
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_1" id="__nav_9_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    datar
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_1">
+            <span class="md-nav__icon md-icon"></span>
+            datar
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.datasets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.datasets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.base
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.dplyr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.dplyr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.all/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.all
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    datar.core
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2">
+            <span class="md-nav__icon md-icon"></span>
+            datar.core
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.core/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.core
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.core.operator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.core.operator
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.core.plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.core.plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.core.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.core.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.core.names/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.core.names
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.core.options/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.core.options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_3" id="__nav_9_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    datar.apis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_3">
+            <span class="md-nav__icon md-icon"></span>
+            datar.apis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis.base/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis.base
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis.misc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis.misc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis.tidyr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis.tidyr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis.forcats/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis.forcats
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis.dplyr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis.dplyr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.apis.tibble/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.apis.tibble
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_4" id="__nav_9_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    datar.data
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_4">
+            <span class="md-nav__icon md-icon"></span>
+            datar.data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.data
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/datar.data.metadata/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    datar.data.metadata
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Change Log
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Change Log
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#change-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Change Log
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Change Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0157" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0156" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0155" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0154" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0153" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0152" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0151" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0150" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0140" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0131" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0130" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0122" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0121" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0120" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0112" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0111" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0103" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0102" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0101" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0100" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#091" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#090" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.9.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependences" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#086" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#085" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#084" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#083" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#082" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#081" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#080" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#071" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#070" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#064" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enhancements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#housekeeping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Housekeeping
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#063" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#062" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#061" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#060" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Details
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#056" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#055" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#054" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#053" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#052" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#051" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#050" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#044" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#043" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#042" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#041" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#032" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#031" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#010" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#007" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#006" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#005" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#004" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#003" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#002" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#change-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Change Log
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Change Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0157" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0156" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0155" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0154" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0153" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0152" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0151" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0150" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0140" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0131" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0130" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0122" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0121" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0120" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0112" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0111" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0103" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0102" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0101" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0100" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#091" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#090" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.9.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependences" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#086" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#085" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#084" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#083" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#082" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#081" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#080" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#071" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#070" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#064" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enhancements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#housekeeping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Housekeeping
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#063" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#062" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#061" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#060" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Details
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#056" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#055" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#054" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#053" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#052" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#051" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#050" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#044" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#043" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#042" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#041" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#032" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#031" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#010" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#007" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#006" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#005" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#004" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#003" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#002" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Change Log</h1>
+
+<h2 id="change-log">Change Log</h2>
+<h3 id="0157">0.15.7</h3>
+<ul>
+<li>chore(deps): drop support for python3.8</li>
+<li>ci: update Python version matrix to drop 3.8 and add 3.11, 3.12</li>
+<li>chore(docs): add mkdocs and related dependencies for documentation generation</li>
+</ul>
+<h3 id="0156">0.15.6</h3>
+<ul>
+<li>deps: bump simplug to 0.4, datar-numpy to 0.3.4 and datar-pandas to 0.5.5</li>
+<li>tests: adopt pytest v8</li>
+<li>ci: use latest actions</li>
+</ul>
+<h3 id="0155">0.15.5</h3>
+<ul>
+<li>deps: bump datar-numpy to 0.3.3</li>
+</ul>
+<h3 id="0154">0.15.4</h3>
+<ul>
+<li>docs: fix typo in README.md (#197)</li>
+<li>docs: change <code>filter</code> to <code>filter_</code> in README.md</li>
+<li>docs: fix typo in data.md</li>
+<li>deps: bump datar-pandas to 0.5.4 (support pandas 2.2+)</li>
+</ul>
+<h3 id="0153">0.15.3</h3>
+<ul>
+<li>⬆️ Bump pipda to 0.13.1</li>
+</ul>
+<h3 id="0152">0.15.2</h3>
+<ul>
+<li>⬆️ Bump datar-pandas to 0.5.2 to fix <code>pip install datar[pandas]</code> not having numpy backend installed.</li>
+</ul>
+<h3 id="0151">0.15.1</h3>
+<ul>
+<li>⬆️ Bump datar-pandas to 0.5.1<ul>
+<li>Dismiss ast warning for if_else.</li>
+<li>Make scipy and wcwidth optional deps</li>
+<li>Set seed in tests</li>
+<li>Dismiss warnings of fillna with method for pandas2.1</li>
+</ul>
+</li>
+</ul>
+<h3 id="0150">0.15.0</h3>
+<ul>
+<li>✨ Add data who2, household, cms_patient_experience, and
+cms_patient_care</li>
+<li>⬆️ Bump datar-pandas to 0.5 to support pandas2 (#186)</li>
+</ul>
+<h3 id="0140">0.14.0</h3>
+<ul>
+<li>⬆️ Bump pipda to 0.13</li>
+<li>🍱 Support dplyr up to 1.1.3</li>
+<li>👽️ Align <code>rows_*()</code> verbs to align with dplyr 1.1.3 (#188)</li>
+<li>🔧 Update pyproject.toml to generate setup.py for poetry</li>
+</ul>
+<h3 id="0131">0.13.1</h3>
+<ul>
+<li>🎨 Allow <code>datar.all.filter</code> regardless of <code>allow_conflict_names</code> (#184)</li>
+</ul>
+<h3 id="0130">0.13.0</h3>
+<ul>
+<li>👷 Add scripts for codesandbox</li>
+<li>
+<p>💥 Change the option for conflict names (#184)</p>
+<p>There is no more warning for conflict names (python reserved names). By default, those names are suffixed with <code>_</code> (ie <code>filter_</code> instead of <code>filter</code>). You can still use the original names by setting <code>allow_conflict_names</code> to <code>True</code> in <code>datar.options()</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">datar</span><span class="w"> </span><span class="kn">import</span> <span class="n">options</span>
+<span class="n">options</span><span class="p">(</span><span class="n">allow_conflict_names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datar.all</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="nb">filter</span>  <span class="c1"># &lt;function datar.dplyr.filter_ at 0x7f62303c8940&gt;</span>
+</code></pre></div>
+</li>
+</ul>
+<h3 id="0122">0.12.2</h3>
+<ul>
+<li>➕ Add pyarrow backend</li>
+<li>🐛 Exclude coverage for multiline version in <code>get_versions()</code></li>
+<li>⬆️ Bump up <code>python-simpleconf</code> to 0.6 so datar can be installed in Windows (#180)</li>
+</ul>
+<h3 id="0121">0.12.1</h3>
+<ul>
+<li>⬆️ Bump datar-numpy to ^0.2</li>
+</ul>
+<h3 id="0120">0.12.0</h3>
+<ul>
+<li>📝 Added import f to plotnine on README.md (#177)</li>
+<li>⬆️ Drop support for python3.7</li>
+<li>⬆️ Bump pipda to 0.12</li>
+<li>🍱 Update storms data to 2020 (tidyverse/dplyr#5899)</li>
+</ul>
+<h3 id="0112">0.11.2</h3>
+<ul>
+<li>📝 Add pypi downloads badge to README</li>
+<li>📝 Fix github workflow badges for README</li>
+<li>🐛 Add return type annotation to fix #173</li>
+<li>⬆️ Bump python-slugify to v8</li>
+</ul>
+<h3 id="0111">0.11.1</h3>
+<ul>
+<li>🐛 Fix <code>get_versions()</code> not showing plugin versions</li>
+<li>🐛 Fix plugins not loaded when loading datasets</li>
+<li>🚸 Add github issue templates</li>
+</ul>
+<h3 id="0110">0.11.0</h3>
+<ul>
+<li>📝 Add testimonials and backend badges in README.md</li>
+<li>🐛 Load entrypoint plugins only when APIs are called (#162)</li>
+<li>💥 Rename <code>other</code> module to <code>misc</code></li>
+</ul>
+<h3 id="0103">0.10.3</h3>
+<ul>
+<li>⬆️ Bump simplug to 0.2.2</li>
+<li>✨ Add <code>apis.other.array_ufunc</code> to support numpy ufuncs</li>
+<li>💥 Change hook <code>data_api</code> to <code>load_dataset</code></li>
+<li>✨ Allow backend for <code>c[]</code></li>
+<li>✨ Add <code>DatarOperator.with_backend()</code> to select backend for operators</li>
+<li>✅ Add tests</li>
+<li>📝 Update docs for backend supports</li>
+</ul>
+<h3 id="0102">0.10.2</h3>
+<ul>
+<li>🚑 Fix false warning when importing from all</li>
+</ul>
+<h3 id="0101">0.10.1</h3>
+<ul>
+<li>Pump simplug to 0.2</li>
+</ul>
+<h3 id="0100">0.10.0</h3>
+<ul>
+<li>Detach backend support, so that more backends can be supported easier in the future</li>
+<li>numpy backend: https://github.com/pwwang/datar-numpy</li>
+<li>pandas backend: https://github.com/pwwang/datar-pandas</li>
+<li>Adopt pipda 0.10 so that functions can be pipeable (#148)</li>
+<li>Support pandas 1.5+ (#148), but v1.5.0 excluded (see pandas-dev/pandas#48645)</li>
+</ul>
+<h3 id="091">0.9.1</h3>
+<ul>
+<li>Pump pipda to 0.8.0 (fixes #149)</li>
+</ul>
+<h3 id="090">0.9.0</h3>
+<h4 id="fixes">Fixes</h4>
+<ul>
+<li>Fix <code>weighted_mean</code> not handling group variables with NaN values (#137)</li>
+<li>Fix <code>weighted_mean</code> on <code>NA</code> raising error instead of returning <code>NA</code> (#139)</li>
+<li>Fix pandas <code>.groupby()</code> used internally not inheriting <code>sort</code>, <code>dropna</code> and <code>observed</code> (#138, #142)</li>
+<li>Fix <code>mutate/summarise</code> not counting references inside function as used for <code>_keep</code> <code>"used"/"unused"</code></li>
+<li>Fix metadata <code>_datar</code> of nested <code>TibbleGrouped</code> not frozen</li>
+</ul>
+<h4 id="breaking-changes">Breaking changes</h4>
+<ul>
+<li>Refactor <code>core.factory.func_factory()</code> (#140)</li>
+<li>Use <code>base.c[...]</code> for range short cut, instead of <code>f[...]</code></li>
+<li>Use <code>tibble.fibble()</code> when constructing <code>Tibble</code> inside a verb, instead of <code>tibble.tibble()</code></li>
+<li>Make <code>n</code> a keyword-only argument for <code>base.ntile</code></li>
+</ul>
+<h4 id="deprecation">Deprecation</h4>
+<ul>
+<li>Deprecate <code>verb_factory</code>, use <code>register_verb</code> from <code>pipda</code> instead</li>
+<li>Deprecate <code>base.data_context</code></li>
+</ul>
+<h4 id="dependences">Dependences</h4>
+<ul>
+<li>Adopt <code>pipda</code> <code>v0.7.1</code></li>
+<li>Remove <code>varname</code> dependency</li>
+<li>Install <code>pdtypes</code> by default</li>
+</ul>
+<h3 id="086">0.8.6</h3>
+<ul>
+<li>🐛 Fix weighted_mean not working for grouped data (#133)</li>
+<li>✅ Add tests for weighted_mean on grouped data</li>
+<li>⚡️ Optimize distinct on existing columns (#128)</li>
+</ul>
+<h3 id="085">0.8.5</h3>
+<ul>
+<li>🐛 Fix columns missing after Join by same columns using mapping (#122)</li>
+</ul>
+<h3 id="084">0.8.4</h3>
+<ul>
+<li>➖ Add optional deps to extras so they aren't installed by default</li>
+<li>🎨 Giva better message when optional packages not installed</li>
+</ul>
+<h3 id="083">0.8.3</h3>
+<ul>
+<li>⬆️ Upgrade pipda to v0.6</li>
+<li>⬆️️ Upgrade thon-simpleconf to 5.5</li>
+</ul>
+<h3 id="082">0.8.2</h3>
+<ul>
+<li>♻️ Move <code>glimpse</code> to <code>dplyr</code> (as <code>glimpse</code> is a <code>tidyverse-dplyr</code> <a href="https://dplyr.tidyverse.org/reference/glimpse.html">API</a>)</li>
+<li>🐛 Fix <code>glimpse()</code> output not rendering in qtconsole (#117)</li>
+<li>🐛 Fix <code>base.match()</code> for pandas 1.3.0</li>
+<li>🐛 Allow <code>base.match()</code> to work with grouping data (#115)</li>
+<li>📌 Use <code>rtoml</code> (<code>python-simpleconf</code>) instead of <code>toml</code> (See https://github.com/pwwang/toml-bench)</li>
+<li>📌 Update dependencies</li>
+</ul>
+<h3 id="081">0.8.1</h3>
+<ul>
+<li>🐛 Fix <code>month_abb</code> and <code>month_name</code> being truncated (#112)</li>
+<li>🐛 Fix <code>unite()</code> not keeping other columns (#111)</li>
+</ul>
+<h3 id="080">0.8.0</h3>
+<ul>
+<li>✨ Support <code>base.glimpse()</code> (#107, machow/siuba#409)</li>
+<li>🐛 Register <code>base.factor()</code> and accept grouped data (#108)</li>
+<li>✨ Allow configuration file to save default options</li>
+<li>💥 Replace option <code>warn_builtin_names</code> with <code>imiport_names_conflict</code> (#73)</li>
+<li>🩹 Attach original <code>__module__</code> to <code>func_factory</code> registed functions</li>
+<li>⬆️ Bump <code>pipda</code> to <code>0.5.9</code></li>
+</ul>
+<h3 id="072">0.7.2</h3>
+<ul>
+<li>✨ Allow tidyr.unite() to unite multiple columns into a list, instead of join them (#105)</li>
+<li>🩹 Typos in argument names of tidyr.pivot_longer() (#104)</li>
+<li>🐛 Fix base.sprintf() not working with Series (#102)</li>
+</ul>
+<h3 id="071">0.7.1</h3>
+<ul>
+<li>🐛 Fix settingwithcopywarning in tidyr.pivot_wider()</li>
+<li>📌 Pin deps for docs</li>
+<li>💚 Don't upload coverage in PR</li>
+<li>📝 Fix typos in docs (#99, #100) (Thanks to @pdwaggoner)</li>
+</ul>
+<h3 id="070">0.7.0</h3>
+<ul>
+<li>✨ Support <code>modin</code> as backend</li>
+<li>✨ Add <code>_return</code> argument for <code>datar.options()</code></li>
+<li>🐛 Fix <code>tidyr.expand()</code> when <code>nesting(f.name)</code> as argument</li>
+</ul>
+<h3 id="064">0.6.4</h3>
+<h4 id="breaking-changes_1">Breaking changes</h4>
+<ul>
+<li>🩹 Make <code>base.ntile()</code> labels 1-based (#92)</li>
+</ul>
+<h4 id="fixes_1">Fixes</h4>
+<ul>
+<li>🐛 Fix <code>order_by</code> argument for <code>dplyr.lead-lag</code></li>
+</ul>
+<h4 id="enhancements">Enhancements</h4>
+<ul>
+<li>🚑 Allow <code>base.paste/paste0()</code> to work with grouped data</li>
+<li>🩹 Change dtypes of <code>base.letters/LETTERS/month_abb/month_name</code></li>
+</ul>
+<h4 id="housekeeping">Housekeeping</h4>
+<ul>
+<li>📝 Update and fix reference maps</li>
+<li>📝 Add <code>environment.yml</code> for binder to work</li>
+<li>📝 Update styles for docs</li>
+<li>📝 Update styles for API doc in notebooks</li>
+<li>📝 Update README for new description about the project and add examples from StackOverflow</li>
+</ul>
+<h3 id="063">0.6.3</h3>
+<ul>
+<li>✨ Allow <code>base.c()</code> to handle groupby data</li>
+<li>🚑 Allow <code>base.diff()</code> to work with groupby data</li>
+<li>✨ Allow <code>forcats.fct_inorder()</code> to work with groupby data</li>
+<li>✨ Allow <code>base.rep()</code>'s arguments <code>length</code> and <code>each</code> to work with grouped data</li>
+<li>✨ Allow <code>base.c()</code> to work with grouped data</li>
+<li>✨ Allow <code>base.paste()</code>/<code>base.paste0()</code> to work with grouped data</li>
+<li>🐛 Force <code>&amp;/|</code> operators to return boolean data</li>
+<li>🚑 Fix <code>base.diff()</code> not keep empty groups</li>
+<li>🐛 Fix recycling non-ordered grouped data</li>
+<li>🩹 Fix <code>dplyr.count()/tally()</code>'s warning about the new name</li>
+<li>🚑 Make <code>dplyr.n()</code> return groupoed data</li>
+<li>🐛 Make <code>dplyr.slice()</code> work better with rows/indices from grouped data</li>
+<li>🩹 Make <code>dplyr.ntile()</code> labels 1-based</li>
+<li>✨ Add <code>datar.attrgetter()</code>, <code>datar.pd_str()</code>, <code>datar.pd_cat()</code> and <code>datar.pd_dt()</code></li>
+</ul>
+<h3 id="062">0.6.2</h3>
+<ul>
+<li>🚑 Fix #87 boolean operator losing index</li>
+<li>🚑 Fix false alarm from <code>rename()</code>/<code>relocate()</code> for missing grouping variables (#89)</li>
+<li>✨ Add <code>base.diff()</code></li>
+<li>📝 [doc] Update/Fix doc for case_when (#87)</li>
+<li>📝 [doc] Fix links in reference map</li>
+<li>📝 [doc] Update docs for <code>dplyr.base</code></li>
+</ul>
+<h3 id="061">0.6.1</h3>
+<ul>
+<li>🐛 Fix <code>rep(df, n)</code> producing a nested df</li>
+<li>🐛 Fix <code>TibbleGrouped.__getitem__()</code> not keeping grouping structures</li>
+</ul>
+<h3 id="060">0.6.0</h3>
+<h4 id="general">General</h4>
+<ul>
+<li>Adopt <code>pipda</code> 0.5.7</li>
+<li>Reimplement the split-apply-combine rule to solve all performance issues</li>
+<li>Drop support for pandas v1.2, require pandas v1.3+</li>
+<li>Remove all <code>base0_</code> options and all indices are now 0-based, except <code>base.seq()</code>, ranks and their variants</li>
+<li>Remove messy type annotations for now, will add them back in the future</li>
+<li>Move implementation of data type display for frames in terminal and notebook to <code>pdtypes</code> package</li>
+<li>Change all arguments end with "_" to arguments start with it to avoid confusion</li>
+<li>Move module <code>datar.stats</code> to <code>datar.base.stats</code></li>
+<li>Default all <code>na_rm</code> arguments to <code>True</code></li>
+<li>Rename all <code>ptype</code> arguments for <code>tidyr</code> verbs into <code>dtypes</code></li>
+</ul>
+<h4 id="details">Details</h4>
+<ul>
+<li>Introduct new API to register function <code>datar.core.factory.func_factory()</code></li>
+<li>Aliase <code>register_verb</code> and <code>register_func</code> as <code>verb_factory</code> and <code>context_func_factory</code> in <code>datar.core.factory</code></li>
+<li>Expose <code>options</code>, <code>options_context</code>, <code>add_option</code> and <code>get_option</code> in <code>datar/__init__.py</code> and remove them from <code>datar.base</code></li>
+<li>Attach <code>pipda.options</code> to <code>datar.options</code></li>
+<li>Move <code>head</code> and <code>tail</code> from <code>datar.utils</code> to <code>datar.base</code></li>
+<li>Remove redundant <code>unique</code> implentation from <code>datar.base.seq</code></li>
+<li>Add <code>datar.core.factory.func_factory()</code> for developers to register function that works with different types of data (<code>NDFrame</code>, <code>GropuBy</code>, etc)</li>
+<li>Not ensure NAs after NA for <code>base.cumxxx()</code> families any more</li>
+<li>Remove <code>set_names</code> from <code>datar.stats</code>, use <code>names(df, &lt;new names&gt;)</code> from <code>datar.base</code> instead</li>
+<li>Optimize <code>intersect</code>, <code>union</code>, <code>setdiff</code>, <code>append</code> from <code>datar.base</code></li>
+<li>Keep grouping variables for <code>intersect</code>, <code>union</code>, <code>setdiff</code> and <code>union_all</code> when <code>y</code> is a grouped df, even when <code>x</code> is not</li>
+<li>Remove <code>drop_index</code> from <code>datar.datar</code>, use <code>datar.tibble.remove_rownames/remove_index/drop_index</code> instead</li>
+<li>Add <code>assert_tibble_equal()</code> in <code>datar.testing</code> to test whether 2 tibbles are equal</li>
+<li><code>rep()</code> now works with frames</li>
+<li><code>c_across()</code> now returns a rowwise df to work with functions that apply to df on <code>axis=1</code></li>
+<li><code>datar.dplyr.order_by()</code> now only works like it does in <code>r-dplyr</code> and only in side a verb</li>
+<li><code>datar.dplyr.group_by()</code> detauls <code>_sort</code> to <code>False</code> for speed</li>
+<li>Only raise error for duplicated column names when selected by column name instead of index</li>
+<li><code>base.scale()</code> returns a series rather than a frame when works with a series</li>
+<li>Other fixes and optimizations</li>
+</ul>
+<h3 id="056">0.5.6</h3>
+<ul>
+<li>🐛 Hotfix for types registered for base.proportions (#77)</li>
+<li>👽️ Fix for pandas 1.4</li>
+</ul>
+<h3 id="055">0.5.5</h3>
+<ul>
+<li>Fix #71: semi_join returns duplicated rows</li>
+</ul>
+<h3 id="054">0.5.4</h3>
+<ul>
+<li>Fix <code>filter()</code> restructures group_data incorrectly (#69)</li>
+</ul>
+<h3 id="053">0.5.3</h3>
+<ul>
+<li>⚡️ Optimize dplyr.arrange when data are series from the df itself</li>
+<li>🐛 Fix sub-df order of apply for grouped df (#63)</li>
+<li>📝 Update doc for argument by for join functions (#62)</li>
+<li>🐛 Fix mean() with option na_rm=False does not work (#65)</li>
+</ul>
+<h3 id="052">0.5.2</h3>
+<p>More of a maintenance release.</p>
+<ul>
+<li>🔧 Add metadata for datasets</li>
+<li>🔊 Send logs to stderr, instead of stdout</li>
+<li>📌Pin dependency versions</li>
+<li>🚨 Switch linter to flake8</li>
+<li>📝 Update some docs to fit <code>datar-cli</code></li>
+</ul>
+<h3 id="051">0.5.1</h3>
+<ul>
+<li>Add documentation about "blind" environment (#45, #54, #55)</li>
+<li>Change <code>base.as_date()</code> to return pandas datetime types instead python datetime types (#56)</li>
+<li>Add <code>base.as_pd_date()</code> to be an alias of <code>pandas.to_datetime()</code> (#56)</li>
+<li>Expose <code>trimws</code> to <code>datar.all</code> (#58)</li>
+</ul>
+<h3 id="050">0.5.0</h3>
+<p>Added:</p>
+<ul>
+<li>Added <code>forcats</code> (#51 )</li>
+<li>Added <code>base.is_ordered()</code>, <code>base.nlevels()</code>, <code>base.ordered()</code>, <code>base.rank()</code>, <code>base.order()</code>, <code>base.sort()</code>, <code>base.tabulate()</code>, <code>base.append()</code>, <code>base.prop_table()</code> and <code>base.proportions()</code></li>
+<li>Added <code>gss_cat</code> dataset</li>
+</ul>
+<p>Fixed:</p>
+<ul>
+<li>Fixed an issue when <code>Collection</code> dealing with <code>numpy.int_</code></li>
+</ul>
+<p>Enhanced:</p>
+<ul>
+<li>Added <code>base0_</code> argument for <code>datar.get()</code></li>
+<li>Passed <code>__calling_env</code> to registered functions/verbs when used internally (this makes sure the library to be robust in different environments)</li>
+</ul>
+<h3 id="044">0.4.4</h3>
+<ul>
+<li>Adopt <code>varname</code> <code>v0.8.0</code></li>
+<li>Add <code>base.make_names()</code> and <code>base.make_unique()</code></li>
+</ul>
+<h3 id="043">0.4.3</h3>
+<ul>
+<li>Adopt <code>pipda</code> <code>0.4.5</code></li>
+<li>Make dataset names case-insensitive;</li>
+<li>Add datasets: <code>ToothGrowth</code>, <code>economics</code>, <code>economics_long</code>, <code>faithful</code>, <code>faithfuld</code>, <code>luv_colours</code>, <code>midwest</code>, <code>mpg</code>, <code>msleep</code>, <code>presidential</code>, <code>seals</code>, and <code>txhousing</code></li>
+<li>Add <code>base.complete_cases()</code></li>
+<li>Change <code>datasets.all_datasets()</code> to <code>datasets.list_datasets()</code></li>
+<li>Make sure <code>assume_all_piping</code> mode works internally: #45</li>
+</ul>
+<h3 id="042">0.4.2</h3>
+<ul>
+<li>Adopt <code>pipda</code> 0.4.4</li>
+<li>Add <code>varname</code> to dependency to close #30</li>
+<li>Rename <code>datar.datar_versions</code> to <code>datar.get_versions</code></li>
+<li>Port a set of functions from r-base, incluing:<ul>
+<li><code>prod</code>, <code>sign</code>, <code>signif</code>, <code>trunc</code>, <code>exp</code>, <code>log</code>, <code>log2</code>, <code>log10</code>, <code>log1p</code>,</li>
+<li><code>is_finite</code>, <code>is_infinite</code>, <code>is_nan</code>,</li>
+<li><code>match</code>,</li>
+<li><code>startswith</code>, <code>endswith</code>, <code>strtoi</code>, <code>chartr</code>, <code>tolower</code>, <code>toupper</code>,</li>
+<li><code>max_col</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="041">0.4.1</h3>
+<ul>
+<li>Don't use piping syntax internally (<code>&gt;&gt;=</code>)</li>
+<li>Add <code>python</code>, <code>numpy</code> and <code>datar</code> version to <code>datar.datar_versions()</code></li>
+<li>Fix #40: anti_join/semi_join not working when by is column mapping</li>
+</ul>
+<h3 id="040">0.4.0</h3>
+<ul>
+<li>Adopt <code>pipda</code> v0.4.2</li>
+</ul>
+<p>Performance improved:
+- Refactor core.grouped to adopt pandas's groupby
+- Try to use <code>DataFrame.agg()</code>/<code>DataFrameGroupBy.agg()</code> when function applied on a single columns (Related issues: #27, #33, #37)</p>
+<p>Fixed:
+- Fix when <code>data</code> or <code>context</code> as new column name for <code>mutate()</code>
+- Fix SettingwithCopyWarning in pivot_longer
+- Use regular calling internally to make sure it works in some cases that node cannot be detected (ie <code>Gooey</code>/<code>%%timeit</code> in jupyter)</p>
+<p>Added:
+- <code>datar.datar_versions()</code> to show versions of related packages for bug reporting.</p>
+<h3 id="032">0.3.2</h3>
+<ul>
+<li>Adopt <code>pipda</code> v0.4.1 to fix <code>getattr()</code> failure for operater-connected expressions (#38)</li>
+<li>Add <code>str_dtype</code> argument to <code>as_character()</code> to partially fix #36</li>
+<li>Update license in <code>core._frame_format_patch</code> (#28)</li>
+</ul>
+<h3 id="031">0.3.1</h3>
+<ul>
+<li>Adopt <code>pipda</code> v0.4.0</li>
+<li>Change argument <code>_dtypes</code> to <code>dtypes_</code> for tibble-families</li>
+</ul>
+<h3 id="030">0.3.0</h3>
+<ul>
+<li>Adopt <code>pipda</code> v0.3.0</li>
+</ul>
+<p>Breaking changes:</p>
+<ul>
+<li>Rename argument <code>dtypes</code> of <code>unchop</code> and <code>unnest</code> back to <code>ptype</code></li>
+<li>Change all <code>_base0</code> to <code>base0_</code></li>
+<li>Change argument <code>how</code> of <code>tidyr.drop_na</code> to <code>how_</code></li>
+</ul>
+<h3 id="023">0.2.3</h3>
+<ul>
+<li>Fix compatibility with <code>pandas</code> <code>v1.2.0~4</code> (#20, thanks to @antonio-yu)</li>
+<li>Fix base.table when inputs are factors and exclude is NA;</li>
+<li>Add base.scale/col_sums/row_sums/col_means/row_means/col_sds/row_sds/col_medians/row_medians</li>
+</ul>
+<h3 id="022">0.2.2</h3>
+<ul>
+<li>Use a better strategy warning for builtin name overriding.</li>
+<li>Fix index of subdf not dropped for mutate on grouped data</li>
+<li>Fix <code>names_glue</code> not working with single <code>values_from</code> for <code>tidyr.pivot_wider</code></li>
+<li>Fix <code>base.paste</code> not registered</li>
+<li>Fix <code>base.grep</code>/<code>grepl</code> on NA values</li>
+<li>Make <code>base.sub</code>/<code>gsub</code> return scalar when inputs are scalar strings</li>
+</ul>
+<h3 id="021">0.2.1</h3>
+<ul>
+<li>Use observed values for non-observsed value match for group_data instead of NAs, which might change the dtype.</li>
+<li>Fix tibble recycling values too early</li>
+</ul>
+<h3 id="020">0.2.0</h3>
+<p>Added:
+- Add <code>base.which</code>, <code>base.bessel</code>, <code>base.special</code>, <code>base.trig_hb</code> and <code>base.string</code> modules
+- Add Support for duplicated keyword arguments for dplyr.mutate/summarise by using <code>_</code> as suffix
+- Warn when import python builtin names directly; ; Remove modkit dependency</p>
+<p>Fixed:
+- Fixed errors when use<code>a_1</code> as names for <code>"check_unique"</code> name repairs
+- Fixed #14: <code>f.a.mean()</code> not applied to grouped data</p>
+<p>Changed:
+- Don't allow <code>from datar.datasets import *</code>
+- Remove <code>modkit</code> dependency
+- Reset <code>NaN</code> to <code>NA</code>
+- Rename <code>base.getOption</code> to <code>base.get_option</code>
+- Rename <code>stats.setNames</code> to <code>stats.set_names</code></p>
+<h3 id="011">0.1.1</h3>
+<ul>
+<li>Adopt <code>pipda</code> 0.2.8</li>
+<li>Allow <code>f.col1[f.col2==max(f.col2)]</code> like expression</li>
+<li>Add <code>base.which/cov/var</code></li>
+<li>Fix <code>base.max</code></li>
+<li>Add <code>datasets.ChickWeight</code></li>
+<li>Allow <code>dplyr.across</code> to have plain functions passed with default <code>EVAL</code> context.</li>
+</ul>
+<h3 id="010">0.1.0</h3>
+<p>Added:
+- <code>pandas.NA</code> as <code>NaN</code>
+- Dtypes display when printing a dataframe (string, html, notebook)
+- <code>zibble</code> to construct dataframes with names specified together, and values together.</p>
+<p>Fixed:
+- <code>base.diag()</code> on dataframes
+- Data recycling when length is different from original data
+- <code>datar.itemgetter()</code> not public</p>
+<p>Changed:
+- Behavior of <code>group_by()</code> with <code>_drop=False</code>. Invisible values will not mix with visible values of other columns</p>
+<h3 id="007">0.0.7</h3>
+<ul>
+<li>Add dplyr rows verbs</li>
+<li>Allow mixed numbering (with <code>c()</code> and <code>f[...]</code>) for tibble construction</li>
+<li>Allow slice (<code>f[a:b]</code>) to be expanded into sequence for <code>EVAL</code> context</li>
+<li>Finish tidyr porting.</li>
+</ul>
+<h3 id="006">0.0.6</h3>
+<ul>
+<li>Add <code>options</code>, <code>get_option</code> and <code>options_context</code> to <code>datar.base</code> to allow set/get global options</li>
+<li>Add options: <code>dplyr.summarise.inform</code></li>
+<li>Add <code>base0_</code> argument to all related APIs</li>
+<li>Add <code>nycflights13</code> datasets</li>
+<li>Support slice_head/slice_tail for grouped data</li>
+</ul>
+<h3 id="005">0.0.5</h3>
+<ul>
+<li>Add option index.base.0;</li>
+<li>Refactor Collection families</li>
+</ul>
+<h3 id="004">0.0.4</h3>
+<ul>
+<li>Finish port of tibble.</li>
+</ul>
+<h3 id="003">0.0.3</h3>
+<ul>
+<li>Add stats.weighted_mean</li>
+<li>Allow function to prefer recycling input or output for summarise</li>
+</ul>
+<h3 id="002">0.0.2</h3>
+<ul>
+<li>Port verbs and functions from tidyverse/dplyr and test them with original cases</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>
