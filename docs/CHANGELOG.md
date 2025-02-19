@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.7
+
+- chore(deps): drop support for python3.8
+- ci: update Python version matrix to drop 3.8 and add 3.11, 3.12
+- chore(docs): add mkdocs and related dependencies for documentation generation
+
 ## 0.15.6
 
 - deps: bump simplug to 0.4, datar-numpy to 0.3.4 and datar-pandas to 0.5.5
