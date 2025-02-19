@@ -9,8 +9,8 @@ homepage = "https://github.com/pwwang/datar"
 repository = "https://github.com/pwwang/datar"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-simplug = "^0.4"
+python = "^3.9"
+simplug = "^0.5"
 pipda = "^0.13.1"
 python-simpleconf = {version = "^0.6", extras = ["toml"]}
 datar-numpy = {version = "^0.3.4", optional = true}
@@ -30,7 +30,7 @@ arrow = ["datar-arrow"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1"
-pytest-cov = "^4"
+pytest-cov = "^6"
 six = "^1.16"
 numpy = "^1.17"
 python-slugify = "^8"
