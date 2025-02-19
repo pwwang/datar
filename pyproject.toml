@@ -35,6 +35,17 @@ six = "^1.16"
 numpy = "^1.17"
 python-slugify = "^8"
 
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6"
+mkdocs-material = "^9.6"
+pymdown-extensions = "^10.14"
+mkapi-fix = "^0.1"
+mkdocs-jupyter = "^0.25"
+ipykernel = "^6.29"
+ipython-genutils = "^0.2"
+plotnine = "^0.13"
+klib = "^1.3"
+pardoc = "^0.2"
 
 [build-system]
 requires = ["poetry-core"]
