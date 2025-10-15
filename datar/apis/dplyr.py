@@ -2485,10 +2485,10 @@ def pipe(_data: T, func: _Callable, *args, **kwargs) -> Any:
     """Apply a function to the data
 
     This function is similar to pandas.DataFrame.pipe() and allows you to
-    apply custom functions in a piping workflow.
+    apply custom functions in a piping workflow. Works with any data type.
 
     Args:
-        _data: The data object (typically a DataFrame)
+        _data: The data object (can be any type)
         func: Function to apply to the data. ``args`` and ``kwargs`` are
             passed into ``func``.
         *args: Positional arguments passed into ``func``
@@ -2498,30 +2498,23 @@ def pipe(_data: T, func: _Callable, *args, **kwargs) -> Any:
         The return value of ``func``
 
     Examples:
-        >>> import pandas as pd
         >>> import datar.all as dr
-        >>> from datar import f
-        >>> df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-        >>> df >> dr.pipe(lambda x: x * 2)
-           a   b
-        0  2   8
-        1  4  10
-        2  6  12
+        >>> # Works with lists
+        >>> [1, 2, 3] >> dr.pipe(lambda x: [i * 2 for i in x])
+        [2, 4, 6]
+
+        >>> # Works with dicts
+        >>> {'a': 1, 'b': 2} >> dr.pipe(lambda x: {k: v * 2 for k, v in x.items()})
+        {'a': 2, 'b': 4}
 
         >>> # With additional arguments
-        >>> def add_value(df, value):
-        ...     return df + value
-        >>> df >> dr.pipe(add_value, 10)
-            a   b
-        0  11  14
-        1  12  15
-        2  13  16
+        >>> def add_value(data, value):
+        ...     return [x + value for x in data]
+        >>> [1, 2, 3] >> dr.pipe(add_value, 10)
+        [11, 12, 13]
 
-        >>> # Combined with other datar functions
-        >>> df >> dr.select(f.a) >> dr.pipe(lambda x: x * 2)
-                a
-        0       2
-        1       4
-        2       6
+        >>> # Chain multiple operations
+        >>> [1, 2, 3] >> dr.pipe(lambda x: [i * 2 for i in x]) >> dr.pipe(sum)
+        12
     """
     return func(_data, *args, **kwargs)

@@ -1,103 +1,108 @@
 import pytest
-import pandas as pd
 from datar.all import pipe
 
 
-def test_pipe_basic_lambda():
-    """Test pipe with a basic lambda function"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    result = df >> pipe(lambda x: x * 2)
-    expected = pd.DataFrame({'a': [2, 4, 6], 'b': [8, 10, 12]})
-    pd.testing.assert_frame_equal(result, expected)
+def test_pipe_with_list():
+    """Test pipe with a list"""
+    data = [1, 2, 3, 4, 5]
+    result = data >> pipe(lambda x: [i * 2 for i in x])
+    expected = [2, 4, 6, 8, 10]
+    assert result == expected
+
+
+def test_pipe_with_dict():
+    """Test pipe with a dictionary"""
+    data = {'a': 1, 'b': 2, 'c': 3}
+    result = data >> pipe(lambda x: {k: v * 2 for k, v in x.items()})
+    expected = {'a': 2, 'b': 4, 'c': 6}
+    assert result == expected
 
 
 def test_pipe_with_args():
     """Test pipe with additional positional arguments"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+    data = [1, 2, 3]
     
-    def add_value(df, value):
-        return df + value
+    def add_value(data, value):
+        return [x + value for x in data]
     
-    result = df >> pipe(add_value, 10)
-    expected = pd.DataFrame({'a': [11, 12, 13], 'b': [14, 15, 16]})
-    pd.testing.assert_frame_equal(result, expected)
+    result = data >> pipe(add_value, 10)
+    expected = [11, 12, 13]
+    assert result == expected
 
 
 def test_pipe_with_kwargs():
     """Test pipe with keyword arguments"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+    data = [1, 2, 3]
     
-    def multiply_col(df, col, factor=1):
-        df = df.copy()
-        df[col] = df[col] * factor
-        return df
+    def multiply_data(data, factor=1):
+        return [x * factor for x in data]
     
-    result = df >> pipe(multiply_col, 'a', factor=10)
-    expected = pd.DataFrame({'a': [10, 20, 30], 'b': [4, 5, 6]})
-    pd.testing.assert_frame_equal(result, expected)
+    result = data >> pipe(multiply_data, factor=10)
+    expected = [10, 20, 30]
+    assert result == expected
 
 
-def test_pipe_with_column_selection():
-    """Test pipe with column operations"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    
-    # Select a column and then multiply it
-    result = df >> pipe(lambda df: df[['a']]) >> pipe(lambda x: x * 2)
-    expected = pd.DataFrame({'a': [2, 4, 6]})
-    pd.testing.assert_frame_equal(result, expected)
+def test_pipe_with_string():
+    """Test pipe with string operations"""
+    data = "hello"
+    result = data >> pipe(lambda x: x.upper())
+    assert result == "HELLO"
 
 
-def test_pipe_with_column_rename():
-    """Test pipe with column renaming (similar to issue example)"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    
-    # Select a column and rename it
-    result = df >> pipe(lambda df: df[['a']]) >> pipe(lambda df: df.rename(columns=str.upper))
-    expected = pd.DataFrame({'A': [1, 2, 3]})
-    pd.testing.assert_frame_equal(result, expected)
+def test_pipe_with_tuple():
+    """Test pipe with tuple"""
+    data = (1, 2, 3)
+    result = data >> pipe(lambda x: tuple(i * 2 for i in x))
+    expected = (2, 4, 6)
+    assert result == expected
 
 
-def test_pipe_with_custom_function():
-    """Test pipe with a custom function that modifies the dataframe"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    
-    def custom_transform(df, new_col_name, value):
-        df = df.copy()
-        df[new_col_name] = df['a'] + value
-        return df
-    
-    result = df >> pipe(custom_transform, 'c', 100)
-    expected = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [101, 102, 103]})
-    pd.testing.assert_frame_equal(result, expected)
-
-
-def test_pipe_returns_non_dataframe():
-    """Test that pipe can return non-DataFrame objects"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    
-    result = df >> pipe(lambda x: x['a'].sum())
-    assert result == 6
+def test_pipe_returns_different_type():
+    """Test that pipe can return different types"""
+    data = [1, 2, 3, 4, 5]
+    result = data >> pipe(sum)
+    assert result == 15
 
 
 def test_pipe_chain_multiple():
     """Test chaining multiple pipe operations"""
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+    data = [1, 2, 3]
     
     result = (
-        df 
-        >> pipe(lambda x: x * 2)
-        >> pipe(lambda x: x + 1)
+        data 
+        >> pipe(lambda x: [i * 2 for i in x])
+        >> pipe(lambda x: [i + 1 for i in x])
     )
-    expected = pd.DataFrame({'a': [3, 5, 7], 'b': [9, 11, 13]})
-    pd.testing.assert_frame_equal(result, expected)
+    expected = [3, 5, 7]
+    assert result == expected
 
 
-def test_pipe_with_set_axis_like_issue():
-    """Test pipe similar to the issue example with set_axis"""
-    df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+def test_pipe_with_custom_class():
+    """Test pipe with a custom class"""
+    class Counter:
+        def __init__(self, value):
+            self.value = value
+        
+        def increment(self, amount):
+            return Counter(self.value + amount)
+        
+        def __eq__(self, other):
+            return self.value == other.value
     
-    # Simulate the issue example: convert column names to lowercase
-    result = df >> pipe(lambda df: df.set_axis(df.columns.str.lower(), axis=1))
-    expected = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    pd.testing.assert_frame_equal(result, expected)
+    counter = Counter(5)
+    result = counter >> pipe(lambda x: x.increment(10))
+    expected = Counter(15)
+    assert result == expected
+
+
+def test_pipe_with_multiple_args_and_kwargs():
+    """Test pipe with both args and kwargs"""
+    data = [1, 2, 3]
+    
+    def transform(data, multiplier, offset=0):
+        return [x * multiplier + offset for x in data]
+    
+    result = data >> pipe(transform, 2, offset=5)
+    expected = [7, 9, 11]
+    assert result == expected
 
