@@ -1,14 +1,14 @@
-from typing import Any, Callable
+from typing import Any as _Any, Callable as _Callable
 
-from pipda import register_verb
+from pipda import register_verb as _register_verb
 
 from .core.load_plugins import plugin as _plugin
 
 locals().update(_plugin.hooks.misc_api())
 
 
-@register_verb(object)
-def pipe(data: Any, func: Callable, *args, **kwargs) -> Any:
+@_register_verb(object)
+def pipe(data: _Any, func: _Callable, *args, **kwargs) -> _Any:
     """Apply a function to the data
 
     This function is similar to pandas.DataFrame.pipe() and allows you to
