@@ -2478,3 +2478,50 @@ def any_of(_data, x, vars=None) -> Any:
             in `_data` columns
     """
     raise _NotImplementedByCurrentBackendError("any_of", _data)
+
+
+@_register_verb(object)
+def pipe(_data: T, func: _Callable, *args, **kwargs) -> Any:
+    """Apply a function to the data
+
+    This function is similar to pandas.DataFrame.pipe() and allows you to
+    apply custom functions in a piping workflow.
+
+    Args:
+        _data: The data object (typically a DataFrame)
+        func: Function to apply to the data. ``args`` and ``kwargs`` are
+            passed into ``func``.
+        *args: Positional arguments passed into ``func``
+        **kwargs: Keyword arguments passed into ``func``
+
+    Returns:
+        The return value of ``func``
+
+    Examples:
+        >>> import pandas as pd
+        >>> import datar.all as dr
+        >>> from datar import f
+        >>> df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        >>> df >> dr.pipe(lambda x: x * 2)
+           a   b
+        0  2   8
+        1  4  10
+        2  6  12
+
+        >>> # With additional arguments
+        >>> def add_value(df, value):
+        ...     return df + value
+        >>> df >> dr.pipe(add_value, 10)
+            a   b
+        0  11  14
+        1  12  15
+        2  13  16
+
+        >>> # Combined with other datar functions
+        >>> df >> dr.select(f.a) >> dr.pipe(lambda x: x * 2)
+                a
+        0       2
+        1       4
+        2       6
+    """
+    return func(_data, *args, **kwargs)
