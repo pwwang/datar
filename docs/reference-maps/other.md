@@ -26,6 +26,7 @@
 |---|---|---:|
 |[**`get()`**][2]|Extract values from data frames|[:material-notebook:][1]|
 |[**`flatten()`**][2]|Flatten values of data frames|[:material-notebook:][1]|
+|[**`pipe()`**][9]|Apply a function to data in a piping workflow|[:material-notebook:][1]|
 
 ### Functions
 
@@ -44,3 +45,4 @@
 [6]: ../../api/datar.apis.datar/#datar.apis.datar.pd_str
 [7]: ../../api/datar.apis.datar/#datar.apis.datar.pd_cat
 [8]: ../../api/datar.apis.datar/#datar.apis.datar.pd_dt
+[9]: ../../api/datar.misc/#datar.misc.pipe
