@@ -31,7 +31,8 @@ def pipe(data: Any, func: Callable, *args, **kwargs) -> Any:
         [2, 4, 6]
 
         >>> # Works with dicts
-        >>> {'a': 1, 'b': 2} >> dr.pipe(lambda x: {k: v * 2 for k, v in x.items()})
+        >>> data = {'a': 1, 'b': 2}
+        >>> data >> dr.pipe(lambda x: {k: v * 2 for k, v in x.items()})
         {'a': 2, 'b': 4}
 
         >>> # With additional arguments
