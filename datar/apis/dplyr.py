@@ -7,8 +7,11 @@ from typing import (
     TypeVar as _TypeVar,
 )
 
-from pipda import register_func as _register_func
-from ..core.verb_env import register_verb as _register_verb
+from pipda import (
+    register_verb as _register_verb,
+    register_func as _register_func,
+)
+from ..core.verb_env import get_verb_ast_fallback as _get_verb_ast_fallback
 
 from ..core.defaults import f as _f_symbolic
 from ..core.utils import (
@@ -19,7 +22,7 @@ from .base import intersect, setdiff, setequal, union  # noqa: F401
 T = _TypeVar("T")
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("pick"))
 def pick(_data: T, *args) -> T:
     """Pick columns by name
 
@@ -36,7 +39,7 @@ def pick(_data: T, *args) -> T:
     raise _NotImplementedByCurrentBackendError("pick", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("across"))
 def across(_data: T, *args, _names=None, **kwargs) -> T:
     """Apply the same transformation to multiple columns
 
@@ -85,7 +88,7 @@ def across(_data: T, *args, _names=None, **kwargs) -> T:
     raise _NotImplementedByCurrentBackendError("across", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("c_across"))
 def c_across(_data: T, _cols=None) -> T:
     """Apply the same transformation to multiple columns rowwisely
 
@@ -99,7 +102,7 @@ def c_across(_data: T, _cols=None) -> T:
     raise _NotImplementedByCurrentBackendError("c_across", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("if_any"))
 def if_any(_data, *args, _names=None, **kwargs) -> Any:
     """Apply the same predicate function to a selection of columns and combine
     the results True if any element is True.
@@ -110,7 +113,7 @@ def if_any(_data, *args, _names=None, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("if_any", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("if_all"))
 def if_all(_data, *args, _names=None, **kwargs) -> Any:
     """Apply the same predicate function to a selection of columns and combine
     the results True if all elements are True.
@@ -121,7 +124,7 @@ def if_all(_data, *args, _names=None, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("if_all", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("symdiff"))
 def symdiff(x: T, y: T) -> T:
     """Get the symmetric difference of two dataframes
 
@@ -141,7 +144,7 @@ def symdiff(x: T, y: T) -> T:
     raise _NotImplementedByCurrentBackendError("symdiff", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("arrange"))
 def arrange(_data, *args, _by_group=False, **kwargs) -> Any:
     """orders the rows of a data frame by the values of selected columns.
 
@@ -228,7 +231,7 @@ def cur_column(_data, _name) -> Any:
     raise _NotImplementedByCurrentBackendError("cur_column")
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("cur_data"))
 def cur_data(_data) -> Any:
     """Get the current dataframe
 
@@ -241,7 +244,7 @@ def cur_data(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("cur_data", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("n"))
 def n(_data) -> Any:
     """Get the current group size
 
@@ -254,7 +257,9 @@ def n(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("n", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(
+    dependent=True, ast_fallback=_get_verb_ast_fallback("cur_data_all")
+)
 def cur_data_all(_data) -> Any:
     """Get the current data for the current group including
     the grouping variables
@@ -268,7 +273,7 @@ def cur_data_all(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("cur_data_all", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("cur_group"))
 def cur_group(_data) -> Any:
     """Get the current group
 
@@ -281,7 +286,9 @@ def cur_group(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("cur_group", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(
+    dependent=True, ast_fallback=_get_verb_ast_fallback("cur_group_id")
+)
 def cur_group_id(_data) -> Any:
     """Get the current group id
 
@@ -294,7 +301,9 @@ def cur_group_id(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("cur_group_id", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(
+    dependent=True, ast_fallback=_get_verb_ast_fallback("cur_group_rows")
+)
 def cur_group_rows(_data) -> Any:
     """Get the current group row indices
 
@@ -308,7 +317,7 @@ def cur_group_rows(_data) -> Any:
 
 
 # count_tally
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("count"))
 def count(
     _data,
     *args,
@@ -345,7 +354,7 @@ def count(
     raise _NotImplementedByCurrentBackendError("count", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("tally"))
 def tally(_data, wt=None, sort=False, name=None) -> Any:
     """Count the number of rows in each group
 
@@ -369,7 +378,7 @@ def tally(_data, wt=None, sort=False, name=None) -> Any:
     raise _NotImplementedByCurrentBackendError("tally", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("add_count"))
 def add_count(_data, *args, wt=None, sort=False, name="n", **kwargs) -> Any:
     """Add a count column to a data frame
 
@@ -396,7 +405,7 @@ def add_count(_data, *args, wt=None, sort=False, name="n", **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("add_count", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("add_tally"))
 def add_tally(_data, wt=None, sort=False, name="n") -> Any:
     """Add a count column to a data frame
 
@@ -440,7 +449,7 @@ def desc(x) -> Any:
 
 
 # filter
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("filter_"))
 def filter_(_data, *conditions, _preserve: bool = False) -> Any:
     """Filter a data frame based on conditions
 
@@ -459,7 +468,7 @@ def filter_(_data, *conditions, _preserve: bool = False) -> Any:
 
 
 # distinct
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("distinct"))
 def distinct(
     _data,
     *args,
@@ -483,7 +492,7 @@ def distinct(
     raise _NotImplementedByCurrentBackendError("distinct", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("n_distinct"))
 def n_distinct(_data, na_rm: bool = True) -> Any:
     """Count the number of distinct values
 
@@ -501,7 +510,7 @@ def n_distinct(_data, na_rm: bool = True) -> Any:
 
 
 # glimpse
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("glimpse"))
 def glimpse(_data, width: int = None, formatter=None) -> Any:
     """Display a summary of a data frame
 
@@ -517,7 +526,7 @@ def glimpse(_data, width: int = None, formatter=None) -> Any:
 
 
 # slice
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("slice_"))
 def slice_(_data, *args, _preserve: bool = False) -> Any:
     """Extract rows by their position
 
@@ -535,7 +544,7 @@ def slice_(_data, *args, _preserve: bool = False) -> Any:
     raise _NotImplementedByCurrentBackendError("slice", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("slice_head"))
 def slice_head(_data, n: int = None, prop: float = None) -> Any:
     """Extract the first rows
 
@@ -553,7 +562,7 @@ def slice_head(_data, n: int = None, prop: float = None) -> Any:
     raise _NotImplementedByCurrentBackendError("slice_head", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("slice_tail"))
 def slice_tail(_data, n: int = None, prop: float = None) -> Any:
     """Extract the last rows
 
@@ -571,7 +580,7 @@ def slice_tail(_data, n: int = None, prop: float = None) -> Any:
     raise _NotImplementedByCurrentBackendError("slice_tail", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("slice_sample"))
 def slice_sample(
     _data,
     n: int = 1,
@@ -597,7 +606,7 @@ def slice_sample(
     raise _NotImplementedByCurrentBackendError("slice_sample", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("slice_min"))
 def slice_min(
     _data,
     order_by,
@@ -625,7 +634,7 @@ def slice_min(
     raise _NotImplementedByCurrentBackendError("slice_min", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("slice_max"))
 def slice_max(
     _data,
     order_by,
@@ -849,7 +858,7 @@ def last(x, order_by=None, default=None) -> Any:
 
 
 # group_by
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_by"))
 def group_by(_data, *args, _add: bool = False, _drop: bool = None) -> Any:
     """Create a grouped frame
 
@@ -868,7 +877,7 @@ def group_by(_data, *args, _add: bool = False, _drop: bool = None) -> Any:
     raise _NotImplementedByCurrentBackendError("group_by", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("ungroup"))
 def ungroup(_data, *cols: str | int) -> Any:
     """Remove grouping variables
 
@@ -885,7 +894,7 @@ def ungroup(_data, *cols: str | int) -> Any:
     raise _NotImplementedByCurrentBackendError("ungroup", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rowwise"))
 def rowwise(_data, *cols: str | int) -> Any:
     """Create a rowwise frame
 
@@ -902,7 +911,7 @@ def rowwise(_data, *cols: str | int) -> Any:
     raise _NotImplementedByCurrentBackendError("rowwise", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_by_drop_default"))
 def group_by_drop_default(_data) -> Any:
     """Get the default value of `_drop` of a frame
 
@@ -918,7 +927,7 @@ def group_by_drop_default(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_by_drop_default", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_vars"))
 def group_vars(_data) -> Any:
     """Get the grouping variables of a frame
 
@@ -934,7 +943,7 @@ def group_vars(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_vars", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_indices"))
 def group_indices(_data) -> Any:
     """Get the group indices of a frame
 
@@ -950,7 +959,7 @@ def group_indices(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_indices", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_keys"))
 def group_keys(_data) -> Any:
     """Get the group keys of a frame
 
@@ -966,7 +975,7 @@ def group_keys(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_keys", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_size"))
 def group_size(_data) -> Any:
     """Get the group sizes of a frame
 
@@ -982,7 +991,7 @@ def group_size(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_size", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_rows"))
 def group_rows(_data) -> Any:
     """Get the group rows of a frame
 
@@ -998,7 +1007,7 @@ def group_rows(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_rows", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_cols"))
 def group_cols(_data) -> Any:
     """Get the group columns of a frame
 
@@ -1014,7 +1023,7 @@ def group_cols(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_cols", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_data"))
 def group_data(_data) -> Any:
     """Get the group data of a frame
 
@@ -1030,7 +1039,7 @@ def group_data(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("group_data", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("n_groups"))
 def n_groups(_data) -> int:
     """Get the number of groups of a frame
 
@@ -1046,7 +1055,7 @@ def n_groups(_data) -> int:
     raise _NotImplementedByCurrentBackendError("n_groups", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_map"))
 def group_map(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     """Apply a function to each group
 
@@ -1066,7 +1075,7 @@ def group_map(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("group_map", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_modify"))
 def group_modify(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     """Apply a function to each group
 
@@ -1086,7 +1095,7 @@ def group_modify(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("group_modify", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_split"))
 def group_split(_data, *args, _keep: bool = False, **kwargs) -> Any:
     """Split a grouped frame into a list of data frames
 
@@ -1105,7 +1114,7 @@ def group_split(_data, *args, _keep: bool = False, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("group_split", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_trim"))
 def group_trim(_data, _drop=None) -> Any:
     """Remove empty groups
 
@@ -1122,7 +1131,7 @@ def group_trim(_data, _drop=None) -> Any:
     raise _NotImplementedByCurrentBackendError("group_trim", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("group_walk"))
 def group_walk(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     """Apply a function to each group
 
@@ -1141,7 +1150,7 @@ def group_walk(_data, _f, *args, _keep: bool = False, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("group_walk", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("with_groups"))
 def with_groups(_data, _groups, _func, *args, **kwargs) -> Any:
     """Modify the grouping variables for a single operation.
 
@@ -1212,7 +1221,7 @@ def case_when(cond, value, *more_cases) -> Any:
 
 
 # join
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("inner_join"))
 def inner_join(
     x,
     y,
@@ -1263,7 +1272,7 @@ def inner_join(
     raise _NotImplementedByCurrentBackendError("inner_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("left_join"))
 def left_join(
     x,
     y,
@@ -1314,7 +1323,7 @@ def left_join(
     raise _NotImplementedByCurrentBackendError("left_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("right_join"))
 def right_join(
     x,
     y,
@@ -1365,7 +1374,7 @@ def right_join(
     raise _NotImplementedByCurrentBackendError("right_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("full_join"))
 def full_join(
     x,
     y,
@@ -1416,7 +1425,7 @@ def full_join(
     raise _NotImplementedByCurrentBackendError("full_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("semi_join"))
 def semi_join(
     x,
     y,
@@ -1445,7 +1454,7 @@ def semi_join(
     raise _NotImplementedByCurrentBackendError("semi_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("anti_join"))
 def anti_join(
     x,
     y,
@@ -1474,7 +1483,7 @@ def anti_join(
     raise _NotImplementedByCurrentBackendError("anti_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("nest_join"))
 def nest_join(
     x,
     y,
@@ -1512,7 +1521,7 @@ def nest_join(
     raise _NotImplementedByCurrentBackendError("nest_join", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("cross_join"))
 def cross_join(
     x: T,
     y: T,
@@ -1577,7 +1586,7 @@ def lag(x, n=1, default=None, order_by=None) -> Any:
 
 
 # mutate
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("mutate"))
 def mutate(
     _data, *args, _keep: str = "all", _before=None, _after=None, **kwargs
 ) -> Any:
@@ -1624,7 +1633,7 @@ def mutate(
     raise _NotImplementedByCurrentBackendError("mutate", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("transmute"))
 def transmute(_data, *args, _before=None, _after=None, **kwargs) -> Any:
     """Add new columns to a data frame and remove existing columns
     using mutate with `_keep="none"`.
@@ -1708,7 +1717,7 @@ def with_order(order, func, x, *args, **kwargs) -> Any:
 
 
 # pull
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("pull"))
 def pull(_data, var: str | int = -1, name=None, to=None) -> Any:
     """Pull a series or a dataframe from a dataframe
 
@@ -1942,7 +1951,7 @@ def recode_factor(
     raise _NotImplementedByCurrentBackendError("recode_factor")
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("relocate"))
 def relocate(
     _data,
     *args,
@@ -1975,7 +1984,7 @@ def relocate(
     raise _NotImplementedByCurrentBackendError("relocate", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rename"))
 def rename(_data, **kwargs) -> Any:
     """Rename columns
 
@@ -1992,7 +2001,7 @@ def rename(_data, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("rename", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rename_with"))
 def rename_with(_data, _fn, *args, **kwargs) -> Any:
     """Rename columns with a function
 
@@ -2015,7 +2024,7 @@ def rename_with(_data, _fn, *args, **kwargs) -> Any:
 
 
 # rows
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rows_insert"))
 def rows_insert(
     x,
     y,
@@ -2049,7 +2058,7 @@ def rows_insert(
     raise _NotImplementedByCurrentBackendError("rows_insert", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rows_update"))
 def rows_update(
     x,
     y,
@@ -2087,7 +2096,7 @@ def rows_update(
     raise _NotImplementedByCurrentBackendError("rows_update", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rows_patch"))
 def rows_patch(
     x,
     y,
@@ -2125,7 +2134,7 @@ def rows_patch(
     raise _NotImplementedByCurrentBackendError("rows_patch", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rows_upsert"))
 def rows_upsert(x, y, by=None, **kwargs) -> Any:
     """Upsert rows in x with values from y
 
@@ -2151,7 +2160,7 @@ def rows_upsert(x, y, by=None, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("rows_upsert", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rows_delete"))
 def rows_delete(
     x,
     y,
@@ -2189,7 +2198,7 @@ def rows_delete(
     raise _NotImplementedByCurrentBackendError("rows_delete", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rows_append"))
 def rows_append(x, y, **kwargs) -> Any:
     """Append rows in y to x
 
@@ -2208,7 +2217,7 @@ def rows_append(x, y, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("rows_append", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("select"))
 def select(_data, *args, **kwargs) -> Any:
     """Select columns from a data frame.
 
@@ -2243,7 +2252,7 @@ def union_all(x, y) -> Any:
     raise _NotImplementedByCurrentBackendError("union_all", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("summarise"))
 def summarise(_data, *args, _groups: str = None, **kwargs) -> Any:
     """Summarise a data frame.
 
@@ -2270,7 +2279,7 @@ def summarise(_data, *args, _groups: str = None, **kwargs) -> Any:
 summarize = summarise
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("reframe"))
 def reframe(_data, *args, **kwargs) -> Any:
     """Reframe a data frame.
 
@@ -2289,7 +2298,7 @@ def reframe(_data, *args, **kwargs) -> Any:
     raise _NotImplementedByCurrentBackendError("reframe", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("where"))
 def where(_data, fn: _Callable) -> Any:
     """Selects the variables for which a function returns True.
 
@@ -2308,7 +2317,9 @@ def where(_data, fn: _Callable) -> Any:
     raise _NotImplementedByCurrentBackendError("where", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(
+    dependent=True, ast_fallback=_get_verb_ast_fallback("everything")
+)
 def everything(_data) -> Any:
     """Select all variables.
 
@@ -2324,7 +2335,7 @@ def everything(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("everything", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("last_col"))
 def last_col(_data, offset: int = 0, vars=None) -> Any:
     """Select the last column.
 
@@ -2342,7 +2353,9 @@ def last_col(_data, offset: int = 0, vars=None) -> Any:
     raise _NotImplementedByCurrentBackendError("last_col", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(
+    dependent=True, ast_fallback=_get_verb_ast_fallback("starts_with")
+)
 def starts_with(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that start with a string.
 
@@ -2361,7 +2374,7 @@ def starts_with(_data, match, ignore_case: bool = True, vars=None) -> Any:
     raise _NotImplementedByCurrentBackendError("starts_with", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("ends_with"))
 def ends_with(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that end with a string.
 
@@ -2380,7 +2393,7 @@ def ends_with(_data, match, ignore_case: bool = True, vars=None) -> Any:
     raise _NotImplementedByCurrentBackendError("ends_with", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("contains"))
 def contains(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that contain a string.
 
@@ -2399,7 +2412,7 @@ def contains(_data, match, ignore_case: bool = True, vars=None) -> Any:
     raise _NotImplementedByCurrentBackendError("contains", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("matches"))
 def matches(_data, match, ignore_case: bool = True, vars=None) -> Any:
     """Select columns that match a regular expression.
 
@@ -2435,7 +2448,7 @@ def num_range(prefix: str, range_, width: int = None) -> Any:
     raise _NotImplementedByCurrentBackendError("num_range")
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("all_of"))
 def all_of(_data, x) -> Any:
     """For strict selection.
 
@@ -2456,7 +2469,7 @@ def all_of(_data, x) -> Any:
     raise _NotImplementedByCurrentBackendError("all_of", _data)
 
 
-@_register_verb(dependent=True)
+@_register_verb(dependent=True, ast_fallback=_get_verb_ast_fallback("any_of"))
 def any_of(_data, x, vars=None) -> Any:
     """For strict selection.
 

@@ -10,12 +10,13 @@ def test_env_var_integration():
     # Create a simple test script that uses datar
     test_script = """
 import os
-from datar.core.verb_env import register_verb
+from pipda import register_verb
+from datar.core.verb_env import get_verb_ast_fallback
 
 # Set environment variable before importing verbs
 os.environ['DATAR_TEST_VERB_AST_FALLBACK'] = 'piping'
 
-@register_verb()
+@register_verb(ast_fallback=get_verb_ast_fallback("test_verb"))
 def test_verb(data):
     return data
 

@@ -1,8 +1,11 @@
 from __future__ import annotations as _
 from typing import Any, Callable as _Callable, Mapping as _Mapping
 
-from pipda import register_func as _register_func
-from ..core.verb_env import register_verb as _register_verb
+from pipda import (
+    register_verb as _register_verb,
+    register_func as _register_func,
+)
+from ..core.verb_env import get_verb_ast_fallback as _get_verb_ast_fallback
 
 from ..core.utils import (
     NotImplementedByCurrentBackendError as _NotImplementedByCurrentBackendError,
@@ -26,7 +29,7 @@ def full_seq(x, period, tol=1e-6) -> Any:
     raise _NotImplementedByCurrentBackendError("full_seq", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("chop"))
 def chop(
     data,
     cols=None,
@@ -44,7 +47,7 @@ def chop(
     raise _NotImplementedByCurrentBackendError("chop", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("unchop"))
 def unchop(
     data,
     cols=None,
@@ -87,7 +90,7 @@ def unchop(
     raise _NotImplementedByCurrentBackendError("unchop", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("nest"))
 def nest(
     _data,
     _names_sep: str = None,
@@ -111,7 +114,7 @@ def nest(
     raise _NotImplementedByCurrentBackendError("nest", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("unnest"))
 def unnest(
     data,
     *cols: str | int,
@@ -156,7 +159,7 @@ def unnest(
     raise _NotImplementedByCurrentBackendError("unnest", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("pack"))
 def pack(
     _data,
     _names_sep: str = None,
@@ -177,7 +180,7 @@ def pack(
     raise _NotImplementedByCurrentBackendError("pack", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("unpack"))
 def unpack(
     data,
     cols,
@@ -211,7 +214,7 @@ def unpack(
     raise _NotImplementedByCurrentBackendError("unpack", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("expand"))
 def expand(
     data,
     *args,
@@ -317,7 +320,7 @@ def crossing(
     raise _NotImplementedByCurrentBackendError("crossing")
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("complete"))
 def complete(
     data,
     *args,
@@ -351,7 +354,7 @@ def complete(
     raise _NotImplementedByCurrentBackendError("complete", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("drop_na"))
 def drop_na(
     _data,
     *columns: str,
@@ -375,7 +378,7 @@ def drop_na(
     raise _NotImplementedByCurrentBackendError("drop_na", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("extract"))
 def extract(
     data,
     col: str | int,
@@ -407,7 +410,7 @@ def extract(
     raise _NotImplementedByCurrentBackendError("extract", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("fill"))
 def fill(
     _data,
     *columns: str | int,
@@ -432,7 +435,7 @@ def fill(
     raise _NotImplementedByCurrentBackendError("fill", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("pivot_longer"))
 def pivot_longer(
     _data,
     cols,
@@ -538,7 +541,7 @@ def pivot_longer(
     raise _NotImplementedByCurrentBackendError("pivot_longer", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("pivot_wider"))
 def pivot_wider(
     _data,
     id_cols=None,
@@ -591,7 +594,7 @@ def pivot_wider(
     raise _NotImplementedByCurrentBackendError("pivot_wider", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("separate"))
 def separate(
     data,
     col: int | str,
@@ -638,7 +641,7 @@ def separate(
     raise _NotImplementedByCurrentBackendError("separate", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("separate_rows"))
 def separate_rows(
     data,
     *columns: str,
@@ -660,7 +663,7 @@ def separate_rows(
     raise _NotImplementedByCurrentBackendError("separate_rows", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("uncount"))
 def uncount(
     data,
     weights,
@@ -683,7 +686,7 @@ def uncount(
     raise _NotImplementedByCurrentBackendError("uncount", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("unite"))
 def unite(
     data,
     col: str,
@@ -709,7 +712,7 @@ def unite(
     raise _NotImplementedByCurrentBackendError("unite", data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("replace_na"))
 def replace_na(
     data,
     data_or_replace=None,

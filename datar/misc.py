@@ -1,13 +1,14 @@
 from typing import Any as _Any, Callable as _Callable
 
-from .core.verb_env import register_verb as _register_verb
+from pipda import register_verb as _register_verb
+from .core.verb_env import get_verb_ast_fallback as _get_verb_ast_fallback
 
 from .core.load_plugins import plugin as _plugin
 
 locals().update(_plugin.hooks.misc_api())
 
 
-@_register_verb(object)
+@_register_verb(object, ast_fallback=_get_verb_ast_fallback("pipe"))
 def pipe(data: _Any, func: _Callable, *args, **kwargs) -> _Any:
     """Apply a function to the data
 

@@ -1,8 +1,11 @@
 from __future__ import annotations as _
 from typing import Any, Callable as _Callable
 
-from pipda import register_func as _register_func
-from ..core.verb_env import register_verb as _register_verb
+from pipda import (
+    register_verb as _register_verb,
+    register_func as _register_func,
+)
+from ..core.verb_env import get_verb_ast_fallback as _get_verb_ast_fallback
 
 from ..core.utils import (
     NotImplementedByCurrentBackendError as _NotImplementedByCurrentBackendError,
@@ -110,13 +113,13 @@ def tibble_row(
     raise _NotImplementedByCurrentBackendError("tibble_row")
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("as_tibble"))
 def as_tibble(df) -> Any:
     """Convert a DataFrame object to Tibble object"""
     raise _NotImplementedByCurrentBackendError("as_tibble", df)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("enframe"))
 def enframe(x, name="name", value="value") -> Any:
     """Converts mappings or lists to one- or two-column data frames.
 
@@ -134,7 +137,7 @@ def enframe(x, name="name", value="value") -> Any:
     raise _NotImplementedByCurrentBackendError("enframe", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("deframe"))
 def deframe(x) -> Any:
     """Converts two-column data frames to a dictionary
     using the first column as name and the second column as value.
@@ -149,7 +152,7 @@ def deframe(x) -> Any:
     raise _NotImplementedByCurrentBackendError("deframe", x)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("add_row"))
 def add_row(
     _data,
     *args,
@@ -176,7 +179,7 @@ def add_row(
     raise _NotImplementedByCurrentBackendError("add_row", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("add_column"))
 def add_column(
     _data,
     *args,
@@ -204,7 +207,7 @@ def add_column(
     raise _NotImplementedByCurrentBackendError("add_column", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("has_rownames"))
 def has_rownames(_data) -> bool:
     """Detect if a data frame has row names
 
@@ -220,7 +223,7 @@ def has_rownames(_data) -> bool:
     raise _NotImplementedByCurrentBackendError("has_rownames", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("remove_rownames"))
 def remove_rownames(_data) -> Any:
     """Remove the index/rownames of a data frame
 
@@ -236,7 +239,7 @@ def remove_rownames(_data) -> Any:
     raise _NotImplementedByCurrentBackendError("remove_rownames", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rownames_to_column"))
 def rownames_to_column(_data, var="rowname") -> Any:
     """Add rownames as a column
 
@@ -253,7 +256,7 @@ def rownames_to_column(_data, var="rowname") -> Any:
     raise _NotImplementedByCurrentBackendError("rownames_to_column", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("rowid_to_column"))
 def rowid_to_column(_data, var="rowid") -> Any:
     """Add rownames as a column
 
@@ -268,7 +271,7 @@ def rowid_to_column(_data, var="rowid") -> Any:
     raise _NotImplementedByCurrentBackendError("rowid_to_column", _data)
 
 
-@_register_verb()
+@_register_verb(ast_fallback=_get_verb_ast_fallback("column_to_rownames"))
 def column_to_rownames(_data, var="rowname") -> Any:
     """Set rownames/index with one column, and remove it
 
