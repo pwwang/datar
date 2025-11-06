@@ -1,5 +1,7 @@
 Options are used to change some behaviors in `datar`.
 
+For environment variable configuration (such as controlling verb AST fallback behavior), see [Environment Variables](ENV_VARS.md).
+
 ## Available options
 
 ### allow_conflict_names

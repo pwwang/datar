@@ -57,6 +57,7 @@ nav:
     - 'Import datar': 'import.md'
     - 'Backends': 'backends.md'
     - 'Options': 'options.md'
+    - 'Environment Variables': 'ENV_VARS.md'
     - 'The f-expression': 'f.md'
     - 'Data': 'data.md'
     - 'Examples':
