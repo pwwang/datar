@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+import tempfile
 
 
 def test_env_var_integration():
@@ -22,21 +23,28 @@ def test_verb(data):
 assert callable(test_verb)
 print("SUCCESS: Environment variable integration test passed")
 """
-    
+
     # Write to a temporary file
-    with open('/tmp/test_env_integration.py', 'w') as f:
+    with tempfile.NamedTemporaryFile(
+        mode='w', suffix='.py', delete=False
+    ) as f:
+        temp_path = f.name
         f.write(test_script)
-    
-    # Run the script
-    result = subprocess.run(
-        [sys.executable, '/tmp/test_env_integration.py'],
-        capture_output=True,
-        text=True
-    )
-    
-    # Check the result
-    assert result.returncode == 0
-    assert "SUCCESS" in result.stdout
+
+    try:
+        # Run the script
+        result = subprocess.run(
+            [sys.executable, temp_path],
+            capture_output=True,
+            text=True
+        )
+
+        # Check the result
+        assert result.returncode == 0
+        assert "SUCCESS" in result.stdout
+    finally:
+        # Clean up the temporary file
+        os.unlink(temp_path)
 
 
 if __name__ == "__main__":

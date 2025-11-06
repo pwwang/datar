@@ -73,12 +73,16 @@ def register_verb(
     Returns:
         The registered verb or a decorator to register a verb
     """
+    def _apply_env_fallback(f: Callable, fallback: str = None) -> str:
+        """Apply environment variable fallback if not explicitly set."""
+        if fallback is None:
+            env_fallback = _get_ast_fallback_from_env(f.__name__)
+            return env_fallback if env_fallback else fallback
+        return fallback
+
     # If func is provided directly (not used as decorator)
     if func is not None:
-        env_fallback = _get_ast_fallback_from_env(func.__name__)
-        if env_fallback and ast_fallback is None:
-            ast_fallback = env_fallback
-
+        final_ast_fallback = _apply_env_fallback(func, ast_fallback)
         return _pipda_register_verb(
             cls,
             func=func,
@@ -89,17 +93,12 @@ def register_verb(
             doc=doc,
             module=module,
             dependent=dependent,
-            ast_fallback=ast_fallback,
+            ast_fallback=final_ast_fallback,
         )
 
     # When used as a decorator
     def decorator(f: Callable) -> Callable:
-        env_fallback = _get_ast_fallback_from_env(f.__name__)
-        if env_fallback and ast_fallback is None:
-            final_ast_fallback = env_fallback
-        else:
-            final_ast_fallback = ast_fallback
-
+        final_ast_fallback = _apply_env_fallback(f, ast_fallback)
         return _pipda_register_verb(
             cls,
             func=f,
