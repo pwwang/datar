@@ -1,10 +1,8 @@
 from __future__ import annotations as _
 from typing import Any, Callable as _Callable, Mapping as _Mapping
 
-from pipda import (
-    register_verb as _register_verb,
-    register_func as _register_func,
-)
+from pipda import register_func as _register_func
+from ..core.verb_env import register_verb as _register_verb
 
 from ..core.utils import (
     NotImplementedByCurrentBackendError as _NotImplementedByCurrentBackendError,

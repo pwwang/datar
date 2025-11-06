@@ -1,6 +1,6 @@
 from typing import Any as _Any, Callable as _Callable
 
-from pipda import register_verb as _register_verb
+from .core.verb_env import register_verb as _register_verb
 
 from .core.load_plugins import plugin as _plugin
 
