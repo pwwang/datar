@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.15.16
+
+- refactor: migrate poetry to uv for dep management
+- fix: correct `__all__` declaration in `__init__.py`
+
 ## 0.15.15
 
 - docs: update outdated notebook for filter (#223)
