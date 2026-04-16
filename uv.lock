@@ -891,7 +891,7 @@ wheels = [
 
 [[package]]
 name = "datar"
-version = "0.15.16"
+version = "0.15.17"
 source = { editable = "." }
 dependencies = [
     { name = "pipda" },

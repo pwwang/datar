@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.15.17
+
+- feat: update pandas dependency version to ^0.7 with pandas v3 support
+
 ## 0.15.16
 
 - refactor: migrate poetry to uv for dep management
