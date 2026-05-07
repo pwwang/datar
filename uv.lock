@@ -913,13 +913,16 @@ pandas = [
 [package.dev-dependencies]
 dev = [
     { name = "flake8" },
+    { name = "ipykernel" },
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
     { name = "numpy", version = "2.4.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pardoc" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "python-slugify" },
     { name = "six" },
+    { name = "varname" },
 ]
 docs = [
     { name = "ipykernel" },
@@ -950,11 +953,14 @@ provides-extras = ["numpy", "pandas", "arrow"]
 [package.metadata.requires-dev]
 dev = [
     { name = "flake8" },
+    { name = "ipykernel", specifier = ">=6.31.0" },
     { name = "numpy" },
+    { name = "pardoc", specifier = ">=0.2.0" },
     { name = "pytest", specifier = ">=8.1,<9" },
     { name = "pytest-cov", specifier = ">=6,<7" },
     { name = "python-slugify", specifier = ">=8,<9" },
     { name = "six", specifier = ">=1.16,<2" },
+    { name = "varname", specifier = ">=1.0" },
 ]
 docs = [
     { name = "ipykernel", specifier = ">=6.29,<7" },
@@ -967,7 +973,7 @@ docs = [
     { name = "pardoc", specifier = ">=0.2,<0.3" },
     { name = "plotnine", specifier = ">=0.13,<0.14" },
     { name = "pymdown-extensions", specifier = ">=10.14,<11" },
-    { name = "varname", specifier = ">=0.15,<0.16" },
+    { name = "varname", specifier = ">=1.0" },
 ]
 
 [[package]]
@@ -4702,15 +4708,15 @@ wheels = [
 
 [[package]]
 name = "varname"
-version = "0.15.1"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
     { name = "typing-extensions", marker = "python_full_version < '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5c/a8/a5603b66d4d9d038b20207ac52fc6db0a34a6afed8a89ecbc95ee80dea35/varname-0.15.1.tar.gz", hash = "sha256:cf1b9aa38197f4df5ad9bd9db32ce0439aa6b43e24456fe5d20ad352a8014ade", size = 27692, upload-time = "2025-12-01T15:54:43.069Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/7e/9aa4b8f1aacf5580d21994ae5d3e12ac299fed01edea9163bbb0b89f7443/varname-1.0.0.tar.gz", hash = "sha256:7156d6a3447b4232e2d804e9df6a4201587e769fa05eee2c465f76e9fbb4ec57", size = 176122, upload-time = "2026-04-16T20:38:16.257Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/4a/c6fd02a642bbe4e9f25cdd3714a328e3fc3eb6bd7b5e96f1a2285bd928b9/varname-0.15.1-py3-none-any.whl", hash = "sha256:291a71ea6f88328a9a2ee2f7badcc9075dd69afa93f1463ccc2657aef54d2ea1", size = 25620, upload-time = "2025-12-01T15:54:42.242Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/39/3a0ae5b0edb66e61bb0e8bc53a503495cba5892297ae21faf6ba0525e681/varname-1.0.0-py3-none-any.whl", hash = "sha256:1125bfe981c3bbbe56988f5cb85fdcd7cad923b153283c2d464aea8b4c833d51", size = 25756, upload-time = "2026-04-16T20:38:15.303Z" },
 ]
 
 [[package]]

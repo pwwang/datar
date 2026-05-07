@@ -34,6 +34,9 @@ dev = [
     "six>=1.16,<2",
     "numpy",
     "python-slugify>=8,<9",
+    "ipykernel>=6.31.0",
+    "pardoc>=0.2.0",
+    "varname>=1.0",
 ]
 docs = [
     "mkdocs>=1.6,<2",
@@ -46,7 +49,7 @@ docs = [
     "plotnine>=0.13,<0.14",
     "klib>=1.3,<2",
     "pardoc>=0.2,<0.3",
-    "varname>=0.15,<0.16",
+    "varname>=1.0",
 ]
 
 [build-system]
