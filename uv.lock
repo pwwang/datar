@@ -912,7 +912,6 @@ wheels = [
 
 [[package]]
 name = "datar"
-version = "0.15.17"
 source = { editable = "." }
 dependencies = [
     { name = "pipda" },
@@ -966,14 +965,14 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "datar-arrow", marker = "extra == 'arrow'", specifier = ">=0.2,<0.3" },
-    { name = "datar-numpy", marker = "extra == 'numpy'", specifier = ">=0.3.4,<0.4" },
+    { name = "datar-numpy", marker = "extra == 'numpy'", specifier = ">=0.3,<0.4" },
     { name = "datar-pandas", marker = "extra == 'pandas'", specifier = ">=0.7,<0.8" },
     { name = "datar-polars", marker = "extra == 'polars'", specifier = ">=0.0" },
     { name = "pipda", specifier = ">=0.14" },
     { name = "python-simpleconf", extras = ["toml"], specifier = ">=0.9,<0.10" },
     { name = "simplug", specifier = ">=0.5,<0.6" },
 ]
-provides-extras = ["numpy", "pandas", "polars", "arrow"]
+provides-extras = ["arrow", "numpy", "pandas", "polars"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1017,7 +1016,7 @@ wheels = [
 
 [[package]]
 name = "datar-numpy"
-version = "0.3.7"
+version = "0.3.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "datar" },
@@ -1025,23 +1024,23 @@ dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
     { name = "numpy", version = "2.4.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/8e/965b4269351def93be3dcc843220d7d26556edd404d295eeb0e45b54f29a/datar_numpy-0.3.7.tar.gz", hash = "sha256:3732488c184170615be1a2f3c6badb0cabbaa1c576a9a0555e970a3bcb5b4eeb", size = 89575, upload-time = "2026-04-15T18:43:34.4Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/92/46c36731a46e8d5cfb6adbbd75573ff8cd238ba6988618a170960df9614b/datar_numpy-0.3.8.tar.gz", hash = "sha256:0e77e575d7b3c9339df3ed1b2454b1e74d6de38294b1e81ff8fc49b51f8e2085", size = 89582, upload-time = "2026-05-07T04:22:17.464Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/f7/6bf8b2e448bfa7732c67d97cbc0eeb89635c4a009bfd1a4f348188214480/datar_numpy-0.3.7-py3-none-any.whl", hash = "sha256:12bf1e8ed076f3925eafc64e80ba56d589667003f71fac68f3f71baaa879a36d", size = 17577, upload-time = "2026-04-15T18:43:33.289Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/03/e8be661b49d0b58d51757af34235109d8ba24b509d4e382282e90ac7e23c/datar_numpy-0.3.8-py3-none-any.whl", hash = "sha256:61d07e61216dc46dfad8d489f8e2c8d187753dfa39bd1f7f6b51177aa8ca06b5", size = 17574, upload-time = "2026-05-07T04:22:16.569Z" },
 ]
 
 [[package]]
 name = "datar-pandas"
-version = "0.7.0"
+version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "datar" },
     { name = "datar-numpy" },
     { name = "pdtypes" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/fb/679f2788e8408218035d0e771190f3af8dcfe0495fe4ce41744f476f44ad/datar_pandas-0.7.0.tar.gz", hash = "sha256:dd1d01460830f781fd8abe6c5934ed5eb3b86bca6b083eaacdbc2154506e44d5", size = 262250, upload-time = "2026-04-16T05:42:15.072Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/9e/2f7ac44cc3c138965f5b27091fb25a95973ddbb36480ceb5470118b50eca/datar_pandas-0.7.1.tar.gz", hash = "sha256:26f0db37841db52d772e38426b63a2d45550ffbea2db2a6226d8ff2426922afb", size = 262275, upload-time = "2026-05-07T04:30:34.683Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/07/4cb264846b84647b18710260335270747b56fa49c9acc79ea37b6494505f/datar_pandas-0.7.0-py3-none-any.whl", hash = "sha256:1d04932b7563c63aeec7e2127449e423d8b1c1ee5aa343954de45bf4fa9160b7", size = 140664, upload-time = "2026-04-16T05:42:13.265Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/e9/6c47dc482913ba0915c0e9001803900b05a728f0303db0a7553fc43564e5/datar_pandas-0.7.1-py3-none-any.whl", hash = "sha256:9334d203a8e269f9912ca8ac527e298abf4f0d339edb1b5399abffd94d7efb6d", size = 140659, upload-time = "2026-05-07T04:30:37.024Z" },
 ]
 
 [[package]]
