@@ -18,7 +18,7 @@ dependencies = [
 numpy = ["datar-numpy>=0.3.4,<0.4"]
 pandas = ["datar-pandas>=0.7,<0.8"]
 # pandas = {path = "../datar-pandas"}
-# polars = ["datar-polars"]
+polars = ["datar-polars>=0.0"]
 arrow = ["datar-arrow>=0.2,<0.3"]
 # modin = ["datar-pandas>=0.6,<0.7"]
 
