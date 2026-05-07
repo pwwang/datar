@@ -36,7 +36,7 @@ FALSE = False
 TRUE = True
 NA = float("nan")
 NULL = None
-NaN = float("nan")
+NaN = NA  # so that NA is NaN
 Inf = float("inf")
 
 
@@ -1305,7 +1305,7 @@ def c_(*args) -> Any:
     Returns:
         The concatenated vector
     """
-    raise _NotImplementedByCurrentBackendError("c", *args)
+    raise _NotImplementedByCurrentBackendError("c", args)
 
 
 c = _CollectionFunction(c_)
