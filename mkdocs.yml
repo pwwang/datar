@@ -41,6 +41,7 @@ plugins:
     - mkapi
     - mkdocs-jupyter:
         execute: false
+        ignore_h1_titles: true
 extra_css:
     - style.css
 nav:
