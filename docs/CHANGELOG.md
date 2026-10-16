@@ -1,5 +1,21 @@
 # Change Log
 
+## 0.16.1
+
+- A more streamlined and comprehensive tutorial for the repo (#225)
+- Fix invalid MkDocs tutorial navigation indentation (#226)
+- Respect nav titles for Tutorial notebooks in mkdocs (#227)
+- chore: add FUNDING.yml for GitHub sponsorship information
+- chore: add polars and pdtypes to development dependencies
+- chore: bump datar-polars to 0.0.2
+
+## 0.16.0
+
+- chore: update development dependencies: add ipykernel, pardoc, and varname; update varname version
+- fix: correct NaN assignment and improve error message in c_ function
+- chore: update pipda dependency version to >=0.14
+- feat: add support for polars backend in installation instructions and dependencies
+
 ## 0.15.17
 
 - feat: update pandas dependency version to ^0.7 with pandas v3 support
