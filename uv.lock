@@ -1341,7 +1341,7 @@ wheels = [
 
 [[package]]
 name = "datar-polars"
-version = "0.0.1"
+version = "0.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "datar" },
@@ -1352,9 +1352,9 @@ dependencies = [
     { name = "polars", version = "1.36.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "polars", version = "2.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b5/1a/17654532363d24d43c32fd68ea2a37e898a1ec41cd1a39c8ea265bacc221/datar_polars-0.0.1.tar.gz", hash = "sha256:b5f770dbd2532c987abe8d374040790fd83d333f6b9c2c45e75c703badbd9f36", size = 971807, upload-time = "2026-05-07T03:28:25.805Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/8b/a822c7b12c437f480fe5b80b2bf208a13518959c6ea6fa628d6ffc53d8c5/datar_polars-0.0.2.tar.gz", hash = "sha256:39673105a4df6f9ed39e2f6a17ecfb163142a9085baba8b6d253c73ba16954a0", size = 1088886, upload-time = "2026-10-16T22:11:23.355Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3d/32/cbca36be46bafbb450265d1f0e81fdd3a2e0e810e92f2e46ea153300a44e/datar_polars-0.0.1-py3-none-any.whl", hash = "sha256:9ea7b3c696e34f8c6f33ed21f1ac33889ccf66fe1e2e00e9140ebe00b3338912", size = 132126, upload-time = "2026-05-07T03:28:24.151Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/4c/5e7f3f558b86085f9dfecb9a2a6097fd3eec96f71c870cf051b78daa69d3/datar_polars-0.0.2-py3-none-any.whl", hash = "sha256:8f53597021641095a0425e9a66683de6bd2cec6e547b734bed7633d15aa3f81c", size = 135736, upload-time = "2026-10-16T22:11:21.783Z" },
 ]
 
 [[package]]
