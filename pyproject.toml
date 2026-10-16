@@ -36,6 +36,8 @@ dev = [
     "flake8",
     "six>=1.16,<2",
     "numpy",
+    "polars>=1.36",
+    "pdtypes>=0.3",
     "python-slugify>=8,<9",
     "ipykernel>=6.31.0",
     "pardoc>=0.2.0",
